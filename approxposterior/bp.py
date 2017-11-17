@@ -15,6 +15,9 @@ TODO
 
 """
 
+# Tell module what it's allowed to import
+__all__ = ["ApproxPosterior"]
+
 from __future__ import (print_function, division, absolute_import, unicode_literals)
 import numpy as np
 import george
