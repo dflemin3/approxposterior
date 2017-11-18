@@ -12,18 +12,18 @@ A meh implementation of Kandasamy et al. (2015)'s BAPE model.
 
 """
 
-from __future__ import (print_function, division, absolute_import, u
-                        nicode_literals)
+from __future__ import (print_function, division, absolute_import,
+                        unicode_literals)
 
 # Tell module what it's allowed to import
 __all__ = ["ApproxPosterior"]
 
+from . import utility as ut
 import numpy as np
 import george
 from george import kernels
 import emcee
 import corner
-from scipy.optimize import minimize, basinhopping
 from sklearn.neighbors import KernelDensity
 from sklearn.model_selection import GridSearchCV
 from sklearn.mixture import GaussianMixture
@@ -58,28 +58,6 @@ def rosenbrock_log_likelihood(x):
     return -0.01*(x1 - 1.0)**2 - (x1*x1 - x2)**2
 # end function
 
-def log_rb_prior(x1, x2):
-    """
-    Uniform log prior for the 2D Rosenbrock likelihood following Wang & Li (2017)
-    where the prior pi(x) is a uniform distribution over [-5, 5] x [-5, 5]
-
-    Parameters
-    ----------
-    x : array
-
-    Returns
-    -------
-    l : float
-        log prior
-    """
-    if (x1 > 5) or (x1 < -5) or (x2 > 5) or (x2 < -5):
-        return -np.inf
-
-    # All parameters in range equally likely
-    return 0.0
-log_rb_prior = np.vectorize(log_rb_prior)
-# end function
-
 
 def log_rosenbrock_prior(x):
     """
@@ -96,34 +74,10 @@ def log_rosenbrock_prior(x):
         log prior
     """
 
-    x = np.array(x)
-    if x.ndim > 1:
-        x1 = x[:,0]
-        x2 = x[:,1]
+    if np.any(np.fabs(x) > 5):
+        return -np.inf
     else:
-        x1 = x[0]
-        x2 = x[1]
-
-    return log_rb_prior(x1, x2)
-# end function
-
-
-def rosenbrock_prior(x):
-    """
-    Uniform prior for the 2D Rosenbrock likelihood following Wang & Li (2017)
-    where the prior pi(x) is a uniform distribution over [-5, 5] x [-5, 5]
-
-    Parameters
-    ----------
-    x : array
-
-    Returns
-    -------
-    l : float
-        log prior
-    """
-
-    return np.exp(log_rosenbrock_prior(x))
+        return 0.0
 # end function
 
 
@@ -148,7 +102,7 @@ def rosenbrock_sample(n):
 
 
 def plot_gp(gp, theta, y, xmin=-5, xmax=5, ymin=-5, ymax=5, n=100,
-            return_var=False, save_plot=None, log=False, **kw):
+            return_type="mean", save_plot=None, log=False, **kw):
     """
     DOCS
     """
@@ -159,34 +113,34 @@ def plot_gp(gp, theta, y, xmin=-5, xmax=5, ymin=-5, ymax=5, n=100,
     zz = np.zeros((len(xx),len(yy)))
     for ii in range(len(xx)):
         for jj in range(len(yy)):
-            mu, var = gp.predict(y, np.array([xx[ii],yy[jj]]).reshape(1,-1), return_var=return_var)
-            if return_var:
+            mu, var = gp.predict(y, np.array([xx[ii],yy[jj]]).reshape(1,-1), return_var=True)
+            if return_type.lower() == "var":
                 zz[ii,jj] = var
-            else:
+            elif return_type.lower() == "mean":
                 zz[ii,jj] = mu
+            elif return_type.lower() == "utility":
+                zz[ii,jj] = -(2.0*mu + var) - ut.logsubexp(var, 0.0)
+            else:
+                raise IOError("Invalid return_type : %s" % return_type)
 
+    norm = None
     if log:
-        if not return_var:
+        if return_type.lower() == "mean" or return_type.lower() == "utility":
             zz = np.fabs(zz)
-            #norm = LogNorm(vmin=1.0e-4, vmax=1.0e2)
-        if return_var:
-
-            zz[zz < 1.0e-6] = 1.0e-1
-            #norm = LogNorm(vmin=1.0e-1, vmax=1.0e5)
-
-        norm = LogNorm(vmin=zz.min(), vmax=zz.max())
-
+            zz[zz <= 1.0e-5] = 1.0e-5
+            norm = LogNorm(vmin=zz.min(), vmax=zz.max())
 
     # Plot what the GP thinks the function looks like
     fig, ax = plt.subplots(**kw)
     im = ax.pcolormesh(xx, yy, zz.T, norm=norm)
     cb = fig.colorbar(im)
 
-    if return_var:
+    if return_type.lower() == "var":
         cb.set_label("Variance", labelpad=20, rotation=270)
-    else:
+    elif return_type.lower() == "mean":
         cb.set_label("|Mean|", labelpad=20, rotation=270)
-
+    elif return_type.lower() == "utility":
+        cb.set_label("Utility Function", labelpad=20, rotation=270)
 
     # Scatter plot where the points are
     ax.scatter(theta[:,0], theta[:,1], color="red")
@@ -238,9 +192,9 @@ class ApproxPosterior(object):
 
         # Assign utility function
         if self.algorithm.lower() == "bape":
-            self.utility = BAPE_utility
+            self.utility = ut.BAPE_utility
         elif self.algorithm.lower() == "agp":
-            self.utility = AGP_utility
+            self.utility = ut.AGP_utility
         else:
             raise IOError("Invalid algorithm. Valid options: BAPE, AGP.")
 
@@ -253,7 +207,7 @@ class ApproxPosterior(object):
 
     def _sample(self, theta):
         """
-        Draw a sample from the approximate posterior
+        Draw a sample from the approximate posterior conditional distibution
         DOCS
         """
         theta_test = np.array(theta).reshape(1,-1)
@@ -268,7 +222,7 @@ class ApproxPosterior(object):
         if np.isnan(res):
             return -np.inf
         else:
-            return res
+            return -res # negative log likelihood
     # end function
 
 
@@ -316,13 +270,13 @@ class ApproxPosterior(object):
 
             # 1) Find m new points by maximizing utility function
             for ii in range(m):
-                theta_t = minimize_objective(self.utility, self.__y, self.gp,
-                                             sample_fn=None,
-                                             sim_annealing=sim_annealing,
-                                             **kw)
+                theta_t = ut.minimize_objective(self.utility, self.__y, self.gp,
+                                                sample_fn=None,
+                                                sim_annealing=sim_annealing,
+                                                **kw)
 
                 # 2) Query oracle at new points, theta_t
-                y_t = self._loglike(theta_t) - self.posterior(theta_t)
+                y_t = self._loglike(theta_t) + self.posterior(theta_t)
 
                 # Join theta, y arrays
                 self.__theta = np.concatenate([self.__theta, theta_t])
@@ -338,16 +292,20 @@ class ApproxPosterior(object):
                 self.gp.compute(self.__theta)
 
                 # Optimize gp hyperparameters
-                optimize_gp(self.gp, self.__y)
+                ut.optimize_gp(self.gp, self.__y)
 
             # Done adding new design points
-            fig, _ = plot_gp(self.gp, self.__theta, self.__y, return_var=False,
+            fig, _ = plot_gp(self.gp, self.__theta, self.__y, return_type="mean",
                     save_plot="gp_mu_iter_%d.png" % n, log=True)
             plt.close(fig)
 
             # Done adding new design points
-            fig, _ = plot_gp(self.gp, self.__theta, self.__y, return_var=True,
+            fig, _ = plot_gp(self.gp, self.__theta, self.__y, return_type="var",
                     save_plot="gp_var_iter_%d.png" % n, log=True)
+            plt.close(fig)
+
+            fig, _ = plot_gp(self.gp, self.__theta, self.__y, return_type="utility",
+                    save_plot="gp_util_iter_%d.png" % n, log=False)
             plt.close(fig)
 
             # GP updated: run sampler to obtain new posterior conditioned on (theta_n, log(L_t)*p_n)
@@ -366,7 +324,7 @@ class ApproxPosterior(object):
                 print("%d/%d" % (i+1, nsteps))
 
             print("emcee finished!")
-
+            """
             #fig = corner.corner(sampler.flatchain, quantiles=[0.16, 0.5, 0.84],
             #                    plot_contours=False, bins="auto");
             fig, ax = plt.subplots(figsize=(9,8))
@@ -378,11 +336,13 @@ class ApproxPosterior(object):
             ax.set_ylim(-5,5)
             fig.savefig("posterior_%d.png" % n)
             #plt.show()
+            """
 
             # Make new posterior function via a Gaussian Mixure model approximation
             # to the approximate posterior. Seems legit
             # Fit some GMMs!
             # sklean hates infs, Nans, big numbers
+            """
             mask = (~np.isnan(sampler.flatchain).any(axis=1)) & (~np.isinf(sampler.flatchain).any(axis=1))
             bic = []
             lowest_bic = 1.0e10
@@ -401,40 +361,4 @@ class ApproxPosterior(object):
             GMM = best_gmm
             GMM.fit(sampler.flatchain[mask])
             #self.posterior = GMM.score_samples
-
-# Test!
-if __name__ == "__main__":
-
-    # Define algorithm parameters
-    m0 = 20 # Initialize size of training set
-    m = 10  # Number of new points to find each iteration
-    nmax = 10 # Maximum number of iterations
-    M = int(1.0e2) # Number of MCMC steps to estimate approximate posterior
-    Dmax = 0.1
-    kmax = 5
-    kw = {}
-
-    # Choose m0 initial design points to initialize dataset
-    theta = rosenbrock_sample(m0)
-    y = rosenbrock_log_likelihood(theta) + log_rosenbrock_prior(theta)
-
-    # 0) Initial GP fit
-    # Guess the bandwidth following Kandasamy et al. (2015)'s suggestion
-    bandwidth = 5 * np.power(len(y),(-1.0/theta.shape[-1]))
-
-    # Create the GP conditioned on {theta_n, log(L_n / p_n)}
-    kernel = np.var(y) * kernels.ExpSquaredKernel(bandwidth, ndim=theta.shape[-1])
-    gp = george.GP(kernel)
-    gp.compute(theta)
-
-    # Optimize gp hyperparameters
-    optimize_gp(gp, y)
-
-    # Init object
-    bp = ApproxPosterior(gp, prior=log_rosenbrock_prior,
-                         loglike=rosenbrock_log_likelihood,
-                         algorithm="agp")
-
-    # Run this bastard
-    bp.run(theta, y, m=m, M=M, nmax=nmax, Dmax=Dmax, kmax=kmax,
-           sampler=None, sim_annealing=False, **kw)
+            """

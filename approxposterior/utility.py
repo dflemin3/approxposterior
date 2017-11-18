@@ -16,6 +16,7 @@ from __future__ import (print_function, division, absolute_import,
 __all__ = ["logsubexp","AGP_utility","BAPE_utility","minimize_objective",
            "optimize_gp"]
 
+from . import bp
 import numpy as np
 from scipy.optimize import minimize, basinhopping
 
@@ -150,11 +151,11 @@ def minimize_objective(fn, y, gp, sample_fn=None, prior_fn=None,
 
     # Assign sampling, prior function if it's not provided
     if sample_fn is None:
-        sample_fn = rosenbrock_sample
+        sample_fn = bp.rosenbrock_sample
 
     # Assign prior function if it's not provided
     if prior_fn is None:
-        prior_fn = log_rosenbrock_prior
+        prior_fn = bp.log_rosenbrock_prior
 
     is_finite = False
     while not is_finite:
@@ -191,7 +192,7 @@ def minimize_objective(fn, y, gp, sample_fn=None, prior_fn=None,
         # ValueError.  Try again.
         except ValueError:
             tmp = np.array([np.inf for ii in range(theta0.shape[-1])]).reshape(theta0.shape)
-        if np.isfinite(prior_fn(tmp).all()) and not np.isinf(tmp).any() and not np.isnan(tmp).any() and np.isfinite(tmp.sum()):
+        if np.all(np.isfinite(prior_fn(tmp))) and not np.any(np.isinf(tmp)) and not np.any(np.isnan(tmp)) and np.isfinite(np.sum(tmp)):
             theta = tmp
             is_finite = True
     # end while
