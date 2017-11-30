@@ -112,12 +112,13 @@ def BAPE_utility(theta, y, gp):
     else:
         raise RuntimeError("ERROR: Need to compute GP before using it!")
 
+    #print(mu,var,-((2.0*mu + var) + logsubexp(var, 0.0)))
     return -((2.0*mu + var) + logsubexp(var, 0.0))
 # end function
 
 
-def minimize_objective(fn, y, gp, sample_fn=None, prior_fn=None,
-                       sim_annealing=False, **kw):
+def minimize_objective(fn, y, gp, sample_fn, prior_fn, sim_annealing=False,
+                       **kw):
     """
     Find point that minimizes fn for a gaussian process gp conditioned on y,
     the data.
@@ -130,12 +131,10 @@ def minimize_objective(fn, y, gp, sample_fn=None, prior_fn=None,
     y : array
         y values to condition the gp prediction on.
     gp : george GP object
-    sample_fn : function (optional)
-        Function to sample initial conditions from.  Defaults to None, so we'd
-        use rosenbrock_sample
-    prior_fn : function (optional)
-        Function to apply prior to.  If sample is rejected by prior, reject
-        sample and try again.
+    sample_fn : function
+        Function to sample initial conditions from.
+    prior_fn : function
+        Function to apply prior to.
     sim_annealing : bool (optional)
         Whether to use the simulated annealing (basinhopping) algorithm.
         Defaults to False.
@@ -149,14 +148,6 @@ def minimize_objective(fn, y, gp, sample_fn=None, prior_fn=None,
         point that minimizes fn
     """
 
-    # Assign sampling, prior function if it's not provided
-    if sample_fn is None:
-        sample_fn = bp.rosenbrock_sample
-
-    # Assign prior function if it's not provided
-    if prior_fn is None:
-        prior_fn = bp.log_rosenbrock_prior
-
     is_finite = False
     while not is_finite:
         # Solve for theta that maximize fn and is allowed by prior
@@ -166,7 +157,8 @@ def minimize_objective(fn, y, gp, sample_fn=None, prior_fn=None,
 
         args=(y, gp)
 
-        bounds = ((-5,5), (-5,5))
+        # XXX hardcoded noooooooo
+        bounds = ((-10,10), (-10,10))
         #bounds = None
 
         # Mimimze fn, see if prior allows solution

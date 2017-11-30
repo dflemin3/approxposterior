@@ -19,6 +19,7 @@ from __future__ import (print_function, division, absolute_import,
 __all__ = ["ApproxPosterior"]
 
 from . import utility as ut
+from . import likelihood as lh
 import numpy as np
 import george
 from george import kernels
@@ -33,75 +34,7 @@ import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm
 
 
-def rosenbrock_log_likelihood(x):
-    """
-    2D Rosenbrock function as a log likelihood following Wang & Li (2017)
-
-    Parameters
-    ----------
-    x : array
-
-    Returns
-    -------
-    l : float
-        likelihood
-    """
-
-    x = np.array(x)
-    if x.ndim > 1:
-        x1 = x[:,0]
-        x2 = x[:,1]
-    else:
-        x1 = x[0]
-        x2 = x[1]
-
-    return -0.01*(x1 - 1.0)**2 - (x1*x1 - x2)**2
-# end function
-
-
-def log_rosenbrock_prior(x):
-    """
-    Uniform log prior for the 2D Rosenbrock likelihood following Wang & Li (2017)
-    where the prior pi(x) is a uniform distribution over [-5, 5] x [-5, 5]
-
-    Parameters
-    ----------
-    x : array
-
-    Returns
-    -------
-    l : float
-        log prior
-    """
-
-    if np.any(np.fabs(x) > 5):
-        return -np.inf
-    else:
-        return 0.0
-# end function
-
-
-def rosenbrock_sample(n):
-    """
-    Sample N points from the prior pi(x) is a uniform distribution over
-    [-5, 5] x [-5, 5]
-
-    Parameters
-    ----------
-    n : int
-        Number of samples
-
-    Returns
-    -------
-    sample : floats
-        n x 2 array of floats samples from the prior
-    """
-
-    return np.random.uniform(low=-5, high=5, size=(n,2)).squeeze()
-# end function
-
-
-def plot_gp(gp, theta, y, xmin=-5, xmax=5, ymin=-5, ymax=5, n=100,
+def plot_gp(gp, theta, y, xmin=-10, xmax=10, ymin=-10, ymax=10, n=100,
             return_type="mean", save_plot=None, log=False, **kw):
     """
     DOCS
@@ -119,7 +52,7 @@ def plot_gp(gp, theta, y, xmin=-5, xmax=5, ymin=-5, ymax=5, n=100,
             elif return_type.lower() == "mean":
                 zz[ii,jj] = mu
             elif return_type.lower() == "utility":
-                zz[ii,jj] = -(2.0*mu + var) - ut.logsubexp(var, 0.0)
+                zz[ii,jj] = np.fabs(-(2.0*mu + var) - ut.logsubexp(var, 0.0))
             else:
                 raise IOError("Invalid return_type : %s" % return_type)
 
@@ -128,7 +61,11 @@ def plot_gp(gp, theta, y, xmin=-5, xmax=5, ymin=-5, ymax=5, n=100,
         if return_type.lower() == "mean" or return_type.lower() == "utility":
             zz = np.fabs(zz)
             zz[zz <= 1.0e-5] = 1.0e-5
-            norm = LogNorm(vmin=zz.min(), vmax=zz.max())
+
+        if return_type.lower() == "var":
+            zz[zz <= 1.0e-8] = 1.0e-8
+
+        norm = LogNorm(vmin=zz.min(), vmax=zz.max())
 
     # Plot what the GP thinks the function looks like
     fig, ax = plt.subplots(**kw)
@@ -163,7 +100,7 @@ class ApproxPosterior(object):
     AGP (Adaptive Gaussian Process) by XXX et al.
     """
 
-    def __init__(self, gp, prior, loglike, algorithm="BAPE"):
+    def __init__(self, gp, lnprior, lnlike, lnprob, prior_sample, algorithm="BAPE"):
         """
         Initializer.
 
@@ -171,12 +108,16 @@ class ApproxPosterior(object):
         ----------
         gp : george.GP
             Gaussian process object
-        prior : function
+        lnprior : function
             Defines the log prior over the input features.
-        loglike : function
+        lnlike : function
             Defines the log likelihood function.  In this function, it is assumed
             that the forward model is evaluated on the input theta and the output
             is used to evaluate the log likelihood.
+        lnprob : function
+            Defines the log probability function
+        prior_sample : function
+            Method to randomly sample points over region allowed by prior
         algorithm : str (optional)
             Which utility function to use.  Defaults to BAPE.
 
@@ -186,8 +127,10 @@ class ApproxPosterior(object):
         """
 
         self.gp = gp
-        self.prior = prior
-        self._loglike = loglike
+        self._lnprior = lnprior
+        self._lnlike = lnlike
+        self._lnprob = lnprob
+        self.prior_sample = prior_sample
         self.algorithm = algorithm
 
         # Assign utility function
@@ -199,8 +142,8 @@ class ApproxPosterior(object):
             raise IOError("Invalid algorithm. Valid options: BAPE, AGP.")
 
         # Initial approximate posteriors are the prior
-        self.posterior = prior
-        self.__prev_posterior = prior
+        self.posterior = self._lnprior
+        self.__prev_posterior = self._lnprior
 
     # end function
 
@@ -271,12 +214,13 @@ class ApproxPosterior(object):
             # 1) Find m new points by maximizing utility function
             for ii in range(m):
                 theta_t = ut.minimize_objective(self.utility, self.__y, self.gp,
-                                                sample_fn=None,
+                                                sample_fn=self.prior_sample,
+                                                prior_fn=self._lnprior,
                                                 sim_annealing=sim_annealing,
                                                 **kw)
 
                 # 2) Query oracle at new points, theta_t
-                y_t = self._loglike(theta_t) + self.posterior(theta_t)
+                y_t = self._lnlike(theta_t) + self.posterior(theta_t)
 
                 # Join theta, y arrays
                 self.__theta = np.concatenate([self.__theta, theta_t])
@@ -287,7 +231,8 @@ class ApproxPosterior(object):
                 bandwidth = 5 * np.power(len(self.__y),(-1.0/self.__theta.shape[-1]))
 
                 # Create the GP conditioned on {theta_n, log(L_n * p_n)}
-                kernel = np.var(self.__y) * kernels.ExpSquaredKernel(bandwidth, ndim=self.__theta.shape[-1])
+                #kernel = np.var(self.__y) * kernels.ExpSquaredKernel(bandwidth, ndim=self.__theta.shape[-1])
+                kernel = kernels.ExpSquaredKernel(bandwidth, ndim=self.__theta.shape[-1])
                 self.gp = george.GP(kernel)
                 self.gp.compute(self.__theta)
 
@@ -309,14 +254,14 @@ class ApproxPosterior(object):
             plt.close(fig)
 
             # GP updated: run sampler to obtain new posterior conditioned on (theta_n, log(L_t)*p_n)
-
+            """
             # Use emcee to obtain approximate posterior
             ndim = self.__theta.shape[-1]
             nwalk = 10 * ndim
             nsteps = M
 
             # Initial guess (random over interval)
-            p0 = [np.random.uniform(low=-5, high=5, size=ndim) for j in range(nwalk)]
+            p0 = [self.prior_sample(1) for j in range(nwalk)]
             #p0 = [np.random.rand(ndim) for j in range(nwalk)]
             params = ["x%d" % jj for jj in range(ndim)]
             sampler = emcee.EnsembleSampler(nwalk, ndim, self._sample)
@@ -324,7 +269,6 @@ class ApproxPosterior(object):
                 print("%d/%d" % (i+1, nsteps))
 
             print("emcee finished!")
-            """
             #fig = corner.corner(sampler.flatchain, quantiles=[0.16, 0.5, 0.84],
             #                    plot_contours=False, bins="auto");
             fig, ax = plt.subplots(figsize=(9,8))

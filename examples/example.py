@@ -11,7 +11,7 @@ from __future__ import (print_function, division, absolute_import,
                         unicode_literals)
 
 
-from approxposterior import bp, utility as ut
+from approxposterior import bp, utility as ut, likelihood as lh
 import numpy as np
 import george
 from george import kernels
@@ -19,7 +19,7 @@ from george import kernels
 
 # Define algorithm parameters
 m0 = 5 # Initialize size of training set
-m = 5  # Number of new points to find each iteration
+m = 2 # Number of new points to find each iteration
 nmax = 10 # Maximum number of iterations
 M = int(1.0e2) # Number of MCMC steps to estimate approximate posterior
 Dmax = 0.1
@@ -27,8 +27,8 @@ kmax = 5
 kw = {}
 
 # Choose m0 initial design points to initialize dataset
-theta = bp.rosenbrock_sample(m0)
-y = bp.rosenbrock_log_likelihood(theta) + bp.log_rosenbrock_prior(theta)
+theta = lh.bimodal_normal_sample(m0)
+y = lh.bimodal_normal_lnprob(theta)
 
 # 0) Initial GP fit
 # Guess the bandwidth following Kandasamy et al. (2015)'s suggestion
@@ -43,8 +43,10 @@ gp.compute(theta)
 ut.optimize_gp(gp, y)
 
 # Init object
-bp = bp.ApproxPosterior(gp, prior=bp.log_rosenbrock_prior,
-                        loglike=bp.rosenbrock_log_likelihood,
+bp = bp.ApproxPosterior(gp, lnprior=lh.bimodal_normal_lnprior,
+                        lnlike=lh.bimodal_normal_lnlike,
+                        lnprob = lh.bimodal_normal_lnprob,
+                        prior_sample=lh.bimodal_normal_sample,
                         algorithm="bape")
 
 # Run this bastard
