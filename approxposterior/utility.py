@@ -159,7 +159,7 @@ def minimize_objective(fn, y, gp, sample_fn, prior_fn, sim_annealing=False,
 
         args=(y, gp)
 
-        # XXX hardcoded noooooooo
+        # XXX hardcoded nooooooo
         bounds = ((-10,10), (-10,10))
         #bounds = None
 
