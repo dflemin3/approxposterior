@@ -73,14 +73,17 @@ def AGP_utility(theta, y, gp):
         utility of theta under the gp
     """
 
+    # XXX pass mean, var instead of gp
+
     # Only works if the GP object has been computed, otherwise you messed up
     if gp.computed:
         mu, var = gp.predict(y, theta.reshape(1,-1), return_var=True)
     else:
         raise RuntimeError("ERROR: Need to compute GP before using it!")
 
+    # XXX try except? catch negative var
+
     return -(mu + 1.0/np.log(2.0*np.pi*np.e*var))
-    #return -(mu + np.log(2.0*np.pi*np.e*var))
 # end function
 
 
@@ -112,7 +115,6 @@ def BAPE_utility(theta, y, gp):
     else:
         raise RuntimeError("ERROR: Need to compute GP before using it!")
 
-    #print(mu,var,-((2.0*mu + var) + logsubexp(var, 0.0)))
     return -((2.0*mu + var) + logsubexp(var, 0.0))
 # end function
 
@@ -170,7 +172,7 @@ def minimize_objective(fn, y, gp, sample_fn, prior_fn, sim_annealing=False,
 
                 def mybounds(**kwargs):
                     x = kwargs["x_new"]
-                    res = bool(np.all(np.fabs(x) < 5))
+                    res = bool(np.all(np.fabs(x) < 10))
                     return res
 
                 tmp = basinhopping(fn, theta0, accept_test=mybounds, niter=500,
@@ -184,7 +186,9 @@ def minimize_objective(fn, y, gp, sample_fn, prior_fn, sim_annealing=False,
         # ValueError.  Try again.
         except ValueError:
             tmp = np.array([np.inf for ii in range(theta0.shape[-1])]).reshape(theta0.shape)
-        if np.all(np.isfinite(prior_fn(tmp))) and not np.any(np.isinf(tmp)) and not np.any(np.isnan(tmp)) and np.isfinite(np.sum(tmp)):
+
+        # If the answer isn't infinite, we're good
+        if not np.any(np.isinf(tmp)):
             theta = tmp
             is_finite = True
     # end while

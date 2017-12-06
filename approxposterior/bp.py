@@ -73,11 +73,11 @@ def plot_gp(gp, theta, y, xmin=-10, xmax=10, ymin=-10, ymax=10, n=100,
     cb = fig.colorbar(im)
 
     if return_type.lower() == "var":
-        cb.set_label("Variance", labelpad=20, rotation=270)
+        cb.set_label("GP Posterior Variance", labelpad=20, rotation=270)
     elif return_type.lower() == "mean":
-        cb.set_label("|Mean|", labelpad=20, rotation=270)
+        cb.set_label("|Mean GP Posterior Density (smaller better)|", labelpad=20, rotation=270)
     elif return_type.lower() == "utility":
-        cb.set_label("Utility Function", labelpad=20, rotation=270)
+        cb.set_label("|Utility Function (smaller better)|", labelpad=20, rotation=270)
 
     # Scatter plot where the points are
     ax.scatter(theta[:,0], theta[:,1], color="red")
@@ -133,6 +133,8 @@ class ApproxPosterior(object):
         self.prior_sample = prior_sample
         self.algorithm = algorithm
 
+        # Store GPs, samplers XXX
+
         # Assign utility function
         if self.algorithm.lower() == "bape":
             self.utility = ut.BAPE_utility
@@ -159,9 +161,10 @@ class ApproxPosterior(object):
         if np.isinf(theta_test).any() or np.isnan(theta_test).any() or not np.isfinite(theta_test.sum()):
             return -np.inf
 
-        res = self.gp.sample_conditional(self.__y, theta_test) + self.posterior(theta_test)
+        #res = self.gp.sample_conditional(self.__y, theta_test) + self.posterior(theta_test)
+        res = self.gp.predict(self.__y, theta_test, return_cov=False, return_var=False)
 
-        # Catch NaNs because they can happen for I don't know why reasons
+        # Catch NaNs because they can happen
         if np.isnan(res):
             return -np.inf
         else:
@@ -230,8 +233,9 @@ class ApproxPosterior(object):
                 # Guess the bandwidth following Kandasamy et al. (2015)'s suggestion
                 bandwidth = 5 * np.power(len(self.__y),(-1.0/self.__theta.shape[-1]))
 
+                # XXX use cross-validation to select kernel parameters?
+
                 # Create the GP conditioned on {theta_n, log(L_n * p_n)}
-                #kernel = np.var(self.__y) * kernels.ExpSquaredKernel(bandwidth, ndim=self.__theta.shape[-1])
                 kernel = kernels.ExpSquaredKernel(bandwidth, ndim=self.__theta.shape[-1])
                 self.gp = george.GP(kernel)
                 self.gp.compute(self.__theta)
@@ -254,8 +258,8 @@ class ApproxPosterior(object):
             plt.close(fig)
 
             # GP updated: run sampler to obtain new posterior conditioned on (theta_n, log(L_t)*p_n)
-            """
             # Use emcee to obtain approximate posterior
+            """
             ndim = self.__theta.shape[-1]
             nwalk = 10 * ndim
             nsteps = M
@@ -280,19 +284,17 @@ class ApproxPosterior(object):
             ax.set_ylim(-5,5)
             fig.savefig("posterior_%d.png" % n)
             #plt.show()
-            """
 
             # Make new posterior function via a Gaussian Mixure model approximation
             # to the approximate posterior. Seems legit
             # Fit some GMMs!
             # sklean hates infs, Nans, big numbers
-            """
             mask = (~np.isnan(sampler.flatchain).any(axis=1)) & (~np.isinf(sampler.flatchain).any(axis=1))
             bic = []
             lowest_bic = 1.0e10
             best_gmm = None
             gmm = GaussianMixture()
-            for n in range(5,10):
+            for n in range(3,10):
                 gmm.set_params(**{"n_components" : n, "covariance_type" : "full"})
                 gmm.fit(sampler.flatchain[mask])
                 bic.append(gmm.bic(sampler.flatchain[mask]))
@@ -304,5 +306,5 @@ class ApproxPosterior(object):
             # Refit GMM with the lowest bic
             GMM = best_gmm
             GMM.fit(sampler.flatchain[mask])
-            #self.posterior = GMM.score_samples
+            self.posterior = GMM.score_samples
             """

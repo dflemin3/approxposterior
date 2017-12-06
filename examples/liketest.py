@@ -41,11 +41,13 @@ im = ax.pcolormesh(xx, yy, np.fabs(ll.T),
 cb = fig.colorbar(im)
 
 # Format
-cb.set_label("Abs(-LogProb)", rotation=270, labelpad=20)
+cb.set_label("Abs(Posterior)", rotation=270, labelpad=20)
 ax.set_xlim(-10,10)
 ax.set_ylim(-10,10)
 
 plt.show()
+
+fig.savefig("truth.png")
 
 # Run MCMC (which will suck since bimodal, but whatever)
 if run_mcmc:

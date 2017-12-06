@@ -18,10 +18,10 @@ from george import kernels
 
 
 # Define algorithm parameters
-m0 = 5 # Initialize size of training set
-m = 2 # Number of new points to find each iteration
+m0 = 20 # Initialize size of training set
+m = 10 # Number of new points to find each iteration
 nmax = 10 # Maximum number of iterations
-M = int(1.0e2) # Number of MCMC steps to estimate approximate posterior
+M = int(1.0e4) # Number of MCMC steps to estimate approximate posterior
 Dmax = 0.1
 kmax = 5
 kw = {}
@@ -48,7 +48,14 @@ bp = bp.ApproxPosterior(gp, lnprior=lh.bimodal_normal_lnprior,
                         lnprob = lh.bimodal_normal_lnprob,
                         prior_sample=lh.bimodal_normal_sample,
                         algorithm="bape")
+"""
+bp = bp.ApproxPosterior(gp, lnprior=lh.rosenbrock_lnprior,
+                        lnlike=lh.rosenbrock_lnlike,
+                        lnprob = lh.rosenbrock_lnprob,
+                        prior_sample=lh.rosenbrock_sample,
+                        algorithm="bape")
+"""
 
-# Run this bastard
+# Run!
 bp.run(theta, y, m=m, M=M, nmax=nmax, Dmax=Dmax, kmax=kmax,
        sampler=None, sim_annealing=False, **kw)
