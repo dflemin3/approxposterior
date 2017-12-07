@@ -34,7 +34,7 @@ import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm
 
 
-def plot_gp(gp, theta, y, xmin=-10, xmax=10, ymin=-10, ymax=10, n=100,
+def plot_gp(gp, theta, y, xmin=-5, xmax=5, ymin=-5, ymax=5, n=100,
             return_type="mean", save_plot=None, log=False, **kw):
     """
     DOCS
@@ -100,14 +100,12 @@ class ApproxPosterior(object):
     AGP (Adaptive Gaussian Process) by XXX et al.
     """
 
-    def __init__(self, gp, lnprior, lnlike, lnprob, prior_sample, algorithm="BAPE"):
+    def __init__(self, lnprior, lnlike, lnprob, prior_sample, algorithm="BAPE"):
         """
         Initializer.
 
         Parameters
         ----------
-        gp : george.GP
-            Gaussian process object
         lnprior : function
             Defines the log prior over the input features.
         lnlike : function
@@ -126,7 +124,6 @@ class ApproxPosterior(object):
         None
         """
 
-        self.gp = gp
         self._lnprior = lnprior
         self._lnlike = lnlike
         self._lnprob = lnprob
@@ -157,32 +154,39 @@ class ApproxPosterior(object):
         """
         theta_test = np.array(theta).reshape(1,-1)
 
-        # Sometimes the input values can be crazy
-        if np.isinf(theta_test).any() or np.isnan(theta_test).any() or not np.isfinite(theta_test.sum()):
+        # Sometimes the input values can be crazy and the GP will blow up
+        if np.isinf(theta_test).any() or np.isnan(theta_test).any():
             return -np.inf
 
-        #res = self.gp.sample_conditional(self.__y, theta_test) + self.posterior(theta_test)
-        res = self.gp.predict(self.__y, theta_test, return_cov=False, return_var=False)
+        #mu = self.gp.sample_conditional(self.__y, theta_test) + self.posterior(theta_test)
+        # Mean of predictive distribution conditioned on y (GP posterior estimate)
+        mu = self.gp.predict(self.__y, theta_test, return_cov=False, return_var=False) + self.posterior(theta_test)
 
-        # Catch NaNs because they can happen
-        if np.isnan(res):
+        # Always add flat prior to keep it in bounds
+        mu += self._lnprior(theta_test)
+
+
+        # Catch NaNs/Infs because they can (rarely) happen
+        if not np.isfinite(mu):
             return -np.inf
         else:
-            return -res # negative log likelihood
+            return mu
     # end function
 
 
-    def run(self, theta, y, m=10, M=10000, nmax=2, Dmax=0.1, kmax=5, sampler=None,
-            sim_annealing=False, **kw):
+    def run(self, theta=None, y=None, m0=20, m=10, M=10000, nmax=2, Dmax=0.1,
+            kmax=5, sampler=None, sim_annealing=False, **kw):
         """
         Core algorithm.
 
         Parameters
         ----------
-        theta : array
-            Input features (n_samples x n_features)
-        y : array
-            Input result of forward model (n_samples,)
+        theta : array (optional)
+            Input features (n_samples x n_features).  Defaults to None.
+        y : array (optional)
+            Input result of forward model (n_samples,). Defaults to None.
+        m0 : int (optional)
+            Initial number of design points.  Defaults to 20.
         m : int (optional)
             Number of new input features to find each iteration.  Defaults to 10.
         M : int (optional)
@@ -206,6 +210,28 @@ class ApproxPosterior(object):
         -------
         None
         """
+
+        # Choose m0 initial design points to initialize dataset if none are
+        # given
+        if theta is None:
+            theta = self.prior_sample(m0)
+
+        if y is None:
+            y = self._lnprob(theta)
+
+        # 0) Initial GP fit
+        # Guess the bandwidth following Kandasamy et al. (2015)'s suggestion
+        bandwidth = 5 * np.power(len(y),(-1.0/theta.shape[-1]))
+
+        # Create the GP conditioned on {theta_n, log(L_n / p_n)}
+        kernel = np.var(y) * kernels.ExpSquaredKernel(bandwidth, ndim=theta.shape[-1])
+        gp = george.GP(kernel)
+        gp.compute(theta)
+
+        # Optimize gp hyperparameters
+        ut.optimize_gp(gp, y)
+
+        self.gp = gp
 
         # Store theta, y
         self.__theta = theta
@@ -259,7 +285,6 @@ class ApproxPosterior(object):
 
             # GP updated: run sampler to obtain new posterior conditioned on (theta_n, log(L_t)*p_n)
             # Use emcee to obtain approximate posterior
-            """
             ndim = self.__theta.shape[-1]
             nwalk = 10 * ndim
             nsteps = M
@@ -273,15 +298,15 @@ class ApproxPosterior(object):
                 print("%d/%d" % (i+1, nsteps))
 
             print("emcee finished!")
-            #fig = corner.corner(sampler.flatchain, quantiles=[0.16, 0.5, 0.84],
-            #                    plot_contours=False, bins="auto");
-            fig, ax = plt.subplots(figsize=(9,8))
-            corner.hist2d(sampler.flatchain[:,0], sampler.flatchain[:,1], ax=ax,
-                                plot_contours=False, no_fill_contours=True,
-                                plot_density=True)
-            ax.scatter(self.__theta[:,0], self.__theta[:,1])
-            ax.set_xlim(-5,5)
-            ax.set_ylim(-5,5)
+            fig = corner.corner(sampler.flatchain, quantiles=[0.16, 0.5, 0.84],
+                                plot_contours=False);
+            #fig, ax = plt.subplots(figsize=(9,8))
+            #corner.hist2d(sampler.flatchain[:,0], sampler.flatchain[:,1], ax=ax,
+            #                    plot_contours=False, no_fill_contours=True,
+            #                    plot_density=True)
+            #ax.scatter(self.__theta[:,0], self.__theta[:,1])
+            #ax.set_xlim(-5,5)
+            #ax.set_ylim(-5,5)
             fig.savefig("posterior_%d.png" % n)
             #plt.show()
 
@@ -294,8 +319,8 @@ class ApproxPosterior(object):
             lowest_bic = 1.0e10
             best_gmm = None
             gmm = GaussianMixture()
-            for n in range(3,10):
-                gmm.set_params(**{"n_components" : n, "covariance_type" : "full"})
+            for n in range(2,10):
+                gmm.set_params(**{"n_components" : n, "covariance_type" : "diag"})
                 gmm.fit(sampler.flatchain[mask])
                 bic.append(gmm.bic(sampler.flatchain[mask]))
 
@@ -305,6 +330,9 @@ class ApproxPosterior(object):
 
             # Refit GMM with the lowest bic
             GMM = best_gmm
+            print(best_gmm)
             GMM.fit(sampler.flatchain[mask])
-            self.posterior = GMM.score_samples
-            """
+
+            # Update posterior estimate
+            self.__prev_posterior = self.posterior
+            self.posterior = GMM.score # NEED TO RETURN - of this

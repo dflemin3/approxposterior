@@ -246,5 +246,5 @@ def rosenbrock_lnprob(theta):
     if not np.isfinite(lp):
         return -np.inf
 
-    return lp + rosenbrock_lnlike(theta, mus=mus, icovs=icovs)
+    return lp + rosenbrock_lnlike(theta)
 #end function

@@ -81,9 +81,13 @@ def AGP_utility(theta, y, gp):
     else:
         raise RuntimeError("ERROR: Need to compute GP before using it!")
 
-    # XXX try except? catch negative var
+    try:
+        util = -(mu + 1.0/np.log(2.0*np.pi*np.e*var))
+    except ValueError:
+        print("Invalid util value.  Negative variance or inf mu?")
+        raise ValueError("util: %e. mu: %e. var: %e" % (util, mu, var))
 
-    return -(mu + 1.0/np.log(2.0*np.pi*np.e*var))
+    return util
 # end function
 
 
@@ -115,7 +119,14 @@ def BAPE_utility(theta, y, gp):
     else:
         raise RuntimeError("ERROR: Need to compute GP before using it!")
 
-    return -((2.0*mu + var) + logsubexp(var, 0.0))
+    try:
+        util = -((2.0*mu + var) + logsubexp(var, 0.0))
+    except ValueError:
+        print("Invalid util value.  Negative variance or inf mu?")
+        raise ValueError("util: %e. mu: %e. var: %e" % (util, mu, var))
+
+    return util
+
 # end function
 
 
@@ -160,7 +171,7 @@ def minimize_objective(fn, y, gp, sample_fn, prior_fn, sim_annealing=False,
         args=(y, gp)
 
         # XXX hardcoded nooooooo
-        bounds = ((-10,10), (-10,10))
+        bounds = ((-5,5), (-5,5))
         #bounds = None
 
         # Mimimze fn, see if prior allows solution
@@ -172,7 +183,7 @@ def minimize_objective(fn, y, gp, sample_fn, prior_fn, sim_annealing=False,
 
                 def mybounds(**kwargs):
                     x = kwargs["x_new"]
-                    res = bool(np.all(np.fabs(x) < 10))
+                    res = bool(np.all(np.fabs(x) < 5))
                     return res
 
                 tmp = basinhopping(fn, theta0, accept_test=mybounds, niter=500,
