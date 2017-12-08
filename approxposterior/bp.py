@@ -275,13 +275,13 @@ class ApproxPosterior(object):
             plt.close(fig)
 
             # Done adding new design points
-            fig, _ = plot_gp(self.gp, self.__theta, self.__y, return_type="var",
-                    save_plot="gp_var_iter_%d.png" % n, log=True)
-            plt.close(fig)
+            #fig, _ = plot_gp(self.gp, self.__theta, self.__y, return_type="var",
+            #        save_plot="gp_var_iter_%d.png" % n, log=True)
+            #plt.close(fig)
 
-            fig, _ = plot_gp(self.gp, self.__theta, self.__y, return_type="utility",
-                    save_plot="gp_util_iter_%d.png" % n, log=False)
-            plt.close(fig)
+            #fig, _ = plot_gp(self.gp, self.__theta, self.__y, return_type="utility",
+            #        save_plot="gp_util_iter_%d.png" % n, log=False)
+            #plt.close(fig)
 
             # GP updated: run sampler to obtain new posterior conditioned on (theta_n, log(L_t)*p_n)
             # Use emcee to obtain approximate posterior
@@ -319,8 +319,8 @@ class ApproxPosterior(object):
             lowest_bic = 1.0e10
             best_gmm = None
             gmm = GaussianMixture()
-            for n in range(2,10):
-                gmm.set_params(**{"n_components" : n, "covariance_type" : "diag"})
+            for n_components in range(2,10):
+                gmm.set_params(**{"n_components" : n_components, "covariance_type" : "full"})
                 gmm.fit(sampler.flatchain[mask])
                 bic.append(gmm.bic(sampler.flatchain[mask]))
 
@@ -333,6 +333,24 @@ class ApproxPosterior(object):
             print(best_gmm)
             GMM.fit(sampler.flatchain[mask])
 
+            # display predicted scores by the model as a contour plot
+            x = np.linspace(-5.0, 5.0)
+            y = np.linspace(-5.0, 5.0)
+            X, Y = np.meshgrid(x, y)
+            XX = np.array([X.ravel(), Y.ravel()]).T
+            Z = -GMM.score_samples(XX)
+            Z = Z.reshape(X.shape)
+
+            fig, ax = plt.subplots(figsize=(9,8))
+            CS = ax.contourf(X, Y, Z, norm=LogNorm(vmin=1.0e-1, vmax=1.0e2),
+                             levels=np.logspace(-1, 2, 10), lw=3)
+            cb = fig.colorbar(CS, shrink=0.8, extend='both')
+            cb.set_label("|GMM LogLike|", labelpad=20, rotation=270)
+            ax.scatter(self.__theta[:,0], self.__theta[:,1], color="r", zorder=20)
+            ax.set_xlim(-5,5)
+            ax.set_ylim(-5,5)
+            fig.savefig("gmm_ll_%d.png" % n)
+
             # Update posterior estimate
             self.__prev_posterior = self.posterior
-            self.posterior = GMM.score # NEED TO RETURN - of this
+            self.posterior = GMM.score 
