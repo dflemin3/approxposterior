@@ -16,3 +16,4 @@ __copyright__ = "Copyright 2017 David P. Fleming"
 from .bp import *
 from .utility import *
 from .likelihood import *
+from .gp_utils import *

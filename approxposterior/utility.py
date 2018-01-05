@@ -13,11 +13,11 @@ from __future__ import (print_function, division, absolute_import,
                         unicode_literals)
 
 # Tell module what it's allowed to import
-__all__ = ["logsubexp","AGP_utility","BAPE_utility","minimize_objective",
-           "optimize_gp"]
+__all__ = ["logsubexp","AGP_utility","BAPE_utility","minimize_objective"]
 
 from . import bp
 import numpy as np
+import george as gp
 from scipy.optimize import minimize, basinhopping
 
 
@@ -205,42 +205,4 @@ def minimize_objective(fn, y, gp, sample_fn, prior_fn, sim_annealing=False,
     # end while
 
     return np.array(theta).reshape(1,-1)
-# end function
-
-
-# Define the objective function (negative log-likelihood in this case).
-def _nll(p, gp, y):
-    """
-    DOCS
-    """
-    gp.set_parameter_vector(p)
-    ll = gp.log_likelihood(y, quiet=True)
-    return -ll if np.isfinite(ll) else 1e25
-# end function
-
-
-# And the gradient of the objective function.
-def _grad_nll(p, gp, y):
-    """
-    DOCS
-    """
-    gp.set_parameter_vector(p)
-    return -gp.grad_log_likelihood(y, quiet=True)
-# end function
-
-
-def optimize_gp(gp, y):
-    """
-    DOCS
-
-    Optimize hyperparameters of pre-computed gp
-    """
-
-    # Run the optimization routine.
-    p0 = gp.get_parameter_vector()
-    results = minimize(_nll, p0, jac=_grad_nll, args=(gp, y), method="bfgs")
-
-    # Update the kernel and print the final log-likelihood.
-    gp.set_parameter_vector(results.x)
-    gp.recompute()
 # end function

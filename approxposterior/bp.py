@@ -20,6 +20,7 @@ __all__ = ["ApproxPosterior"]
 
 from . import utility as ut
 from . import likelihood as lh
+from . import gp_utils
 import numpy as np
 import george
 from george import kernels
@@ -144,6 +145,10 @@ class ApproxPosterior(object):
         self.posterior = self._lnprior
         self.__prev_posterior = self._lnprior
 
+        # Holders to save GMM fits to posteriors, raw chains
+        self.__GMM = list()
+        self.__samplers = list()
+
     # end function
 
 
@@ -158,13 +163,11 @@ class ApproxPosterior(object):
         if np.isinf(theta_test).any() or np.isnan(theta_test).any():
             return -np.inf
 
-        #mu = self.gp.sample_conditional(self.__y, theta_test) + self.posterior(theta_test)
         # Mean of predictive distribution conditioned on y (GP posterior estimate)
-        mu = self.gp.predict(self.__y, theta_test, return_cov=False, return_var=False) + self.posterior(theta_test)
+        mu = self.gp.predict(self.__y, theta_test, return_cov=False, return_var=False)
 
         # Always add flat prior to keep it in bounds
         mu += self._lnprior(theta_test)
-
 
         # Catch NaNs/Infs because they can (rarely) happen
         if not np.isfinite(mu):
@@ -219,19 +222,8 @@ class ApproxPosterior(object):
         if y is None:
             y = self._lnprob(theta)
 
-        # 0) Initial GP fit
-        # Guess the bandwidth following Kandasamy et al. (2015)'s suggestion
-        bandwidth = 5 * np.power(len(y),(-1.0/theta.shape[-1]))
-
-        # Create the GP conditioned on {theta_n, log(L_n / p_n)}
-        kernel = np.var(y) * kernels.ExpSquaredKernel(bandwidth, ndim=theta.shape[-1])
-        gp = george.GP(kernel)
-        gp.compute(theta)
-
-        # Optimize gp hyperparameters
-        ut.optimize_gp(gp, y)
-
-        self.gp = gp
+        # Setup gaussian process XXX just using default options now
+        self.gp = gp_utils.setup_gp(theta, y, which_kernel="ExpSquaredKernel")
 
         # Store theta, y
         self.__theta = theta
@@ -255,7 +247,11 @@ class ApproxPosterior(object):
                 self.__theta = np.concatenate([self.__theta, theta_t])
                 self.__y = np.concatenate([self.__y, y_t])
 
-                # 3) Refit GP
+                # 3) Init new GP with new points, optimize
+                self.gp = gp_utils.setup_gp(self.__theta, self.__y,
+                                            which_kernel="ExpSquaredKernel")
+
+                """
                 # Guess the bandwidth following Kandasamy et al. (2015)'s suggestion
                 bandwidth = 5 * np.power(len(self.__y),(-1.0/self.__theta.shape[-1]))
 
@@ -268,6 +264,7 @@ class ApproxPosterior(object):
 
                 # Optimize gp hyperparameters
                 ut.optimize_gp(self.gp, self.__y)
+                """
 
             # Done adding new design points
             fig, _ = plot_gp(self.gp, self.__theta, self.__y, return_type="mean",
@@ -298,16 +295,15 @@ class ApproxPosterior(object):
                 print("%d/%d" % (i+1, nsteps))
 
             print("emcee finished!")
+
+            # Save current sampler object
+            self.__samplers.append(sampler)
+
             fig = corner.corner(sampler.flatchain, quantiles=[0.16, 0.5, 0.84],
                                 plot_contours=False);
-            #fig, ax = plt.subplots(figsize=(9,8))
-            #corner.hist2d(sampler.flatchain[:,0], sampler.flatchain[:,1], ax=ax,
-            #                    plot_contours=False, no_fill_contours=True,
-            #                    plot_density=True)
-            #ax.scatter(self.__theta[:,0], self.__theta[:,1])
-            #ax.set_xlim(-5,5)
-            #ax.set_ylim(-5,5)
+
             fig.savefig("posterior_%d.png" % n)
+            plt.clf()
             #plt.show()
 
             # Make new posterior function via a Gaussian Mixure model approximation
@@ -315,6 +311,7 @@ class ApproxPosterior(object):
             # Fit some GMMs!
             # sklean hates infs, Nans, big numbers
             mask = (~np.isnan(sampler.flatchain).any(axis=1)) & (~np.isinf(sampler.flatchain).any(axis=1))
+
             bic = []
             lowest_bic = 1.0e10
             best_gmm = None
@@ -332,6 +329,10 @@ class ApproxPosterior(object):
             GMM = best_gmm
             print(best_gmm)
             GMM.fit(sampler.flatchain[mask])
+            #GMM = GaussianMixture(3)
+            #GMM.fit(sampler.flatchain[1250:,:])
+
+            # Converged?
 
             # display predicted scores by the model as a contour plot
             x = np.linspace(-5.0, 5.0)
@@ -351,6 +352,10 @@ class ApproxPosterior(object):
             ax.set_ylim(-5,5)
             fig.savefig("gmm_ll_%d.png" % n)
 
+            # Save current GMM model
+            self.__GMM.append(GMM)
+
+            # XXX: updating posterior estimate screws it all up
             # Update posterior estimate
-            self.__prev_posterior = self.posterior
-            self.posterior = GMM.score 
+            #self.__prev_posterior = self.posterior
+            #self.posterior = GMM.score_samples
