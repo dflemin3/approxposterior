@@ -19,6 +19,7 @@ from . import bp
 import numpy as np
 import george
 from sklearn.model_selection import train_test_split
+from sklearn.model_selection import ShuffleSplit, ParameterGrid
 from scipy.optimize import minimize, basinhopping
 
 # Define the objective function (negative log-likelihood in this case).
@@ -72,7 +73,9 @@ def _grad_nll(p, gp, y):
 # end function
 
 
-def optimize_gp(gp, y, cv=None, seed=None, which_kernel="ExpSquaredKernel"):
+def optimize_gp(gp, theta, y, cv=None, seed=None,
+                which_kernel="ExpSquaredKernel", hyperparameters=None,
+                test_size=0.25):
     """
     Optimize hyperparameters of an arbitrary george Gaussian Process kenerl
     using either a straight-up maximizing the log-likelihood or k-fold cv in which
@@ -81,6 +84,7 @@ def optimize_gp(gp, y, cv=None, seed=None, which_kernel="ExpSquaredKernel"):
     Parameters
     ----------
     gp : george.GP
+    theta : array
     y : array
         data to condition GP on
     cv : int (optional)
@@ -90,6 +94,15 @@ def optimize_gp(gp, y, cv=None, seed=None, which_kernel="ExpSquaredKernel"):
         numpy RNG seed.  Defaults to None.
     which_kernel : str (optional)
         Name of the george kernel you want to use.  Defaults to ExpSquaredKernel
+    hyperparameters : dict (optional)
+        Grid of hyperparameters ranges to search over for cross-validation.
+        Defaults to None.  If supplied, it should look something like this:
+        {'kernel:metric:log_M_0_0': np.linspace(0.01*gp.get_parameter_vector()[0],
+                                                100.0*gp.get_parameter_vector()[0],
+                                                10)}
+    test_size : float (optional)
+        Fraction of y to use as holdout set for cross-validation.  Defaults to
+        0.25.  Must be in the range (0,1).
 
     Returns
     -------
@@ -109,51 +122,79 @@ def optimize_gp(gp, y, cv=None, seed=None, which_kernel="ExpSquaredKernel"):
 
     # Optimize GP via cv=k fold cross-validation
     else:
-        # Make a bunch of folds
+
+        # Why CV if no grid given?
+        if hyperparameters is None:
+            err_msg = "ERROR: Trying CV but no dict of hyperparameters range given!"
+            raise RuntimeError(err_msg)
+
+        # Make a nice list of parameters
+        grid = list(ParameterGrid(hyperparameters))
+
+        # Do cv fold cross-validation
         splitter = ShuffleSplit(n_splits=cv, test_size=0.25, random_state=seed)
 
-        ii = 0 # Counter
-        nll = [] # Holds negative loglikelihoods, what we want to minimize
-        # Loop over said folds
-        for train_split, test_split in splitter.split(y):
+        nll = []
+        # Loop over each param combination and do cv-fold cross-val each time
+        for ii in range(len(grid)):
 
-            # Set up temp GP with the right dimensions conditioned on this fold
-            opt_gp = gp_utils.setup_gp(theta[test_split], y[test_split],
-                                       which_kernel=which_kernel)
+            iter_nll = 0.0
+            for train_split, test_split in splitter.split(y):
 
-            # Set GP parameters
-            for key in grid_list[ii].keys():
-                opt_gp.set_parameter(key, grid_list[ii][key])
+                # Init up GP with training data
+                opt_gp = gp_utils.setup_gp(theta[train_split], y[train_split],
+                                           which_kernel="ExpSquaredKernel")
 
-            # Compute NLL for this parameter conditioned on test data
-            ll = opt_gp.log_likelihood(y[test_split], quiet=True)
-            if np.isfinite(ll):
-                nll.append(-ll)
-            else:
-                nll.append(1e25)
+                # Set GP parameters based on current iteration
+                for key in grid[ii].keys():
+                    opt_gp.set_parameter(key, grid[ii][key])
+                opt_gp.recompute(theta[train_split])
 
-            ii += 1
+                # Compute NLL
+                ll = opt_gp.log_likelihood(y[train_split], quiet=True)
+                if np.isfinite(ll):
+                    iter_nll += -ll
+                # This could introduce numerical bugs... XXX
+                else:
+                    iter_nll += 1e25
+                    # End of cv iteration: append mean nll
+        nll.append(iter_nll/cv)
+        # End of all param iterations
 
+        # Find parameter combination with minimum nll
         min_nll = np.argmin(nll)
-        print(min_nll, grid_list[min_nll], nll[min_nll])
 
         # Set GP parameters
         for key in grid_list[min_nll].keys():
-            opt_gp.set_parameter(key, grid_list[min_nll][key])
+            gp.set_parameter(key, grid_list[min_nll][key])
+
+        # Recompute with the optimized hyperparameters!
+        gp.recompute(theta)
 
     return gp
 # end function
 
 
-def setup_gp(theta, y, which_kernel="ExpSquaredKernel", cv=None, seed=None):
+def setup_gp(theta, y, which_kernel="ExpSquaredKernel", seed=None):
+    """
+    Initialize a george GP object
+
+    Parameters
+    ----------
+    theta : array
+    y : array
+        data to condition GP on
+    which_kernel : str (optional)
+        Name of the george kernel you want to use.  Defaults to ExpSquaredKernel.
+        Options: ExpSquaredKernel
+    seed : int (optional)
+        numpy RNG seed.  Defaults to None.
+
+    Returns
+    -------
+    gp : george.GP
     """
 
-    DOCS
-
-    init GP object and stuff
-    """
-
-    #Initial GP fit
     # Guess the bandwidth following Kandasamy et al. (2015)'s suggestion
     bandwidth = 5 * np.power(len(y),(-1.0/theta.shape[-1]))
 
@@ -163,12 +204,9 @@ def setup_gp(theta, y, which_kernel="ExpSquaredKernel", cv=None, seed=None):
     else:
         raise NotImplementedError("Error: Available kernels: ExpSquaredKernel")
 
-    # Create the GP conditioned on {theta_n, log(L_n / p_n)}
+    # Create the GP conditioned on theta
     gp = george.GP(kernel=kernel)
     gp.compute(theta)
-
-    # Optimize gp hyperparameters
-    optimize_gp(gp, y, cv=cv, seed=seed, which_kernel=which_kernel)
 
     return gp
 # end function

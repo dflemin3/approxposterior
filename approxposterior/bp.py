@@ -178,7 +178,7 @@ class ApproxPosterior(object):
 
 
     def run(self, theta=None, y=None, m0=20, m=10, M=10000, nmax=2, Dmax=0.1,
-            kmax=5, sampler=None, sim_annealing=False, **kw):
+            kmax=5, sampler=None, sim_annealing=False, cv=None, seed=None, **kw):
         """
         Core algorithm.
 
@@ -208,6 +208,11 @@ class ApproxPosterior(object):
         sim_annealing : bool (optional)
             Whether or not to minimize utility function using simulated annealing.
             Defaults to False.
+        cv : int (optional)
+            If not None, cv is the number (k) of k-folds CV to use.  Defaults to
+            None (no CV)
+        seed : int (optional)
+            RNG seed.  Defaults to None.
 
         Returns
         -------
@@ -222,8 +227,10 @@ class ApproxPosterior(object):
         if y is None:
             y = self._lnprob(theta)
 
-        # Setup gaussian process XXX just using default options now
+        # Setup, optimize gaussian process XXX just using default options now
         self.gp = gp_utils.setup_gp(theta, y, which_kernel="ExpSquaredKernel")
+        self.gp = gp_utils.optimize_gp(self.gp, theta, y, cv=cv, seed=seed,
+                                       which_kernel="ExpSquaredKernel")
 
         # Store theta, y
         self.__theta = theta
@@ -250,6 +257,9 @@ class ApproxPosterior(object):
                 # 3) Init new GP with new points, optimize
                 self.gp = gp_utils.setup_gp(self.__theta, self.__y,
                                             which_kernel="ExpSquaredKernel")
+                self.gp = gp_utils.optimize_gp(self.gp, self.__theta, self.__y,
+                                               cv=cv, seed=seed,
+                                               which_kernel="ExpSquaredKernel")
 
                 """
                 # Guess the bandwidth following Kandasamy et al. (2015)'s suggestion
