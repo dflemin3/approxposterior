@@ -31,7 +31,6 @@ from scipy.optimize import minimize, basinhopping
 def logsubexp(x1, x2):
     """
     More numerically stable way to take the log of exp(x1) - exp(x2)
-    via:
 
     logsubexp(x1, x2) -> log(exp(x1) - exp(x2))
 
@@ -72,8 +71,6 @@ def AGP_utility(theta, y, gp):
     u : float
         utility of theta under the gp
     """
-
-    # XXX pass mean, var instead of gp
 
     # Only works if the GP object has been computed, otherwise you messed up
     if gp.computed:
@@ -126,12 +123,11 @@ def BAPE_utility(theta, y, gp):
         raise ValueError("util: %e. mu: %e. var: %e" % (util, mu, var))
 
     return util
-
 # end function
 
 
 def minimize_objective(fn, y, gp, sample_fn, prior_fn, sim_annealing=False,
-                       **kw):
+                       bounds=None, **kw):
     """
     Find point that minimizes fn for a gaussian process gp conditioned on y,
     the data.
@@ -154,6 +150,9 @@ def minimize_objective(fn, y, gp, sample_fn, prior_fn, sim_annealing=False,
     kw : dict (optional)
         Any additional keyword arguments scipy.optimize.minimize could use,
         e.g., method.
+    bounds : tuple/iterable (optional)
+        Bounds for minimization scheme.  See scipy.optimize.minimize details
+        for more information.  Defaults to None.
 
     Returns
     -------
@@ -170,11 +169,8 @@ def minimize_objective(fn, y, gp, sample_fn, prior_fn, sim_annealing=False,
 
         args=(y, gp)
 
-        # XXX hardcoded nooooooo
-        bounds = ((-5,5), (-5,5))
-        #bounds = None
-
         # Mimimze fn, see if prior allows solution
+        # XXX Not sure if this works
         try:
             if sim_annealing:
                 minimizer_kwargs = {"method":"L-BFGS-B", "args" : args,
@@ -183,12 +179,13 @@ def minimize_objective(fn, y, gp, sample_fn, prior_fn, sim_annealing=False,
 
                 def mybounds(**kwargs):
                     x = kwargs["x_new"]
-                    res = bool(np.all(np.fabs(x) < 5))
+                    res = bool(np.all(np.fabs(x) < 5)) # XXX HAAAACCCKKK
                     return res
 
                 tmp = basinhopping(fn, theta0, accept_test=mybounds, niter=500,
                              stepsize=0.01, minimizer_kwargs=minimizer_kwargs,
                              interval=10)["x"]
+            # Use the good old-fashioned scipy minimize routine
             else:
                 tmp = minimize(fn, theta0, args=args, bounds=bounds,
                                method="l-bfgs-b", options={"ftol" : 1.0e-3},

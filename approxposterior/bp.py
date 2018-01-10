@@ -178,7 +178,8 @@ class ApproxPosterior(object):
 
 
     def run(self, theta=None, y=None, m0=20, m=10, M=10000, nmax=2, Dmax=0.1,
-            kmax=5, sampler=None, sim_annealing=False, cv=None, seed=None, **kw):
+            kmax=5, sampler=None, sim_annealing=False, cv=None, seed=None,
+            which_kernel="ExpSquaredKernel", **kw):
         """
         Core algorithm.
 
@@ -213,6 +214,9 @@ class ApproxPosterior(object):
             None (no CV)
         seed : int (optional)
             RNG seed.  Defaults to None.
+        bounds : tuple/iterable (optional)
+            Bounds for minimization scheme.  See scipy.optimize.minimize details
+            for more information.  Defaults to None.
 
         Returns
         -------
@@ -223,14 +227,18 @@ class ApproxPosterior(object):
         # given
         if theta is None:
             theta = self.prior_sample(m0)
+        else:
+            theta = np.array(theta)
 
         if y is None:
             y = self._lnprob(theta)
+        else:
+            y = np.array(y)
 
         # Setup, optimize gaussian process XXX just using default options now
-        self.gp = gp_utils.setup_gp(theta, y, which_kernel="ExpSquaredKernel")
+        self.gp = gp_utils.setup_gp(theta, y, which_kernel=which_kernel)
         self.gp = gp_utils.optimize_gp(self.gp, theta, y, cv=cv, seed=seed,
-                                       which_kernel="ExpSquaredKernel")
+                                       which_kernel=which_kernel)
 
         # Store theta, y
         self.__theta = theta
@@ -245,7 +253,7 @@ class ApproxPosterior(object):
                                                 sample_fn=self.prior_sample,
                                                 prior_fn=self._lnprior,
                                                 sim_annealing=sim_annealing,
-                                                **kw)
+                                                bounds=bounds, **kw)
 
                 # 2) Query oracle at new points, theta_t
                 y_t = self._lnlike(theta_t) + self.posterior(theta_t)
@@ -256,39 +264,16 @@ class ApproxPosterior(object):
 
                 # 3) Init new GP with new points, optimize
                 self.gp = gp_utils.setup_gp(self.__theta, self.__y,
-                                            which_kernel="ExpSquaredKernel")
+                                            which_kernel=which_kernel)
                 self.gp = gp_utils.optimize_gp(self.gp, self.__theta, self.__y,
                                                cv=cv, seed=seed,
-                                               which_kernel="ExpSquaredKernel")
+                                               which_kernel=which_kernel)
 
-            """
-            # Guess the bandwidth following Kandasamy et al. (2015)'s suggestion
-            bandwidth = 5 * np.power(len(self.__y),(-1.0/self.__theta.shape[-1]))
 
-            # XXX use cross-validation to select kernel parameters?
-
-            # Create the GP conditioned on {theta_n, log(L_n * p_n)}
-            kernel = kernels.ExpSquaredKernel(bandwidth, ndim=self.__theta.shape[-1])
-            self.gp = george.GP(kernel)
-            self.gp.compute(self.__theta)
-
-            # Optimize gp hyperparameters
-            ut.optimize_gp(self.gp, self.__y)
-            """
-
-            # Done adding new design points
+            # XXX debug diagnostics Done adding new design points
             fig, _ = plot_gp(self.gp, self.__theta, self.__y, return_type="mean",
                     save_plot="gp_mu_iter_%d.png" % n, log=True)
             plt.close(fig)
-
-            # Done adding new design points
-            #fig, _ = plot_gp(self.gp, self.__theta, self.__y, return_type="var",
-            #        save_plot="gp_var_iter_%d.png" % n, log=True)
-            #plt.close(fig)
-
-            #fig, _ = plot_gp(self.gp, self.__theta, self.__y, return_type="utility",
-            #        save_plot="gp_util_iter_%d.png" % n, log=False)
-            #plt.close(fig)
 
             # GP updated: run sampler to obtain new posterior conditioned on (theta_n, log(L_t)*p_n)
             # Use emcee to obtain approximate posterior
@@ -298,8 +283,9 @@ class ApproxPosterior(object):
 
             # Initial guess (random over interval)
             p0 = [self.prior_sample(1) for j in range(nwalk)]
-            #p0 = [np.random.rand(ndim) for j in range(nwalk)]
             params = ["x%d" % jj for jj in range(ndim)]
+
+            # Init emcee sampler
             sampler = emcee.EnsembleSampler(nwalk, ndim, self._sample)
             for i, result in enumerate(sampler.sample(p0, iterations=nsteps)):
                 print("%d/%d" % (i+1, nsteps))
@@ -316,18 +302,20 @@ class ApproxPosterior(object):
             plt.clf()
             #plt.show()
 
-            # Make new posterior function via a Gaussian Mixure model approximation
-            # to the approximate posterior. Seems legit
+            # Make new posterior function using a Gaussian Mixure model to
+            # approximate the posterior.
             # Fit some GMMs!
-            # sklean hates infs, Nans, big numbers
+            # sklean hates infs, Nans, big numbers, but I probs messed up XXX
             mask = (~np.isnan(sampler.flatchain).any(axis=1)) & (~np.isinf(sampler.flatchain).any(axis=1))
 
+            # Select optimal number of components via minimizing BIC
             bic = []
             lowest_bic = 1.0e10
             best_gmm = None
             gmm = GaussianMixture()
             for n_components in range(2,5):
-                gmm.set_params(**{"n_components" : n_components, "covariance_type" : "full"})
+                gmm.set_params(**{"n_components" : n_components,
+                               "covariance_type" : "full"})
                 gmm.fit(sampler.flatchain[mask])
                 bic.append(gmm.bic(sampler.flatchain[mask]))
 
@@ -340,8 +328,6 @@ class ApproxPosterior(object):
             GMM.fit(sampler.flatchain[mask])
             #GMM = GaussianMixture(3)
             #GMM.fit(sampler.flatchain[1250:,:])
-
-            # Converged?
 
             # display predicted scores by the model as a contour plot
             x = np.linspace(-5.0, 5.0)
@@ -364,7 +350,7 @@ class ApproxPosterior(object):
             # Save current GMM model
             self.__GMM.append(GMM)
 
-            # XXX: updating posterior estimate screws it all up
+            # XXX: updating posterior estimate screws it all up.  probs need more emcee iters, but I'm impatient
             # Update posterior estimate
             #self.__prev_posterior = self.posterior
             #self.posterior = GMM.score_samples

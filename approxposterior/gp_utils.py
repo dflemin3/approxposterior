@@ -81,6 +81,12 @@ def optimize_gp(gp, theta, y, cv=None, seed=None,
     using either a straight-up maximizing the log-likelihood or k-fold cv in which
     the log-likelihood is maximized for each fold and the best one is chosen.
 
+    Note that the cross-validation used here is sort of cross valiation.
+    Instead of training on training set and evaluating the model on the test
+    set, we do both on the training set.  That is a cardinal sin of ML, but we
+    do that because matrix shape sizes and evaluating the log-likelihood of the
+    data requires it.
+
     Parameters
     ----------
     gp : george.GP
@@ -198,11 +204,12 @@ def setup_gp(theta, y, which_kernel="ExpSquaredKernel", seed=None):
     """
 
     # Guess the bandwidth following Kandasamy et al. (2015)'s suggestion
-    bandwidth = 5 * np.power(len(y),(-1.0/theta.shape[-1]))
+    bandwidth = 5 * np.power(len(y),(-1.0/np.array(theta).shape[-1]))
 
     # Which kernel?
     if str(which_kernel).lower() == "expsquaredkernel":
-        kernel = george.kernels.ExpSquaredKernel(bandwidth, ndim=theta.shape[-1])
+        kernel = george.kernels.ExpSquaredKernel(bandwidth,
+                                                 ndim=np.array(theta).shape[-1])
     else:
         raise NotImplementedError("Error: Available kernels: ExpSquaredKernel")
 

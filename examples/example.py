@@ -22,16 +22,16 @@ nmax = 10 # Maximum number of iterations
 M = int(5e3) # Number of MCMC steps to estimate approximate posterior
 Dmax = 0.1
 kmax = 5
-cv = 10
+cv = None #10
 kw = {}
-
+bounds = ((-5,5), (-5,5))
 
 # Init object
 bp = bp.ApproxPosterior(lnprior=lh.rosenbrock_lnprior,
                         lnlike=lh.rosenbrock_lnlike,
                         lnprob = lh.rosenbrock_lnprob,
                         prior_sample=lh.rosenbrock_sample,
-                        algorithm="bape")
+                        algorithm="bape", bounds=bounds)
 
 # Run!
 bp.run(m0=m0, m=m, M=M, nmax=nmax, Dmax=Dmax, kmax=kmax, cv=cv,
