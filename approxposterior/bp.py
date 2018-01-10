@@ -261,20 +261,20 @@ class ApproxPosterior(object):
                                                cv=cv, seed=seed,
                                                which_kernel="ExpSquaredKernel")
 
-                """
-                # Guess the bandwidth following Kandasamy et al. (2015)'s suggestion
-                bandwidth = 5 * np.power(len(self.__y),(-1.0/self.__theta.shape[-1]))
+            """
+            # Guess the bandwidth following Kandasamy et al. (2015)'s suggestion
+            bandwidth = 5 * np.power(len(self.__y),(-1.0/self.__theta.shape[-1]))
 
-                # XXX use cross-validation to select kernel parameters?
+            # XXX use cross-validation to select kernel parameters?
 
-                # Create the GP conditioned on {theta_n, log(L_n * p_n)}
-                kernel = kernels.ExpSquaredKernel(bandwidth, ndim=self.__theta.shape[-1])
-                self.gp = george.GP(kernel)
-                self.gp.compute(self.__theta)
+            # Create the GP conditioned on {theta_n, log(L_n * p_n)}
+            kernel = kernels.ExpSquaredKernel(bandwidth, ndim=self.__theta.shape[-1])
+            self.gp = george.GP(kernel)
+            self.gp.compute(self.__theta)
 
-                # Optimize gp hyperparameters
-                ut.optimize_gp(self.gp, self.__y)
-                """
+            # Optimize gp hyperparameters
+            ut.optimize_gp(self.gp, self.__y)
+            """
 
             # Done adding new design points
             fig, _ = plot_gp(self.gp, self.__theta, self.__y, return_type="mean",
@@ -326,7 +326,7 @@ class ApproxPosterior(object):
             lowest_bic = 1.0e10
             best_gmm = None
             gmm = GaussianMixture()
-            for n_components in range(2,10):
+            for n_components in range(2,5):
                 gmm.set_params(**{"n_components" : n_components, "covariance_type" : "full"})
                 gmm.fit(sampler.flatchain[mask])
                 bic.append(gmm.bic(sampler.flatchain[mask]))
@@ -337,7 +337,6 @@ class ApproxPosterior(object):
 
             # Refit GMM with the lowest bic
             GMM = best_gmm
-            print(best_gmm)
             GMM.fit(sampler.flatchain[mask])
             #GMM = GaussianMixture(3)
             #GMM.fit(sampler.flatchain[1250:,:])

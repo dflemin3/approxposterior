@@ -123,6 +123,10 @@ def optimize_gp(gp, theta, y, cv=None, seed=None,
     # Optimize GP via cv=k fold cross-validation
     else:
 
+        # XXX hack hack hack
+        hyperparameters = {'kernel:metric:log_M_0_0': np.linspace(0.01, 100.0,
+                           50)}
+
         # Why CV if no grid given?
         if hyperparameters is None:
             err_msg = "ERROR: Trying CV but no dict of hyperparameters range given!"
@@ -135,15 +139,15 @@ def optimize_gp(gp, theta, y, cv=None, seed=None,
         splitter = ShuffleSplit(n_splits=cv, test_size=0.25, random_state=seed)
 
         nll = []
-        # Loop over each param combination and do cv-fold cross-val each time
+        # Loop over each param combination
         for ii in range(len(grid)):
 
             iter_nll = 0.0
             for train_split, test_split in splitter.split(y):
 
-                # Init up GP with training data
-                opt_gp = gp_utils.setup_gp(theta[train_split], y[train_split],
-                                           which_kernel="ExpSquaredKernel")
+                # Init up GP with the right dimensions
+                opt_gp = setup_gp(theta[train_split], y[train_split],
+                                  which_kernel="ExpSquaredKernel")
 
                 # Set GP parameters based on current iteration
                 for key in grid[ii].keys():
@@ -157,16 +161,14 @@ def optimize_gp(gp, theta, y, cv=None, seed=None,
                 # This could introduce numerical bugs... XXX
                 else:
                     iter_nll += 1e25
-                    # End of cv iteration: append mean nll
-        nll.append(iter_nll/cv)
-        # End of all param iterations
+            # End of iteration: append mean nll
+            nll.append(iter_nll/cv)
 
-        # Find parameter combination with minimum nll
         min_nll = np.argmin(nll)
 
         # Set GP parameters
-        for key in grid_list[min_nll].keys():
-            gp.set_parameter(key, grid_list[min_nll][key])
+        for key in grid[min_nll].keys():
+            gp.set_parameter(key, grid[min_nll][key])
 
         # Recompute with the optimized hyperparameters!
         gp.recompute(theta)
