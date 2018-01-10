@@ -3,12 +3,8 @@
 Bayesian Posterior estimation routines written in pure python leveraging
 Dan Forman-Mackey's george Gaussian Process implementation and emcee.
 
-August 2017
-
-@author: David P. Fleming [University of Washington, Seattle]
+@author: David P. Fleming [University of Washington, Seattle], 2017
 @email: dflemin3 (at) uw (dot) edu
-
-A meh implementation of Kandasamy et al. (2015)'s BAPE model.
 
 """
 
@@ -38,7 +34,7 @@ from matplotlib.colors import LogNorm
 def plot_gp(gp, theta, y, xmin=-5, xmax=5, ymin=-5, ymax=5, n=100,
             return_type="mean", save_plot=None, log=False, **kw):
     """
-    DOCS
+    debug function that shouldn't be here
     """
 
     xx = np.linspace(xmin, xmax, n)
@@ -97,8 +93,8 @@ def plot_gp(gp, theta, y, xmin=-5, xmax=5, ymin=-5, ymax=5, n=100,
 class ApproxPosterior(object):
     """
     Class to approximate the posterior distributions using either the
-    Bayesian Active Posterior Estimation (BAPE) by Kandasamy et al. 2015 or the
-    AGP (Adaptive Gaussian Process) by XXX et al.
+    Bayesian Active Posterior Estimation (BAPE) by Kandasamy et al. (2015) or
+    the AGP (Adaptive Gaussian Process) by Wang & Li (2017).
     """
 
     def __init__(self, lnprior, lnlike, lnprob, prior_sample, algorithm="BAPE"):
@@ -118,7 +114,8 @@ class ApproxPosterior(object):
         prior_sample : function
             Method to randomly sample points over region allowed by prior
         algorithm : str (optional)
-            Which utility function to use.  Defaults to BAPE.
+            Which utility function to use.  Defaults to BAPE.  Options are BAPE
+            or AGP.  Case doesn't matter.
 
         Returns
         -------
@@ -131,15 +128,14 @@ class ApproxPosterior(object):
         self.prior_sample = prior_sample
         self.algorithm = algorithm
 
-        # Store GPs, samplers XXX
-
         # Assign utility function
         if self.algorithm.lower() == "bape":
             self.utility = ut.BAPE_utility
         elif self.algorithm.lower() == "agp":
             self.utility = ut.AGP_utility
         else:
-            raise IOError("Invalid algorithm. Valid options: BAPE, AGP.")
+            err_msg = "ERROR: Invalid algorithm. Valid options: BAPE, AGP."
+            raise IOError(err_msg)
 
         # Initial approximate posteriors are the prior
         self.posterior = self._lnprior
@@ -154,8 +150,18 @@ class ApproxPosterior(object):
 
     def _sample(self, theta):
         """
-        Draw a sample from the approximate posterior conditional distibution
-        DOCS
+        Compute the approximate posterior conditional distibution at a given
+        point, theta.
+
+        Parameters
+        ----------
+        theta : array-like
+            Test point to evaluate GP posterior conditional distribution
+
+        Returns
+        -------
+        mu : float
+            Mean of predicted GP conditional posterior estimate at theta
         """
         theta_test = np.array(theta).reshape(1,-1)
 
@@ -326,8 +332,6 @@ class ApproxPosterior(object):
             # Refit GMM with the lowest bic
             GMM = best_gmm
             GMM.fit(sampler.flatchain[mask])
-            #GMM = GaussianMixture(3)
-            #GMM.fit(sampler.flatchain[1250:,:])
 
             # display predicted scores by the model as a contour plot
             x = np.linspace(-5.0, 5.0)

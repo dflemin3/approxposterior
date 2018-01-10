@@ -1,8 +1,8 @@
 """
 
-Test the utility functions and minimization schemes.
+Test the utility functions and gp initialize scheme.
 
-@author: David P. Fleming, University of Washington, 2018
+@author: David P. Fleming [University of Washington, Seattle], 2018
 @email: dflemin3 (at) uw (dot) edu
 
 """

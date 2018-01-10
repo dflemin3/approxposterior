@@ -2,7 +2,7 @@
 
 Example script
 
-@author: David P. Fleming [University of Washington, Seattle]
+@author: David P. Fleming [University of Washington, Seattle], 2018
 @email: dflemin3 (at) uw (dot) edu
 
 """
