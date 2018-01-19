@@ -17,3 +17,4 @@ from .bp import *
 from .utility import *
 from .likelihood import *
 from .gp_utils import *
+from .mcmc_utils import *

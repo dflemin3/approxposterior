@@ -10,7 +10,7 @@ from __future__ import (print_function, division, absolute_import,
                         unicode_literals)
 
 # Tell module what it's allowed to import
-__all__ = ["setup_gp","optimize_gp"]
+__all__ = ["autocorr","estimate_burnin"]
 
 import numpy as np
 import emcee
@@ -19,7 +19,8 @@ from scipy.interpolate import UnivariateSpline
 
 def autocorr(x):
     """
-    Compute the autocorrelation function using the following resources:
+    Compute the autocorrelation function
+
     http://stackoverflow.com/q/14297012/190597
     http://en.wikipedia.org/wiki/Autocorrelation#Estimation
 
@@ -44,9 +45,21 @@ def autocorr(x):
 def estimate_burnin(sampler, nwalk, nsteps, ndim):
     """
     Given an MCMC chain, estimate the burn-in time (credit: Jacob Lustig-Jaeger)
+    This function computes the maximum autocorrelation length of all the walkers
+    that clearly haven't strayed too far from the converged answer.  If your
+    chains have converged, this function provides a conservative estimate of the
+    burn-in.  As with all things, MCMC, your mileage will vary.  Currently this
+    function just supports emcee.
 
     Parameters
     ----------
+    sampler : emcee.EnsembleSampler
+    nwalk : int
+        Number of walkers
+    nsteps : int
+        Number of MCMC steps (iterations)
+    ndim : int
+        Data dimensionality (number of parameters)
 
     Returns
     -------

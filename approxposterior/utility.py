@@ -13,7 +13,8 @@ from __future__ import (print_function, division, absolute_import,
                         unicode_literals)
 
 # Tell module what it's allowed to import
-__all__ = ["logsubexp","AGP_utility","BAPE_utility","minimize_objective"]
+__all__ = ["logsubexp","AGP_utility","BAPE_utility","minimize_objective",
+           "function_wrapper","kl_numerical"]
 
 from . import bp
 import numpy as np
@@ -23,9 +24,81 @@ from scipy.optimize import minimize, basinhopping
 
 ################################################################################
 #
-# Define utility functions
+# Useful classes
 #
 ################################################################################
+
+
+class function_wrapper(object):
+    """
+    Wrapper class for functions.
+    """
+
+    def __init__(self, f, *args, **kwargs):
+        """
+        Initialize!
+        """
+
+        # Need function, optional args and kwargs
+        self.f = f
+        self.args = args
+        self.kwargs = kwargs
+    # end function
+
+
+    def __call__(self, x):
+        """
+        Call the function on some input x.
+        """
+
+        return self.f(x, *self.args, **self.kwargs)
+    # end function
+# end class
+
+
+################################################################################
+#
+# Define math functions
+#
+################################################################################
+
+
+def kl_numerical(x, p, q):
+    """
+    Estimate the KL-Divergence between pdfs p and q
+    using x, samples from p.
+
+    KL ~ 1/n * sum_{i=1,n}(log (p(x_i)/q(x_i)))
+
+    For our purposes, q is the current estimate of the pdf
+    while p is the previous estimate.  This method is the
+    only feasible method for large dimensions.
+
+    See Hershey and Olsen, "Approximating the Kullback Leibler
+    Divergence Between Gaussian Mixture Models" for more info
+
+    Parameters
+    ----------
+    x : array
+        Samples drawn from p
+    p : function
+        Callable previous estimate of the density
+    q : function
+        Callable current estimate of the density
+
+    Returns
+    -------
+    kl : float
+        KL divergence
+    """
+    try:
+        res = np.sum(np.log(p(x)/q(x)))/len(x)
+    except ValueError:
+        err_msg = "ERROR: inf/NaN encountered.  q(x) = 0 likely occured."
+        raise ValueError(err_msg)
+
+    return res
+# end function
 
 
 def logsubexp(x1, x2):
@@ -49,6 +122,13 @@ def logsubexp(x1, x2):
     else:
         return x1 + np.log(1.0 - np.exp(x2 - x1))
 # end function
+
+
+################################################################################
+#
+# Define utility functions
+#
+################################################################################
 
 
 def AGP_utility(theta, y, gp):

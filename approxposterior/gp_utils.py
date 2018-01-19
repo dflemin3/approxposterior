@@ -128,7 +128,9 @@ def optimize_gp(gp, theta, y, cv=None, seed=None,
 
         # XXX hack hack hack
         hyperparameters = {'kernel:metric:log_M_0_0': np.linspace(0.01, 100.0,
-                           50)}
+                           10),
+                           'kernel:metric:log_M_1_1': np.linspace(0.01, 100.0,
+                                              10)}
 
         # Why CV if no grid given?
         if hyperparameters is None:
@@ -191,7 +193,7 @@ def setup_gp(theta, y, which_kernel="ExpSquaredKernel", seed=None):
         data to condition GP on
     which_kernel : str (optional)
         Name of the george kernel you want to use.  Defaults to ExpSquaredKernel.
-        Options: ExpSquaredKernel
+        Options: ExpSquaredKernel, ExpKernel, Matern32Kernel, Matern52Kernel
     seed : int (optional)
         numpy RNG seed.  Defaults to None.
 
@@ -201,14 +203,26 @@ def setup_gp(theta, y, which_kernel="ExpSquaredKernel", seed=None):
     """
 
     # Guess the bandwidth following Kandasamy et al. (2015)'s suggestion
-    bandwidth = 5 * np.power(len(y),(-1.0/np.array(theta).shape[-1]))
+    #bandwidth = 5 * np.power(len(y),(-1.0/np.array(theta).shape[-1]))
+    #bandwidth = np.log(np.var(theta, axis=0))
+    bandwidth = np.mean(np.array(theta)**2, axis=0)/10.0
 
     # Which kernel?
     if str(which_kernel).lower() == "expsquaredkernel":
         kernel = george.kernels.ExpSquaredKernel(bandwidth,
                                                  ndim=np.array(theta).shape[-1])
+    elif str(which_kernel).lower() == "expkernel":
+        kernel = george.kernels.ExpKernel(bandwidth,
+                                          ndim=np.array(theta).shape[-1])
+    elif str(which_kernel).lower() == "matern32kernel":
+        kernel = george.kernels.Matern32Kernel(bandwidth,
+                                          ndim=np.array(theta).shape[-1])
+    elif str(which_kernel).lower() == "matern52kernel":
+        kernel = george.kernels.Matern52Kernel(bandwidth,
+                                          ndim=np.array(theta).shape[-1])
     else:
-        raise NotImplementedError("Error: Available kernels: ExpSquaredKernel")
+        avail = "Available kernels: ExpSquaredKernel, ExpKernel, Matern32Kernel, Matern52Kernel"
+        raise NotImplementedError("Error: Available kernels: %s" % avail)
 
     # Create the GP conditioned on theta
     gp = george.GP(kernel=kernel)

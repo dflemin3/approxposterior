@@ -17,6 +17,7 @@ __all__ = ["ApproxPosterior"]
 from . import utility as ut
 from . import likelihood as lh
 from . import gp_utils
+from . import mcmc_utils
 import numpy as np
 import george
 from george import kernels
@@ -185,7 +186,7 @@ class ApproxPosterior(object):
 
     def run(self, theta=None, y=None, m0=20, m=10, M=10000, nmax=2, Dmax=0.1,
             kmax=5, sampler=None, sim_annealing=False, cv=None, seed=None,
-            which_kernel="ExpSquaredKernel", **kw):
+            which_kernel="ExpSquaredKernel", bounds=None, **kw):
         """
         Core algorithm.
 
@@ -301,13 +302,19 @@ class ApproxPosterior(object):
             # Save current sampler object
             self.__samplers.append(sampler)
 
-            fig = corner.corner(sampler.flatchain, quantiles=[0.16, 0.5, 0.84],
+            # Estimate burn-in
+            iburn = mcmc_utils.estimate_burnin(sampler, nwalk, nsteps, ndim)
+            print(iburn)
+
+            fig = corner.corner(sampler.flatchain[iburn:],
+                                quantiles=[0.16, 0.5, 0.84],
                                 plot_contours=False);
 
             fig.savefig("posterior_%d.png" % n)
             plt.clf()
             #plt.show()
 
+            """
             # Make new posterior function using a Gaussian Mixure model to
             # approximate the posterior.
             # Fit some GMMs!
@@ -319,11 +326,11 @@ class ApproxPosterior(object):
             lowest_bic = 1.0e10
             best_gmm = None
             gmm = GaussianMixture()
-            for n_components in range(2,5):
+            for n_components in range(1,5):
                 gmm.set_params(**{"n_components" : n_components,
                                "covariance_type" : "full"})
-                gmm.fit(sampler.flatchain[mask])
-                bic.append(gmm.bic(sampler.flatchain[mask]))
+                gmm.fit(sampler.flatchain[iburn:])
+                bic.append(gmm.bic(sampler.flatchain[iburn:]))
 
                 if bic[-1] < lowest_bic:
                     lowest_bic = bic[-1]
@@ -331,7 +338,7 @@ class ApproxPosterior(object):
 
             # Refit GMM with the lowest bic
             GMM = best_gmm
-            GMM.fit(sampler.flatchain[mask])
+            GMM.fit(sampler.flatchain[iburn:])
 
             # display predicted scores by the model as a contour plot
             x = np.linspace(-5.0, 5.0)
@@ -356,5 +363,6 @@ class ApproxPosterior(object):
 
             # XXX: updating posterior estimate screws it all up.  probs need more emcee iters, but I'm impatient
             # Update posterior estimate
-            #self.__prev_posterior = self.posterior
-            #self.posterior = GMM.score_samples
+            self.__prev_posterior = self.posterior
+            self.posterior = GMM.score_samples
+            """
