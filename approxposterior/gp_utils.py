@@ -126,7 +126,7 @@ def optimize_gp(gp, theta, y, cv=None, seed=None,
     # Optimize GP via cv=k fold cross-validation
     else:
 
-        # XXX hack hack hack
+        # XXX hack hack hack: this will fail when fitting for means
         hyperparameters = {'kernel:metric:log_M_0_0': np.linspace(0.01, 100.0,
                            10),
                            'kernel:metric:log_M_1_1': np.linspace(0.01, 100.0,
@@ -182,7 +182,7 @@ def optimize_gp(gp, theta, y, cv=None, seed=None,
 # end function
 
 
-def setup_gp(theta, y, which_kernel="ExpSquaredKernel", seed=None):
+def setup_gp(theta, y, which_kernel="ExpSquaredKernel", mean=None, seed=None):
     """
     Initialize a george GP object
 
@@ -194,6 +194,9 @@ def setup_gp(theta, y, which_kernel="ExpSquaredKernel", seed=None):
     which_kernel : str (optional)
         Name of the george kernel you want to use.  Defaults to ExpSquaredKernel.
         Options: ExpSquaredKernel, ExpKernel, Matern32Kernel, Matern52Kernel
+    mean : scalar, callable (optional)
+        specifies the mean function of the GP using a scalar or a callable fn.
+        Defaults to 0.0
     seed : int (optional)
         numpy RNG seed.  Defaults to None.
 
@@ -222,8 +225,12 @@ def setup_gp(theta, y, which_kernel="ExpSquaredKernel", seed=None):
         avail = "Available kernels: ExpSquaredKernel, ExpKernel, Matern32Kernel, Matern52Kernel"
         raise NotImplementedError("Error: Available kernels: %s" % avail)
 
-    # Create the GP conditioned on theta
-    gp = george.GP(kernel=kernel)
+    # Guess the mean value if nothing is given
+    if mean is None:
+        mean = np.mean(np.array(y), axis=0)
+
+    # Create the GP conditioned on theta # XXX always fit for the mean?
+    gp = george.GP(kernel=kernel, fit_mean=True, mean=mean)
     gp.compute(theta)
 
     return gp
