@@ -3,12 +3,8 @@
 Bayesian Posterior estimation routines written in pure python leveraging
 Dan Forman-Mackey's george Gaussian Process implementation and emcee.
 
-August 2017
-
-@author: David P. Fleming [University of Washington, Seattle]
+@author: David P. Fleming [University of Washington, Seattle], 2017
 @email: dflemin3 (at) uw (dot) edu
-
-A meh implementation of Kandasamy et al. (2015)'s BAPE model.
 
 """
 
@@ -20,6 +16,8 @@ __all__ = ["ApproxPosterior"]
 
 from . import utility as ut
 from . import likelihood as lh
+from . import gp_utils
+from . import mcmc_utils
 import numpy as np
 import george
 from george import kernels
@@ -34,10 +32,10 @@ import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm
 
 
-def plot_gp(gp, theta, y, xmin=-10, xmax=10, ymin=-10, ymax=10, n=100,
+def plot_gp(gp, theta, y, xmin=-5, xmax=5, ymin=-5, ymax=5, n=100,
             return_type="mean", save_plot=None, log=False, **kw):
     """
-    DOCS
+    debug function that shouldn't be here
     """
 
     xx = np.linspace(xmin, xmax, n)
@@ -96,18 +94,16 @@ def plot_gp(gp, theta, y, xmin=-10, xmax=10, ymin=-10, ymax=10, n=100,
 class ApproxPosterior(object):
     """
     Class to approximate the posterior distributions using either the
-    Bayesian Active Posterior Estimation (BAPE) by Kandasamy et al. 2015 or the
-    AGP (Adaptive Gaussian Process) by XXX et al.
+    Bayesian Active Posterior Estimation (BAPE) by Kandasamy et al. (2015) or
+    the AGP (Adaptive Gaussian Process) by Wang & Li (2017).
     """
 
-    def __init__(self, gp, lnprior, lnlike, lnprob, prior_sample, algorithm="BAPE"):
+    def __init__(self, lnprior, lnlike, lnprob, prior_sample, algorithm="BAPE"):
         """
         Initializer.
 
         Parameters
         ----------
-        gp : george.GP
-            Gaussian process object
         lnprior : function
             Defines the log prior over the input features.
         lnlike : function
@@ -119,21 +115,19 @@ class ApproxPosterior(object):
         prior_sample : function
             Method to randomly sample points over region allowed by prior
         algorithm : str (optional)
-            Which utility function to use.  Defaults to BAPE.
+            Which utility function to use.  Defaults to BAPE.  Options are BAPE
+            or AGP.  Case doesn't matter.
 
         Returns
         -------
         None
         """
 
-        self.gp = gp
         self._lnprior = lnprior
         self._lnlike = lnlike
         self._lnprob = lnprob
         self.prior_sample = prior_sample
         self.algorithm = algorithm
-
-        # Store GPs, samplers XXX
 
         # Assign utility function
         if self.algorithm.lower() == "bape":
@@ -141,48 +135,69 @@ class ApproxPosterior(object):
         elif self.algorithm.lower() == "agp":
             self.utility = ut.AGP_utility
         else:
-            raise IOError("Invalid algorithm. Valid options: BAPE, AGP.")
+            err_msg = "ERROR: Invalid algorithm. Valid options: BAPE, AGP."
+            raise IOError(err_msg)
 
         # Initial approximate posteriors are the prior
         self.posterior = self._lnprior
         self.__prev_posterior = self._lnprior
+
+        # Holders to save GMM fits to posteriors, raw chains
+        self.__GMM = list()
+        self.__samplers = list()
 
     # end function
 
 
     def _sample(self, theta):
         """
-        Draw a sample from the approximate posterior conditional distibution
-        DOCS
+        Compute the approximate posterior conditional distibution at a given
+        point, theta.
+
+        Parameters
+        ----------
+        theta : array-like
+            Test point to evaluate GP posterior conditional distribution
+
+        Returns
+        -------
+        mu : float
+            Mean of predicted GP conditional posterior estimate at theta
         """
         theta_test = np.array(theta).reshape(1,-1)
 
-        # Sometimes the input values can be crazy
-        if np.isinf(theta_test).any() or np.isnan(theta_test).any() or not np.isfinite(theta_test.sum()):
+        # Sometimes the input values can be crazy and the GP will blow up
+        if np.isinf(theta_test).any() or np.isnan(theta_test).any():
             return -np.inf
 
-        #res = self.gp.sample_conditional(self.__y, theta_test) + self.posterior(theta_test)
-        res = self.gp.predict(self.__y, theta_test, return_cov=False, return_var=False)
+        # Mean of predictive distribution conditioned on y (GP posterior estimate)
+        mu = self.gp.predict(self.__y, theta_test, return_cov=False, return_var=False)
 
-        # Catch NaNs because they can happen
-        if np.isnan(res):
+        # Always add flat prior to keep it in bounds
+        mu += self._lnprior(theta_test)
+
+        # Catch NaNs/Infs because they can (rarely) happen
+        if not np.isfinite(mu):
             return -np.inf
         else:
-            return -res # negative log likelihood
+            return mu
     # end function
 
 
-    def run(self, theta, y, m=10, M=10000, nmax=2, Dmax=0.1, kmax=5, sampler=None,
-            sim_annealing=False, **kw):
+    def run(self, theta=None, y=None, m0=20, m=10, M=10000, nmax=2, Dmax=0.1,
+            kmax=5, sampler=None, sim_annealing=False, cv=None, seed=None,
+            which_kernel="ExpSquaredKernel", bounds=None, **kw):
         """
         Core algorithm.
 
         Parameters
         ----------
-        theta : array
-            Input features (n_samples x n_features)
-        y : array
-            Input result of forward model (n_samples,)
+        theta : array (optional)
+            Input features (n_samples x n_features).  Defaults to None.
+        y : array (optional)
+            Input result of forward model (n_samples,). Defaults to None.
+        m0 : int (optional)
+            Initial number of design points.  Defaults to 20.
         m : int (optional)
             Number of new input features to find each iteration.  Defaults to 10.
         M : int (optional)
@@ -201,11 +216,36 @@ class ApproxPosterior(object):
         sim_annealing : bool (optional)
             Whether or not to minimize utility function using simulated annealing.
             Defaults to False.
+        cv : int (optional)
+            If not None, cv is the number (k) of k-folds CV to use.  Defaults to
+            None (no CV)
+        seed : int (optional)
+            RNG seed.  Defaults to None.
+        bounds : tuple/iterable (optional)
+            Bounds for minimization scheme.  See scipy.optimize.minimize details
+            for more information.  Defaults to None.
 
         Returns
         -------
         None
         """
+
+        # Choose m0 initial design points to initialize dataset if none are
+        # given
+        if theta is None:
+            theta = self.prior_sample(m0)
+        else:
+            theta = np.array(theta)
+
+        if y is None:
+            y = self._lnprob(theta)
+        else:
+            y = np.array(y)
+
+        # Setup, optimize gaussian process XXX just using default options now
+        self.gp = gp_utils.setup_gp(theta, y, which_kernel=which_kernel)
+        self.gp = gp_utils.optimize_gp(self.gp, theta, y, cv=cv, seed=seed,
+                                       which_kernel=which_kernel)
 
         # Store theta, y
         self.__theta = theta
@@ -220,7 +260,7 @@ class ApproxPosterior(object):
                                                 sample_fn=self.prior_sample,
                                                 prior_fn=self._lnprior,
                                                 sim_annealing=sim_annealing,
-                                                **kw)
+                                                bounds=bounds, **kw)
 
                 # 2) Query oracle at new points, theta_t
                 y_t = self._lnlike(theta_t) + self.posterior(theta_t)
@@ -229,75 +269,68 @@ class ApproxPosterior(object):
                 self.__theta = np.concatenate([self.__theta, theta_t])
                 self.__y = np.concatenate([self.__y, y_t])
 
-                # 3) Refit GP
-                # Guess the bandwidth following Kandasamy et al. (2015)'s suggestion
-                bandwidth = 5 * np.power(len(self.__y),(-1.0/self.__theta.shape[-1]))
+                # 3) Init new GP with new points, optimize
+                self.gp = gp_utils.setup_gp(self.__theta, self.__y,
+                                            which_kernel=which_kernel)
+                self.gp = gp_utils.optimize_gp(self.gp, self.__theta, self.__y,
+                                               cv=cv, seed=seed,
+                                               which_kernel=which_kernel)
 
-                # XXX use cross-validation to select kernel parameters?
 
-                # Create the GP conditioned on {theta_n, log(L_n * p_n)}
-                kernel = kernels.ExpSquaredKernel(bandwidth, ndim=self.__theta.shape[-1])
-                self.gp = george.GP(kernel)
-                self.gp.compute(self.__theta)
-
-                # Optimize gp hyperparameters
-                ut.optimize_gp(self.gp, self.__y)
-
-            # Done adding new design points
+            # XXX debug diagnostics Done adding new design points
             fig, _ = plot_gp(self.gp, self.__theta, self.__y, return_type="mean",
                     save_plot="gp_mu_iter_%d.png" % n, log=True)
             plt.close(fig)
 
-            # Done adding new design points
-            fig, _ = plot_gp(self.gp, self.__theta, self.__y, return_type="var",
-                    save_plot="gp_var_iter_%d.png" % n, log=True)
-            plt.close(fig)
-
-            fig, _ = plot_gp(self.gp, self.__theta, self.__y, return_type="utility",
-                    save_plot="gp_util_iter_%d.png" % n, log=False)
-            plt.close(fig)
-
             # GP updated: run sampler to obtain new posterior conditioned on (theta_n, log(L_t)*p_n)
             # Use emcee to obtain approximate posterior
-            """
             ndim = self.__theta.shape[-1]
             nwalk = 10 * ndim
             nsteps = M
 
             # Initial guess (random over interval)
             p0 = [self.prior_sample(1) for j in range(nwalk)]
-            #p0 = [np.random.rand(ndim) for j in range(nwalk)]
             params = ["x%d" % jj for jj in range(ndim)]
+
+            # Init emcee sampler
             sampler = emcee.EnsembleSampler(nwalk, ndim, self._sample)
             for i, result in enumerate(sampler.sample(p0, iterations=nsteps)):
                 print("%d/%d" % (i+1, nsteps))
 
             print("emcee finished!")
-            #fig = corner.corner(sampler.flatchain, quantiles=[0.16, 0.5, 0.84],
-            #                    plot_contours=False, bins="auto");
-            fig, ax = plt.subplots(figsize=(9,8))
-            corner.hist2d(sampler.flatchain[:,0], sampler.flatchain[:,1], ax=ax,
-                                plot_contours=False, no_fill_contours=True,
-                                plot_density=True)
-            ax.scatter(self.__theta[:,0], self.__theta[:,1])
-            ax.set_xlim(-5,5)
-            ax.set_ylim(-5,5)
+
+            # Save current sampler object
+            self.__samplers.append(sampler)
+
+            # Estimate burn-in
+            iburn = mcmc_utils.estimate_burnin(sampler, nwalk, nsteps, ndim)
+            print(iburn)
+
+            fig = corner.corner(sampler.flatchain[iburn:],
+                                quantiles=[0.16, 0.5, 0.84],
+                                plot_contours=False);
+
             fig.savefig("posterior_%d.png" % n)
+            plt.clf()
             #plt.show()
 
-            # Make new posterior function via a Gaussian Mixure model approximation
-            # to the approximate posterior. Seems legit
+            """
+            # Make new posterior function using a Gaussian Mixure model to
+            # approximate the posterior.
             # Fit some GMMs!
-            # sklean hates infs, Nans, big numbers
+            # sklean hates infs, Nans, big numbers, but I probs messed up XXX
             mask = (~np.isnan(sampler.flatchain).any(axis=1)) & (~np.isinf(sampler.flatchain).any(axis=1))
+
+            # Select optimal number of components via minimizing BIC
             bic = []
             lowest_bic = 1.0e10
             best_gmm = None
             gmm = GaussianMixture()
-            for n in range(3,10):
-                gmm.set_params(**{"n_components" : n, "covariance_type" : "full"})
-                gmm.fit(sampler.flatchain[mask])
-                bic.append(gmm.bic(sampler.flatchain[mask]))
+            for n_components in range(1,5):
+                gmm.set_params(**{"n_components" : n_components,
+                               "covariance_type" : "full"})
+                gmm.fit(sampler.flatchain[iburn:])
+                bic.append(gmm.bic(sampler.flatchain[iburn:]))
 
                 if bic[-1] < lowest_bic:
                     lowest_bic = bic[-1]
@@ -305,6 +338,31 @@ class ApproxPosterior(object):
 
             # Refit GMM with the lowest bic
             GMM = best_gmm
-            GMM.fit(sampler.flatchain[mask])
+            GMM.fit(sampler.flatchain[iburn:])
+
+            # display predicted scores by the model as a contour plot
+            x = np.linspace(-5.0, 5.0)
+            y = np.linspace(-5.0, 5.0)
+            X, Y = np.meshgrid(x, y)
+            XX = np.array([X.ravel(), Y.ravel()]).T
+            Z = -GMM.score_samples(XX)
+            Z = Z.reshape(X.shape)
+
+            fig, ax = plt.subplots(figsize=(9,8))
+            CS = ax.contourf(X, Y, Z, norm=LogNorm(vmin=1.0e-1, vmax=1.0e2),
+                             levels=np.logspace(-1, 2, 10), lw=3)
+            cb = fig.colorbar(CS, shrink=0.8, extend='both')
+            cb.set_label("|GMM LogLike|", labelpad=20, rotation=270)
+            ax.scatter(self.__theta[:,0], self.__theta[:,1], color="r", zorder=20)
+            ax.set_xlim(-5,5)
+            ax.set_ylim(-5,5)
+            fig.savefig("gmm_ll_%d.png" % n)
+
+            # Save current GMM model
+            self.__GMM.append(GMM)
+
+            # XXX: updating posterior estimate screws it all up.  probs need more emcee iters, but I'm impatient
+            # Update posterior estimate
+            self.__prev_posterior = self.posterior
             self.posterior = GMM.score_samples
             """

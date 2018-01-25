@@ -1,10 +1,9 @@
 """
 
-This file contains routines for simples loglikelihoods and priors.
+This file contains routines for simples loglikelihoods and priors for test
+cases.
 
-Nov 2017
-
-@author: David P. Fleming [University of Washington, Seattle]
+@author: David P. Fleming [University of Washington, Seattle], 2017
 @email: dflemin3 (at) uw (dot) edu
 
 """
@@ -13,8 +12,9 @@ from __future__ import (print_function, division, absolute_import,
                         unicode_literals)
 
 # Tell module what it's allowed to import
-__all__ = ["bimodal_normal_lnlike", "bimodal_normal_lnprior",
-           "bimodal_normal_lnprob"]
+__all__ = ["bimodal_normal_sample","bimodal_normal_lnlike",
+           "bimodal_normal_lnprior","bimodal_normal_lnprob","rosenbrock_lnlike",
+           "rosenbrock_lnprior","rosenbrock_sample","rosenbrock_lnprob"]
 
 import numpy as np
 
@@ -246,5 +246,5 @@ def rosenbrock_lnprob(theta):
     if not np.isfinite(lp):
         return -np.inf
 
-    return lp + rosenbrock_lnlike(theta, mus=mus, icovs=icovs)
+    return lp + rosenbrock_lnlike(theta)
 #end function

@@ -4,7 +4,7 @@ Utility functions
 
 August 2017
 
-@author: David P. Fleming [University of Washington, Seattle]
+@author: David P. Fleming [University of Washington, Seattle], 2018
 @email: dflemin3 (at) uw (dot) edu
 
 """
@@ -14,24 +14,96 @@ from __future__ import (print_function, division, absolute_import,
 
 # Tell module what it's allowed to import
 __all__ = ["logsubexp","AGP_utility","BAPE_utility","minimize_objective",
-           "optimize_gp"]
+           "function_wrapper","kl_numerical"]
 
 from . import bp
 import numpy as np
+import george as gp
 from scipy.optimize import minimize, basinhopping
 
 
 ################################################################################
 #
-# Define utility functions
+# Useful classes
 #
 ################################################################################
+
+
+class function_wrapper(object):
+    """
+    Wrapper class for functions.
+    """
+
+    def __init__(self, f, *args, **kwargs):
+        """
+        Initialize!
+        """
+
+        # Need function, optional args and kwargs
+        self.f = f
+        self.args = args
+        self.kwargs = kwargs
+    # end function
+
+
+    def __call__(self, x):
+        """
+        Call the function on some input x.
+        """
+
+        return self.f(x, *self.args, **self.kwargs)
+    # end function
+# end class
+
+
+################################################################################
+#
+# Define math functions
+#
+################################################################################
+
+
+def kl_numerical(x, p, q):
+    """
+    Estimate the KL-Divergence between pdfs p and q
+    using x, samples from p.
+
+    KL ~ 1/n * sum_{i=1,n}(log (p(x_i)/q(x_i)))
+
+    For our purposes, q is the current estimate of the pdf
+    while p is the previous estimate.  This method is the
+    only feasible method for large dimensions.
+
+    See Hershey and Olsen, "Approximating the Kullback Leibler
+    Divergence Between Gaussian Mixture Models" for more info
+
+    Parameters
+    ----------
+    x : array
+        Samples drawn from p
+    p : function
+        Callable previous estimate of the density
+    q : function
+        Callable current estimate of the density
+
+    Returns
+    -------
+    kl : float
+        KL divergence
+    """
+    try:
+        res = np.sum(np.log(p(x)/q(x)))/len(x)
+    except ValueError:
+        err_msg = "ERROR: inf/NaN encountered.  q(x) = 0 likely occured."
+        raise ValueError(err_msg)
+
+    return res
+# end function
 
 
 def logsubexp(x1, x2):
     """
     More numerically stable way to take the log of exp(x1) - exp(x2)
-    via:
 
     logsubexp(x1, x2) -> log(exp(x1) - exp(x2))
 
@@ -50,6 +122,13 @@ def logsubexp(x1, x2):
     else:
         return x1 + np.log(1.0 - np.exp(x2 - x1))
 # end function
+
+
+################################################################################
+#
+# Define utility functions
+#
+################################################################################
 
 
 def AGP_utility(theta, y, gp):
@@ -73,17 +152,19 @@ def AGP_utility(theta, y, gp):
         utility of theta under the gp
     """
 
-    # XXX pass mean, var instead of gp
-
     # Only works if the GP object has been computed, otherwise you messed up
     if gp.computed:
         mu, var = gp.predict(y, theta.reshape(1,-1), return_var=True)
     else:
         raise RuntimeError("ERROR: Need to compute GP before using it!")
 
-    # XXX try except? catch negative var
+    try:
+        util = -(mu + 1.0/np.log(2.0*np.pi*np.e*var))
+    except ValueError:
+        print("Invalid util value.  Negative variance or inf mu?")
+        raise ValueError("util: %e. mu: %e. var: %e" % (util, mu, var))
 
-    return -(mu + 1.0/np.log(2.0*np.pi*np.e*var))
+    return util
 # end function
 
 
@@ -115,12 +196,18 @@ def BAPE_utility(theta, y, gp):
     else:
         raise RuntimeError("ERROR: Need to compute GP before using it!")
 
-    return -((2.0*mu + var) + logsubexp(var, 0.0))
+    try:
+        util = -((2.0*mu + var) + logsubexp(var, 0.0))
+    except ValueError:
+        print("Invalid util value.  Negative variance or inf mu?")
+        raise ValueError("util: %e. mu: %e. var: %e" % (util, mu, var))
+
+    return util
 # end function
 
 
 def minimize_objective(fn, y, gp, sample_fn, prior_fn, sim_annealing=False,
-                       **kw):
+                       bounds=None, **kw):
     """
     Find point that minimizes fn for a gaussian process gp conditioned on y,
     the data.
@@ -143,6 +230,9 @@ def minimize_objective(fn, y, gp, sample_fn, prior_fn, sim_annealing=False,
     kw : dict (optional)
         Any additional keyword arguments scipy.optimize.minimize could use,
         e.g., method.
+    bounds : tuple/iterable (optional)
+        Bounds for minimization scheme.  See scipy.optimize.minimize details
+        for more information.  Defaults to None.
 
     Returns
     -------
@@ -159,11 +249,8 @@ def minimize_objective(fn, y, gp, sample_fn, prior_fn, sim_annealing=False,
 
         args=(y, gp)
 
-        # XXX hardcoded noooooooo
-        bounds = ((-10,10), (-10,10))
-        #bounds = None
-
         # Mimimze fn, see if prior allows solution
+        # XXX Not sure if this works
         try:
             if sim_annealing:
                 minimizer_kwargs = {"method":"L-BFGS-B", "args" : args,
@@ -172,12 +259,13 @@ def minimize_objective(fn, y, gp, sample_fn, prior_fn, sim_annealing=False,
 
                 def mybounds(**kwargs):
                     x = kwargs["x_new"]
-                    res = bool(np.all(np.fabs(x) < 10))
+                    res = bool(np.all(np.fabs(x) < 5)) # XXX HAAAACCCKKK
                     return res
 
                 tmp = basinhopping(fn, theta0, accept_test=mybounds, niter=500,
                              stepsize=0.01, minimizer_kwargs=minimizer_kwargs,
                              interval=10)["x"]
+            # Use the good old-fashioned scipy minimize routine
             else:
                 tmp = minimize(fn, theta0, args=args, bounds=bounds,
                                method="l-bfgs-b", options={"ftol" : 1.0e-3},
@@ -194,42 +282,4 @@ def minimize_objective(fn, y, gp, sample_fn, prior_fn, sim_annealing=False,
     # end while
 
     return np.array(theta).reshape(1,-1)
-# end function
-
-
-# Define the objective function (negative log-likelihood in this case).
-def _nll(p, gp, y):
-    """
-    DOCS
-    """
-    gp.set_parameter_vector(p)
-    ll = gp.log_likelihood(y, quiet=True)
-    return -ll if np.isfinite(ll) else 1e25
-# end function
-
-
-# And the gradient of the objective function.
-def _grad_nll(p, gp, y):
-    """
-    DOCS
-    """
-    gp.set_parameter_vector(p)
-    return -gp.grad_log_likelihood(y, quiet=True)
-# end function
-
-
-def optimize_gp(gp, y):
-    """
-    DOCS
-
-    Optimize hyperparameters of pre-computed gp
-    """
-
-    # Run the optimization routine.
-    p0 = gp.get_parameter_vector()
-    results = minimize(_nll, p0, jac=_grad_nll, args=(gp, y), method="bfgs")
-
-    # Update the kernel and print the final log-likelihood.
-    gp.set_parameter_vector(results.x)
-    gp.recompute()
 # end function
