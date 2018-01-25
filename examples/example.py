@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 """
 
 Example script
@@ -9,10 +11,7 @@ Example script
 
 from __future__ import (print_function, division, absolute_import,
                         unicode_literals)
-
-
 from approxposterior import bp, likelihood as lh
-import numpy as np
 
 
 # Define algorithm parameters
@@ -25,7 +24,6 @@ kmax = 5
 cv = None
 which_kernel = "ExpSquaredKernel"
 bounds = ((-5,5), (-5,5))
-kw = {}
 
 # Init object
 bp = bp.ApproxPosterior(lnprior=lh.rosenbrock_lnprior,
@@ -36,5 +34,4 @@ bp = bp.ApproxPosterior(lnprior=lh.rosenbrock_lnprior,
 
 # Run!
 bp.run(m0=m0, m=m, M=M, nmax=nmax, Dmax=Dmax, kmax=kmax, cv=cv,
-       sampler=None, sim_annealing=False, bounds=bounds,
-       which_kernel=which_kernel, **kw)
+       sampler=None, bounds=bounds, which_kernel=which_kernel)
