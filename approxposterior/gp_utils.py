@@ -203,8 +203,6 @@ def setup_gp(theta, y, which_kernel="ExpSquaredKernel", seed=None):
     """
 
     # Guess the bandwidth following Kandasamy et al. (2015)'s suggestion
-    #bandwidth = 5 * np.power(len(y),(-1.0/np.array(theta).shape[-1]))
-    #bandwidth = np.log(np.var(theta, axis=0))
     bandwidth = np.mean(np.array(theta)**2, axis=0)/10.0
 
     # Which kernel?
