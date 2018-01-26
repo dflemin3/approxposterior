@@ -18,15 +18,15 @@ A simple example
 from approxposterior import bp, likelihood as lh
 
 # Define algorithm parameters
-m0 = 20 # Initial size of training set
-m = 10 # Number of new points to find each iteration
-nmax = 10 # Maximum number of iterations
-M = int(1.0e4) # Number of MCMC steps to estimate approximate posterior
-Dmax = 0.1 # KL-Divergence convergence limit
-kmax = 5 # Number of iterations for Dmax convergence to kick in
+m0 = 20                           # Initial size of training set
+m = 10                            # Number of new points to find each iteration
+nmax = 10                         # Maximum number of iterations
+M = int(1.0e4)                    # Number of MCMC steps to estimate approximate posterior
+Dmax = 0.1                        # KL-Divergence convergence limit
+kmax = 5                          # Number of iterations for Dmax convergence to kick in
 which_kernel = "ExpSquaredKernel" # Which Gaussian Process kernel to use
-bounds = ((-5,5), (-5,5)) # Prior bounds
-algorithm = "agp" # Use the Wang & Li (2017) formalism
+bounds = ((-5,5), (-5,5))         # Prior bounds
+algorithm = "agp"                 # Use the Wang & Li (2017) formalism
 
 # Initialize object using the Wang & Li (2017) Rosenbrock function example
 bp = bp.ApproxPosterior(lnprior=lh.rosenbrock_lnprior,

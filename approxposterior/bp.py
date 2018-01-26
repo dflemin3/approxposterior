@@ -252,7 +252,7 @@ class ApproxPosterior(object):
         self.__y = y
 
         # Main loop
-        for n in range(nmax):
+        for nn in range(nmax):
 
             # 1) Find m new points by maximizing utility function
             for ii in range(m):
@@ -279,7 +279,7 @@ class ApproxPosterior(object):
 
             # XXX debug diagnostics Done adding new design points
             fig, _ = plot_gp(self.gp, self.__theta, self.__y, return_type="mean",
-                    save_plot="gp_mu_iter_%d.png" % n, log=True)
+                    save_plot="gp_mu_iter_%d.png" % nn, log=True)
             plt.close(fig)
 
             # GP updated: run sampler to obtain new posterior conditioned on (theta_n, log(L_t)*p_n)
@@ -310,11 +310,10 @@ class ApproxPosterior(object):
                                 quantiles=[0.16, 0.5, 0.84],
                                 plot_contours=False);
 
-            fig.savefig("posterior_%d.png" % n)
+            fig.savefig("posterior_%d.png" % nn)
             plt.clf()
             #plt.show()
 
-            """
             # Make new posterior function using a Gaussian Mixure model to
             # approximate the posterior.
             # Fit some GMMs!
@@ -326,7 +325,7 @@ class ApproxPosterior(object):
             lowest_bic = 1.0e10
             best_gmm = None
             gmm = GaussianMixture()
-            for n_components in range(1,5):
+            for n_components in range(1,6):
                 gmm.set_params(**{"n_components" : n_components,
                                "covariance_type" : "full"})
                 gmm.fit(sampler.flatchain[iburn:])
@@ -356,13 +355,12 @@ class ApproxPosterior(object):
             ax.scatter(self.__theta[:,0], self.__theta[:,1], color="r", zorder=20)
             ax.set_xlim(-5,5)
             ax.set_ylim(-5,5)
-            fig.savefig("gmm_ll_%d.png" % n)
+            fig.savefig("gmm_ll_%d.png" % nn)
 
             # Save current GMM model
             self.__GMM.append(GMM)
 
             # XXX: updating posterior estimate screws it all up.  probs need more emcee iters, but I'm impatient
             # Update posterior estimate
-            self.__prev_posterior = self.posterior
-            self.posterior = GMM.score_samples
-            """
+            #self.__prev_posterior = self.posterior
+            #self.posterior = GMM.score_samples
