@@ -18,6 +18,7 @@ from . import utility as ut
 from . import likelihood as lh
 from . import gp_utils
 from . import mcmc_utils
+from . import plot_utils as pu
 import numpy as np
 import george
 from george import kernels
@@ -30,65 +31,6 @@ import corner
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm
-
-
-def plot_gp(gp, theta, y, xmin=-5, xmax=5, ymin=-5, ymax=5, n=100,
-            return_type="mean", save_plot=None, log=False, **kw):
-    """
-    debug function that shouldn't be here
-    """
-
-    xx = np.linspace(xmin, xmax, n)
-    yy = np.linspace(ymin, ymax, n)
-
-    zz = np.zeros((len(xx),len(yy)))
-    for ii in range(len(xx)):
-        for jj in range(len(yy)):
-            mu, var = gp.predict(y, np.array([xx[ii],yy[jj]]).reshape(1,-1), return_var=True)
-            if return_type.lower() == "var":
-                zz[ii,jj] = var
-            elif return_type.lower() == "mean":
-                zz[ii,jj] = mu
-            elif return_type.lower() == "utility":
-                zz[ii,jj] = np.fabs(-(2.0*mu + var) - ut.logsubexp(var, 0.0))
-            else:
-                raise IOError("Invalid return_type : %s" % return_type)
-
-    norm = None
-    if log:
-        if return_type.lower() == "mean" or return_type.lower() == "utility":
-            zz = np.fabs(zz)
-            zz[zz <= 1.0e-5] = 1.0e-5
-
-        if return_type.lower() == "var":
-            zz[zz <= 1.0e-8] = 1.0e-8
-
-        norm = LogNorm(vmin=zz.min(), vmax=zz.max())
-
-    # Plot what the GP thinks the function looks like
-    fig, ax = plt.subplots(**kw)
-    im = ax.pcolormesh(xx, yy, zz.T, norm=norm)
-    cb = fig.colorbar(im)
-
-    if return_type.lower() == "var":
-        cb.set_label("GP Posterior Variance", labelpad=20, rotation=270)
-    elif return_type.lower() == "mean":
-        cb.set_label("|Mean GP Posterior Density (smaller better)|", labelpad=20, rotation=270)
-    elif return_type.lower() == "utility":
-        cb.set_label("|Utility Function (smaller better)|", labelpad=20, rotation=270)
-
-    # Scatter plot where the points are
-    ax.scatter(theta[:,0], theta[:,1], color="red")
-
-    # Format
-    ax.set_xlim(xmin, xmax)
-    ax.set_ylim(ymin, ymax)
-
-    if save_plot is not None:
-        fig.savefig(save_plot, bbox_inches="tight")
-
-    return fig, ax
-# end function
 
 
 class ApproxPosterior(object):
@@ -186,7 +128,7 @@ class ApproxPosterior(object):
 
     def run(self, theta=None, y=None, m0=20, m=10, M=10000, nmax=2, Dmax=0.1,
             kmax=5, sampler=None, sim_annealing=False, cv=None, seed=None,
-            which_kernel="ExpSquaredKernel", bounds=None, **kw):
+            which_kernel="ExpSquaredKernel", bounds=None, debug=True, **kw):
         """
         Core algorithm.
 
@@ -224,6 +166,8 @@ class ApproxPosterior(object):
         bounds : tuple/iterable (optional)
             Bounds for minimization scheme.  See scipy.optimize.minimize details
             for more information.  Defaults to None.
+        debug : bool (optional)
+            Output/plot diagnostic stats/figures?  Defaults to True.
 
         Returns
         -------
@@ -277,10 +221,12 @@ class ApproxPosterior(object):
                                                which_kernel=which_kernel)
 
 
-            # XXX debug diagnostics Done adding new design points
-            fig, _ = plot_gp(self.gp, self.__theta, self.__y, return_type="mean",
-                    save_plot="gp_mu_iter_%d.png" % nn, log=True)
-            plt.close(fig)
+            # Plot GP diagnostics?
+            if debug:
+                fig, _ = pu.plot_gp(self.gp, self.__theta, self.__y,
+                                    return_type="mean", log=True,
+                                    save_plot="gp_mu_iter_%d.png" % nn)
+                plt.close(fig)
 
             # GP updated: run sampler to obtain new posterior conditioned on (theta_n, log(L_t)*p_n)
             # Use emcee to obtain approximate posterior
@@ -296,7 +242,6 @@ class ApproxPosterior(object):
             sampler = emcee.EnsembleSampler(nwalk, ndim, self._sample)
             for i, result in enumerate(sampler.sample(p0, iterations=nsteps)):
                 print("%d/%d" % (i+1, nsteps))
-
             print("emcee finished!")
 
             # Save current sampler object
@@ -339,28 +284,16 @@ class ApproxPosterior(object):
             GMM = best_gmm
             GMM.fit(sampler.flatchain[iburn:])
 
-            # display predicted scores by the model as a contour plot
-            x = np.linspace(-5.0, 5.0)
-            y = np.linspace(-5.0, 5.0)
-            X, Y = np.meshgrid(x, y)
-            XX = np.array([X.ravel(), Y.ravel()]).T
-            Z = -GMM.score_samples(XX)
-            Z = Z.reshape(X.shape)
-
-            fig, ax = plt.subplots(figsize=(9,8))
-            CS = ax.contourf(X, Y, Z, norm=LogNorm(vmin=1.0e-1, vmax=1.0e2),
-                             levels=np.logspace(-1, 2, 10), lw=3)
-            cb = fig.colorbar(CS, shrink=0.8, extend='both')
-            cb.set_label("|GMM LogLike|", labelpad=20, rotation=270)
-            ax.scatter(self.__theta[:,0], self.__theta[:,1], color="r", zorder=20)
-            ax.set_xlim(-5,5)
-            ax.set_ylim(-5,5)
-            fig.savefig("gmm_ll_%d.png" % nn)
+            # Plot GMM?
+            if debug:
+                fig, _ = pu.plot_GMM_loglike(GMM,
+                                             save_plot="GMM_ll_iter_%d.png" % nn)
+                plt.close(fig)
 
             # Save current GMM model
             self.__GMM.append(GMM)
 
-            # XXX: updating posterior estimate screws it all up.  probs need more emcee iters, but I'm impatient
+            # XXX: updating posterior estimate not working
             # Update posterior estimate
             #self.__prev_posterior = self.posterior
             #self.posterior = GMM.score_samples

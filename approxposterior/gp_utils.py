@@ -196,7 +196,7 @@ def setup_gp(theta, y, which_kernel="ExpSquaredKernel", mean=None, seed=None):
         Options: ExpSquaredKernel, ExpKernel, Matern32Kernel, Matern52Kernel
     mean : scalar, callable (optional)
         specifies the mean function of the GP using a scalar or a callable fn.
-        Defaults to 0.0
+        Defaults to None.  If none, estimates the mean
     seed : int (optional)
         numpy RNG seed.  Defaults to None.
 
@@ -205,7 +205,7 @@ def setup_gp(theta, y, which_kernel="ExpSquaredKernel", mean=None, seed=None):
     gp : george.GP
     """
 
-    # Guess the bandwidth following Kandasamy et al. (2015)'s suggestion
+    # Guess the bandwidth
     bandwidth = np.mean(np.array(theta)**2, axis=0)/10.0
 
     # Which kernel?
@@ -229,7 +229,7 @@ def setup_gp(theta, y, which_kernel="ExpSquaredKernel", mean=None, seed=None):
     if mean is None:
         mean = np.mean(np.array(y), axis=0)
 
-    # Create the GP conditioned on theta # XXX always fit for the mean?
+    # Create the GP conditioned on theta
     gp = george.GP(kernel=kernel, fit_mean=True, mean=mean)
     gp.compute(theta)
 
