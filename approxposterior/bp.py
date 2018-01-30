@@ -18,6 +18,7 @@ from . import utility as ut
 from . import likelihood as lh
 from . import gp_utils
 from . import mcmc_utils
+from . import plot_utils as pu
 import numpy as np
 import george
 from george import kernels
@@ -30,65 +31,6 @@ import corner
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm
-
-
-def plot_gp(gp, theta, y, xmin=-5, xmax=5, ymin=-5, ymax=5, n=100,
-            return_type="mean", save_plot=None, log=False, **kw):
-    """
-    debug function that shouldn't be here
-    """
-
-    xx = np.linspace(xmin, xmax, n)
-    yy = np.linspace(ymin, ymax, n)
-
-    zz = np.zeros((len(xx),len(yy)))
-    for ii in range(len(xx)):
-        for jj in range(len(yy)):
-            mu, var = gp.predict(y, np.array([xx[ii],yy[jj]]).reshape(1,-1), return_var=True)
-            if return_type.lower() == "var":
-                zz[ii,jj] = var
-            elif return_type.lower() == "mean":
-                zz[ii,jj] = mu
-            elif return_type.lower() == "utility":
-                zz[ii,jj] = np.fabs(-(2.0*mu + var) - ut.logsubexp(var, 0.0))
-            else:
-                raise IOError("Invalid return_type : %s" % return_type)
-
-    norm = None
-    if log:
-        if return_type.lower() == "mean" or return_type.lower() == "utility":
-            zz = np.fabs(zz)
-            zz[zz <= 1.0e-5] = 1.0e-5
-
-        if return_type.lower() == "var":
-            zz[zz <= 1.0e-8] = 1.0e-8
-
-        norm = LogNorm(vmin=zz.min(), vmax=zz.max())
-
-    # Plot what the GP thinks the function looks like
-    fig, ax = plt.subplots(**kw)
-    im = ax.pcolormesh(xx, yy, zz.T, norm=norm)
-    cb = fig.colorbar(im)
-
-    if return_type.lower() == "var":
-        cb.set_label("GP Posterior Variance", labelpad=20, rotation=270)
-    elif return_type.lower() == "mean":
-        cb.set_label("|Mean GP Posterior Density (smaller better)|", labelpad=20, rotation=270)
-    elif return_type.lower() == "utility":
-        cb.set_label("|Utility Function (smaller better)|", labelpad=20, rotation=270)
-
-    # Scatter plot where the points are
-    ax.scatter(theta[:,0], theta[:,1], color="red")
-
-    # Format
-    ax.set_xlim(xmin, xmax)
-    ax.set_ylim(ymin, ymax)
-
-    if save_plot is not None:
-        fig.savefig(save_plot, bbox_inches="tight")
-
-    return fig, ax
-# end function
 
 
 class ApproxPosterior(object):
@@ -140,12 +82,13 @@ class ApproxPosterior(object):
 
         # Initial approximate posteriors are the prior
         self.posterior = self._lnprior
-        self.__prev_posterior = self._lnprior
+        self.prev_posterior = self._lnprior
 
-        # Holders to save GMM fits to posteriors, raw chains
-        self.__GMM = list()
-        self.__samplers = list()
-
+        # Holders to save GMM fits to posteriors, raw samplers, KL divergences
+        self.Dkl = list()
+        self.GMMs = list()
+        self.samplers = list()
+        self.iburns = list()
     # end function
 
 
@@ -171,7 +114,7 @@ class ApproxPosterior(object):
             return -np.inf
 
         # Mean of predictive distribution conditioned on y (GP posterior estimate)
-        mu = self.gp.predict(self.__y, theta_test, return_cov=False, return_var=False)
+        mu = self.gp.predict(self.y, theta_test, return_cov=False, return_var=False)
 
         # Always add flat prior to keep it in bounds
         mu += self._lnprior(theta_test)
@@ -186,7 +129,8 @@ class ApproxPosterior(object):
 
     def run(self, theta=None, y=None, m0=20, m=10, M=10000, nmax=2, Dmax=0.1,
             kmax=5, sampler=None, sim_annealing=False, cv=None, seed=None,
-            which_kernel="ExpSquaredKernel", bounds=None, **kw):
+            which_kernel="ExpSquaredKernel", bounds=None, debug=True,
+            n_kl_samples=100000, verbose=True, **kw):
         """
         Core algorithm.
 
@@ -224,6 +168,15 @@ class ApproxPosterior(object):
         bounds : tuple/iterable (optional)
             Bounds for minimization scheme.  See scipy.optimize.minimize details
             for more information.  Defaults to None.
+        debug : bool (optional)
+            Output/plot diagnostic stats/figures?  Defaults to True.
+        n_kl_samples : int (optionals)
+            Number of samples to draw for Monte Carlo approximation to KL
+            divergence between current and previous estimate of the posterior.
+            Defaults to 10000.  Error on estimation decreases as approximately
+            1/sqrt(n_kl_samples).
+        verbose : bool (optional)
+            Output all the diagnostics? Defaults to True.
 
         Returns
         -------
@@ -242,85 +195,95 @@ class ApproxPosterior(object):
         else:
             y = np.array(y)
 
+        # Store quantities
+        self.theta = theta
+        self.y = y
+
         # Setup, optimize gaussian process XXX just using default options now
-        self.gp = gp_utils.setup_gp(theta, y, which_kernel=which_kernel)
-        self.gp = gp_utils.optimize_gp(self.gp, theta, y, cv=cv, seed=seed,
+        self.gp = gp_utils.setup_gp(self.theta, self.y, which_kernel=which_kernel)
+        self.gp = gp_utils.optimize_gp(self.gp, theta, self.y, cv=cv, seed=seed,
                                        which_kernel=which_kernel)
 
-        # Store theta, y
-        self.__theta = theta
-        self.__y = y
-
         # Main loop
-        for n in range(nmax):
+        for nn in range(nmax):
 
             # 1) Find m new points by maximizing utility function
             for ii in range(m):
-                theta_t = ut.minimize_objective(self.utility, self.__y, self.gp,
+                theta_t = ut.minimize_objective(self.utility, self.y, self.gp,
                                                 sample_fn=self.prior_sample,
                                                 prior_fn=self._lnprior,
                                                 sim_annealing=sim_annealing,
                                                 bounds=bounds, **kw)
 
                 # 2) Query oracle at new points, theta_t
-                y_t = self._lnlike(theta_t) + self.posterior(theta_t)
+                #y_t = self._lnlike(theta_t) + self.posterior(theta_t)
+                y_t = self._lnlike(theta_t) + self._lnprior(theta_t)
 
                 # Join theta, y arrays
-                self.__theta = np.concatenate([self.__theta, theta_t])
-                self.__y = np.concatenate([self.__y, y_t])
+                self.theta = np.concatenate([self.theta, theta_t])
+                self.y = np.concatenate([self.y, y_t])
 
                 # 3) Init new GP with new points, optimize
-                self.gp = gp_utils.setup_gp(self.__theta, self.__y,
+                self.gp = gp_utils.setup_gp(self.theta, self.y,
                                             which_kernel=which_kernel)
-                self.gp = gp_utils.optimize_gp(self.gp, self.__theta, self.__y,
+                self.gp = gp_utils.optimize_gp(self.gp, self.theta, self.y,
                                                cv=cv, seed=seed,
                                                which_kernel=which_kernel)
 
+            # Plot GP debug diagnostics?
+            if debug:
+                fig, _ = pu.plot_gp(self.gp, self.theta, self.y,
+                                    return_type="mean", log=True,
+                                    save_plot="gp_mu_iter_%d.png" % nn)
+                plt.close(fig)
 
-            # XXX debug diagnostics Done adding new design points
-            fig, _ = plot_gp(self.gp, self.__theta, self.__y, return_type="mean",
-                    save_plot="gp_mu_iter_%d.png" % n, log=True)
-            plt.close(fig)
-
-            # GP updated: run sampler to obtain new posterior conditioned on (theta_n, log(L_t)*p_n)
-            # Use emcee to obtain approximate posterior
-            ndim = self.__theta.shape[-1]
+            # GP updated: run sampler to obtain new posterior conditioned on
+            # (theta_n, log(L_t)*p_n). Use emcee to obtain posterior
+            ndim = self.theta.shape[-1]
             nwalk = 10 * ndim
             nsteps = M
 
-            # Initial guess (random over interval)
+            # Initial guess (random over prior)
             p0 = [self.prior_sample(1) for j in range(nwalk)]
             params = ["x%d" % jj for jj in range(ndim)]
 
             # Init emcee sampler
             sampler = emcee.EnsembleSampler(nwalk, ndim, self._sample)
             for i, result in enumerate(sampler.sample(p0, iterations=nsteps)):
-                print("%d/%d" % (i+1, nsteps))
-
-            print("emcee finished!")
+                if verbose:
+                    print("%d/%d" % (i+1, nsteps))
+            if verbose:
+                print("emcee finished!")
 
             # Save current sampler object
-            self.__samplers.append(sampler)
+            self.samplers.append(sampler)
 
-            # Estimate burn-in
+            # Estimate burn-in, save it
             iburn = mcmc_utils.estimate_burnin(sampler, nwalk, nsteps, ndim)
-            print(iburn)
+            self.iburns.append(iburn)
 
-            fig = corner.corner(sampler.flatchain[iburn:],
-                                quantiles=[0.16, 0.5, 0.84],
-                                plot_contours=False);
 
-            fig.savefig("posterior_%d.png" % n)
-            plt.clf()
-            #plt.show()
+            # Plot mcmc posterior distributions?
+            if debug:
+                if verbose:
+                    print(iburn)
+                fig = corner.corner(sampler.flatchain[iburn:],
+                                    quantiles=[0.16, 0.5, 0.84],
+                                    plot_contours=True);
 
-            """
+                fig.savefig("posterior_%d.png" % nn)
+                plt.clf()
+
             # Make new posterior function using a Gaussian Mixure model to
             # approximate the posterior.
-            # Fit some GMMs!
-            # sklean hates infs, Nans, big numbers, but I probs messed up XXX
-            mask = (~np.isnan(sampler.flatchain).any(axis=1)) & (~np.isinf(sampler.flatchain).any(axis=1))
+            hyperparams = {"n_components" : np.array([1,2,3,4,5])}
+            gmm = GridSearchCV(GaussianMixture(covariance_type="full"),
+                               hyperparams, cv=5)
+            gmm.fit(sampler.flatchain[iburn:])
+            GMM = gmm.best_estimator_
+            GMM.fit(sampler.flatchain[iburn:])
 
+            """
             # Select optimal number of components via minimizing BIC
             bic = []
             lowest_bic = 1.0e10
@@ -339,30 +302,30 @@ class ApproxPosterior(object):
             # Refit GMM with the lowest bic
             GMM = best_gmm
             GMM.fit(sampler.flatchain[iburn:])
+            """
 
-            # display predicted scores by the model as a contour plot
-            x = np.linspace(-5.0, 5.0)
-            y = np.linspace(-5.0, 5.0)
-            X, Y = np.meshgrid(x, y)
-            XX = np.array([X.ravel(), Y.ravel()]).T
-            Z = -GMM.score_samples(XX)
-            Z = Z.reshape(X.shape)
-
-            fig, ax = plt.subplots(figsize=(9,8))
-            CS = ax.contourf(X, Y, Z, norm=LogNorm(vmin=1.0e-1, vmax=1.0e2),
-                             levels=np.logspace(-1, 2, 10), lw=3)
-            cb = fig.colorbar(CS, shrink=0.8, extend='both')
-            cb.set_label("|GMM LogLike|", labelpad=20, rotation=270)
-            ax.scatter(self.__theta[:,0], self.__theta[:,1], color="r", zorder=20)
-            ax.set_xlim(-5,5)
-            ax.set_ylim(-5,5)
-            fig.savefig("gmm_ll_%d.png" % n)
+            # Plot GMM?
+            if debug:
+                fig, _ = pu.plot_GMM_loglike(GMM, self.theta,
+                                             save_plot="GMM_ll_iter_%d.png" % nn)
+                plt.close(fig)
 
             # Save current GMM model
-            self.__GMM.append(GMM)
+            self.GMMs.append(GMM)
 
-            # XXX: updating posterior estimate screws it all up.  probs need more emcee iters, but I'm impatient
             # Update posterior estimate
-            self.__prev_posterior = self.posterior
+            self.prev_posterior = self.posterior
             self.posterior = GMM.score_samples
-            """
+
+            # Estimate KL-divergence between previous and current posterior
+            # Only do this after the 1st (0th) iteration!
+            if nn > 0:
+                # Sample from last iteration's GMM
+                prev_samples, _ = self.GMMs[-2].sample(n_kl_samples)
+
+                # Estimate KL divergence!
+                self.Dkl.append(ut.kl_numerical(prev_samples,
+                                               self.prev_posterior,
+                                               self.posterior))
+            else:
+                self.Dkl.append(0.0)

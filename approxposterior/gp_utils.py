@@ -19,7 +19,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.model_selection import ShuffleSplit, ParameterGrid
 from scipy.optimize import minimize, basinhopping
 
-# Define the objective function (negative log-likelihood in this case).
+
 def _nll(p, gp, y):
     """
     Given parameters and data, compute the negative log likelihood of the data
@@ -45,7 +45,6 @@ def _nll(p, gp, y):
 # end function
 
 
-# And the gradient of the objective function.
 def _grad_nll(p, gp, y):
     """
     Given parameters and data, compute the gradient of the negative log
@@ -126,7 +125,7 @@ def optimize_gp(gp, theta, y, cv=None, seed=None,
     # Optimize GP via cv=k fold cross-validation
     else:
 
-        # XXX hack hack hack
+        # XXX hack hack hack: this will fail when fitting for means
         hyperparameters = {'kernel:metric:log_M_0_0': np.linspace(0.01, 100.0,
                            10),
                            'kernel:metric:log_M_1_1': np.linspace(0.01, 100.0,
@@ -163,7 +162,6 @@ def optimize_gp(gp, theta, y, cv=None, seed=None,
                 ll = opt_gp.log_likelihood(y[train_split], quiet=True)
                 if np.isfinite(ll):
                     iter_nll += -ll
-                # This could introduce numerical bugs... XXX
                 else:
                     iter_nll += 1e25
             # End of iteration: append mean nll
@@ -182,7 +180,7 @@ def optimize_gp(gp, theta, y, cv=None, seed=None,
 # end function
 
 
-def setup_gp(theta, y, which_kernel="ExpSquaredKernel", seed=None):
+def setup_gp(theta, y, which_kernel="ExpSquaredKernel", mean=None, seed=None):
     """
     Initialize a george GP object
 
@@ -194,6 +192,9 @@ def setup_gp(theta, y, which_kernel="ExpSquaredKernel", seed=None):
     which_kernel : str (optional)
         Name of the george kernel you want to use.  Defaults to ExpSquaredKernel.
         Options: ExpSquaredKernel, ExpKernel, Matern32Kernel, Matern52Kernel
+    mean : scalar, callable (optional)
+        specifies the mean function of the GP using a scalar or a callable fn.
+        Defaults to None.  If none, estimates the mean
     seed : int (optional)
         numpy RNG seed.  Defaults to None.
 
@@ -202,7 +203,7 @@ def setup_gp(theta, y, which_kernel="ExpSquaredKernel", seed=None):
     gp : george.GP
     """
 
-    # Guess the bandwidth following Kandasamy et al. (2015)'s suggestion
+    # Guess the bandwidth
     bandwidth = np.mean(np.array(theta)**2, axis=0)/10.0
 
     # Which kernel?
@@ -222,8 +223,12 @@ def setup_gp(theta, y, which_kernel="ExpSquaredKernel", seed=None):
         avail = "Available kernels: ExpSquaredKernel, ExpKernel, Matern32Kernel, Matern52Kernel"
         raise NotImplementedError("Error: Available kernels: %s" % avail)
 
+    # Guess the mean value if nothing is given
+    if mean is None:
+        mean = np.mean(np.array(y), axis=0)
+
     # Create the GP conditioned on theta
-    gp = george.GP(kernel=kernel)
+    gp = george.GP(kernel=kernel, fit_mean=True, mean=mean)
     gp.compute(theta)
 
     return gp

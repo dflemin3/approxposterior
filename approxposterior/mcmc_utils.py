@@ -97,17 +97,17 @@ def estimate_burnin(sampler, nwalk, nsteps, ndim):
 
             # If this chain is within 3-sig from all other chain's median
             if np.fabs(mean_chain - med_other) < 3*std_other:
-
+                # Keep it!
                 ikeep.append(i)
-                # Get autocorrelation of chain
 
+                # Get autocorrelation of chain
                 autoci = autocorr(sampler.chain[i,iburn:,j])
                 autoc.append(autoci)
 
                 # Fit with spline
                 spline = UnivariateSpline(iterations, autoci, s=0)
 
-                # Find minimum root (first zero crossing)
+                # Find zero crossings
                 roots = spline.roots()
 
                 # Save autocorrelation length

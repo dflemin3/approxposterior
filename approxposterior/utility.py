@@ -77,6 +77,8 @@ def kl_numerical(x, p, q):
     See Hershey and Olsen, "Approximating the Kullback Leibler
     Divergence Between Gaussian Mixture Models" for more info
 
+    Note that this method can result in D_kl < 0
+
     Parameters
     ----------
     x : array
@@ -253,6 +255,9 @@ def minimize_objective(fn, y, gp, sample_fn, prior_fn, sim_annealing=False,
         # XXX Not sure if this works
         try:
             if sim_annealing:
+
+                raise NotImplementedError("Simulated annealing not implemented.")
+
                 minimizer_kwargs = {"method":"L-BFGS-B", "args" : args,
                                     "bounds" : bounds,
                                     "options" : {"ftol" : 1.0e-3}}
