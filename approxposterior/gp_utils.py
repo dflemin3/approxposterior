@@ -162,7 +162,6 @@ def optimize_gp(gp, theta, y, cv=None, seed=None,
                 ll = opt_gp.log_likelihood(y[train_split], quiet=True)
                 if np.isfinite(ll):
                     iter_nll += -ll
-                # This could introduce numerical bugs... XXX
                 else:
                     iter_nll += 1e25
             # End of iteration: append mean nll
