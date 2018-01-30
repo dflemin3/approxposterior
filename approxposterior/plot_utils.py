@@ -107,15 +107,17 @@ def plot_gp(gp, theta, y, xmin=-5, xmax=5, ymin=-5, ymax=5, n=100,
 # end function
 
 
-def plot_GMM_loglike(GMM, save_plot=None, xmin=-5, xmax=5, ymin=-5, ymax=5):
+def plot_GMM_loglike(GMM, theta, save_plot=None, xmin=-5, xmax=5, ymin=-5, ymax=5):
     """
     Plot a 2D slice of a Gaussian Mixture Model's predicted log likelihood.
 
     Parameters
     ----------
+    GMM : sklearn.mixture.GaussianMixture
+    theta : array
+        input coordinates
     save_plot : str (optional)
         If not none, saves the plot as save_plot (name of figure)
-    GMM : sklearn.mixture.GaussianMixture
     xmin : float (optional)
         Defaults to -5
     xmax : float (optional)
@@ -144,7 +146,7 @@ def plot_GMM_loglike(GMM, save_plot=None, xmin=-5, xmax=5, ymin=-5, ymax=5):
                    levels=np.logspace(-1, 2, 10), lw=3)
     cb = fig.colorbar(CS, shrink=0.8, extend='both')
     cb.set_label("|GMM LogLike|", labelpad=20, rotation=270)
-    ax.scatter(self.__theta[:,0], self.__theta[:,1], color="r", zorder=20)
+    ax.scatter(theta[:,0], theta[:,1], color="r", zorder=20)
     ax.set_xlim(-5,5)
     ax.set_ylim(-5,5)
 

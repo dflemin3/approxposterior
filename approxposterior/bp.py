@@ -82,12 +82,13 @@ class ApproxPosterior(object):
 
         # Initial approximate posteriors are the prior
         self.posterior = self._lnprior
-        self.__prev_posterior = self._lnprior
+        self.prev_posterior = self._lnprior
 
-        # Holders to save GMM fits to posteriors, raw chains
-        self.__GMM = list()
-        self.__samplers = list()
-
+        # Holders to save GMM fits to posteriors, raw samplers, KL divergences
+        self.Dkl = list()
+        self.GMMs = list()
+        self.samplers = list()
+        self.iburns = list()
     # end function
 
 
@@ -113,7 +114,7 @@ class ApproxPosterior(object):
             return -np.inf
 
         # Mean of predictive distribution conditioned on y (GP posterior estimate)
-        mu = self.gp.predict(self.__y, theta_test, return_cov=False, return_var=False)
+        mu = self.gp.predict(self.y, theta_test, return_cov=False, return_var=False)
 
         # Always add flat prior to keep it in bounds
         mu += self._lnprior(theta_test)
@@ -128,7 +129,8 @@ class ApproxPosterior(object):
 
     def run(self, theta=None, y=None, m0=20, m=10, M=10000, nmax=2, Dmax=0.1,
             kmax=5, sampler=None, sim_annealing=False, cv=None, seed=None,
-            which_kernel="ExpSquaredKernel", bounds=None, debug=True, **kw):
+            which_kernel="ExpSquaredKernel", bounds=None, debug=True,
+            n_kl_samples=100000, verbose=True, **kw):
         """
         Core algorithm.
 
@@ -168,6 +170,13 @@ class ApproxPosterior(object):
             for more information.  Defaults to None.
         debug : bool (optional)
             Output/plot diagnostic stats/figures?  Defaults to True.
+        n_kl_samples : int (optionals)
+            Number of samples to draw for Monte Carlo approximation to KL
+            divergence between current and previous estimate of the posterior.
+            Defaults to 10000.  Error on estimation decreases as approximately
+            1/sqrt(n_kl_samples).
+        verbose : bool (optional)
+            Output all the diagnostics? Defaults to True.
 
         Returns
         -------
@@ -192,108 +201,128 @@ class ApproxPosterior(object):
                                        which_kernel=which_kernel)
 
         # Store theta, y
-        self.__theta = theta
-        self.__y = y
+        self.theta = theta
+        self.y = y
 
         # Main loop
         for nn in range(nmax):
 
             # 1) Find m new points by maximizing utility function
             for ii in range(m):
-                theta_t = ut.minimize_objective(self.utility, self.__y, self.gp,
+                theta_t = ut.minimize_objective(self.utility, self.y, self.gp,
                                                 sample_fn=self.prior_sample,
                                                 prior_fn=self._lnprior,
                                                 sim_annealing=sim_annealing,
                                                 bounds=bounds, **kw)
 
                 # 2) Query oracle at new points, theta_t
+                ### XXX Just using loglikelihood + log prior for now
+                #y_t = self._lnlike(theta_t) + self._lnprior(theta_t)
                 y_t = self._lnlike(theta_t) + self.posterior(theta_t)
 
                 # Join theta, y arrays
-                self.__theta = np.concatenate([self.__theta, theta_t])
-                self.__y = np.concatenate([self.__y, y_t])
+                self.theta = np.concatenate([self.theta, theta_t])
+                self.y = np.concatenate([self.y, y_t])
 
                 # 3) Init new GP with new points, optimize
-                self.gp = gp_utils.setup_gp(self.__theta, self.__y,
+                self.gp = gp_utils.setup_gp(self.theta, self.y,
                                             which_kernel=which_kernel)
-                self.gp = gp_utils.optimize_gp(self.gp, self.__theta, self.__y,
+                self.gp = gp_utils.optimize_gp(self.gp, self.theta, self.y,
                                                cv=cv, seed=seed,
                                                which_kernel=which_kernel)
 
-
-            # Plot GP diagnostics?
+            # Plot GP debug diagnostics?
             if debug:
-                fig, _ = pu.plot_gp(self.gp, self.__theta, self.__y,
+                fig, _ = pu.plot_gp(self.gp, self.theta, self.y,
                                     return_type="mean", log=True,
                                     save_plot="gp_mu_iter_%d.png" % nn)
                 plt.close(fig)
 
-            # GP updated: run sampler to obtain new posterior conditioned on (theta_n, log(L_t)*p_n)
-            # Use emcee to obtain approximate posterior
-            ndim = self.__theta.shape[-1]
+            # GP updated: run sampler to obtain new posterior conditioned on
+            # (theta_n, log(L_t)*p_n). Use emcee to obtain posterior
+            ndim = self.theta.shape[-1]
             nwalk = 10 * ndim
             nsteps = M
 
-            # Initial guess (random over interval)
+            # Initial guess (random over prior)
             p0 = [self.prior_sample(1) for j in range(nwalk)]
             params = ["x%d" % jj for jj in range(ndim)]
 
             # Init emcee sampler
             sampler = emcee.EnsembleSampler(nwalk, ndim, self._sample)
             for i, result in enumerate(sampler.sample(p0, iterations=nsteps)):
-                print("%d/%d" % (i+1, nsteps))
-            print("emcee finished!")
+                if verbose:
+                    print("%d/%d" % (i+1, nsteps))
+            if verbose:
+                print("emcee finished!")
 
             # Save current sampler object
-            self.__samplers.append(sampler)
+            self.samplers.append(sampler)
 
-            # Estimate burn-in
+            # Estimate burn-in, save it
             iburn = mcmc_utils.estimate_burnin(sampler, nwalk, nsteps, ndim)
-            print(iburn)
+            self.iburns.append(iburn)
 
-            fig = corner.corner(sampler.flatchain[iburn:],
-                                quantiles=[0.16, 0.5, 0.84],
-                                plot_contours=False);
+            if nn > 4:
 
-            fig.savefig("posterior_%d.png" % nn)
-            plt.clf()
-            #plt.show()
+                # Plot mcmc posterior distributions?
+                if debug:
+                    if verbose:
+                        print(iburn)
+                    fig = corner.corner(sampler.flatchain[iburn:],
+                                        quantiles=[0.16, 0.5, 0.84],
+                                        plot_contours=False);
 
-            # Make new posterior function using a Gaussian Mixure model to
-            # approximate the posterior.
-            # Fit some GMMs!
-            # sklean hates infs, Nans, big numbers, but I probs messed up XXX
-            mask = (~np.isnan(sampler.flatchain).any(axis=1)) & (~np.isinf(sampler.flatchain).any(axis=1))
+                    fig.savefig("posterior_%d.png" % nn)
+                    plt.clf()
 
-            # Select optimal number of components via minimizing BIC
-            bic = []
-            lowest_bic = 1.0e10
-            best_gmm = None
-            gmm = GaussianMixture()
-            for n_components in range(1,6):
-                gmm.set_params(**{"n_components" : n_components,
-                               "covariance_type" : "full"})
-                gmm.fit(sampler.flatchain[iburn:])
-                bic.append(gmm.bic(sampler.flatchain[iburn:]))
+                # Make new posterior function using a Gaussian Mixure model to
+                # approximate the posterior.
+                # Fit some GMMs!
+                # sklean hates infs, Nans, big numbers, but I probs messed up XXX
+                mask = (~np.isnan(sampler.flatchain).any(axis=1)) & (~np.isinf(sampler.flatchain).any(axis=1))
 
-                if bic[-1] < lowest_bic:
-                    lowest_bic = bic[-1]
-                    best_gmm = gmm
+                # Select optimal number of components via minimizing BIC
+                bic = []
+                lowest_bic = 1.0e10
+                best_gmm = None
+                gmm = GaussianMixture()
+                for n_components in range(1,5):
+                    gmm.set_params(**{"n_components" : n_components,
+                                   "covariance_type" : "full"})
+                    gmm.fit(sampler.flatchain[iburn:])
+                    bic.append(gmm.bic(sampler.flatchain[iburn:]))
 
-            # Refit GMM with the lowest bic
-            GMM = best_gmm
-            GMM.fit(sampler.flatchain[iburn:])
+                    if bic[-1] < lowest_bic:
+                        lowest_bic = bic[-1]
+                        best_gmm = gmm
 
-            # Plot GMM?
-            if debug:
-                fig, _ = pu.plot_GMM_loglike(GMM,
-                                             save_plot="GMM_ll_iter_%d.png" % nn)
-                plt.close(fig)
+                # Refit GMM with the lowest bic
+                GMM = best_gmm
+                GMM.fit(sampler.flatchain[iburn:])
 
-            # Save current GMM model
-            self.__GMM.append(GMM)
+                # Plot GMM?
+                if debug:
+                    fig, _ = pu.plot_GMM_loglike(GMM, self.theta,
+                                                 save_plot="GMM_ll_iter_%d.png" % nn)
+                    plt.close(fig)
 
-            # XXX: updating posterior estimate not working
-            # Update posterior estimate
-            #self.__prev_posterior = self.posterior
-            #self.posterior = GMM.score_samples
+                # Save current GMM model
+                self.GMMs.append(GMM)
+
+                # Update posterior estimate
+                self.prev_posterior = self.posterior
+                self.posterior = GMM.score_samples
+
+                # Estimate KL-divergence between previous and current posterior
+                # Only do this after the 1st (0th) iteration!
+                if False:#nn > 0:
+                    # Sample from last iteration's GMM
+                    prev_samples, _ = self.GMMs[-2].sample(n_kl_samples)
+
+                    # Estimate KL divergence!
+                    self.Dkl.append(ut.kl_numerical(prev_samples,
+                                                   self.prev_posterior,
+                                                   self.posterior))
+                else:
+                    self.Dkl.append(0.0)

@@ -19,7 +19,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.model_selection import ShuffleSplit, ParameterGrid
 from scipy.optimize import minimize, basinhopping
 
-# Define the objective function (negative log-likelihood in this case).
+
 def _nll(p, gp, y):
     """
     Given parameters and data, compute the negative log likelihood of the data
@@ -45,7 +45,6 @@ def _nll(p, gp, y):
 # end function
 
 
-# And the gradient of the objective function.
 def _grad_nll(p, gp, y):
     """
     Given parameters and data, compute the gradient of the negative log

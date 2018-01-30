@@ -26,12 +26,13 @@ which_kernel = "ExpSquaredKernel"
 bounds = ((-5,5), (-5,5))
 
 # Init object
-bp = bp.ApproxPosterior(lnprior=lh.rosenbrock_lnprior,
-                        lnlike=lh.rosenbrock_lnlike,
-                        lnprob = lh.rosenbrock_lnprob,
-                        prior_sample=lh.rosenbrock_sample,
-                        algorithm="agp")
+agp = bp.ApproxPosterior(lnprior=lh.rosenbrock_lnprior,
+                         lnlike=lh.rosenbrock_lnlike,
+                         lnprob = lh.rosenbrock_lnprob,
+                         prior_sample=lh.rosenbrock_sample,
+                         algorithm="agp")
 
 # Run!
-bp.run(m0=m0, m=m, M=M, nmax=nmax, Dmax=Dmax, kmax=kmax, cv=cv,
-       sampler=None, bounds=bounds, which_kernel=which_kernel)
+agp.run(m0=m0, m=m, M=M, nmax=nmax, Dmax=Dmax, kmax=kmax, cv=cv,
+        sampler=None, bounds=bounds, which_kernel=which_kernel,
+        n_kl_samples=100000, verbose=True, debug=True)
