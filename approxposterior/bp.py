@@ -1,7 +1,10 @@
 """
 
-Bayesian Posterior estimation routines written in pure python leveraging
-Dan Forman-Mackey's george Gaussian Process implementation and emcee.
+Bayesian Posterior estimation routines, written in pure python, leveraging
+Dan Forman-Mackey's Gaussian Process implementation, george, and his
+Metropolis-Hastings MCMC implementation, emcee. We include hybrid
+implementations of both Wang & Li (2017) and Kandasamy et al. (2015).  If you
+use this, cite them!
 
 @author: David P. Fleming [University of Washington, Seattle], 2017
 @email: dflemin3 (at) uw (dot) edu
@@ -203,6 +206,7 @@ class ApproxPosterior(object):
                                        which_kernel=which_kernel)
 
         # Main loop
+        kk = 0
         for nn in range(nmax):
 
             # 1) Find m new points by maximizing utility function
@@ -302,3 +306,24 @@ class ApproxPosterior(object):
                                                self.posterior))
             else:
                 self.Dkl.append(0.0)
+
+            # Convergence diagnostics: If KL divergence is less than threshold
+            # for kmax consecutive iterations, we're finished
+
+            # Can't check for convergence on 1st (0th) iteration
+            if nn < 1:
+                delta_Dkl = 1.0e10
+            else:
+                delta_Dkl = np.fabs(self.Dkl[-1] - self.Dkl[-2])
+
+            # If the KL divergence is too large, reset counter
+            if delta_Dkl <= Dmax:
+                kk = kk + 1
+            else:
+                kk = 0
+
+            # Have we converged?
+            if kk >= kmax:
+                if verbose:
+                    print("Converged! n_iters, Dkl, Delta Dkl: %d, %e, %e" % (nn,self.Dkl[-1],delta_Dkl))
+                return
