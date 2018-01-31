@@ -19,14 +19,10 @@ from . import likelihood as lh
 from . import gp_utils
 from . import mcmc_utils
 from . import plot_utils as pu
+from . import gmm_utils
+
 import numpy as np
-import george
-from george import kernels
 import emcee
-import corner
-from sklearn.neighbors import KernelDensity
-from sklearn.model_selection import GridSearchCV
-from sklearn.mixture import GaussianMixture
 import corner
 import matplotlib as mpl
 import matplotlib.pyplot as plt
@@ -130,7 +126,7 @@ class ApproxPosterior(object):
     def run(self, theta=None, y=None, m0=20, m=10, M=10000, nmax=2, Dmax=0.1,
             kmax=5, sampler=None, sim_annealing=False, cv=None, seed=None,
             which_kernel="ExpSquaredKernel", bounds=None, debug=True,
-            n_kl_samples=100000, verbose=True, **kw):
+            n_kl_samples=100000, verbose=True, update_prior=False, **kw):
         """
         Core algorithm.
 
@@ -177,14 +173,16 @@ class ApproxPosterior(object):
             1/sqrt(n_kl_samples).
         verbose : bool (optional)
             Output all the diagnostics? Defaults to True.
+        update_prior : bool (optional)
+            Update the prior function with the current estimate of the posterior
+            following Wang & Li (2017)?  Defaults to False (what BAPE does).
 
         Returns
         -------
         None
         """
 
-        # Choose m0 initial design points to initialize dataset if none are
-        # given
+        # Choose m0 initial design points to initialize dataset if none
         if theta is None:
             theta = self.prior_sample(m0)
         else:
@@ -199,7 +197,7 @@ class ApproxPosterior(object):
         self.theta = theta
         self.y = y
 
-        # Setup, optimize gaussian process XXX just using default options now
+        # Setup, optimize gaussian process
         self.gp = gp_utils.setup_gp(self.theta, self.y, which_kernel=which_kernel)
         self.gp = gp_utils.optimize_gp(self.gp, theta, self.y, cv=cv, seed=seed,
                                        which_kernel=which_kernel)
@@ -215,15 +213,17 @@ class ApproxPosterior(object):
                                                 sim_annealing=sim_annealing,
                                                 bounds=bounds, **kw)
 
-                # 2) Query oracle at new points, theta_t
-                #y_t = self._lnlike(theta_t) + self.posterior(theta_t)
-                y_t = self._lnlike(theta_t) + self._lnprior(theta_t)
+                # 2) Query forward model at new points, theta_t
+                if update_prior:
+                    y_t = self._lnlike(theta_t) + self.posterior(theta_t)
+                else:
+                    y_t = self._lnlike(theta_t) + self._lnprior(theta_t)
 
-                # Join theta, y arrays
+                # Join theta, y arrays with new points
                 self.theta = np.concatenate([self.theta, theta_t])
                 self.y = np.concatenate([self.y, y_t])
 
-                # 3) Init new GP with new points, optimize
+                # 3) Initialize new GP with new points, optimize
                 self.gp = gp_utils.setup_gp(self.theta, self.y,
                                             which_kernel=which_kernel)
                 self.gp = gp_utils.optimize_gp(self.gp, self.theta, self.y,
@@ -238,7 +238,7 @@ class ApproxPosterior(object):
                 plt.close(fig)
 
             # GP updated: run sampler to obtain new posterior conditioned on
-            # (theta_n, log(L_t)*p_n). Use emcee to obtain posterior
+            # {theta_n, log(L_t*prior)}. Use emcee to obtain posterior
             ndim = self.theta.shape[-1]
             nwalk = 10 * ndim
             nsteps = M
@@ -262,7 +262,6 @@ class ApproxPosterior(object):
             iburn = mcmc_utils.estimate_burnin(sampler, nwalk, nsteps, ndim)
             self.iburns.append(iburn)
 
-
             # Plot mcmc posterior distributions?
             if debug:
                 if verbose:
@@ -274,35 +273,9 @@ class ApproxPosterior(object):
                 fig.savefig("posterior_%d.png" % nn)
                 plt.clf()
 
-            # Make new posterior function using a Gaussian Mixure model to
-            # approximate the posterior.
-            hyperparams = {"n_components" : np.array([1,2,3,4,5])}
-            gmm = GridSearchCV(GaussianMixture(covariance_type="full"),
-                               hyperparams, cv=5)
-            gmm.fit(sampler.flatchain[iburn:])
-            GMM = gmm.best_estimator_
-            GMM.fit(sampler.flatchain[iburn:])
-
-            """
-            # Select optimal number of components via minimizing BIC
-            bic = []
-            lowest_bic = 1.0e10
-            best_gmm = None
-            gmm = GaussianMixture()
-            for n_components in range(1,5):
-                gmm.set_params(**{"n_components" : n_components,
-                               "covariance_type" : "full"})
-                gmm.fit(sampler.flatchain[iburn:])
-                bic.append(gmm.bic(sampler.flatchain[iburn:]))
-
-                if bic[-1] < lowest_bic:
-                    lowest_bic = bic[-1]
-                    best_gmm = gmm
-
-            # Refit GMM with the lowest bic
-            GMM = best_gmm
-            GMM.fit(sampler.flatchain[iburn:])
-            """
+            # Approximate posterior distribution using a Gaussian Mixure model
+            GMM = gmm_utils.fit_gmm(sampler, iburn, max_comp=6, cov_type="full",
+                                    use_bic=True)
 
             # Plot GMM?
             if debug:
@@ -323,7 +296,7 @@ class ApproxPosterior(object):
                 # Sample from last iteration's GMM
                 prev_samples, _ = self.GMMs[-2].sample(n_kl_samples)
 
-                # Estimate KL divergence!
+                # Numerically estimate KL divergence
                 self.Dkl.append(ut.kl_numerical(prev_samples,
                                                self.prev_posterior,
                                                self.posterior))
