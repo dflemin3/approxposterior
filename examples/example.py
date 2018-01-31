@@ -18,7 +18,7 @@ from approxposterior import bp, likelihood as lh
 m0 = 20 # Initialize size of training set
 m = 10 # Number of new points to find each iteration
 nmax = 10 # Maximum number of iterations
-M = int(1.0e3) # Number of MCMC steps to estimate approximate posterior
+M = int(1.0e4) # Number of MCMC steps to estimate approximate posterior
 Dmax = 0.1
 kmax = 5
 cv = None
@@ -26,13 +26,13 @@ which_kernel = "ExpSquaredKernel"
 bounds = ((-5,5), (-5,5))
 
 # Init object
-agp = bp.ApproxPosterior(lnprior=lh.rosenbrock_lnprior,
+bape = bp.ApproxPosterior(lnprior=lh.rosenbrock_lnprior,
                          lnlike=lh.rosenbrock_lnlike,
                          lnprob = lh.rosenbrock_lnprob,
                          prior_sample=lh.rosenbrock_sample,
-                         algorithm="agp")
+                         algorithm="bape")
 
 # Run!
-agp.run(m0=m0, m=m, M=M, nmax=nmax, Dmax=Dmax, kmax=kmax, cv=cv,
+bape.run(m0=m0, m=m, M=M, nmax=nmax, Dmax=Dmax, kmax=kmax, cv=cv,
         sampler=None, bounds=bounds, which_kernel=which_kernel,
-        n_kl_samples=100000, verbose=False, debug=True)
+        n_kl_samples=100000, verbose=True, debug=True)
