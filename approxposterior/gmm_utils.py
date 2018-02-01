@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 
 Gaussian mixture model utility functions.

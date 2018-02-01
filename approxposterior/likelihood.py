@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 
 This file contains routines for simples loglikelihoods and priors for test

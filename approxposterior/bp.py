@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 
 Bayesian Posterior estimation routines, written in pure python, leveraging
@@ -39,7 +40,7 @@ class ApproxPosterior(object):
     the AGP (Adaptive Gaussian Process) by Wang & Li (2017).
     """
 
-    def __init__(self, lnprior, lnlike, lnprob, prior_sample, algorithm="BAPE"):
+    def __init__(self, lnprior, lnlike, prior_sample, algorithm="BAPE"):
         """
         Initializer.
 
@@ -51,8 +52,6 @@ class ApproxPosterior(object):
             Defines the log likelihood function.  In this function, it is assumed
             that the forward model is evaluated on the input theta and the output
             is used to evaluate the log likelihood.
-        lnprob : function
-            Defines the log probability function
         prior_sample : function
             Method to randomly sample points over region allowed by prior
         algorithm : str (optional)
@@ -66,7 +65,6 @@ class ApproxPosterior(object):
 
         self._lnprior = lnprior
         self._lnlike = lnlike
-        self._lnprob = lnprob
         self.prior_sample = prior_sample
         self.algorithm = algorithm
 
@@ -127,11 +125,13 @@ class ApproxPosterior(object):
 
 
     def run(self, theta=None, y=None, m0=20, m=10, M=10000, nmax=2, Dmax=0.1,
-            kmax=5, sampler=None, sim_annealing=False, cv=None, seed=None,
+            kmax=5, sampler=None, cv=None, seed=None,
             which_kernel="ExpSquaredKernel", bounds=None, debug=True,
             n_kl_samples=100000, verbose=True, update_prior=False, **kw):
         """
-        Core algorithm.
+        Core algorithm to estimate the posterior distribution via Gaussian
+        Process regression to the joint distribution for the forward model
+        input/output pairs (in a Bayesian framework, of course!)
 
         Parameters
         ----------
@@ -156,9 +156,6 @@ class ApproxPosterior(object):
             converged and terminates.  Defaults to 5.
         sample : emcee.EnsembleSampler (optional)
             emcee sampler object.  Defaults to None and is initialized internally.
-        sim_annealing : bool (optional)
-            Whether or not to minimize utility function using simulated annealing.
-            Defaults to False.
         cv : int (optional)
             If not None, cv is the number (k) of k-folds CV to use.  Defaults to
             None (no CV)
@@ -185,14 +182,14 @@ class ApproxPosterior(object):
         None
         """
 
-        # Choose m0 initial design points to initialize dataset if none
+        # Choose m0 initial design points to initialize dataset if none given
         if theta is None:
             theta = self.prior_sample(m0)
         else:
             theta = np.array(theta)
 
         if y is None:
-            y = self._lnprob(theta)
+            y = self._lnlike(theta) + self._lnprior(theta)
         else:
             y = np.array(y)
 
@@ -209,15 +206,14 @@ class ApproxPosterior(object):
         kk = 0
         for nn in range(nmax):
 
-            # 1) Find m new points by maximizing utility function
+            # 1) Find m new points by maximizing utility function, one at a time
             for ii in range(m):
                 theta_t = ut.minimize_objective(self.utility, self.y, self.gp,
                                                 sample_fn=self.prior_sample,
                                                 prior_fn=self._lnprior,
-                                                sim_annealing=sim_annealing,
                                                 bounds=bounds, **kw)
 
-                # 2) Query forward model at new points, theta_t
+                # 2) Query forward model at new point, theta_t
                 if update_prior:
                     y_t = self._lnlike(theta_t) + self.posterior(theta_t)
                 else:
@@ -227,7 +223,7 @@ class ApproxPosterior(object):
                 self.theta = np.concatenate([self.theta, theta_t])
                 self.y = np.concatenate([self.y, y_t])
 
-                # 3) Initialize new GP with new points, optimize
+                # 3) Initialize new GP with new point, optimize
                 self.gp = gp_utils.setup_gp(self.theta, self.y,
                                             which_kernel=which_kernel)
                 self.gp = gp_utils.optimize_gp(self.gp, self.theta, self.y,

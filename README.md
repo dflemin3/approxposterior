@@ -31,7 +31,6 @@ algorithm = "agp"                 # Use the Wang & Li (2017) formalism
 # Initialize object using the Wang & Li (2017) Rosenbrock function example
 ap = bp.ApproxPosterior(lnprior=lh.rosenbrock_lnprior,
                         lnlike=lh.rosenbrock_lnlike,
-                        lnprob=lh.rosenbrock_lnprob,
                         prior_sample=lh.rosenbrock_sample,
                         algorithm=algorithm)
 

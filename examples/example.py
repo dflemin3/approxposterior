@@ -28,11 +28,10 @@ algorithm = "bape"                 # Use the Kandasamy et al. (2015) formalism
 # Initialize object using the Wang & Li (2017) Rosenbrock function example
 ap = bp.ApproxPosterior(lnprior=lh.rosenbrock_lnprior,
                         lnlike=lh.rosenbrock_lnlike,
-                        lnprob=lh.rosenbrock_lnprob,
                         prior_sample=lh.rosenbrock_sample,
                         algorithm=algorithm)
 
 # Run!
-ap.run(m0=m0, m=m, M=M, nmax=nmax, Dmax=Dmax, kmax=kmax, cv=cv,
+ap.run(m0=m0, m=m, M=M, nmax=nmax, Dmax=Dmax, kmax=kmax,
         sampler=None, bounds=bounds, which_kernel=which_kernel,
         n_kl_samples=100000, verbose=True, debug=True)

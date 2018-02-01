@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 
 Diagnostic plot utility functions useful for debugging and to examine what the
