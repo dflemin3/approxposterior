@@ -26,6 +26,7 @@ from . import plot_utils as pu
 from . import gmm_utils
 
 import numpy as np
+import time
 import emcee
 import corner
 import matplotlib as mpl
@@ -124,8 +125,8 @@ class ApproxPosterior(object):
     # end function
 
 
-    def run(self, theta=None, y=None, m0=20, m=10, M=10000, nmax=2, Dmax=0.1,
-            kmax=5, sampler=None, cv=None, seed=None,
+    def run(self, theta=None, y=None, m0=20, m=10, M=10000, nmax=2, Dmax=0.01,
+            kmax=5, sampler=None, cv=None, seed=None, timing=False,
             which_kernel="ExpSquaredKernel", bounds=None, debug=True,
             n_kl_samples=100000, verbose=True, update_prior=False, **kw):
         """
@@ -161,6 +162,9 @@ class ApproxPosterior(object):
             None (no CV)
         seed : int (optional)
             RNG seed.  Defaults to None.
+        timing : bool (optional)
+            Whether or not to time the code for profiling/speed tests.
+            Defaults to False.
         bounds : tuple/iterable (optional)
             Bounds for minimization scheme.  See scipy.optimize.minimize details
             for more information.  Defaults to None.
@@ -181,6 +185,13 @@ class ApproxPosterior(object):
         -------
         None
         """
+
+        # Create containers for timing?
+        if timing:
+            self.training_time = list()
+            self.mcmc_time = list()
+            self.gmm_time = list()
+            self.kl_time = list()
 
         # Choose m0 initial design points to initialize dataset if none given
         if theta is None:
@@ -207,6 +218,8 @@ class ApproxPosterior(object):
         for nn in range(nmax):
 
             # 1) Find m new points by maximizing utility function, one at a time
+            if timing:
+                start = time.time()
             for ii in range(m):
                 theta_t = ut.minimize_objective(self.utility, self.y, self.gp,
                                                 sample_fn=self.prior_sample,
@@ -230,6 +243,9 @@ class ApproxPosterior(object):
                                                cv=cv, seed=seed,
                                                which_kernel=which_kernel)
 
+            if timing:
+                self.training_time.append(time.time() - start)
+
             # Plot GP debug diagnostics?
             if debug:
                 fig, _ = pu.plot_gp(self.gp, self.theta, self.y,
@@ -247,6 +263,9 @@ class ApproxPosterior(object):
             p0 = [self.prior_sample(1) for j in range(nwalk)]
             params = ["x%d" % jj for jj in range(ndim)]
 
+            if timing:
+                start = time.time()
+
             # Init emcee sampler
             sampler = emcee.EnsembleSampler(nwalk, ndim, self._sample)
             for i, result in enumerate(sampler.sample(p0, iterations=nsteps)):
@@ -262,6 +281,9 @@ class ApproxPosterior(object):
             iburn = mcmc_utils.estimate_burnin(sampler, nwalk, nsteps, ndim)
             self.iburns.append(iburn)
 
+            if timing:
+                self.mcmc_time.append(time.time() - start)
+
             # Plot mcmc posterior distributions?
             if debug:
                 if verbose:
@@ -273,9 +295,15 @@ class ApproxPosterior(object):
                 fig.savefig("posterior_%d.png" % nn)
                 plt.clf()
 
+            if timing:
+                start = time.time()
+
             # Approximate posterior distribution using a Gaussian Mixure model
             GMM = gmm_utils.fit_gmm(sampler, iburn, max_comp=6, cov_type="full",
                                     use_bic=True)
+
+            if timing:
+                self.gmm_time.append(time.time() - start)
 
             # Plot GMM?
             if debug:
@@ -290,6 +318,9 @@ class ApproxPosterior(object):
             self.prev_posterior = self.posterior
             self.posterior = GMM.score_samples
 
+            if timing:
+                start = time.time()
+
             # Estimate KL-divergence between previous and current posterior
             # Only do this after the 1st (0th) iteration!
             if nn > 0:
@@ -302,6 +333,9 @@ class ApproxPosterior(object):
                                                self.posterior))
             else:
                 self.Dkl.append(0.0)
+
+            if timing:
+                self.kl_time.append(time.time() - start)
 
             # Convergence diagnostics: If KL divergence is less than threshold
             # for kmax consecutive iterations, we're finished
