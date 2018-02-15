@@ -3,6 +3,7 @@ from scipy.integrate import odeint
 import emcee
 import corner
 from approxposterior import mcmc_utils
+from approxposterior.pool import Pool
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
@@ -117,10 +118,15 @@ def genetic_lnlike(x):
     """
 
     # True value, error, true value + error (error sampled from N(0,err^2))
-    obs = 3.183e-05
+    obs = np.array([-0.0328982971670082,
+                    15.984925746386871,
+                    15.900771796186838,
+                    15.96194037051973,
+                    15.970237000713183,
+                    15.945775511242514])
     err = 0.0224
-    erred_obs = 0.00394
-    IPTG = 1.0e-6
+    IPTG_arr = [1.0e-6, 5.0e-4, 7.0e-4, 1.0e-3, 3.0e-3, 5.0e-3]
+    model = list() # Holds forward model outputs
 
     # Unpack data
     x = np.array(x)
@@ -137,10 +143,14 @@ def genetic_lnlike(x):
     # Run forward model to get prediction (final value of v)
     t = np.linspace(0.0, 10.0, 100)
     y0 = [1.0e-2, 1.0e-2] # results not sensitive to initial conditions
-    sol = odeint(genetic_model, y0, t, args=(alpha1, alpha2, gamma, beta, eta, IPTG, 10**K),
-                 full_output=False)
 
-    return -0.5*((erred_obs - sol[-1,1])**2 / err**2)
+    for IPTG in IPTG_arr:
+        sol = odeint(genetic_model, y0, t, args=(alpha1, alpha2, gamma, beta, eta, IPTG, 10**K),
+                     full_output=False)
+        model.append(float(sol[-1,1]))
+
+
+    return -0.5*np.sum((obs - np.array(model))**2 / err**2)
 # end function
 
 
@@ -160,7 +170,7 @@ nwalk = 10 * ndim # Use 10 walkers per dimension
 
 # Initial guess for walkers (random over prior)
 p0 = [genetic_sample(1) for j in range(nwalk)]
-sampler = emcee.EnsembleSampler(nwalk, ndim, lnprob)
+sampler = emcee.EnsembleSampler(nwalk, ndim, lnprob, pool=Pool())
 for i, result in enumerate(sampler.sample(p0, iterations=nsteps)):
     if verbose:
         print("%d/%d" % (i+1, nsteps))

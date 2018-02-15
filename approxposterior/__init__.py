@@ -20,3 +20,4 @@ from .gp_utils import *
 from .mcmc_utils import *
 from .plot_utils import *
 from .gmm_utils import *
+from .pool import *
