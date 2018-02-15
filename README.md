@@ -29,14 +29,13 @@ bounds = ((-5,5), (-5,5))         # Prior bounds
 algorithm = "agp"                 # Use the Wang & Li (2017) formalism
 
 # Initialize object using the Wang & Li (2017) Rosenbrock function example
-bp = bp.ApproxPosterior(lnprior=lh.rosenbrock_lnprior,
+ap = bp.ApproxPosterior(lnprior=lh.rosenbrock_lnprior,
                         lnlike=lh.rosenbrock_lnlike,
-                        lnprob=lh.rosenbrock_lnprob,
                         prior_sample=lh.rosenbrock_sample,
                         algorithm=algorithm)
 
 # Run!
-bp.run(m0=m0, m=m, M=M, nmax=nmax, Dmax=Dmax, kmax=kmax,
+ap.run(m0=m0, m=m, M=M, nmax=nmax, Dmax=Dmax, kmax=kmax,
        bounds=bounds, which_kernel=which_kernel)
 ```     
 Please cite this repository and both Kandasamy et al. (2015) and Wang & Li (2017).

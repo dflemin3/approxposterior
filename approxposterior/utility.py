@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 
 Utility functions
@@ -65,7 +66,7 @@ class function_wrapper(object):
 
 def kl_numerical(x, p, q):
     """
-    Estimate the KL-Divergence between pdfs p and q
+    Estimate the KL-Divergence between pdfs p and q via Monte Carlo intergration
     using x, samples from p.
 
     KL ~ 1/n * sum_{i=1,n}(log (p(x_i)/q(x_i)))
@@ -77,7 +78,9 @@ def kl_numerical(x, p, q):
     See Hershey and Olsen, "Approximating the Kullback Leibler
     Divergence Between Gaussian Mixture Models" for more info
 
-    Note that this method can result in D_kl < 0
+    Note that this method can result in D_kl < 0 but it's the only method with
+    convergence properties as the number of samples (len(x)) grows.  Also, this
+    method is shown to have the lowest error, on average (see Hershey and Olsen).
 
     Parameters
     ----------
@@ -105,7 +108,7 @@ def kl_numerical(x, p, q):
 
 def logsubexp(x1, x2):
     """
-    More numerically stable way to take the log of exp(x1) - exp(x2)
+    Numerically stable way to compute log(exp(x1) - exp(x2))
 
     logsubexp(x1, x2) -> log(exp(x1) - exp(x2))
 
@@ -139,6 +142,8 @@ def AGP_utility(theta, y, gp):
     posterior distribution. This is what you maximize to find the next x under
     the AGP formalism. Note here we use the negative of the utility function so
     minimizing this is the same as maximizing the actual utility function.
+
+    See Wang & Li (2017) for derivation/explaination.
 
     Parameters
     ----------
@@ -178,6 +183,8 @@ def BAPE_utility(theta, y, gp):
     maximizing the actual utility function.  Also, we log the BAPE utility
     function as the log is monotonic so the minima are equivalent.
 
+    See Kandasamy et al. (2015) for derivation/explaination.
+
     Parameters
     ----------
     theta : array
@@ -208,8 +215,7 @@ def BAPE_utility(theta, y, gp):
 # end function
 
 
-def minimize_objective(fn, y, gp, sample_fn, prior_fn, sim_annealing=False,
-                       bounds=None, **kw):
+def minimize_objective(fn, y, gp, sample_fn, prior_fn, bounds=None, **kw):
     """
     Find point that minimizes fn for a gaussian process gp conditioned on y,
     the data.
@@ -226,9 +232,6 @@ def minimize_objective(fn, y, gp, sample_fn, prior_fn, sim_annealing=False,
         Function to sample initial conditions from.
     prior_fn : function
         Function to apply prior to.
-    sim_annealing : bool (optional)
-        Whether to use the simulated annealing (basinhopping) algorithm.
-        Defaults to False.
     kw : dict (optional)
         Any additional keyword arguments scipy.optimize.minimize could use,
         e.g., method.
@@ -252,29 +255,10 @@ def minimize_objective(fn, y, gp, sample_fn, prior_fn, sim_annealing=False,
         args=(y, gp)
 
         # Mimimze fn, see if prior allows solution
-        # XXX Not sure if this works
         try:
-            if sim_annealing:
-
-                raise NotImplementedError("Simulated annealing not implemented.")
-
-                minimizer_kwargs = {"method":"L-BFGS-B", "args" : args,
-                                    "bounds" : bounds,
-                                    "options" : {"ftol" : 1.0e-3}}
-
-                def mybounds(**kwargs):
-                    x = kwargs["x_new"]
-                    res = bool(np.all(np.fabs(x) < 5)) # XXX HAAAACCCKKK
-                    return res
-
-                tmp = basinhopping(fn, theta0, accept_test=mybounds, niter=500,
-                             stepsize=0.01, minimizer_kwargs=minimizer_kwargs,
-                             interval=10)["x"]
-            # Use the good old-fashioned scipy minimize routine
-            else:
-                tmp = minimize(fn, theta0, args=args, bounds=bounds,
-                               method="l-bfgs-b", options={"ftol" : 1.0e-3},
-                               **kw)["x"]
+            tmp = minimize(fn, theta0, args=args, bounds=bounds,
+                           method="l-bfgs-b", options={"ftol" : 1.0e-3},
+                           **kw)["x"]
 
         # ValueError.  Try again.
         except ValueError:
