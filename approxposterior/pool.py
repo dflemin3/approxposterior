@@ -1,6 +1,5 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
-'''
+"""
 :py:mod:`pool.py` - Multiprocessing
 -----------------------------------
 
@@ -14,11 +13,10 @@ An implementation of three different types of pools:
     - A serial pool, which uses the built-in :py:obj:`map` function
 
     @authors: Rodrigo Luger & Dan Forman-Mackey
+"""
 
-'''
-
-from __future__ import division, print_function, absolute_import, unicode_literals
-import numpy as np
+from __future__ import (division, print_function, absolute_import,
+                        unicode_literals)
 import sys
 try:
     from mpi4py import MPI
@@ -43,27 +41,15 @@ class _function_wrapper(object):
         self.function = function
 
 def _error_function(*args):
-    '''
+    """
     The default worker function. Should be replaced
     with the desired mapping function on the first
     call.
-
-    '''
+    """
 
     raise Exception("Pool was sent tasks before being told what "
                     "function to apply.")
 
-def _test_function(x):
-    '''
-    Wastes a random amount of time, then
-    returns the average of :py:obj:`x`.
-
-    '''
-
-    for i in range(np.random.randint(99999)):
-        j = i ** 2
-
-    return np.sum(x) / float(len(x))
 
 def _initializer_wrapper(actual_initializer, *rest):
     """
@@ -77,72 +63,62 @@ def _initializer_wrapper(actual_initializer, *rest):
         actual_initializer(*rest)
 
 class GenericPool(object):
-    '''
+    """
     A generic multiprocessing pool object with a :py:obj:`map` method.
-
-    '''
+    """
 
     def __init__(self, **kwargs):
-        '''
-
-        '''
+        """
+        """
 
         self.rank = 0
 
     @staticmethod
     def enabled():
-        '''
-
-        '''
+        """
+        """
 
         return False
 
     def is_master(self):
-        '''
-
-        '''
+        """
+        """
 
         return self.rank == 0
 
     def is_worker(self):
-        '''
-
-        '''
+        """
+        """
 
         return self.rank != 0
 
     def wait(self):
-        '''
-
-        '''
+        """
+        """
 
         return NotImplementedError('Method ``wait`` must be called from subclasses.')
 
     def map(self, *args, **kwargs):
-        '''
-
-        '''
+        """
+        """
 
         return NotImplementedError('Method ``map`` must be called from subclasses.')
 
     def close(self):
-        '''
-
-        '''
+        """
+        """
 
         pass
 
     def __enter__(self):
-        '''
-
-        '''
+        """
+        """
 
         return self
 
     def __exit__(self, *args):
-        '''
-
-        '''
+        """
+        """
 
         self.close()
 
@@ -195,9 +171,8 @@ class MPIPool(GenericPool):
 
     @staticmethod
     def enabled():
-        '''
-
-        '''
+        """
+        """
         return False # Hack
 
         if MPI is not None:
@@ -208,7 +183,6 @@ class MPIPool(GenericPool):
     def wait(self):
         """
         If this isn't the master process, wait for instructions.
-
         """
         if self.is_master():
             raise RuntimeError("Master node told to await jobs.")
@@ -266,7 +240,6 @@ class MPIPool(GenericPool):
 
         :param tasks:
             The list of elements.
-
         """
         ntask = len(tasks)
 
@@ -384,37 +357,32 @@ class MPIPool(GenericPool):
                 self.comm.isend(_close_pool_message(), dest=i + 1)
 
 class SerialPool(GenericPool):
-    '''
-
-    '''
+    """
+    """
 
     def __init__(self, **kwargs):
-        '''
-
-        '''
+        """
+        """
 
         self.size = 0
         self.rank = 0
 
     @staticmethod
     def enabled():
-        '''
-
-        '''
+        """
+        """
 
         return True
 
     def wait(self):
-        '''
-
-        '''
+        """
+        """
 
         raise Exception('``SerialPool`` told to wait!')
 
     def map(self, function, iterable):
-        '''
-
-        '''
+        """
+        """
 
         return list(map(function, iterable))
 
@@ -440,8 +408,8 @@ class MultiPool(multiprocessing.pool.Pool):
 
     :param kwargs: (optional)
         Extra arguments. Python 2.7 supports a `maxtasksperchild` parameter.
-
     """
+
     wait_timeout = 3600
 
     def __init__(self, processes=None, initializer=None, initargs=(),
@@ -453,11 +421,10 @@ class MultiPool(multiprocessing.pool.Pool):
 
     @staticmethod
     def enabled():
-        '''
+        """
+        """
 
-        '''
-
-        return True # Hack
+        return True
 
     def map(self, func, iterable, chunksize=None):
         """
@@ -469,7 +436,6 @@ class MultiPool(multiprocessing.pool.Pool):
 
         :param iterable:
             An iterable of items that will have `func` applied to them.
-
         """
         # The key magic is that we must call r.get() with a timeout, because
         # a Condition.wait() without a timeout swallows KeyboardInterrupts.
@@ -486,25 +452,22 @@ class MultiPool(multiprocessing.pool.Pool):
                 raise
 
     def __exit__(self, *args):
-        '''
-
-        '''
+        """
+        """
 
         self.close()
 
     def __enter__(self):
-        '''
-
-        '''
+        """
+        """
 
         return self
 
 def Pool(pool = 'SerialPool', **kwargs):
-    '''
+    """
     Chooses between the different pools.
     If ``pool == 'AnyPool'``, chooses based on availability.
-
-    '''
+    """
 
     if pool == 'MPIPool':
         return MPIPool(**kwargs)
@@ -521,19 +484,4 @@ def Pool(pool = 'SerialPool', **kwargs):
             return SerialPool(**kwargs)
     else:
         raise ValueError('Invalid pool ``%s``.' % pool)
-
-if __name__ == '__main__':
-
-    # Instantiate the pool
-    with Pool(pool="MultiPool") as pool:
-
-        # The iterable we'll apply ``_test_function`` to
-        walkers = np.array([[i, i] for i in range(100)], dtype = 'float64')
-
-        # Use the pool to map ``walkers`` onto the function
-        res = pool.map(_test_function, walkers)
-
-        # Check if the parallelization worked
-        assert np.allclose(res, [_test_function(w) for w in walkers])
-
-        print("%s: success!" % type(pool).__name__)
+# end function
