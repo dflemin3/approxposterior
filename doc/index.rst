@@ -21,13 +21,17 @@ Math:
   In [4]: import matplotlib.pyplot as plt
 
   @savefig plot_simple.png width=4in
-  In [5]: plt.plot([1,2,3]);
+  In [5]: plt.plot(x);
+
+The main class is :class:`~approxposterior.ApproxPosterior`.
 
 
 
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
+
+   api
 
 
 
