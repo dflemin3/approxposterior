@@ -64,9 +64,10 @@ setup(name = 'approxposterior',
       install_requires = [
                           'numpy',
                           'matplotlib >= 2.0.0',
-                          'pandas',
+                          'scipy',
                           'george',
-                          'emcee'
+                          'emcee',
+                          'corner',
                           ],
       include_package_data = True,
       zip_safe = False)
