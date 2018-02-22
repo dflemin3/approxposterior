@@ -8,14 +8,14 @@ python:
 env:
   global:
     - TEST_DIR=/tmp/_approxposterior/
-    - PIP_DEPS="numpy matplotlib scipy george emcee corner sklearn pytest
+    - PIP_DEPS="numpy matplotlib scipy george emcee corner sklearn pytest pybind11
 
 before_install:
   - pip install pip --upgrade
   - pip install $PIP_DEPS
 
 install:
-  - python setup.py install
+  - python setup.py develop
 
 script:
   - mkdir -p $TEST_DIR

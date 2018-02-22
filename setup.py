@@ -68,7 +68,8 @@ setup(name = 'approxposterior',
                           'george',
                           'emcee',
                           'corner',
-                          'sklearn'
+                          'sklearn',
+                          'pybind11'
                           ],
       include_package_data = True,
       zip_safe = False)
