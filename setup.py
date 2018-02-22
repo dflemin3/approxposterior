@@ -68,6 +68,7 @@ setup(name = 'approxposterior',
                           'george',
                           'emcee',
                           'corner',
+                          'sklearn'
                           ],
       include_package_data = True,
       zip_safe = False)
