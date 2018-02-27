@@ -27,8 +27,9 @@ before_install:
 install:
   - conda create --yes -n test python=$TRAVIS_PYTHON_VERSION
   - source activate test
-  - conda install --yes matplotlib george emcee corner sklearn pytest pybind11
-  - pip install george
+  - conda install --yes matplotlib emcee corner sklearn pytest
+  - pip install pybind11
+  - conda install -c conda-forge george
   - python setup.py develop
 
 script:
