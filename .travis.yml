@@ -15,8 +15,8 @@ before_install:
   - pip install $PIP_DEPS
 
 install:
-  - python setup.py develop
+  - python setup.py install
 
 script:
   - mkdir -p $TEST_DIR
-  - cd $TEST_DIR && python -m pytest --pyargs pdvega --doctest-modules
+  - cd $TEST_DIR && python -m pytest --pyargs approxposterior --doctest-modules
