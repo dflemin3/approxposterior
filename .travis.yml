@@ -8,10 +8,11 @@ python:
 env:
   global:
     - TEST_DIR=/tmp/_approxposterior/
-    - PIP_DEPS="numpy matplotlib scipy george emcee corner sklearn pytest pybind11
+    - PIP_DEPS="matplotlib george emcee corner sklearn pytest
 
 before_install:
   - pip install pip --upgrade
+  - pip install numpy scipy pybind11 # required for george build
   - pip install $PIP_DEPS
 
 install:
