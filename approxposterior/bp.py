@@ -19,7 +19,6 @@ from __future__ import (print_function, division, absolute_import,
 __all__ = ["ApproxPosterior"]
 
 from . import utility as ut
-from . import likelihood as lh
 from . import gp_utils
 from . import mcmc_utils
 from . import plot_utils as pu
@@ -29,9 +28,7 @@ import numpy as np
 import time
 import emcee
 import corner
-import matplotlib as mpl
 import matplotlib.pyplot as plt
-from matplotlib.colors import LogNorm
 
 
 class ApproxPosterior(object):
@@ -261,7 +258,6 @@ class ApproxPosterior(object):
 
             # Initial guess (random over prior)
             p0 = [self.prior_sample(1) for j in range(nwalk)]
-            params = ["x%d" % jj for jj in range(ndim)]
 
             if timing:
                 start = time.time()

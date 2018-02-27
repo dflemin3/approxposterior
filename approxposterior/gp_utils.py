@@ -13,12 +13,11 @@ from __future__ import (print_function, division, absolute_import,
 # Tell module what it's allowed to import
 __all__ = ["setup_gp","optimize_gp"]
 
-from . import bp
 import numpy as np
 import george
 from sklearn.model_selection import train_test_split
 from sklearn.model_selection import ShuffleSplit, ParameterGrid
-from scipy.optimize import minimize, basinhopping
+from scipy.optimize import minimize
 
 
 def _nll(p, gp, y):

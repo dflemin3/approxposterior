@@ -17,10 +17,8 @@ from __future__ import (print_function, division, absolute_import,
 __all__ = ["logsubexp","AGP_utility","BAPE_utility","minimize_objective",
            "function_wrapper","kl_numerical"]
 
-from . import bp
 import numpy as np
-import george as gp
-from scipy.optimize import minimize, basinhopping
+from scipy.optimize import minimize
 
 
 ################################################################################
