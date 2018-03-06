@@ -7,9 +7,6 @@ Metropolis-Hastings MCMC implementation, emcee. We include hybrid
 implementations of both Wang & Li (2017) and Kandasamy et al. (2015).  If you
 use this, cite them!
 
-@author: David P. Fleming [University of Washington, Seattle], 2017
-@email: dflemin3 (at) uw (dot) edu
-
 """
 
 from __future__ import (print_function, division, absolute_import,
