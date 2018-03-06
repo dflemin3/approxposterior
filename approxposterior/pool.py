@@ -12,7 +12,7 @@ An implementation of three different types of pools:
 
     - A serial pool, which uses the built-in :py:obj:`map` function
 
-    @authors: Rodrigo Luger & Dan Forman-Mackey
+    Original Authors: Rodrigo Luger & Dan Forman-Mackey
 """
 
 from __future__ import (division, print_function, absolute_import,

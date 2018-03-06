@@ -3,11 +3,6 @@
 
 Utility functions
 
-August 2017
-
-@author: David P. Fleming [University of Washington, Seattle], 2018
-@email: dflemin3 (at) uw (dot) edu
-
 """
 
 from __future__ import (print_function, division, absolute_import,

@@ -4,9 +4,6 @@
 This file contains routines for simples loglikelihoods and priors for test
 cases.
 
-@author: David P. Fleming [University of Washington, Seattle], 2017
-@email: dflemin3 (at) uw (dot) edu
-
 """
 
 from __future__ import (print_function, division, absolute_import,
