@@ -1,0 +1,712 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>approxposterior.pool &mdash; approxposterior 0.1 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../genindex.html"/>
+        <link rel="search" title="Search" href="../../search.html"/>
+    <link rel="top" title="approxposterior 0.1 documentation" href="../../index.html"/>
+        <link rel="up" title="Module code" href="../index.html"/> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> approxposterior
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorial.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html">API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/dflemin3/approxposterior">Github</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/dflemin3/approxposterior/issues">Submit an Issue</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">approxposterior</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>approxposterior.pool</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for approxposterior.pool</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">:py:mod:`pool.py` - Multiprocessing</span>
+<span class="sd">-----------------------------------</span>
+
+<span class="sd">An implementation of three different types of pools:</span>
+
+<span class="sd">    - An MPI pool borrowed from :py:mod:`emcee`. This pool passes Python objects</span>
+<span class="sd">      back and forth to the workers and communicates once per task.</span>
+
+<span class="sd">    - A multiprocessing for local parallelization, borrowed from :py:mod:`emcee`</span>
+
+<span class="sd">    - A serial pool, which uses the built-in :py:obj:`map` function</span>
+
+<span class="sd">    Original Authors: Rodrigo Luger &amp; Dan Forman-Mackey</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="p">(</span><span class="n">division</span><span class="p">,</span> <span class="n">print_function</span><span class="p">,</span> <span class="n">absolute_import</span><span class="p">,</span>
+                        <span class="n">unicode_literals</span><span class="p">)</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">mpi4py</span> <span class="k">import</span> <span class="n">MPI</span>
+    <span class="n">MPI</span> <span class="o">=</span> <span class="n">MPI</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="n">MPI</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="kn">import</span> <span class="nn">signal</span>
+<span class="kn">import</span> <span class="nn">functools</span>
+<span class="kn">import</span> <span class="nn">multiprocessing</span>
+<span class="kn">import</span> <span class="nn">multiprocessing.pool</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="n">log</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;MPIPool&#39;</span><span class="p">,</span> <span class="s1">&#39;MultiPool&#39;</span><span class="p">,</span> <span class="s1">&#39;SerialPool&#39;</span><span class="p">,</span> <span class="s1">&#39;Pool&#39;</span><span class="p">]</span>
+
+<span class="k">class</span> <span class="nc">_close_pool_message</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&quot;&lt;Close pool message&gt;&quot;</span>
+
+<span class="k">class</span> <span class="nc">_function_wrapper</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">function</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">function</span> <span class="o">=</span> <span class="n">function</span>
+
+<span class="k">def</span> <span class="nf">_error_function</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The default worker function. Should be replaced</span>
+<span class="sd">    with the desired mapping function on the first</span>
+<span class="sd">    call.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Pool was sent tasks before being told what &quot;</span>
+                    <span class="s2">&quot;function to apply.&quot;</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_initializer_wrapper</span><span class="p">(</span><span class="n">actual_initializer</span><span class="p">,</span> <span class="o">*</span><span class="n">rest</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    We ignore SIGINT. It&#39;s up to our parent to kill us in the typical</span>
+<span class="sd">    condition of this arising from `^C` on a terminal. If someone is</span>
+<span class="sd">    manually killing us with that signal, well... nothing will happen.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">signal</span><span class="o">.</span><span class="n">signal</span><span class="p">(</span><span class="n">signal</span><span class="o">.</span><span class="n">SIGINT</span><span class="p">,</span> <span class="n">signal</span><span class="o">.</span><span class="n">SIG_IGN</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">actual_initializer</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">actual_initializer</span><span class="p">(</span><span class="o">*</span><span class="n">rest</span><span class="p">)</span>
+
+<span class="k">class</span> <span class="nc">GenericPool</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A generic multiprocessing pool object with a :py:obj:`map` method.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">rank</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">enabled</span><span class="p">():</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="k">def</span> <span class="nf">is_master</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">rank</span> <span class="o">==</span> <span class="mi">0</span>
+
+    <span class="k">def</span> <span class="nf">is_worker</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">rank</span> <span class="o">!=</span> <span class="mi">0</span>
+
+    <span class="k">def</span> <span class="nf">wait</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">&#39;Method ``wait`` must be called from subclasses.&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">map</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">&#39;Method ``map`` must be called from subclasses.&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">pass</span>
+
+    <span class="k">def</span> <span class="nf">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">def</span> <span class="nf">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+<div class="viewcode-block" id="MPIPool"><a class="viewcode-back" href="../../api/pool.html#approxposterior.pool.MPIPool">[docs]</a><span class="k">class</span> <span class="nc">MPIPool</span><span class="p">(</span><span class="n">GenericPool</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A pool that distributes tasks over a set of MPI processes. MPI is an</span>
+<span class="sd">    API for distributed memory parallelism.  This pool will let you run</span>
+<span class="sd">    emcee without shared memory, letting you use much larger machines</span>
+<span class="sd">    with emcee.</span>
+
+<span class="sd">    The pool only support the :py:func:`map` method at the moment because</span>
+<span class="sd">    this is the only functionality that emcee needs. That being said,</span>
+<span class="sd">    this pool is fairly general and it could be used for other purposes.</span>
+
+<span class="sd">    Contributed by `Joe Zuntz &lt;https://github.com/joezuntz&gt;`_.</span>
+
+<span class="sd">    :param comm: (optional)</span>
+<span class="sd">        The :py:mod:`mpi4py` communicator.</span>
+
+<span class="sd">    :param loadbalance: (optional)</span>
+<span class="sd">        if :py:obj:`True` and :py:obj:`ntask` &gt; :py:obj:`Ncpus`, tries to loadbalance by sending</span>
+<span class="sd">        out one task to each cpu first and then sending out the rest</span>
+<span class="sd">        as the cpus get done.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">comm</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">loadbalance</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="n">wait_on_start</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">exit_on_end</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+                 <span class="n">cores_per_task</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">MPI</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span><span class="s2">&quot;Please install mpi4py&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">comm</span> <span class="o">=</span> <span class="n">MPI</span><span class="o">.</span><span class="n">COMM_WORLD</span> <span class="k">if</span> <span class="n">comm</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">comm</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rank</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">comm</span><span class="o">.</span><span class="n">Get_rank</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">cores_per_task</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+          <span class="bp">self</span><span class="o">.</span><span class="n">size</span>  <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">comm</span><span class="o">.</span><span class="n">Get_size</span><span class="p">()</span> <span class="o">//</span> <span class="n">cores_per_task</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+          <span class="bp">self</span><span class="o">.</span><span class="n">size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">comm</span><span class="o">.</span><span class="n">Get_size</span><span class="p">()</span> <span class="o">-</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">function</span> <span class="o">=</span> <span class="n">_error_function</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">loadbalance</span> <span class="o">=</span> <span class="n">loadbalance</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">debug</span> <span class="o">=</span> <span class="n">debug</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Tried to create an MPI pool, but there &quot;</span>
+                             <span class="s2">&quot;was only one MPI process available. &quot;</span>
+                             <span class="s2">&quot;Need at least two.&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">exit_on_end</span> <span class="o">=</span> <span class="n">exit_on_end</span>
+
+        <span class="c1"># Enter main loop for workers?</span>
+        <span class="k">if</span> <span class="n">wait_on_start</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_worker</span><span class="p">():</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
+
+<div class="viewcode-block" id="MPIPool.enabled"><a class="viewcode-back" href="../../api/pool.html#approxposterior.pool.MPIPool.enabled">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">enabled</span><span class="p">():</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="kc">False</span> <span class="c1"># Hack</span>
+
+        <span class="k">if</span> <span class="n">MPI</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">MPI</span><span class="o">.</span><span class="n">COMM_WORLD</span><span class="o">.</span><span class="n">size</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">True</span></div>
+        <span class="k">return</span> <span class="kc">False</span>
+
+<div class="viewcode-block" id="MPIPool.wait"><a class="viewcode-back" href="../../api/pool.html#approxposterior.pool.MPIPool.wait">[docs]</a>    <span class="k">def</span> <span class="nf">wait</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        If this isn&#39;t the master process, wait for instructions.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_master</span><span class="p">():</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Master node told to await jobs.&quot;</span><span class="p">)</span>
+
+        <span class="n">status</span> <span class="o">=</span> <span class="n">MPI</span><span class="o">.</span><span class="n">Status</span><span class="p">()</span>
+
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="c1"># Event loop.</span>
+            <span class="c1"># Sit here and await instructions.</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">debug</span><span class="p">:</span>
+              <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Worker </span><span class="si">{0}</span><span class="s2"> waiting for task.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rank</span><span class="p">))</span>
+
+            <span class="c1"># Blocking receive to wait for instructions.</span>
+            <span class="n">task</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">comm</span><span class="o">.</span><span class="n">recv</span><span class="p">(</span><span class="n">source</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">tag</span><span class="o">=</span><span class="n">MPI</span><span class="o">.</span><span class="n">ANY_TAG</span><span class="p">,</span> <span class="n">status</span><span class="o">=</span><span class="n">status</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">debug</span><span class="p">:</span>
+              <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Worker </span><span class="si">{0}</span><span class="s2"> got task </span><span class="si">{1}</span><span class="s2"> with tag </span><span class="si">{2}</span><span class="s2">.&quot;</span>
+                        <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rank</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">task</span><span class="p">),</span> <span class="n">status</span><span class="o">.</span><span class="n">tag</span><span class="p">))</span>
+
+            <span class="c1"># Check if message is special sentinel signaling end.</span>
+            <span class="c1"># If so, stop.</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">task</span><span class="p">,</span> <span class="n">_close_pool_message</span><span class="p">):</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">debug</span><span class="p">:</span>
+                  <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Worker </span><span class="si">{0}</span><span class="s2"> told to quit.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rank</span><span class="p">))</span>
+                <span class="k">break</span>
+
+            <span class="c1"># Check if message is special type containing new function</span>
+            <span class="c1"># to be applied</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">task</span><span class="p">,</span> <span class="n">_function_wrapper</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">function</span> <span class="o">=</span> <span class="n">task</span><span class="o">.</span><span class="n">function</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">debug</span><span class="p">:</span>
+                  <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Worker </span><span class="si">{0}</span><span class="s2"> replaced its task function: </span><span class="si">{1}</span><span class="s2">.&quot;</span>
+                            <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rank</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">function</span><span class="p">))</span>
+                <span class="k">continue</span>
+
+            <span class="c1"># If not a special message, just run the known function on</span>
+            <span class="c1"># the input and return it asynchronously.</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">function</span><span class="p">(</span><span class="n">task</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">debug</span><span class="p">:</span>
+              <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Worker </span><span class="si">{0}</span><span class="s2"> sending answer </span><span class="si">{1}</span><span class="s2"> with tag </span><span class="si">{2}</span><span class="s2">.&quot;</span>
+                        <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rank</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">result</span><span class="p">),</span> <span class="n">status</span><span class="o">.</span><span class="n">tag</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">comm</span><span class="o">.</span><span class="n">isend</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">dest</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">tag</span><span class="o">=</span><span class="n">status</span><span class="o">.</span><span class="n">tag</span><span class="p">)</span>
+
+        <span class="c1"># Kill the process?</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">exit_on_end</span><span class="p">:</span></div>
+            <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">()</span>
+
+<div class="viewcode-block" id="MPIPool.map"><a class="viewcode-back" href="../../api/pool.html#approxposterior.pool.MPIPool.map">[docs]</a>    <span class="k">def</span> <span class="nf">map</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">function</span><span class="p">,</span> <span class="n">tasks</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Like the built-in :py:func:`map` function, apply a function to all</span>
+<span class="sd">        of the values in a list and return the list of results.</span>
+
+<span class="sd">        :param function:</span>
+<span class="sd">            The function to apply to the list.</span>
+
+<span class="sd">        :param tasks:</span>
+<span class="sd">            The list of elements.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">ntask</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">tasks</span><span class="p">)</span>
+
+        <span class="c1"># If not the master just wait for instructions.</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_master</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
+            <span class="k">return</span>
+
+        <span class="k">if</span> <span class="n">function</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">function</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">debug</span><span class="p">:</span>
+              <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Master replacing pool function with </span><span class="si">{0}</span><span class="s2">.&quot;</span>
+                        <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">function</span><span class="p">))</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">function</span> <span class="o">=</span> <span class="n">function</span>
+            <span class="n">F</span> <span class="o">=</span> <span class="n">_function_wrapper</span><span class="p">(</span><span class="n">function</span><span class="p">)</span>
+
+            <span class="c1"># Tell all the workers what function to use.</span>
+            <span class="n">requests</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">):</span>
+                <span class="n">r</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">comm</span><span class="o">.</span><span class="n">isend</span><span class="p">(</span><span class="n">F</span><span class="p">,</span> <span class="n">dest</span><span class="o">=</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+                <span class="n">requests</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+
+            <span class="c1"># Wait until all of the workers have responded. See:</span>
+            <span class="c1">#       https://gist.github.com/4176241</span>
+            <span class="n">MPI</span><span class="o">.</span><span class="n">Request</span><span class="o">.</span><span class="n">waitall</span><span class="p">(</span><span class="n">requests</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">loadbalance</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">ntask</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">):</span>
+            <span class="c1"># Do not perform load-balancing - the default load-balancing</span>
+            <span class="c1"># scheme emcee uses.</span>
+
+            <span class="c1"># Send all the tasks off and wait for them to be received.</span>
+            <span class="c1"># Again, see the bug in the above gist.</span>
+            <span class="n">requests</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">task</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">tasks</span><span class="p">):</span>
+                <span class="n">worker</span> <span class="o">=</span> <span class="n">i</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span> <span class="o">+</span> <span class="mi">1</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">debug</span><span class="p">:</span>
+                  <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Sent task </span><span class="si">{0}</span><span class="s2"> to worker </span><span class="si">{1}</span><span class="s2"> with tag </span><span class="si">{2}</span><span class="s2">.&quot;</span>
+                            <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">task</span><span class="p">),</span> <span class="n">worker</span><span class="p">,</span> <span class="n">i</span><span class="p">))</span>
+                <span class="n">r</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">comm</span><span class="o">.</span><span class="n">isend</span><span class="p">(</span><span class="n">task</span><span class="p">,</span> <span class="n">dest</span><span class="o">=</span><span class="n">worker</span><span class="p">,</span> <span class="n">tag</span><span class="o">=</span><span class="n">i</span><span class="p">)</span>
+                <span class="n">requests</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+
+            <span class="n">MPI</span><span class="o">.</span><span class="n">Request</span><span class="o">.</span><span class="n">waitall</span><span class="p">(</span><span class="n">requests</span><span class="p">)</span>
+
+            <span class="c1"># Now wait for the answers.</span>
+            <span class="n">results</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ntask</span><span class="p">):</span>
+                <span class="n">worker</span> <span class="o">=</span> <span class="n">i</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span> <span class="o">+</span> <span class="mi">1</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">debug</span><span class="p">:</span>
+                  <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Master waiting for worker </span><span class="si">{0}</span><span class="s2"> with tag </span><span class="si">{1}</span><span class="s2">&quot;</span>
+                            <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">worker</span><span class="p">,</span> <span class="n">i</span><span class="p">))</span>
+                <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">comm</span><span class="o">.</span><span class="n">recv</span><span class="p">(</span><span class="n">source</span><span class="o">=</span><span class="n">worker</span><span class="p">,</span> <span class="n">tag</span><span class="o">=</span><span class="n">i</span><span class="p">)</span>
+
+                <span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+
+            <span class="k">return</span> <span class="n">results</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Perform load-balancing. The order of the results are likely to</span>
+            <span class="c1"># be different from the previous case.</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">task</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">tasks</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">]):</span>
+                <span class="n">worker</span> <span class="o">=</span> <span class="n">i</span><span class="o">+</span><span class="mi">1</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">debug</span><span class="p">:</span>
+                  <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Sent task </span><span class="si">{0}</span><span class="s2"> to worker </span><span class="si">{1}</span><span class="s2"> with tag </span><span class="si">{2}</span><span class="s2">.&quot;</span>
+                            <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">task</span><span class="p">),</span> <span class="n">worker</span><span class="p">,</span> <span class="n">i</span><span class="p">))</span>
+                <span class="c1"># Send out the tasks asynchronously.</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">comm</span><span class="o">.</span><span class="n">isend</span><span class="p">(</span><span class="n">task</span><span class="p">,</span> <span class="n">dest</span><span class="o">=</span><span class="n">worker</span><span class="p">,</span> <span class="n">tag</span><span class="o">=</span><span class="n">i</span><span class="p">)</span>
+
+            <span class="n">ntasks_dispatched</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span>
+            <span class="n">results</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span><span class="o">*</span><span class="n">ntask</span>
+            <span class="k">for</span> <span class="n">itask</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ntask</span><span class="p">):</span>
+                <span class="n">status</span> <span class="o">=</span> <span class="n">MPI</span><span class="o">.</span><span class="n">Status</span><span class="p">()</span>
+                <span class="c1"># Receive input from workers.</span>
+                <span class="k">try</span><span class="p">:</span>
+                  <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">comm</span><span class="o">.</span><span class="n">recv</span><span class="p">(</span><span class="n">source</span><span class="o">=</span><span class="n">MPI</span><span class="o">.</span><span class="n">ANY_SOURCE</span><span class="p">,</span>
+                                          <span class="n">tag</span><span class="o">=</span><span class="n">MPI</span><span class="o">.</span><span class="n">ANY_TAG</span><span class="p">,</span> <span class="n">status</span><span class="o">=</span><span class="n">status</span><span class="p">)</span>
+                <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                  <span class="bp">self</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+                  <span class="k">raise</span> <span class="n">e</span>
+
+                <span class="n">worker</span> <span class="o">=</span> <span class="n">status</span><span class="o">.</span><span class="n">source</span>
+                <span class="n">i</span> <span class="o">=</span> <span class="n">status</span><span class="o">.</span><span class="n">tag</span>
+                <span class="n">results</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">result</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">debug</span><span class="p">:</span>
+                  <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Master received from worker </span><span class="si">{0}</span><span class="s2"> with tag </span><span class="si">{1}</span><span class="s2">&quot;</span>
+                            <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">worker</span><span class="p">,</span> <span class="n">i</span><span class="p">))</span>
+
+                <span class="c1"># Now send the next task to this idle worker (if there are any</span>
+                <span class="c1"># left).</span>
+                <span class="k">if</span> <span class="n">ntasks_dispatched</span> <span class="o">&lt;</span> <span class="n">ntask</span><span class="p">:</span>
+                    <span class="n">task</span> <span class="o">=</span> <span class="n">tasks</span><span class="p">[</span><span class="n">ntasks_dispatched</span><span class="p">]</span>
+                    <span class="n">i</span> <span class="o">=</span> <span class="n">ntasks_dispatched</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">debug</span><span class="p">:</span>
+                      <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Sent task </span><span class="si">{0}</span><span class="s2"> to worker </span><span class="si">{1}</span><span class="s2"> with tag </span><span class="si">{2}</span><span class="s2">.&quot;</span>
+                                <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">task</span><span class="p">),</span> <span class="n">worker</span><span class="p">,</span> <span class="n">i</span><span class="p">))</span>
+                    <span class="c1"># Send out the tasks asynchronously.</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">comm</span><span class="o">.</span><span class="n">isend</span><span class="p">(</span><span class="n">task</span><span class="p">,</span> <span class="n">dest</span><span class="o">=</span><span class="n">worker</span><span class="p">,</span> <span class="n">tag</span><span class="o">=</span><span class="n">i</span><span class="p">)</span>
+                    <span class="n">ntasks_dispatched</span> <span class="o">+=</span> <span class="mi">1</span>
+</div>
+            <span class="k">return</span> <span class="n">results</span>
+
+<div class="viewcode-block" id="MPIPool.bcast"><a class="viewcode-back" href="../../api/pool.html#approxposterior.pool.MPIPool.bcast">[docs]</a>    <span class="k">def</span> <span class="nf">bcast</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Equivalent to mpi4py :func:`bcast` collective operation.</span>
+<span class="sd">        &quot;&quot;&quot;</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">comm</span><span class="o">.</span><span class="n">bcast</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+<div class="viewcode-block" id="MPIPool.close"><a class="viewcode-back" href="../../api/pool.html#approxposterior.pool.MPIPool.close">[docs]</a>    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Just send a message off to all the pool members which contains</span>
+<span class="sd">        the special :class:`_close_pool_message` sentinel.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_master</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">):</span></div></div>
+                <span class="bp">self</span><span class="o">.</span><span class="n">comm</span><span class="o">.</span><span class="n">isend</span><span class="p">(</span><span class="n">_close_pool_message</span><span class="p">(),</span> <span class="n">dest</span><span class="o">=</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+
+<div class="viewcode-block" id="SerialPool"><a class="viewcode-back" href="../../api/pool.html#approxposterior.pool.SerialPool">[docs]</a><span class="k">class</span> <span class="nc">SerialPool</span><span class="p">(</span><span class="n">GenericPool</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">size</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rank</span> <span class="o">=</span> <span class="mi">0</span>
+
+<div class="viewcode-block" id="SerialPool.enabled"><a class="viewcode-back" href="../../api/pool.html#approxposterior.pool.SerialPool.enabled">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">enabled</span><span class="p">():</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+</div>
+        <span class="k">return</span> <span class="kc">True</span>
+
+<div class="viewcode-block" id="SerialPool.wait"><a class="viewcode-back" href="../../api/pool.html#approxposterior.pool.SerialPool.wait">[docs]</a>    <span class="k">def</span> <span class="nf">wait</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+</div>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;``SerialPool`` told to wait!&#39;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="SerialPool.map"><a class="viewcode-back" href="../../api/pool.html#approxposterior.pool.SerialPool.map">[docs]</a>    <span class="k">def</span> <span class="nf">map</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">function</span><span class="p">,</span> <span class="n">iterable</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+</div></div>
+        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="n">function</span><span class="p">,</span> <span class="n">iterable</span><span class="p">))</span>
+
+<div class="viewcode-block" id="MultiPool"><a class="viewcode-back" href="../../api/pool.html#approxposterior.pool.MultiPool">[docs]</a><span class="k">class</span> <span class="nc">MultiPool</span><span class="p">(</span><span class="n">multiprocessing</span><span class="o">.</span><span class="n">pool</span><span class="o">.</span><span class="n">Pool</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This is simply :py:mod:`emcee`&#39;s :py:class:`InterruptiblePool`.</span>
+
+<span class="sd">    A modified version of :py:class:`multiprocessing.pool.Pool` that has better</span>
+<span class="sd">    behavior with regard to :py:obj:`KeyboardInterrupts` in the :py:func:`map` method.</span>
+
+<span class="sd">    Contributed by Peter K. G. Williams &lt;peter@newton.cx&gt;.</span>
+
+<span class="sd">    :param processes: (optional)</span>
+<span class="sd">        The number of worker processes to use; defaults to the number of CPUs.</span>
+
+<span class="sd">    :param initializer: (optional)</span>
+<span class="sd">        Either `None`, or a callable that will be invoked by each worker</span>
+<span class="sd">        process when it starts.</span>
+
+<span class="sd">    :param initargs: (optional)</span>
+<span class="sd">        Arguments for *initializer*; it will be called as</span>
+<span class="sd">        `initializer(*initargs)`.</span>
+
+<span class="sd">    :param kwargs: (optional)</span>
+<span class="sd">        Extra arguments. Python 2.7 supports a `maxtasksperchild` parameter.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">wait_timeout</span> <span class="o">=</span> <span class="mi">3600</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">processes</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">initializer</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">initargs</span><span class="o">=</span><span class="p">(),</span>
+                 <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">new_initializer</span> <span class="o">=</span> <span class="n">functools</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span><span class="n">_initializer_wrapper</span><span class="p">,</span> <span class="n">initializer</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">MultiPool</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">processes</span><span class="p">,</span> <span class="n">new_initializer</span><span class="p">,</span>
+                                                <span class="n">initargs</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">size</span> <span class="o">=</span> <span class="mi">0</span>
+
+<div class="viewcode-block" id="MultiPool.enabled"><a class="viewcode-back" href="../../api/pool.html#approxposterior.pool.MultiPool.enabled">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">enabled</span><span class="p">():</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+</div>
+        <span class="k">return</span> <span class="kc">True</span>
+
+<div class="viewcode-block" id="MultiPool.map"><a class="viewcode-back" href="../../api/pool.html#approxposterior.pool.MultiPool.map">[docs]</a>    <span class="k">def</span> <span class="nf">map</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">,</span> <span class="n">iterable</span><span class="p">,</span> <span class="n">chunksize</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Equivalent of `map()` built-in, without swallowing</span>
+<span class="sd">        `KeyboardInterrupt`.</span>
+
+<span class="sd">        :param func:</span>
+<span class="sd">            The function to apply to the items.</span>
+
+<span class="sd">        :param iterable:</span>
+<span class="sd">            An iterable of items that will have `func` applied to them.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># The key magic is that we must call r.get() with a timeout, because</span>
+        <span class="c1"># a Condition.wait() without a timeout swallows KeyboardInterrupts.</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">map_async</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">iterable</span><span class="p">,</span> <span class="n">chunksize</span><span class="p">)</span>
+
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">r</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">wait_timeout</span><span class="p">)</span>
+            <span class="k">except</span> <span class="n">multiprocessing</span><span class="o">.</span><span class="n">TimeoutError</span><span class="p">:</span>
+                <span class="k">pass</span>
+            <span class="k">except</span> <span class="ne">KeyboardInterrupt</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">terminate</span><span class="p">()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">join</span><span class="p">()</span></div>
+                <span class="k">raise</span>
+
+    <span class="k">def</span> <span class="nf">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+</div>
+        <span class="k">return</span> <span class="bp">self</span>
+
+<div class="viewcode-block" id="Pool"><a class="viewcode-back" href="../../api/pool.html#approxposterior.pool.Pool">[docs]</a><span class="k">def</span> <span class="nf">Pool</span><span class="p">(</span><span class="n">pool</span> <span class="o">=</span> <span class="s1">&#39;SerialPool&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Chooses between the different pools.</span>
+<span class="sd">    If ``pool == &#39;AnyPool&#39;``, chooses based on availability.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">pool</span> <span class="o">==</span> <span class="s1">&#39;MPIPool&#39;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">MPIPool</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">pool</span> <span class="o">==</span> <span class="s1">&#39;MultiPool&#39;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">MultiPool</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">pool</span> <span class="o">==</span> <span class="s1">&#39;SerialPool&#39;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">SerialPool</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">pool</span> <span class="o">==</span> <span class="s1">&#39;AnyPool&#39;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">MPIPool</span><span class="o">.</span><span class="n">enabled</span><span class="p">():</span>
+            <span class="k">return</span> <span class="n">MPIPool</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">MultiPool</span><span class="o">.</span><span class="n">enabled</span><span class="p">():</span>
+            <span class="k">return</span> <span class="n">MultiPool</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">SerialPool</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span></div>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Invalid pool ``</span><span class="si">%s</span><span class="s1">``.&#39;</span> <span class="o">%</span> <span class="n">pool</span><span class="p">)</span>
+<span class="c1"># end function</span>
+</pre></div>
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, David P. Fleming.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'0.1',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

@@ -1,0 +1,458 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>approxposterior.gp_utils &mdash; approxposterior 0.1 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../genindex.html"/>
+        <link rel="search" title="Search" href="../../search.html"/>
+    <link rel="top" title="approxposterior 0.1 documentation" href="../../index.html"/>
+        <link rel="up" title="Module code" href="../index.html"/> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> approxposterior
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorial.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html">API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/dflemin3/approxposterior">Github</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/dflemin3/approxposterior/issues">Submit an Issue</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">approxposterior</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>approxposterior.gp_utils</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for approxposterior.gp_utils</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">Gaussian process utility functions.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="p">(</span><span class="n">print_function</span><span class="p">,</span> <span class="n">division</span><span class="p">,</span> <span class="n">absolute_import</span><span class="p">,</span>
+                        <span class="n">unicode_literals</span><span class="p">)</span>
+
+<span class="c1"># Tell module what it&#39;s allowed to import</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;setup_gp&quot;</span><span class="p">,</span><span class="s2">&quot;optimize_gp&quot;</span><span class="p">]</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">george</span>
+<span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="k">import</span> <span class="n">train_test_split</span>
+<span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="k">import</span> <span class="n">ShuffleSplit</span><span class="p">,</span> <span class="n">ParameterGrid</span>
+<span class="kn">from</span> <span class="nn">scipy.optimize</span> <span class="k">import</span> <span class="n">minimize</span>
+
+
+<span class="k">def</span> <span class="nf">_nll</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">gp</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Given parameters and data, compute the negative log likelihood of the data</span>
+<span class="sd">    under the george Gaussian process.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    p : array</span>
+<span class="sd">        GP hyperparameters</span>
+<span class="sd">    gp : george.GP</span>
+<span class="sd">    y : array</span>
+<span class="sd">        data to condition GP on</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    nll : float</span>
+<span class="sd">        negative log-likelihood of y under gp</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">gp</span><span class="o">.</span><span class="n">set_parameter_vector</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+    <span class="n">ll</span> <span class="o">=</span> <span class="n">gp</span><span class="o">.</span><span class="n">log_likelihood</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">quiet</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">return</span> <span class="o">-</span><span class="n">ll</span> <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">ll</span><span class="p">)</span> <span class="k">else</span> <span class="mf">1e25</span>
+<span class="c1"># end function</span>
+
+
+<span class="k">def</span> <span class="nf">_grad_nll</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">gp</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Given parameters and data, compute the gradient of the negative log</span>
+<span class="sd">    likelihood of the data under the george Gaussian process.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    p : array</span>
+<span class="sd">        GP hyperparameters</span>
+<span class="sd">    gp : george.GP</span>
+<span class="sd">    y : array</span>
+<span class="sd">        data to condition GP on</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    gnll : float</span>
+<span class="sd">        gradient of the negative log-likelihood of y under gp</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">gp</span><span class="o">.</span><span class="n">set_parameter_vector</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+    <span class="k">return</span> <span class="o">-</span><span class="n">gp</span><span class="o">.</span><span class="n">grad_log_likelihood</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">quiet</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="c1"># end function</span>
+
+
+<div class="viewcode-block" id="optimize_gp"><a class="viewcode-back" href="../../api/gp_utils.html#approxposterior.gp_utils.optimize_gp">[docs]</a><span class="k">def</span> <span class="nf">optimize_gp</span><span class="p">(</span><span class="n">gp</span><span class="p">,</span> <span class="n">theta</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">which_kernel</span><span class="o">=</span><span class="s2">&quot;ExpSquaredKernel&quot;</span><span class="p">,</span> <span class="n">hyperparameters</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">test_size</span><span class="o">=</span><span class="mf">0.25</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Optimize hyperparameters of an arbitrary george Gaussian Process kenerl</span>
+<span class="sd">    using either a straight-up maximizing the log-likelihood or k-fold cv in which</span>
+<span class="sd">    the log-likelihood is maximized for each fold and the best one is chosen.</span>
+
+<span class="sd">    Note that the cross-validation used here is sort of cross valiation.</span>
+<span class="sd">    Instead of training on training set and evaluating the model on the test</span>
+<span class="sd">    set, we do both on the training set.  That is a cardinal sin of ML, but we</span>
+<span class="sd">    do that because matrix shape sizes and evaluating the log-likelihood of the</span>
+<span class="sd">    data requires it.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    gp : george.GP</span>
+<span class="sd">    theta : array</span>
+<span class="sd">    y : array</span>
+<span class="sd">        data to condition GP on</span>
+<span class="sd">    cv : int (optional)</span>
+<span class="sd">        If not None, cv is the number (k) of k-folds CV to use.  Defaults to</span>
+<span class="sd">        None (no CV)</span>
+<span class="sd">    seed : int (optional)</span>
+<span class="sd">        numpy RNG seed.  Defaults to None.</span>
+<span class="sd">    which_kernel : str (optional)</span>
+<span class="sd">        Name of the george kernel you want to use.  Defaults to ExpSquaredKernel</span>
+<span class="sd">    hyperparameters : dict (optional)</span>
+<span class="sd">        Grid of hyperparameters ranges to search over for cross-validation.</span>
+<span class="sd">        Defaults to None.  If supplied, it should look something like this:</span>
+<span class="sd">        {&#39;kernel:metric:log_M_0_0&#39;: np.linspace(0.01*gp.get_parameter_vector()[0],</span>
+<span class="sd">                                                100.0*gp.get_parameter_vector()[0],</span>
+<span class="sd">                                                10)}</span>
+<span class="sd">    test_size : float (optional)</span>
+<span class="sd">        Fraction of y to use as holdout set for cross-validation.  Defaults to</span>
+<span class="sd">        0.25.  Must be in the range (0,1).</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    optimized_gp : george.GP</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Optimize GP by maximizing log-likelihood</span>
+    <span class="k">if</span> <span class="n">cv</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+
+        <span class="c1"># Run the optimization routine.</span>
+        <span class="n">p0</span> <span class="o">=</span> <span class="n">gp</span><span class="o">.</span><span class="n">get_parameter_vector</span><span class="p">()</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="n">minimize</span><span class="p">(</span><span class="n">_nll</span><span class="p">,</span> <span class="n">p0</span><span class="p">,</span> <span class="n">jac</span><span class="o">=</span><span class="n">_grad_nll</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">gp</span><span class="p">,</span> <span class="n">y</span><span class="p">),</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;bfgs&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Update the kernel</span>
+        <span class="n">gp</span><span class="o">.</span><span class="n">set_parameter_vector</span><span class="p">(</span><span class="n">results</span><span class="o">.</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">gp</span><span class="o">.</span><span class="n">recompute</span><span class="p">()</span>
+
+    <span class="c1"># Optimize GP via cv=k fold cross-validation</span>
+    <span class="k">else</span><span class="p">:</span>
+
+        <span class="c1"># XXX hack hack hack: this will fail when fitting for means</span>
+        <span class="n">hyperparameters</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;kernel:metric:log_M_0_0&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mf">0.01</span><span class="p">,</span> <span class="mf">100.0</span><span class="p">,</span>
+                           <span class="mi">10</span><span class="p">),</span>
+                           <span class="s1">&#39;kernel:metric:log_M_1_1&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mf">0.01</span><span class="p">,</span> <span class="mf">100.0</span><span class="p">,</span>
+                                              <span class="mi">10</span><span class="p">)}</span>
+
+        <span class="c1"># Why CV if no grid given?</span>
+        <span class="k">if</span> <span class="n">hyperparameters</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">err_msg</span> <span class="o">=</span> <span class="s2">&quot;ERROR: Trying CV but no dict of hyperparameters range given!&quot;</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">err_msg</span><span class="p">)</span>
+
+        <span class="c1"># Make a nice list of parameters</span>
+        <span class="n">grid</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">ParameterGrid</span><span class="p">(</span><span class="n">hyperparameters</span><span class="p">))</span>
+
+        <span class="c1"># Do cv fold cross-validation</span>
+        <span class="n">splitter</span> <span class="o">=</span> <span class="n">ShuffleSplit</span><span class="p">(</span><span class="n">n_splits</span><span class="o">=</span><span class="n">cv</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=</span><span class="mf">0.25</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="n">seed</span><span class="p">)</span>
+
+        <span class="n">nll</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="c1"># Loop over each param combination</span>
+        <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">grid</span><span class="p">)):</span>
+
+            <span class="n">iter_nll</span> <span class="o">=</span> <span class="mf">0.0</span>
+            <span class="k">for</span> <span class="n">train_split</span><span class="p">,</span> <span class="n">test_split</span> <span class="ow">in</span> <span class="n">splitter</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">y</span><span class="p">):</span>
+
+                <span class="c1"># Init up GP with the right dimensions</span>
+                <span class="n">opt_gp</span> <span class="o">=</span> <span class="n">setup_gp</span><span class="p">(</span><span class="n">theta</span><span class="p">[</span><span class="n">train_split</span><span class="p">],</span> <span class="n">y</span><span class="p">[</span><span class="n">train_split</span><span class="p">],</span>
+                                  <span class="n">which_kernel</span><span class="o">=</span><span class="s2">&quot;ExpSquaredKernel&quot;</span><span class="p">)</span>
+
+                <span class="c1"># Set GP parameters based on current iteration</span>
+                <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">grid</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                    <span class="n">opt_gp</span><span class="o">.</span><span class="n">set_parameter</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">grid</span><span class="p">[</span><span class="n">ii</span><span class="p">][</span><span class="n">key</span><span class="p">])</span>
+                <span class="n">opt_gp</span><span class="o">.</span><span class="n">recompute</span><span class="p">(</span><span class="n">theta</span><span class="p">[</span><span class="n">train_split</span><span class="p">])</span>
+
+                <span class="c1"># Compute NLL</span>
+                <span class="n">ll</span> <span class="o">=</span> <span class="n">opt_gp</span><span class="o">.</span><span class="n">log_likelihood</span><span class="p">(</span><span class="n">y</span><span class="p">[</span><span class="n">train_split</span><span class="p">],</span> <span class="n">quiet</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">ll</span><span class="p">):</span>
+                    <span class="n">iter_nll</span> <span class="o">+=</span> <span class="o">-</span><span class="n">ll</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">iter_nll</span> <span class="o">+=</span> <span class="mf">1e25</span>
+            <span class="c1"># End of iteration: append mean nll</span>
+            <span class="n">nll</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">iter_nll</span><span class="o">/</span><span class="n">cv</span><span class="p">)</span>
+
+        <span class="n">min_nll</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">nll</span><span class="p">)</span>
+
+        <span class="c1"># Set GP parameters</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">grid</span><span class="p">[</span><span class="n">min_nll</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="n">gp</span><span class="o">.</span><span class="n">set_parameter</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">grid</span><span class="p">[</span><span class="n">min_nll</span><span class="p">][</span><span class="n">key</span><span class="p">])</span>
+
+        <span class="c1"># Recompute with the optimized hyperparameters!</span>
+        <span class="n">gp</span><span class="o">.</span><span class="n">recompute</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
+</div>
+    <span class="k">return</span> <span class="n">gp</span>
+<span class="c1"># end function</span>
+
+
+<div class="viewcode-block" id="setup_gp"><a class="viewcode-back" href="../../api/gp_utils.html#approxposterior.gp_utils.setup_gp">[docs]</a><span class="k">def</span> <span class="nf">setup_gp</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">which_kernel</span><span class="o">=</span><span class="s2">&quot;ExpSquaredKernel&quot;</span><span class="p">,</span> <span class="n">mean</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Initialize a george GP object</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    theta : array</span>
+<span class="sd">    y : array</span>
+<span class="sd">        data to condition GP on</span>
+<span class="sd">    which_kernel : str (optional)</span>
+<span class="sd">        Name of the george kernel you want to use.  Defaults to ExpSquaredKernel.</span>
+<span class="sd">        Options: ExpSquaredKernel, ExpKernel, Matern32Kernel, Matern52Kernel</span>
+<span class="sd">    mean : scalar, callable (optional)</span>
+<span class="sd">        specifies the mean function of the GP using a scalar or a callable fn.</span>
+<span class="sd">        Defaults to None.  If none, estimates the mean</span>
+<span class="sd">    seed : int (optional)</span>
+<span class="sd">        numpy RNG seed.  Defaults to None.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    gp : george.GP</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Guess the bandwidth</span>
+    <span class="n">bandwidth</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">/</span><span class="mf">10.0</span>
+
+    <span class="c1"># Which kernel?</span>
+    <span class="k">if</span> <span class="nb">str</span><span class="p">(</span><span class="n">which_kernel</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;expsquaredkernel&quot;</span><span class="p">:</span>
+        <span class="n">kernel</span> <span class="o">=</span> <span class="n">george</span><span class="o">.</span><span class="n">kernels</span><span class="o">.</span><span class="n">ExpSquaredKernel</span><span class="p">(</span><span class="n">bandwidth</span><span class="p">,</span>
+                                                 <span class="n">ndim</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+    <span class="k">elif</span> <span class="nb">str</span><span class="p">(</span><span class="n">which_kernel</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;expkernel&quot;</span><span class="p">:</span>
+        <span class="n">kernel</span> <span class="o">=</span> <span class="n">george</span><span class="o">.</span><span class="n">kernels</span><span class="o">.</span><span class="n">ExpKernel</span><span class="p">(</span><span class="n">bandwidth</span><span class="p">,</span>
+                                          <span class="n">ndim</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+    <span class="k">elif</span> <span class="nb">str</span><span class="p">(</span><span class="n">which_kernel</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;matern32kernel&quot;</span><span class="p">:</span>
+        <span class="n">kernel</span> <span class="o">=</span> <span class="n">george</span><span class="o">.</span><span class="n">kernels</span><span class="o">.</span><span class="n">Matern32Kernel</span><span class="p">(</span><span class="n">bandwidth</span><span class="p">,</span>
+                                          <span class="n">ndim</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+    <span class="k">elif</span> <span class="nb">str</span><span class="p">(</span><span class="n">which_kernel</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;matern52kernel&quot;</span><span class="p">:</span>
+        <span class="n">kernel</span> <span class="o">=</span> <span class="n">george</span><span class="o">.</span><span class="n">kernels</span><span class="o">.</span><span class="n">Matern52Kernel</span><span class="p">(</span><span class="n">bandwidth</span><span class="p">,</span>
+                                          <span class="n">ndim</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">avail</span> <span class="o">=</span> <span class="s2">&quot;Available kernels: ExpSquaredKernel, ExpKernel, Matern32Kernel, Matern52Kernel&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Error: Available kernels: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">avail</span><span class="p">)</span>
+
+    <span class="c1"># Guess the mean value if nothing is given</span>
+    <span class="k">if</span> <span class="n">mean</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">y</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="c1"># Create the GP conditioned on theta</span>
+    <span class="n">gp</span> <span class="o">=</span> <span class="n">george</span><span class="o">.</span><span class="n">GP</span><span class="p">(</span><span class="n">kernel</span><span class="o">=</span><span class="n">kernel</span><span class="p">,</span> <span class="n">fit_mean</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">mean</span><span class="o">=</span><span class="n">mean</span><span class="p">)</span>
+    <span class="n">gp</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
+</div>
+    <span class="k">return</span> <span class="n">gp</span>
+<span class="c1"># end function</span>
+</pre></div>
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, David P. Fleming.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'0.1',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

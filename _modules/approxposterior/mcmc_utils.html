@@ -1,0 +1,345 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>approxposterior.mcmc_utils &mdash; approxposterior 0.1 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../genindex.html"/>
+        <link rel="search" title="Search" href="../../search.html"/>
+    <link rel="top" title="approxposterior 0.1 documentation" href="../../index.html"/>
+        <link rel="up" title="Module code" href="../index.html"/> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> approxposterior
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorial.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html">API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/dflemin3/approxposterior">Github</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/dflemin3/approxposterior/issues">Submit an Issue</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">approxposterior</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>approxposterior.mcmc_utils</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for approxposterior.mcmc_utils</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">MCMC utility functions.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="p">(</span><span class="n">print_function</span><span class="p">,</span> <span class="n">division</span><span class="p">,</span> <span class="n">absolute_import</span><span class="p">,</span>
+                        <span class="n">unicode_literals</span><span class="p">)</span>
+
+<span class="c1"># Tell module what it&#39;s allowed to import</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;autocorr&quot;</span><span class="p">,</span><span class="s2">&quot;estimate_burnin&quot;</span><span class="p">]</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">emcee</span>
+<span class="kn">from</span> <span class="nn">scipy.interpolate</span> <span class="k">import</span> <span class="n">UnivariateSpline</span>
+
+
+<div class="viewcode-block" id="autocorr"><a class="viewcode-back" href="../../api/mcmc_utils.html#approxposterior.mcmc_utils.autocorr">[docs]</a><span class="k">def</span> <span class="nf">autocorr</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Compute the autocorrelation function</span>
+
+<span class="sd">    http://stackoverflow.com/q/14297012/190597</span>
+<span class="sd">    http://en.wikipedia.org/wiki/Autocorrelation#Estimation</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    x : array</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    result : array</span>
+<span class="sd">        ACF</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="n">variance</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">var</span><span class="p">()</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">-</span><span class="n">x</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">correlate</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">mode</span> <span class="o">=</span> <span class="s1">&#39;full&#39;</span><span class="p">)[</span><span class="o">-</span><span class="n">n</span><span class="p">:]</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">r</span><span class="o">/</span><span class="p">(</span><span class="n">variance</span><span class="o">*</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)))</span></div>
+    <span class="k">return</span> <span class="n">result</span>
+<span class="c1"># end function</span>
+
+
+<div class="viewcode-block" id="estimate_burnin"><a class="viewcode-back" href="../../api/mcmc_utils.html#approxposterior.mcmc_utils.estimate_burnin">[docs]</a><span class="k">def</span> <span class="nf">estimate_burnin</span><span class="p">(</span><span class="n">sampler</span><span class="p">,</span> <span class="n">nwalk</span><span class="p">,</span> <span class="n">nsteps</span><span class="p">,</span> <span class="n">ndim</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Given an MCMC chain, estimate the burn-in time (credit: Jacob Lustig-Jaeger)</span>
+<span class="sd">    This function computes the maximum autocorrelation length of all the walkers</span>
+<span class="sd">    that clearly haven&#39;t strayed too far from the converged answer.  If your</span>
+<span class="sd">    chains have converged, this function provides a conservative estimate of the</span>
+<span class="sd">    burn-in.  As with all things, MCMC, your mileage will vary.  Currently this</span>
+<span class="sd">    function just supports emcee.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    sampler : emcee.EnsembleSampler</span>
+<span class="sd">    nwalk : int</span>
+<span class="sd">        Number of walkers</span>
+<span class="sd">    nsteps : int</span>
+<span class="sd">        Number of MCMC steps (iterations)</span>
+<span class="sd">    ndim : int</span>
+<span class="sd">        Data dimensionality (number of parameters)</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    iburn : int</span>
+<span class="sd">        Index corresponding to estimated burn-in length scale</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">iburn</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">ikeep</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">autoc</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">autolength</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="n">walkers</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">nwalk</span><span class="p">)</span>
+    <span class="n">iterations</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">nsteps</span><span class="p">)</span>
+
+    <span class="c1"># Loop over number of free parameters</span>
+    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ndim</span><span class="p">):</span>
+
+        <span class="c1"># Loop over walkers</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nwalk</span><span class="p">):</span>
+            <span class="c1"># Get list of other walker indicies</span>
+            <span class="n">walkers</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">nwalk</span><span class="p">)</span>
+            <span class="n">other_iwalkers</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">walkers</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
+
+            <span class="c1"># Calculate the median of this chain</span>
+            <span class="n">med_chain</span> <span class="o">=</span>  <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">sampler</span><span class="o">.</span><span class="n">chain</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">iburn</span><span class="p">:,</span><span class="n">j</span><span class="p">])</span>
+
+            <span class="c1"># Calculate the mean of this chain</span>
+            <span class="n">mean_chain</span> <span class="o">=</span>  <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">sampler</span><span class="o">.</span><span class="n">chain</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">iburn</span><span class="p">:,</span><span class="n">j</span><span class="p">])</span>
+
+            <span class="c1"># Calculate the median and std of all the other chains</span>
+            <span class="n">med_other</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">sampler</span><span class="o">.</span><span class="n">chain</span><span class="p">[</span><span class="n">other_iwalkers</span><span class="p">,</span><span class="n">iburn</span><span class="p">:,</span><span class="n">j</span><span class="p">])</span>
+            <span class="n">std_other</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">sampler</span><span class="o">.</span><span class="n">chain</span><span class="p">[</span><span class="n">other_iwalkers</span><span class="p">,</span><span class="n">iburn</span><span class="p">:,</span><span class="n">j</span><span class="p">])</span>
+
+            <span class="c1"># If this chain is within 3-sig from all other chain&#39;s median</span>
+            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">mean_chain</span> <span class="o">-</span> <span class="n">med_other</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">3</span><span class="o">*</span><span class="n">std_other</span><span class="p">:</span>
+                <span class="c1"># Keep it!</span>
+                <span class="n">ikeep</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+
+                <span class="c1"># Get autocorrelation of chain</span>
+                <span class="n">autoci</span> <span class="o">=</span> <span class="n">autocorr</span><span class="p">(</span><span class="n">sampler</span><span class="o">.</span><span class="n">chain</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">iburn</span><span class="p">:,</span><span class="n">j</span><span class="p">])</span>
+                <span class="n">autoc</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">autoci</span><span class="p">)</span>
+
+                <span class="c1"># Fit with spline</span>
+                <span class="n">spline</span> <span class="o">=</span> <span class="n">UnivariateSpline</span><span class="p">(</span><span class="n">iterations</span><span class="p">,</span> <span class="n">autoci</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+                <span class="c1"># Find zero crossings</span>
+                <span class="n">roots</span> <span class="o">=</span> <span class="n">spline</span><span class="o">.</span><span class="n">roots</span><span class="p">()</span>
+
+                <span class="c1"># Save autocorrelation length</span>
+                <span class="n">autolength</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">roots</span><span class="p">))</span>
+
+    <span class="c1"># List of chains that we are keeping</span>
+    <span class="n">ikeep</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">ikeep</span><span class="p">))</span>
+
+    <span class="c1"># Set burn-in index to maximum autocorrelation length</span></div>
+    <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">autolength</span><span class="p">))</span>
+<span class="c1"># end function</span>
+</pre></div>
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, David P. Fleming.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'0.1',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

@@ -1,0 +1,492 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>approxposterior.utility &mdash; approxposterior 0.1 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../genindex.html"/>
+        <link rel="search" title="Search" href="../../search.html"/>
+    <link rel="top" title="approxposterior 0.1 documentation" href="../../index.html"/>
+        <link rel="up" title="Module code" href="../index.html"/> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> approxposterior
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorial.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html">API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/dflemin3/approxposterior">Github</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/dflemin3/approxposterior/issues">Submit an Issue</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">approxposterior</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>approxposterior.utility</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for approxposterior.utility</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">Utility functions</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="p">(</span><span class="n">print_function</span><span class="p">,</span> <span class="n">division</span><span class="p">,</span> <span class="n">absolute_import</span><span class="p">,</span>
+                        <span class="n">unicode_literals</span><span class="p">)</span>
+
+<span class="c1"># Tell module what it&#39;s allowed to import</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;logsubexp&quot;</span><span class="p">,</span><span class="s2">&quot;AGP_utility&quot;</span><span class="p">,</span><span class="s2">&quot;BAPE_utility&quot;</span><span class="p">,</span><span class="s2">&quot;minimize_objective&quot;</span><span class="p">,</span>
+           <span class="s2">&quot;function_wrapper&quot;</span><span class="p">,</span><span class="s2">&quot;kl_numerical&quot;</span><span class="p">]</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">scipy.optimize</span> <span class="k">import</span> <span class="n">minimize</span>
+
+
+<span class="c1">################################################################################</span>
+<span class="c1">#</span>
+<span class="c1"># Useful classes</span>
+<span class="c1">#</span>
+<span class="c1">################################################################################</span>
+
+
+<div class="viewcode-block" id="function_wrapper"><a class="viewcode-back" href="../../api/utility.html#approxposterior.utility.function_wrapper">[docs]</a><span class="k">class</span> <span class="nc">function_wrapper</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Wrapper class for functions.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize!</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Need function, optional args and kwargs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">f</span> <span class="o">=</span> <span class="n">f</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">args</span> <span class="o">=</span> <span class="n">args</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span> <span class="o">=</span> <span class="n">kwargs</span>
+    <span class="c1"># end function</span>
+
+
+    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Call the function on some input x.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+</div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">f</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="c1"># end function</span>
+<span class="c1"># end class</span>
+
+
+<span class="c1">################################################################################</span>
+<span class="c1">#</span>
+<span class="c1"># Define math functions</span>
+<span class="c1">#</span>
+<span class="c1">################################################################################</span>
+
+
+<div class="viewcode-block" id="kl_numerical"><a class="viewcode-back" href="../../api/utility.html#approxposterior.utility.kl_numerical">[docs]</a><span class="k">def</span> <span class="nf">kl_numerical</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">q</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Estimate the KL-Divergence between pdfs p and q via Monte Carlo intergration</span>
+<span class="sd">    using x, samples from p.</span>
+
+<span class="sd">    KL ~ 1/n * sum_{i=1,n}(log (p(x_i)/q(x_i)))</span>
+
+<span class="sd">    For our purposes, q is the current estimate of the pdf</span>
+<span class="sd">    while p is the previous estimate.  This method is the</span>
+<span class="sd">    only feasible method for large dimensions.</span>
+
+<span class="sd">    See Hershey and Olsen, &quot;Approximating the Kullback Leibler</span>
+<span class="sd">    Divergence Between Gaussian Mixture Models&quot; for more info</span>
+
+<span class="sd">    Note that this method can result in D_kl &lt; 0 but it&#39;s the only method with</span>
+<span class="sd">    convergence properties as the number of samples (len(x)) grows.  Also, this</span>
+<span class="sd">    method is shown to have the lowest error, on average (see Hershey and Olsen).</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    x : array</span>
+<span class="sd">        Samples drawn from p</span>
+<span class="sd">    p : function</span>
+<span class="sd">        Callable previous estimate of the density</span>
+<span class="sd">    q : function</span>
+<span class="sd">        Callable current estimate of the density</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    kl : float</span>
+<span class="sd">        KL divergence</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">p</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">/</span><span class="n">q</span><span class="p">(</span><span class="n">x</span><span class="p">)))</span><span class="o">/</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+        <span class="n">err_msg</span> <span class="o">=</span> <span class="s2">&quot;ERROR: inf/NaN encountered.  q(x) = 0 likely occured.&quot;</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">err_msg</span><span class="p">)</span>
+</div>
+    <span class="k">return</span> <span class="n">res</span>
+<span class="c1"># end function</span>
+
+
+<div class="viewcode-block" id="logsubexp"><a class="viewcode-back" href="../../api/utility.html#approxposterior.utility.logsubexp">[docs]</a><span class="k">def</span> <span class="nf">logsubexp</span><span class="p">(</span><span class="n">x1</span><span class="p">,</span> <span class="n">x2</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Numerically stable way to compute log(exp(x1) - exp(x2))</span>
+
+<span class="sd">    logsubexp(x1, x2) -&gt; log(exp(x1) - exp(x2))</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    x1 : float</span>
+<span class="sd">    x2 : float</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    logsubexp(x1, x2)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">x1</span> <span class="o">&lt;=</span> <span class="n">x2</span><span class="p">:</span>
+        <span class="k">return</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+    <span class="k">else</span><span class="p">:</span></div>
+        <span class="k">return</span> <span class="n">x1</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">x2</span> <span class="o">-</span> <span class="n">x1</span><span class="p">))</span>
+<span class="c1"># end function</span>
+
+
+<span class="c1">################################################################################</span>
+<span class="c1">#</span>
+<span class="c1"># Define utility functions</span>
+<span class="c1">#</span>
+<span class="c1">################################################################################</span>
+
+
+<div class="viewcode-block" id="AGP_utility"><a class="viewcode-back" href="../../api/utility.html#approxposterior.utility.AGP_utility">[docs]</a><span class="k">def</span> <span class="nf">AGP_utility</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">gp</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    AGP (Adaptive Gaussian Process) utility function, the entropy of the</span>
+<span class="sd">    posterior distribution. This is what you maximize to find the next x under</span>
+<span class="sd">    the AGP formalism. Note here we use the negative of the utility function so</span>
+<span class="sd">    minimizing this is the same as maximizing the actual utility function.</span>
+
+<span class="sd">    See Wang &amp; Li (2017) for derivation/explaination.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    theta : array</span>
+<span class="sd">        parameters to evaluate</span>
+<span class="sd">    y : array</span>
+<span class="sd">        y values to condition the gp prediction on.</span>
+<span class="sd">    gp : george GP object</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    u : float</span>
+<span class="sd">        utility of theta under the gp</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Only works if the GP object has been computed, otherwise you messed up</span>
+    <span class="k">if</span> <span class="n">gp</span><span class="o">.</span><span class="n">computed</span><span class="p">:</span>
+        <span class="n">mu</span><span class="p">,</span> <span class="n">var</span> <span class="o">=</span> <span class="n">gp</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">theta</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="n">return_var</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;ERROR: Need to compute GP before using it!&quot;</span><span class="p">)</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">util</span> <span class="o">=</span> <span class="o">-</span><span class="p">(</span><span class="n">mu</span> <span class="o">+</span> <span class="mf">1.0</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mf">2.0</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">e</span><span class="o">*</span><span class="n">var</span><span class="p">))</span>
+    <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Invalid util value.  Negative variance or inf mu?&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;util: </span><span class="si">%e</span><span class="s2">. mu: </span><span class="si">%e</span><span class="s2">. var: </span><span class="si">%e</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">util</span><span class="p">,</span> <span class="n">mu</span><span class="p">,</span> <span class="n">var</span><span class="p">))</span>
+</div>
+    <span class="k">return</span> <span class="n">util</span>
+<span class="c1"># end function</span>
+
+
+<div class="viewcode-block" id="BAPE_utility"><a class="viewcode-back" href="../../api/utility.html#approxposterior.utility.BAPE_utility">[docs]</a><span class="k">def</span> <span class="nf">BAPE_utility</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">gp</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    BAPE (Bayesian Active Posterior Estimation) utility function.  This is what</span>
+<span class="sd">    you maximize to find the next theta under the BAPE formalism.  Note here we</span>
+<span class="sd">    use the negative of the utility function so minimizing this is the same as</span>
+<span class="sd">    maximizing the actual utility function.  Also, we log the BAPE utility</span>
+<span class="sd">    function as the log is monotonic so the minima are equivalent.</span>
+
+<span class="sd">    See Kandasamy et al. (2015) for derivation/explaination.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    theta : array</span>
+<span class="sd">        parameters to evaluate</span>
+<span class="sd">    y : array</span>
+<span class="sd">        y values to condition the gp prediction on.</span>
+<span class="sd">    gp : george GP object</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    u : float</span>
+<span class="sd">        utility of theta under the gp</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Only works if the GP object has been computed, otherwise you messed up</span>
+    <span class="k">if</span> <span class="n">gp</span><span class="o">.</span><span class="n">computed</span><span class="p">:</span>
+        <span class="n">mu</span><span class="p">,</span> <span class="n">var</span> <span class="o">=</span> <span class="n">gp</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">theta</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="n">return_var</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;ERROR: Need to compute GP before using it!&quot;</span><span class="p">)</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">util</span> <span class="o">=</span> <span class="o">-</span><span class="p">((</span><span class="mf">2.0</span><span class="o">*</span><span class="n">mu</span> <span class="o">+</span> <span class="n">var</span><span class="p">)</span> <span class="o">+</span> <span class="n">logsubexp</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">))</span>
+    <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Invalid util value.  Negative variance or inf mu?&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;util: </span><span class="si">%e</span><span class="s2">. mu: </span><span class="si">%e</span><span class="s2">. var: </span><span class="si">%e</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">util</span><span class="p">,</span> <span class="n">mu</span><span class="p">,</span> <span class="n">var</span><span class="p">))</span>
+</div>
+    <span class="k">return</span> <span class="n">util</span>
+<span class="c1"># end function</span>
+
+
+<div class="viewcode-block" id="minimize_objective"><a class="viewcode-back" href="../../api/utility.html#approxposterior.utility.minimize_objective">[docs]</a><span class="k">def</span> <span class="nf">minimize_objective</span><span class="p">(</span><span class="n">fn</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">gp</span><span class="p">,</span> <span class="n">sample_fn</span><span class="p">,</span> <span class="n">prior_fn</span><span class="p">,</span> <span class="n">bounds</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Find point that minimizes fn for a gaussian process gp conditioned on y,</span>
+<span class="sd">    the data.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    fn : function</span>
+<span class="sd">        function to minimize that expects x, y, gp as arguments aka fn looks</span>
+<span class="sd">        like fn_name(x, y, gp).  See *_utility functions above for examples.</span>
+<span class="sd">    y : array</span>
+<span class="sd">        y values to condition the gp prediction on.</span>
+<span class="sd">    gp : george GP object</span>
+<span class="sd">    sample_fn : function</span>
+<span class="sd">        Function to sample initial conditions from.</span>
+<span class="sd">    prior_fn : function</span>
+<span class="sd">        Function to apply prior to.</span>
+<span class="sd">    kw : dict (optional)</span>
+<span class="sd">        Any additional keyword arguments scipy.optimize.minimize could use,</span>
+<span class="sd">        e.g., method.</span>
+<span class="sd">    bounds : tuple/iterable (optional)</span>
+<span class="sd">        Bounds for minimization scheme.  See scipy.optimize.minimize details</span>
+<span class="sd">        for more information.  Defaults to None.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    theta : (1 x n_dims)</span>
+<span class="sd">        point that minimizes fn</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">is_finite</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="k">while</span> <span class="ow">not</span> <span class="n">is_finite</span><span class="p">:</span>
+        <span class="c1"># Solve for theta that maximize fn and is allowed by prior</span>
+
+        <span class="c1"># Choose theta0 by uniformly sampling over parameter space</span>
+        <span class="n">theta0</span> <span class="o">=</span> <span class="n">sample_fn</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">gp</span><span class="p">)</span>
+
+        <span class="c1"># Mimimze fn, see if prior allows solution</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">tmp</span> <span class="o">=</span> <span class="n">minimize</span><span class="p">(</span><span class="n">fn</span><span class="p">,</span> <span class="n">theta0</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="n">args</span><span class="p">,</span> <span class="n">bounds</span><span class="o">=</span><span class="n">bounds</span><span class="p">,</span>
+                           <span class="n">method</span><span class="o">=</span><span class="s2">&quot;l-bfgs-b&quot;</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;ftol&quot;</span> <span class="p">:</span> <span class="mf">1.0e-3</span><span class="p">},</span>
+                           <span class="o">**</span><span class="n">kw</span><span class="p">)[</span><span class="s2">&quot;x&quot;</span><span class="p">]</span>
+
+        <span class="c1"># ValueError.  Try again.</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="n">tmp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span> <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">theta0</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])])</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">theta0</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+
+        <span class="c1"># If the answer isn&#39;t infinite, we&#39;re good</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isinf</span><span class="p">(</span><span class="n">tmp</span><span class="p">)):</span>
+            <span class="n">theta</span> <span class="o">=</span> <span class="n">tmp</span>
+            <span class="n">is_finite</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="c1"># end while</span>
+</div>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+<span class="c1"># end function</span>
+</pre></div>
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, David P. Fleming.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'0.1',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>
