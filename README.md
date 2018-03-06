@@ -4,6 +4,8 @@ A Python implementation of [Bayesian Active Learning for Posterior Estimation](h
 
 [![build status](http://img.shields.io/travis/dflemin3/approxposterior/master.svg?style=flat)](https://travis-ci.org/dflemin3/approxposterior)
 
+Check out the [documentation](https://dflemin3.github.io/approxposterior/) for a more in-depth explanation about the code!
+
 Installation
 ============
 Clone the repository and run
