@@ -1,6 +1,19 @@
 Tutorial
 ========
 
+Check out the example notebooks to see how the BAPE algorithm works, how the code runtime scales
+for different forward model evaluation times, how we compute the Kullback–Leibler (KL) divergence,
+and how we compute the true posterior distribution for the Rosenbrock function example from Wang & Li (2017).
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Jupyter Notebook Examples:
+
+   BAPE Example <notebooks/BAPE_Example.ipynb>
+   Scaling <notebooks/Scaling_Accuracy.ipynb>
+   KL Divergence Example <notebooks/KL_Divergence_Estimation.ipynb>
+   Rosenbrock Example <notebooks/True_Rosenbrock_Posterior.ipynb>
+
 Below is a quick example of how to use :py:obj:`approxposterior` to compute the posterior
 distribution of the Rosenbrock Function example from Wang & Li (2017) using the
 BAPE algorithm.

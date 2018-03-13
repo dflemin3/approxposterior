@@ -27,7 +27,7 @@
 
        cd doc
        make html
-       ghp-import -n -m message doc/_build/html/
+       ghp-import -n -m message _build/html/
        git push origin gh-pages
 
 9. update version in doc/conf.py
