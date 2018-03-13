@@ -1,7 +1,9 @@
 Tutorial
 ========
 
-Check out the example notebooks:
+Check out the example notebooks to see how the BAPE algorithm works, how the code runtime scales
+for different forward model evaluation times, how we compute the Kullback–Leibler (KL) divergence,
+and how we compute the true posterior distribution for the Rosenbrock function example from Wang & Li (2017).
 
 .. toctree::
    :maxdepth: 1
