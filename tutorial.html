@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Tutorial &mdash; approxposterior 0.1 documentation</title>
+  <title>Tutorial &mdash; approxposterior 0.2.dev0 documentation</title>
   
 
   
@@ -35,8 +35,8 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="approxposterior 0.1 documentation" href="index.html"/>
-        <link rel="next" title="API" href="api.html"/>
+    <link rel="top" title="approxposterior 0.2.dev0 documentation" href="index.html"/>
+        <link rel="next" title="BAPE Algorithm Example" href="notebooks/BAPE_Example.html"/>
         <link rel="prev" title="Overview" href="overview.html"/> 
 
   
@@ -89,7 +89,13 @@
               <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="overview.html">Overview</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Tutorial</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Tutorial</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="notebooks/BAPE_Example.html">BAPE Example</a></li>
+<li class="toctree-l2"><a class="reference internal" href="notebooks/Scaling_Accuracy.html">Scaling</a></li>
+<li class="toctree-l2"><a class="reference internal" href="notebooks/KL_Divergence_Estimation.html">KL Divergence Example</a></li>
+<li class="toctree-l2"><a class="reference internal" href="notebooks/True_Rosenbrock_Posterior.html">Rosenbrock Example</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="api.html">API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://github.com/dflemin3/approxposterior">Github</a></li>
@@ -157,15 +163,62 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="tutorial">
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast,
+.nboutput.nblast {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast + .nbinput {
+    margin-top: -19px;
+}
+
+/* nice headers on first paragraph of info/warning boxes */
+.admonition .first {
+    margin: -12px;
+    padding: 6px 12px;
+    margin-bottom: 12px;
+    color: #fff;
+    line-height: 1;
+    display: block;
+}
+.admonition.warning .first {
+    background: #f0b37e;
+}
+.admonition.note .first {
+    background: #6ab0de;
+}
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+</style>
+<div class="section" id="tutorial">
 <h1>Tutorial<a class="headerlink" href="#tutorial" title="Permalink to this headline">¶</a></h1>
+<p>Check out the example notebooks:</p>
+<div class="toctree-wrapper compound">
+<p class="caption"><span class="caption-text">Jupyter Notebook Examples:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="notebooks/BAPE_Example.html">BAPE Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="notebooks/Scaling_Accuracy.html">Scaling</a></li>
+<li class="toctree-l1"><a class="reference internal" href="notebooks/KL_Divergence_Estimation.html">KL Divergence Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="notebooks/True_Rosenbrock_Posterior.html">Rosenbrock Example</a></li>
+</ul>
+</div>
 <p>Below is a quick example of how to use <code class="xref py py-obj docutils literal notranslate"><span class="pre">approxposterior</span></code> to compute the posterior
 distribution of the Rosenbrock Function example from Wang &amp; Li (2017) using the
 BAPE algorithm.</p>
+<ol class="arabic simple">
+<li>First, the user must set model parameters.</li>
+</ol>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">approxposterior</span> <span class="kn">import</span> <span class="n">bp</span><span class="p">,</span> <span class="n">likelihood</span> <span class="k">as</span> <span class="n">lh</span>
 
 <span class="c1"># Define algorithm parameters</span>
-<span class="n">m0</span> <span class="o">=</span> <span class="mi">20</span>                           <span class="c1"># Initial size of training set</span>
+<span class="n">m0</span> <span class="o">=</span> <span class="mi">20</span>                           <span class="c1"># Initial size of training set to generate (if None is supplied)</span>
 <span class="n">m</span> <span class="o">=</span> <span class="mi">10</span>                            <span class="c1"># Number of new points to find each iteration</span>
 <span class="n">nmax</span> <span class="o">=</span> <span class="mi">10</span>                         <span class="c1"># Maximum number of iterations</span>
 <span class="n">M</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="mf">1.0e4</span><span class="p">)</span>                    <span class="c1"># Number of MCMC steps to estimate approximate posterior</span>
@@ -174,14 +227,22 @@ BAPE algorithm.</p>
 <span class="n">which_kernel</span> <span class="o">=</span> <span class="s2">&quot;ExpSquaredKernel&quot;</span> <span class="c1"># Which Gaussian Process kernel to use</span>
 <span class="n">bounds</span> <span class="o">=</span> <span class="p">((</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">),</span> <span class="p">(</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">))</span>         <span class="c1"># Prior bounds</span>
 <span class="n">algorithm</span> <span class="o">=</span> <span class="s2">&quot;agp&quot;</span>                 <span class="c1"># Use the Wang &amp; Li (2017) formalism</span>
-
-<span class="c1"># Initialize object using the Wang &amp; Li (2017) Rosenbrock function example</span>
+</pre></div>
+</div>
+<ol class="arabic simple" start="2">
+<li>Initialize the <code class="xref py py-obj docutils literal notranslate"><span class="pre">approxposterior</span></code> object.</li>
+</ol>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Initialize object using the Wang &amp; Li (2017) Rosenbrock function example</span>
 <span class="n">ap</span> <span class="o">=</span> <span class="n">bp</span><span class="o">.</span><span class="n">ApproxPosterior</span><span class="p">(</span><span class="n">lnprior</span><span class="o">=</span><span class="n">lh</span><span class="o">.</span><span class="n">rosenbrock_lnprior</span><span class="p">,</span>
                         <span class="n">lnlike</span><span class="o">=</span><span class="n">lh</span><span class="o">.</span><span class="n">rosenbrock_lnlike</span><span class="p">,</span>
                         <span class="n">prior_sample</span><span class="o">=</span><span class="n">lh</span><span class="o">.</span><span class="n">rosenbrock_sample</span><span class="p">,</span>
                         <span class="n">algorithm</span><span class="o">=</span><span class="n">algorithm</span><span class="p">)</span>
-
-<span class="c1"># Run!</span>
+</pre></div>
+</div>
+<ol class="arabic simple" start="3">
+<li>Run!</li>
+</ol>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Run!</span>
 <span class="n">ap</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">m0</span><span class="o">=</span><span class="n">m0</span><span class="p">,</span> <span class="n">m</span><span class="o">=</span><span class="n">m</span><span class="p">,</span> <span class="n">M</span><span class="o">=</span><span class="n">M</span><span class="p">,</span> <span class="n">nmax</span><span class="o">=</span><span class="n">nmax</span><span class="p">,</span> <span class="n">Dmax</span><span class="o">=</span><span class="n">Dmax</span><span class="p">,</span> <span class="n">kmax</span><span class="o">=</span><span class="n">kmax</span><span class="p">,</span>
        <span class="n">bounds</span><span class="o">=</span><span class="n">bounds</span><span class="p">,</span> <span class="n">which_kernel</span><span class="o">=</span><span class="n">which_kernel</span><span class="p">)</span>
 </pre></div>
@@ -198,7 +259,7 @@ BAPE algorithm.</p>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="api.html" class="btn btn-neutral float-right" title="API" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="notebooks/BAPE_Example.html" class="btn btn-neutral float-right" title="BAPE Algorithm Example" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
         <a href="overview.html" class="btn btn-neutral" title="Overview" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
@@ -232,7 +293,7 @@ BAPE algorithm.</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'0.1',
+            VERSION:'0.2.dev0',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
