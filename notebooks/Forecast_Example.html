@@ -1,0 +1,716 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Forecasting with approxposterior &mdash; approxposterior 0.2.dev0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../genindex.html"/>
+        <link rel="search" title="Search" href="../search.html"/>
+    <link rel="top" title="approxposterior 0.2.dev0 documentation" href="../index.html"/>
+        <link rel="up" title="Tutorial" href="../tutorial.html"/>
+        <link rel="next" title="True Rosenbrock Posterior Calculation Using Emcee" href="True_Rosenbrock_Posterior.html"/>
+        <link rel="prev" title="KL Divergence Estimation" href="KL_Divergence_Estimation.html"/> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> approxposterior
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../overview.html">Overview</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../tutorial.html">Tutorial</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="BAPE_Example.html">BAPE Example</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Scaling_Accuracy.html">Scaling</a></li>
+<li class="toctree-l2"><a class="reference internal" href="KL_Divergence_Estimation.html">KL Divergence Example</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Forecast Example</a></li>
+<li class="toctree-l2"><a class="reference internal" href="True_Rosenbrock_Posterior.html">Rosenbrock Example</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html">API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/dflemin3/approxposterior">Github</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/dflemin3/approxposterior/issues">Submit an Issue</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">approxposterior</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../tutorial.html">Tutorial</a> &raquo;</li>
+        
+      <li>Forecasting with <em>approxposterior</em></li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/notebooks/Forecast_Example.ipynb.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  
+<style>
+/* CSS for nbsphinx extension */
+
+/* remove conflicting styling from Sphinx themes */
+div.nbinput,
+div.nbinput div.prompt,
+div.nbinput div.input_area,
+div.nbinput div[class*=highlight],
+div.nbinput div[class*=highlight] pre,
+div.nboutput,
+div.nbinput div.prompt,
+div.nbinput div.output_area,
+div.nboutput div[class*=highlight],
+div.nboutput div[class*=highlight] pre {
+    background: none;
+    border: none;
+    padding: 0 0;
+    margin: 0;
+    box-shadow: none;
+}
+
+/* avoid gaps between output lines */
+div.nboutput div[class*=highlight] pre {
+    line-height: normal;
+}
+
+/* input/output containers */
+div.nbinput,
+div.nboutput {
+    display: -webkit-flex;
+    display: flex;
+    align-items: flex-start;
+    margin: 0;
+    width: 100%;
+}
+@media (max-width: 540px) {
+    div.nbinput,
+    div.nboutput {
+        flex-direction: column;
+    }
+}
+
+/* input container */
+div.nbinput {
+    padding-top: 5px;
+}
+
+/* last container */
+div.nblast {
+    padding-bottom: 5px;
+}
+
+/* input prompt */
+div.nbinput div.prompt pre {
+    color: #303F9F;
+}
+
+/* output prompt */
+div.nboutput div.prompt pre {
+    color: #D84315;
+}
+
+/* all prompts */
+div.nbinput div.prompt,
+div.nboutput div.prompt {
+    min-width: 0;
+    padding-top: 0.4em;
+    padding-right: 0.4em;
+    text-align: right;
+    flex: 0;
+}
+@media (max-width: 540px) {
+    div.nbinput div.prompt,
+    div.nboutput div.prompt {
+        text-align: left;
+        padding: 0.4em;
+    }
+    div.nboutput div.prompt.empty {
+        padding: 0;
+    }
+}
+
+/* disable scrollbars on prompts */
+div.nbinput div.prompt pre,
+div.nboutput div.prompt pre {
+    overflow: hidden;
+}
+
+/* input/output area */
+div.nbinput div.input_area,
+div.nboutput div.output_area {
+    padding: 0.4em;
+    -webkit-flex: 1;
+    flex: 1;
+    overflow: auto;
+}
+@media (max-width: 540px) {
+    div.nbinput div.input_area,
+    div.nboutput div.output_area {
+        width: 100%;
+    }
+}
+
+/* input area */
+div.nbinput div.input_area {
+    border: 1px solid #cfcfcf;
+    border-radius: 2px;
+    background: #f7f7f7;
+}
+
+/* override MathJax center alignment in output cells */
+div.nboutput div[class*=MathJax] {
+    text-align: left !important;
+}
+
+/* override sphinx.ext.pngmath center alignment in output cells */
+div.nboutput div.math p {
+    text-align: left;
+}
+
+/* standard error */
+div.nboutput div.output_area.stderr {
+    background: #fdd;
+}
+
+/* ANSI colors */
+.ansi-black-fg { color: #3E424D; }
+.ansi-black-bg { background-color: #3E424D; }
+.ansi-black-intense-fg { color: #282C36; }
+.ansi-black-intense-bg { background-color: #282C36; }
+.ansi-red-fg { color: #E75C58; }
+.ansi-red-bg { background-color: #E75C58; }
+.ansi-red-intense-fg { color: #B22B31; }
+.ansi-red-intense-bg { background-color: #B22B31; }
+.ansi-green-fg { color: #00A250; }
+.ansi-green-bg { background-color: #00A250; }
+.ansi-green-intense-fg { color: #007427; }
+.ansi-green-intense-bg { background-color: #007427; }
+.ansi-yellow-fg { color: #DDB62B; }
+.ansi-yellow-bg { background-color: #DDB62B; }
+.ansi-yellow-intense-fg { color: #B27D12; }
+.ansi-yellow-intense-bg { background-color: #B27D12; }
+.ansi-blue-fg { color: #208FFB; }
+.ansi-blue-bg { background-color: #208FFB; }
+.ansi-blue-intense-fg { color: #0065CA; }
+.ansi-blue-intense-bg { background-color: #0065CA; }
+.ansi-magenta-fg { color: #D160C4; }
+.ansi-magenta-bg { background-color: #D160C4; }
+.ansi-magenta-intense-fg { color: #A03196; }
+.ansi-magenta-intense-bg { background-color: #A03196; }
+.ansi-cyan-fg { color: #60C6C8; }
+.ansi-cyan-bg { background-color: #60C6C8; }
+.ansi-cyan-intense-fg { color: #258F8F; }
+.ansi-cyan-intense-bg { background-color: #258F8F; }
+.ansi-white-fg { color: #C5C1B4; }
+.ansi-white-bg { background-color: #C5C1B4; }
+.ansi-white-intense-fg { color: #A1A6B2; }
+.ansi-white-intense-bg { background-color: #A1A6B2; }
+
+.ansi-default-inverse-fg { color: #FFFFFF; }
+.ansi-default-inverse-bg { background-color: #000000; }
+
+.ansi-bold { font-weight: bold; }
+.ansi-underline { text-decoration: underline; }
+
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast,
+.nboutput.nblast {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast + .nbinput {
+    margin-top: -19px;
+}
+
+/* nice headers on first paragraph of info/warning boxes */
+.admonition .first {
+    margin: -12px;
+    padding: 6px 12px;
+    margin-bottom: 12px;
+    color: #fff;
+    line-height: 1;
+    display: block;
+}
+.admonition.warning .first {
+    background: #f0b37e;
+}
+.admonition.note .first {
+    background: #6ab0de;
+}
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+</style>
+<div class="section" id="Forecasting-with-approxposterior">
+<h1>Forecasting with <em>approxposterior</em><a class="headerlink" href="#Forecasting-with-approxposterior" title="Permalink to this headline">¶</a></h1>
+<hr class="docutils" />
+<p>In this notebook, I show how <em>approxposterior</em> can be used to forecast
+where the forward model should be run next according to the BAPE
+formalism.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
+<span></span>In [1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="o">%</span><span class="k">matplotlib</span> inline
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="p">(</span><span class="n">print_function</span><span class="p">,</span> <span class="n">division</span><span class="p">,</span> <span class="n">absolute_import</span><span class="p">,</span>
+                        <span class="n">unicode_literals</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">approxposterior</span> <span class="kn">import</span> <span class="n">bp</span><span class="p">,</span> <span class="n">likelihood</span> <span class="k">as</span> <span class="n">lh</span><span class="p">,</span> <span class="n">gp_utils</span><span class="p">,</span> <span class="n">plot_utils</span> <span class="k">as</span> <span class="n">pu</span><span class="p">,</span> <span class="n">utility</span> <span class="k">as</span> <span class="n">ut</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+
+<span class="kn">import</span> <span class="nn">matplotlib</span> <span class="kn">as</span> <span class="nn">mpl</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+<span class="kn">from</span> <span class="nn">matplotlib.colors</span> <span class="kn">import</span> <span class="n">LogNorm</span>
+<span class="kn">from</span> <span class="nn">mpl_toolkits.axes_grid1</span> <span class="kn">import</span> <span class="n">make_axes_locatable</span>
+<span class="n">mpl</span><span class="o">.</span><span class="n">rcParams</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s1">&#39;font.size&#39;</span><span class="p">:</span> <span class="mi">18</span><span class="p">})</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
+<span></span>In [2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">seed</span> <span class="o">=</span> <span class="mi">42</span>
+<span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p><strong>Initialize model parameters</strong></p>
+<hr class="docutils" />
+<p>Set model parameters like the size of the initial dataset to simulate,
+<em>m0</em>, and the number of new points to forecast, <em>m</em>.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
+<span></span>In [3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># Initialize</span>
+<span class="n">m0</span> <span class="o">=</span> <span class="mi">40</span>                           <span class="c1"># Initial size of training set (will simulate below)</span>
+<span class="n">m</span> <span class="o">=</span> <span class="mi">5</span>                             <span class="c1"># Number of new points to find</span>
+<span class="n">which_kernel</span> <span class="o">=</span> <span class="s2">&quot;ExpSquaredKernel&quot;</span> <span class="c1"># Which Gaussian Process kernel to use</span>
+<span class="n">bounds</span> <span class="o">=</span> <span class="p">((</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">),</span> <span class="p">(</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">))</span>         <span class="c1"># Prior bounds</span>
+<span class="n">algorithm</span> <span class="o">=</span> <span class="s2">&quot;bape&quot;</span>                <span class="c1"># Use the Kandasamy et al. (2015) BAPE formalism</span>
+</pre></div>
+</div>
+</div>
+<p><strong>Simulate a training set</strong></p>
+<hr class="docutils" />
+<p>Here, we use the Rosenbrock function example from Wang &amp; Li (2017).</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
+<span></span>In [4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">theta</span> <span class="o">=</span> <span class="n">lh</span><span class="o">.</span><span class="n">rosenbrock_sample</span><span class="p">(</span><span class="n">m0</span><span class="p">)</span> <span class="c1"># Sample forward model initial conditions from our priors</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">lh</span><span class="o">.</span><span class="n">rosenbrock_lnlike</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span> <span class="c1"># Compute the log likelihood of each point</span>
+</pre></div>
+</div>
+</div>
+<p>** Training and optimize a GP using the training set**</p>
+<hr class="docutils" />
+<p>We won’t use this GP for forecasting, instead, we’ll use it to see what
+the GP sees in parameter space: what is it’s mean prediction and
+variance at each point? What is the value of the BAPE utility function
+at each point in parameter space? This will allow us to visually see
+where we should simulate next. Ideally in the BAPE formalism, it is best
+to simulate in high likelihood regions where the predictions are
+currently uncertain, i.e. where the predictive mean (a proxy for the
+likelihood) is large and where the preditive variance is large (GP is
+uncertain). Simulating in these regions is optimal because simulating in
+low likelihood regions and/or where the prediction is certain is a waste
+of time as a GP prediction will more than suffice.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
+<span></span>In [5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">gp</span> <span class="o">=</span> <span class="n">gp_utils</span><span class="o">.</span><span class="n">setup_gp</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">which_kernel</span><span class="o">=</span><span class="n">which_kernel</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">)</span>
+<span class="n">gp</span> <span class="o">=</span> <span class="n">gp_utils</span><span class="o">.</span><span class="n">optimize_gp</span><span class="p">(</span><span class="n">gp</span><span class="p">,</span> <span class="n">theta</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">,</span> <span class="n">which_kernel</span><span class="o">=</span><span class="n">which_kernel</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p><strong>Compute what the GP sees throughout parameter space</strong></p>
+<hr class="docutils" />
+<p>Easy to do with a simple double for loop for our 2D parameter space.
+Note that <em>approxposterior</em> works with <em>negative</em> log likelihoods (GP
+predictive means).</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
+<span></span>In [6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">num</span> <span class="o">=</span> <span class="mi">100</span>
+
+<span class="n">xx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="n">num</span><span class="p">)</span>
+<span class="n">yy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="n">num</span><span class="p">)</span>
+<span class="n">zzVar</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">xx</span><span class="p">),</span><span class="nb">len</span><span class="p">(</span><span class="n">yy</span><span class="p">)))</span>
+<span class="n">zzMean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">zzVar</span><span class="p">)</span>
+<span class="n">zzUtility</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">zzVar</span><span class="p">)</span>
+
+<span class="c1"># Compute GP variances, mean and the utility function at each point</span>
+<span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">xx</span><span class="p">)):</span>
+    <span class="k">for</span> <span class="n">jj</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">yy</span><span class="p">)):</span>
+        <span class="n">mu</span><span class="p">,</span> <span class="n">var</span> <span class="o">=</span> <span class="n">gp</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">xx</span><span class="p">[</span><span class="n">ii</span><span class="p">],</span><span class="n">yy</span><span class="p">[</span><span class="n">jj</span><span class="p">]])</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="n">return_var</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="n">zzVar</span><span class="p">[</span><span class="n">ii</span><span class="p">,</span><span class="n">jj</span><span class="p">]</span> <span class="o">=</span> <span class="n">var</span>
+        <span class="n">zzMean</span><span class="p">[</span><span class="n">ii</span><span class="p">,</span><span class="n">jj</span><span class="p">]</span> <span class="o">=</span> <span class="n">mu</span>
+        <span class="n">zzUtility</span><span class="p">[</span><span class="n">ii</span><span class="p">,</span><span class="n">jj</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mf">2.0</span><span class="o">*</span><span class="n">mu</span> <span class="o">+</span> <span class="n">var</span><span class="p">)</span> <span class="o">+</span> <span class="n">ut</span><span class="o">.</span><span class="n">logsubexp</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+
+<span class="c1">#Threshold negative values for logscale plotting</span>
+<span class="n">zzUtility</span><span class="p">[</span><span class="n">zzUtility</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0e-2</span>
+<span class="n">zzMean</span><span class="p">[</span><span class="n">zzMean</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0e-2</span>
+</pre></div>
+</div>
+</div>
+<p>** Plot it!**</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
+<span></span>In [7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># Plot what the GP thinks everything looks like</span>
+<span class="n">normMean</span> <span class="o">=</span> <span class="n">LogNorm</span><span class="p">(</span><span class="n">vmin</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">zzMean</span><span class="p">)</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">vmax</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">zzMean</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">())</span>
+<span class="n">normVar</span> <span class="o">=</span> <span class="n">LogNorm</span><span class="p">(</span><span class="n">vmin</span><span class="o">=</span><span class="n">zzVar</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">vmax</span><span class="o">=</span><span class="n">zzVar</span><span class="o">.</span><span class="n">max</span><span class="p">())</span>
+<span class="n">normUtility</span> <span class="o">=</span> <span class="n">LogNorm</span><span class="p">(</span><span class="n">vmin</span><span class="o">=</span><span class="n">zzUtility</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">vmax</span><span class="o">=</span><span class="n">zzUtility</span><span class="o">.</span><span class="n">max</span><span class="p">())</span>
+
+<span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">ncols</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">27</span><span class="p">,</span><span class="mi">8</span><span class="p">))</span>
+
+<span class="c1"># Left: Mean</span>
+<span class="n">im0</span> <span class="o">=</span> <span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">pcolormesh</span><span class="p">(</span><span class="n">xx</span><span class="p">,</span> <span class="n">yy</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">zzMean</span><span class="p">)</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">norm</span><span class="o">=</span><span class="n">normMean</span><span class="p">)</span>
+
+<span class="n">divider0</span> <span class="o">=</span> <span class="n">make_axes_locatable</span><span class="p">(</span><span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="n">cax0</span> <span class="o">=</span> <span class="n">divider0</span><span class="o">.</span><span class="n">append_axes</span><span class="p">(</span><span class="s1">&#39;right&#39;</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="s1">&#39;5%&#39;</span><span class="p">,</span> <span class="n">pad</span><span class="o">=</span><span class="mf">0.05</span><span class="p">)</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">im0</span><span class="p">,</span> <span class="n">cax</span><span class="o">=</span><span class="n">cax0</span><span class="p">,</span> <span class="n">orientation</span><span class="o">=</span><span class="s1">&#39;vertical&#39;</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Mean&quot;</span><span class="p">)</span>
+
+<span class="c1"># Middle: Variance</span>
+<span class="n">im1</span> <span class="o">=</span> <span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">pcolormesh</span><span class="p">(</span><span class="n">xx</span><span class="p">,</span> <span class="n">yy</span><span class="p">,</span> <span class="n">zzVar</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">norm</span><span class="o">=</span><span class="n">normVar</span><span class="p">)</span>
+<span class="n">divider1</span> <span class="o">=</span> <span class="n">make_axes_locatable</span><span class="p">(</span><span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+<span class="n">cax1</span> <span class="o">=</span> <span class="n">divider1</span><span class="o">.</span><span class="n">append_axes</span><span class="p">(</span><span class="s1">&#39;right&#39;</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="s1">&#39;5%&#39;</span><span class="p">,</span> <span class="n">pad</span><span class="o">=</span><span class="mf">0.05</span><span class="p">)</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">im1</span><span class="p">,</span> <span class="n">cax</span><span class="o">=</span><span class="n">cax1</span><span class="p">,</span> <span class="n">orientation</span><span class="o">=</span><span class="s1">&#39;vertical&#39;</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Variance&quot;</span><span class="p">)</span>
+
+<span class="c1"># Right: Utility</span>
+<span class="n">im2</span> <span class="o">=</span> <span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">pcolormesh</span><span class="p">(</span><span class="n">xx</span><span class="p">,</span> <span class="n">yy</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">zzUtility</span><span class="p">)</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">norm</span><span class="o">=</span><span class="n">normUtility</span><span class="p">)</span>
+<span class="n">divider2</span> <span class="o">=</span> <span class="n">make_axes_locatable</span><span class="p">(</span><span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+<span class="n">cax2</span> <span class="o">=</span> <span class="n">divider2</span><span class="o">.</span><span class="n">append_axes</span><span class="p">(</span><span class="s1">&#39;right&#39;</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="s1">&#39;5%&#39;</span><span class="p">,</span> <span class="n">pad</span><span class="o">=</span><span class="mf">0.05</span><span class="p">)</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">im2</span><span class="p">,</span> <span class="n">cax</span><span class="o">=</span><span class="n">cax2</span><span class="p">,</span> <span class="n">orientation</span><span class="o">=</span><span class="s1">&#39;vertical&#39;</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;BAPE Utility&quot;</span><span class="p">)</span>
+
+<span class="c1"># Scatter plot where the points are, format axes</span>
+<span class="k">for</span> <span class="n">ax</span> <span class="ow">in</span> <span class="n">axes</span><span class="p">:</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">theta</span><span class="p">[:,</span><span class="mi">0</span><span class="p">],</span> <span class="n">theta</span><span class="p">[:,</span><span class="mi">1</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;red&quot;</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="mi">50</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_Forecast_Example_12_0.png" src="../_images/notebooks_Forecast_Example_12_0.png" />
+</div>
+</div>
+<p><strong>Initialize an *approxposterior* object</strong></p>
+<hr class="docutils" />
+<p>As before, we’ll use the Wang &amp; Li (2017) Rosenbrock function example.
+We’ll use the <em>ApproxPosterior</em> object’s <em>forecast</em> method to predict
+where in parameter space we should simulate next to best improve the
+GP’s performance.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
+<span></span>In [8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">ap</span> <span class="o">=</span> <span class="n">bp</span><span class="o">.</span><span class="n">ApproxPosterior</span><span class="p">(</span><span class="n">lnprior</span><span class="o">=</span><span class="n">lh</span><span class="o">.</span><span class="n">rosenbrock_lnprior</span><span class="p">,</span>
+                        <span class="n">lnlike</span><span class="o">=</span><span class="n">lh</span><span class="o">.</span><span class="n">rosenbrock_lnlike</span><span class="p">,</span>
+                        <span class="n">prior_sample</span><span class="o">=</span><span class="n">lh</span><span class="o">.</span><span class="n">rosenbrock_sample</span><span class="p">,</span>
+                        <span class="n">algorithm</span><span class="o">=</span><span class="n">algorithm</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p><em>Forecast!</em></p>
+<hr class="docutils" />
+<p>To make a prediction, you need forward model input-output pairs, theta
+and y, which kernel to use for the GP, prior bounds, and optionally, a
+RNG seed.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
+<span></span>In [10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">theta_hat</span> <span class="o">=</span> <span class="n">ap</span><span class="o">.</span><span class="n">forecast</span><span class="p">(</span><span class="n">theta</span><span class="o">=</span><span class="n">theta</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">y</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">,</span> <span class="n">which_kernel</span><span class="o">=</span><span class="n">which_kernel</span><span class="p">,</span> <span class="n">bounds</span><span class="o">=</span><span class="n">bounds</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>** Plot it!**</p>
+<hr class="docutils" />
+<p>Let’s plot the new forecasted points (in blue) to see where
+<em>approxposterior</em> thinks it’s best to simulate.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
+<span></span>In [11]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># Plot what the GP thinks everything looks like, but this time with the new points!</span>
+<span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">ncols</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">27</span><span class="p">,</span><span class="mi">8</span><span class="p">))</span>
+
+<span class="c1"># Left: Mean</span>
+<span class="n">im0</span> <span class="o">=</span> <span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">pcolormesh</span><span class="p">(</span><span class="n">xx</span><span class="p">,</span> <span class="n">yy</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">zzMean</span><span class="p">)</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">norm</span><span class="o">=</span><span class="n">normMean</span><span class="p">)</span>
+
+<span class="n">divider0</span> <span class="o">=</span> <span class="n">make_axes_locatable</span><span class="p">(</span><span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="n">cax0</span> <span class="o">=</span> <span class="n">divider0</span><span class="o">.</span><span class="n">append_axes</span><span class="p">(</span><span class="s1">&#39;right&#39;</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="s1">&#39;5%&#39;</span><span class="p">,</span> <span class="n">pad</span><span class="o">=</span><span class="mf">0.05</span><span class="p">)</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">im0</span><span class="p">,</span> <span class="n">cax</span><span class="o">=</span><span class="n">cax0</span><span class="p">,</span> <span class="n">orientation</span><span class="o">=</span><span class="s1">&#39;vertical&#39;</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;GP Predicted Mean&quot;</span><span class="p">)</span>
+
+<span class="c1"># Middle: Variance</span>
+<span class="n">im1</span> <span class="o">=</span> <span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">pcolormesh</span><span class="p">(</span><span class="n">xx</span><span class="p">,</span> <span class="n">yy</span><span class="p">,</span> <span class="n">zzVar</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">norm</span><span class="o">=</span><span class="n">normVar</span><span class="p">)</span>
+<span class="n">divider1</span> <span class="o">=</span> <span class="n">make_axes_locatable</span><span class="p">(</span><span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+<span class="n">cax1</span> <span class="o">=</span> <span class="n">divider1</span><span class="o">.</span><span class="n">append_axes</span><span class="p">(</span><span class="s1">&#39;right&#39;</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="s1">&#39;5%&#39;</span><span class="p">,</span> <span class="n">pad</span><span class="o">=</span><span class="mf">0.05</span><span class="p">)</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">im1</span><span class="p">,</span> <span class="n">cax</span><span class="o">=</span><span class="n">cax1</span><span class="p">,</span> <span class="n">orientation</span><span class="o">=</span><span class="s1">&#39;vertical&#39;</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;GP Predicted Variance&quot;</span><span class="p">)</span>
+
+<span class="c1"># Right: Utility</span>
+<span class="n">im2</span> <span class="o">=</span> <span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">pcolormesh</span><span class="p">(</span><span class="n">xx</span><span class="p">,</span> <span class="n">yy</span><span class="p">,</span> <span class="n">zzUtility</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">norm</span><span class="o">=</span><span class="n">normUtility</span><span class="p">)</span>
+<span class="n">divider2</span> <span class="o">=</span> <span class="n">make_axes_locatable</span><span class="p">(</span><span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+<span class="n">cax2</span> <span class="o">=</span> <span class="n">divider2</span><span class="o">.</span><span class="n">append_axes</span><span class="p">(</span><span class="s1">&#39;right&#39;</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="s1">&#39;5%&#39;</span><span class="p">,</span> <span class="n">pad</span><span class="o">=</span><span class="mf">0.05</span><span class="p">)</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">im2</span><span class="p">,</span> <span class="n">cax</span><span class="o">=</span><span class="n">cax2</span><span class="p">,</span> <span class="n">orientation</span><span class="o">=</span><span class="s1">&#39;vertical&#39;</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;BAPE Utility&quot;</span><span class="p">)</span>
+
+<span class="c1"># Scatter plot where old, new points are, also, format axes</span>
+<span class="k">for</span> <span class="n">ax</span> <span class="ow">in</span> <span class="n">axes</span><span class="p">:</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">theta</span><span class="p">[:,</span><span class="mi">0</span><span class="p">],</span> <span class="n">theta</span><span class="p">[:,</span><span class="mi">1</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;red&quot;</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">theta_hat</span><span class="p">[:,</span><span class="mi">0</span><span class="p">],</span> <span class="n">theta_hat</span><span class="p">[:,</span><span class="mi">1</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;blue&quot;</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_Forecast_Example_18_0.png" src="../_images/notebooks_Forecast_Example_18_0.png" />
+</div>
+</div>
+<p><strong>It works!</strong></p>
+<hr class="docutils" />
+<p>Note how the forecasted points (blue) are preferentially located in high
+mean, high variance regions of parameter space. These points correspond
+to regions where the utility function is large. This example is convex
+as the Rosenbrock function has a global minimum, so a few of the
+forecast points can overlap. This likely won’t be as much of an issue
+for more complex models.</p>
+</div>
+
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="True_Rosenbrock_Posterior.html" class="btn btn-neutral float-right" title="True Rosenbrock Posterior Calculation Using Emcee" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="KL_Divergence_Estimation.html" class="btn btn-neutral" title="KL Divergence Estimation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, David P. Fleming.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'0.2.dev0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

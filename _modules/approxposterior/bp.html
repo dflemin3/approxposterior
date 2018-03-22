@@ -222,6 +222,11 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">prior_sample</span> <span class="o">=</span> <span class="n">prior_sample</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">algorithm</span> <span class="o">=</span> <span class="n">algorithm</span>
 
+        <span class="c1"># No data, GP upon initialization</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">theta</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gp</span> <span class="o">=</span> <span class="kc">None</span>
+
         <span class="c1"># Assign utility function</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">algorithm</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;bape&quot;</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">utility</span> <span class="o">=</span> <span class="n">ut</span><span class="o">.</span><span class="n">BAPE_utility</span>
@@ -235,11 +240,12 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">posterior</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lnprior</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">prev_posterior</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lnprior</span>
 
-        <span class="c1"># Holders to save GMM fits to posteriors, raw samplers, KL divergences</span>
+        <span class="c1"># Holders to save GMM fits to posteriors, raw samplers, KL divergences, GPs</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">Dkl</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">GMMs</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">samplers</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">iburns</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gps</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
     <span class="c1"># end function</span>
 
 
@@ -318,6 +324,8 @@
 <span class="sd">        timing : bool (optional)</span>
 <span class="sd">            Whether or not to time the code for profiling/speed tests.</span>
 <span class="sd">            Defaults to False.</span>
+<span class="sd">        which_kernel : str (optional)</span>
+<span class="sd">            Which george kernel to use.  Defaults to ExpSquaredKernel.</span>
 <span class="sd">        bounds : tuple/iterable (optional)</span>
 <span class="sd">            Bounds for minimization scheme.  See scipy.optimize.minimize details</span>
 <span class="sd">            for more information.  Defaults to None.</span>
@@ -346,15 +354,13 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">gmm_time</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">kl_time</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
 
-        <span class="c1"># Choose m0 initial design points to initialize dataset if none given</span>
-        <span class="k">if</span> <span class="n">theta</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># If no input output pair is given, simulate m0 using the</span>
+        <span class="c1"># forward model:</span>
+        <span class="k">if</span> <span class="n">theta</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">y</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">theta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">prior_sample</span><span class="p">(</span><span class="n">m0</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">theta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="n">y</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lnlike</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lnprior</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
+            <span class="n">theta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
             <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
 
         <span class="c1"># Store quantities</span>
@@ -507,8 +513,87 @@
             <span class="c1"># Have we converged?</span>
             <span class="k">if</span> <span class="n">kk</span> <span class="o">&gt;=</span> <span class="n">kmax</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Converged! n_iters, Dkl, Delta Dkl: </span><span class="si">%d</span><span class="s2">, </span><span class="si">%e</span><span class="s2">, </span><span class="si">%e</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">nn</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">Dkl</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span><span class="n">delta_Dkl</span><span class="p">))</span></div></div>
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Converged! n_iters, Dkl, Delta Dkl: </span><span class="si">%d</span><span class="s2">, </span><span class="si">%e</span><span class="s2">, </span><span class="si">%e</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">nn</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">Dkl</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span><span class="n">delta_Dkl</span><span class="p">))</span></div>
                 <span class="k">return</span>
+        <span class="c1"># end function</span>
+
+
+<div class="viewcode-block" id="ApproxPosterior.forecast"><a class="viewcode-back" href="../../api/bp.html#approxposterior.bp.ApproxPosterior.forecast">[docs]</a>    <span class="k">def</span> <span class="nf">forecast</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">theta</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">m0</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">m</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">which_kernel</span><span class="o">=</span><span class="s2">&quot;ExpSquaredKernel&quot;</span><span class="p">,</span> <span class="n">bounds</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="o">**</span><span class="n">kw</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Predict where m new forward models should be ran in parameter space</span>
+<span class="sd">        given input (theta) output (y) pairs (or use the ones we already have!).</span>
+<span class="sd">        If theta and y are not given, simulate m0 (theta, y) pairs, then</span>
+<span class="sd">        train a GP to make the prediction.  This is pretty much kriging, aka</span>
+<span class="sd">        GP regression, but with a predictive step using the utility function.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        theta : array (optional)</span>
+<span class="sd">            Input features (n_samples x n_features).  Defaults to None.</span>
+<span class="sd">        y : array (optional)</span>
+<span class="sd">            Input result of forward model (n_samples,). Defaults to None.</span>
+<span class="sd">        m0 : int (optional)</span>
+<span class="sd">            Initial number of design points.  Defaults to 20.</span>
+<span class="sd">        m : int (optional)</span>
+<span class="sd">            Number of new input features to find each iteration.  Defaults to 10.</span>
+<span class="sd">        seed : int (optional)</span>
+<span class="sd">            RNG seed.  Defaults to None.</span>
+<span class="sd">        cv : int (optional)</span>
+<span class="sd">            If not None, cv is the number (k) of k-folds CV to use.  Defaults to</span>
+<span class="sd">            None (no CV)</span>
+<span class="sd">        which_kernel : str (optional)</span>
+<span class="sd">            Which george kernel to use.  Defaults to ExpSquaredKernel.</span>
+<span class="sd">        bounds : tuple/iterable (optional)</span>
+<span class="sd">            Bounds for minimization scheme.  See scipy.optimize.minimize details</span>
+<span class="sd">            for more information.  Defaults to None.</span>
+<span class="sd">        verbose : bool (optional)</span>
+<span class="sd">            Output all the diagnostics? Defaults to True.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        theta_hat : array</span>
+<span class="sd">            New points in parameter space shape: (m, n_dim)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Containers for new points</span>
+        <span class="n">theta_hat</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+
+        <span class="c1"># If no input output pair is given, simulate m0 using the</span>
+        <span class="c1"># forward model or use ones object already has:</span>
+        <span class="k">if</span> <span class="n">theta</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">y</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># If we don&#39;t have stored values, simulate new ones</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">theta</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">y</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">theta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">prior_sample</span><span class="p">(</span><span class="n">m0</span><span class="p">)</span>
+                <span class="n">y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lnlike</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lnprior</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
+            <span class="c1"># Have stored values, use a copy</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">theta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">theta</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+                <span class="n">y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="c1"># Better be numpy arrays</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">theta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
+            <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+
+        <span class="c1"># Initialize a GP</span>
+        <span class="n">gp</span> <span class="o">=</span> <span class="n">gp_utils</span><span class="o">.</span><span class="n">setup_gp</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">which_kernel</span><span class="o">=</span><span class="n">which_kernel</span><span class="p">)</span>
+        <span class="n">gp</span> <span class="o">=</span> <span class="n">gp_utils</span><span class="o">.</span><span class="n">optimize_gp</span><span class="p">(</span><span class="n">gp</span><span class="p">,</span> <span class="n">theta</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="n">cv</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">,</span>
+                                       <span class="n">which_kernel</span><span class="o">=</span><span class="n">which_kernel</span><span class="p">)</span>
+
+        <span class="c1"># Find m new points</span>
+        <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">m</span><span class="p">):</span>
+            <span class="n">theta_t</span> <span class="o">=</span> <span class="n">ut</span><span class="o">.</span><span class="n">minimize_objective</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">utility</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">gp</span><span class="p">,</span>
+                                            <span class="n">sample_fn</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">prior_sample</span><span class="p">,</span>
+                                            <span class="n">prior_fn</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_lnprior</span><span class="p">,</span>
+                                            <span class="n">bounds</span><span class="o">=</span><span class="n">bounds</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">)</span>
+
+            <span class="c1"># Save new values</span>
+            <span class="n">theta_hat</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">theta_t</span><span class="p">)</span>
+
+        <span class="c1"># Done! return new points</span></div></div>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">theta_hat</span><span class="p">)</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span>
+    <span class="c1"># end function</span>
 </pre></div>
 
            </div>
