@@ -70,7 +70,8 @@ setup(name = 'approxposterior',
                           'emcee',
                           'corner',
                           'sklearn',
-                          'pybind11'
+                          'pybind11',
+                          'pytest'
                           ],
       include_package_data = True,
       zip_safe = False)

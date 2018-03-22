@@ -63,6 +63,11 @@ class ApproxPosterior(object):
         self.prior_sample = prior_sample
         self.algorithm = algorithm
 
+        # No data, GP upon initialization
+        self.theta = None
+        self.y = None
+        self.gp = None
+
         # Assign utility function
         if self.algorithm.lower() == "bape":
             self.utility = ut.BAPE_utility
@@ -76,11 +81,12 @@ class ApproxPosterior(object):
         self.posterior = self._lnprior
         self.prev_posterior = self._lnprior
 
-        # Holders to save GMM fits to posteriors, raw samplers, KL divergences
+        # Holders to save GMM fits to posteriors, raw samplers, KL divergences, GPs
         self.Dkl = list()
         self.GMMs = list()
         self.samplers = list()
         self.iburns = list()
+        self.gps = list()
     # end function
 
 
@@ -159,6 +165,8 @@ class ApproxPosterior(object):
         timing : bool (optional)
             Whether or not to time the code for profiling/speed tests.
             Defaults to False.
+        which_kernel : str (optional)
+            Which george kernel to use.  Defaults to ExpSquaredKernel.
         bounds : tuple/iterable (optional)
             Bounds for minimization scheme.  See scipy.optimize.minimize details
             for more information.  Defaults to None.
@@ -187,15 +195,13 @@ class ApproxPosterior(object):
             self.gmm_time = list()
             self.kl_time = list()
 
-        # Choose m0 initial design points to initialize dataset if none given
-        if theta is None:
+        # If no input output pair is given, simulate m0 using the
+        # forward model:
+        if theta is None or y is None:
             theta = self.prior_sample(m0)
-        else:
-            theta = np.array(theta)
-
-        if y is None:
             y = self._lnlike(theta) + self._lnprior(theta)
         else:
+            theta = np.array(theta)
             y = np.array(y)
 
         # Store quantities
@@ -350,3 +356,82 @@ class ApproxPosterior(object):
                 if verbose:
                     print("Converged! n_iters, Dkl, Delta Dkl: %d, %e, %e" % (nn,self.Dkl[-1],delta_Dkl))
                 return
+        # end function
+
+
+    def forecast(self, theta=None, y=None, m0=20, m=10, seed=None, cv=None,
+                which_kernel="ExpSquaredKernel", bounds=None, verbose=True,
+                **kw):
+        """
+        Predict where m new forward models should be ran in parameter space
+        given input (theta) output (y) pairs (or use the ones we already have!).
+        If theta and y are not given, simulate m0 (theta, y) pairs, then
+        train a GP to make the prediction.  This is pretty much kriging, aka
+        GP regression, but with a predictive step using the utility function.
+
+        Parameters
+        ----------
+        theta : array (optional)
+            Input features (n_samples x n_features).  Defaults to None.
+        y : array (optional)
+            Input result of forward model (n_samples,). Defaults to None.
+        m0 : int (optional)
+            Initial number of design points.  Defaults to 20.
+        m : int (optional)
+            Number of new input features to find each iteration.  Defaults to 10.
+        seed : int (optional)
+            RNG seed.  Defaults to None.
+        cv : int (optional)
+            If not None, cv is the number (k) of k-folds CV to use.  Defaults to
+            None (no CV)
+        which_kernel : str (optional)
+            Which george kernel to use.  Defaults to ExpSquaredKernel.
+        bounds : tuple/iterable (optional)
+            Bounds for minimization scheme.  See scipy.optimize.minimize details
+            for more information.  Defaults to None.
+        verbose : bool (optional)
+            Output all the diagnostics? Defaults to True.
+
+        Returns
+        -------
+        theta_hat : array
+            New points in parameter space shape: (m, n_dim)
+        """
+
+        # Containers for new points
+        theta_hat = list()
+
+        # If no input output pair is given, simulate m0 using the
+        # forward model or use ones object already has:
+        if theta is None or y is None:
+            # If we don't have stored values, simulate new ones
+            if self.theta is None or self.y is None:
+                theta = self.prior_sample(m0)
+                y = self._lnlike(theta) + self._lnprior(theta)
+            # Have stored values, use a copy
+            else:
+                theta = self.theta.copy()
+                y = self.y.copy()
+        # Better be numpy arrays
+        else:
+            theta = np.array(theta)
+            y = np.array(y)
+
+        # Initialize a GP
+        gp = gp_utils.setup_gp(theta, y, which_kernel=which_kernel)
+        gp = gp_utils.optimize_gp(gp, theta, y, cv=cv, seed=seed,
+                                       which_kernel=which_kernel)
+
+        # Find m new points
+        for ii in range(m):
+            theta_t = ut.minimize_objective(self.utility, y, gp,
+                                            sample_fn=self.prior_sample,
+                                            prior_fn=self._lnprior,
+                                            bounds=bounds, **kw)
+
+            # Save new values
+            theta_hat.append(theta_t)
+
+        # Done! return new points
+        return np.array(theta_hat).squeeze()
+    # end function
