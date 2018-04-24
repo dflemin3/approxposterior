@@ -1,0 +1,23 @@
+{
+  "@context": "https://raw.githubusercontent.com/codemeta/codemeta/master/codemeta.jsonld",
+  "@type": "Code",
+  "author": [
+    {
+      "@id": "0000-0001-9293-4043",
+      "@type": "Person",
+      "email": "dflemin3@uw.edu",
+      "name": "David Fleming",
+      "affiliation": "University of Washington"
+    }
+  ],
+  "identifier": "",
+  "codeRepository": "github.com/dflemin3/approxposterior",
+  "datePublished": "2018-04-24",
+  "dateModified": "2018-04-24",
+  "dateCreated": "2018-04-24",
+  "description": "A python implementation of Kandasamy et al. (2015) for deriving approximate posterior distributions.",
+  "keywords": "python, Bayes, posterior, distribution, gaussian process, mcmc",
+  "license": "MIT",
+  "title": "approxposterior",
+  "version": "v0.1"
+}
