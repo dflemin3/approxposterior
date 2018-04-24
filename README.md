@@ -26,6 +26,13 @@ Using pip
 pip install approxposterior
 ```
 
+This step can fail if george (the Python Gaussian Process package) is not properly installed.
+To install george, run
+
+```bash
+    conda install -c conda-forge george
+```
+
 or clone the repository and run
 
 ```bash
