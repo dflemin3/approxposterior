@@ -6,6 +6,9 @@ authors:
   - name: David P. Fleming
     orcid: 0000-0001-9293-4043
     affiliation: University of Washington
+  - name: Jake VanderPlas
+    orcid: 0000-0002-9623-3401
+    affiliation: University of Washington
 date: 24 April 2018
 bibliography: paper.bib
 ---
@@ -18,6 +21,6 @@ The following is a simple demonstration of *approxposterior* produced using an e
 
 -![Left: Joint posterior probability distribution of the two model parameters from the Wang and Li (2017) example. The black density map denotes the true distribution while the red contours denote the approximate distribution derived using *approxposterior*. The two distributions are in excellent agreement. Right: Total computational time required to compute the posterior probability distribution of the model parameters from the Wang and Li (2017) example as a function of forward model evaluation time. The MCMC method (blue) runs the forward model for each MCMC iteration, while the orange curve was derived using the *approxposterior* BAPE implementation.](acc_scal.png)
 
-Left: Joint posterior probability distribution of the two model parameters from the Wang and Li (2017) example. The black density map denotes the true distribution while the red contours denote the approximate distribution derived using *approxposterior*. The two distributions are in excellent agreement. Right: Total computational time required to compute the posterior probability distribution of the model parameters from the Wang and Li (2017) example as a function of forward model evaluation time. The MCMC method (blue) runs the forward model for each MCMC iteration, while the orange curve was derived using the *approxposterior* BAPE implementation.
+Left: Joint posterior probability distribution of the two model parameters from the [@Wang2017] example. The black density map denotes the true distribution while the red contours denote the approximate distribution derived using *approxposterior*. The two distributions are in excellent agreement. Right: Total computational time required to compute the posterior probability distribution of the model parameters from the [@Wang2017] example as a function of forward model evaluation time. The MCMC method (blue) runs the forward model for each MCMC iteration, while the orange curve was derived using the *approxposterior* BAPE implementation.
 
 # References
