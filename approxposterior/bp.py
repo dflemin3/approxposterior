@@ -90,10 +90,10 @@ class ApproxPosterior(object):
     # end function
 
 
-    def _sample(self, theta):
+    def _gpll(self, theta):
         """
         Compute the approximate posterior conditional distibution at a given
-        point, theta.
+        point, theta (the likelihood * prior learned by the GP)
 
         Parameters
         ----------
@@ -112,7 +112,10 @@ class ApproxPosterior(object):
             return -np.inf
 
         # Mean of predictive distribution conditioned on y (GP posterior estimate)
-        mu = self.gp.predict(self.y, theta_test, return_cov=False, return_var=False)
+        try:
+            mu = self.gp.predict(self.y, theta_test, return_cov=False, return_var=False)
+        except ValueError:
+            return -np.inf
 
         # Always add flat prior to keep it in bounds
         mu += self._lnprior(theta_test)
@@ -199,7 +202,7 @@ class ApproxPosterior(object):
         # forward model:
         if theta is None or y is None:
             theta = self.prior_sample(m0)
-            y = self._lnlike(theta) + self._lnprior(theta)
+            y = np.array(self._lnlike(theta)) + np.array(self._lnprior(theta))
         else:
             theta = np.array(theta)
             y = np.array(y)
@@ -266,7 +269,7 @@ class ApproxPosterior(object):
                 start = time.time()
 
             # Init emcee sampler
-            sampler = emcee.EnsembleSampler(nwalk, ndim, self._sample)
+            sampler = emcee.EnsembleSampler(nwalk, ndim, self._gpll)
             for i, result in enumerate(sampler.sample(p0, iterations=nsteps)):
                 if verbose:
                     print("%d/%d" % (i+1, nsteps))
