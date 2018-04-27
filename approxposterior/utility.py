@@ -257,10 +257,13 @@ def minimize_objective(fn, y, gp, sample_fn, prior_fn, bounds=None, **kw):
         except ValueError:
             tmp = np.array([np.inf for ii in range(theta0.shape[-1])]).reshape(theta0.shape)
 
-        # If the answer isn't infinite, we're good
-        if not np.any(np.isinf(tmp)):
-            theta = tmp
-            is_finite = True
+        # Vet answer: must be finite, allowed by prior
+        # Are all values finite?
+        if np.all(np.isfinite(tmp)):
+            # Is this point in parameter space allowed by the prior?
+            if np.isfinite(prior_fn(tmp)):
+                theta = tmp
+                is_finite = True
     # end while
 
     return np.array(theta).reshape(1,-1)

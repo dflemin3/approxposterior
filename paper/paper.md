@@ -5,11 +5,14 @@ tags:
 authors:
   - name: David P. Fleming
     orcid: 0000-0001-9293-4043
-    affiliation: University of Washington
+    affiliation: 1
   - name: Jake VanderPlas
     orcid: 0000-0002-9623-3401
-    affiliation: University of Washington
-date: 24 April 2018
+    affiliation: 1
+affiliations:
+  - name: University of Washington
+    index: 1
+date: 26 April 2018
 bibliography: paper.bib
 ---
 

@@ -108,7 +108,7 @@ class ApproxPosterior(object):
         theta_test = np.array(theta).reshape(1,-1)
 
         # Sometimes the input values can be crazy and the GP will blow up
-        if np.isinf(theta_test).any() or np.isnan(theta_test).any():
+        if not np.isfinite(theta_test).any():
             return -np.inf
 
         # Mean of predictive distribution conditioned on y (GP posterior estimate)
@@ -234,6 +234,10 @@ class ApproxPosterior(object):
                     y_t = self._lnlike(theta_t) + self.posterior(theta_t)
                 else:
                     y_t = self._lnlike(theta_t) + self._lnprior(theta_t)
+
+                # If y_t isn't finite, you're likelihood function is messed up
+                err_msg = "ERROR: Non-finite likelihood, probably returning nans. y_t: %e" % y_t
+                assert np.isfinite(y_t), err_msg
 
                 # Join theta, y arrays with new points
                 self.theta = np.concatenate([self.theta, theta_t])

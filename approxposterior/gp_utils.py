@@ -172,7 +172,7 @@ def optimize_gp(gp, theta, y, cv=None, seed=None,
             gp.set_parameter(key, grid[min_nll][key])
 
         # Recompute with the optimized hyperparameters!
-        gp.recompute(theta)
+        gp.recompute()
 
     return gp
 # end function
