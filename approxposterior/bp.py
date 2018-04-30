@@ -131,7 +131,7 @@ class ApproxPosterior(object):
     def run(self, theta=None, y=None, m0=20, m=10, M=10000, nmax=2, Dmax=0.01,
             kmax=5, sampler=None, cv=None, seed=None, timing=False,
             which_kernel="ExpSquaredKernel", bounds=None, debug=True,
-            n_kl_samples=100000, verbose=True, update_prior=False, **kw):
+            n_kl_samples=100000, verbose=True, update_prior=False, args=None, **kwargs):
         """
         Core algorithm to estimate the posterior distribution via Gaussian
         Process regression to the joint distribution for the forward model
@@ -191,6 +191,10 @@ class ApproxPosterior(object):
         None
         """
 
+        # Make args empty list if not supplied
+        if args is None:
+            args = list()
+
         # Create containers for timing?
         if timing:
             self.training_time = list()
@@ -202,7 +206,7 @@ class ApproxPosterior(object):
         # forward model:
         if theta is None or y is None:
             theta = self.prior_sample(m0)
-            y = np.array(self._lnlike(theta)) + np.array(self._lnprior(theta))
+            y = np.array(self._lnlike(theta, *args, **kwargs)) + np.array(self._lnprior(theta))
         else:
             theta = np.array(theta)
             y = np.array(y)
@@ -227,13 +231,13 @@ class ApproxPosterior(object):
                 theta_t = ut.minimize_objective(self.utility, self.y, self.gp,
                                                 sample_fn=self.prior_sample,
                                                 prior_fn=self._lnprior,
-                                                bounds=bounds, **kw)
+                                                bounds=bounds, **kwargs)
 
                 # 2) Query forward model at new point, theta_t
                 if update_prior:
-                    y_t = self._lnlike(theta_t) + self.posterior(theta_t)
+                    y_t = self._lnlike(theta_t, *args, **kwargs) + self.posterior(theta_t)
                 else:
-                    y_t = self._lnlike(theta_t) + self._lnprior(theta_t)
+                    y_t = self._lnlike(theta_t, *args, **kwargs) + self._lnprior(theta_t)
 
                 # If y_t isn't finite, you're likelihood function is messed up
                 err_msg = "ERROR: Non-finite likelihood, probably returning nans. y_t: %e" % y_t
@@ -262,21 +266,28 @@ class ApproxPosterior(object):
 
             # GP updated: run sampler to obtain new posterior conditioned on
             # {theta_n, log(L_t*prior)}. Use emcee to obtain posterior
-            ndim = self.theta.shape[-1]
-            nwalk = 10 * ndim
-            nsteps = M
-
-            # Initial guess (random over prior)
-            p0 = [self.prior_sample(1) for j in range(nwalk)]
 
             if timing:
                 start = time.time()
 
-            # Init emcee sampler
-            sampler = emcee.EnsembleSampler(nwalk, ndim, self._gpll)
-            for i, result in enumerate(sampler.sample(p0, iterations=nsteps)):
+            # Init emcee sampler if none provided
+            if sampler is None:
+                ndim = self.theta.shape[-1]
+                nwalk = 10 * ndim
+                nsteps = M
+
+                # Initial guess (random over prior)
+                p0 = [self.prior_sample(1) for j in range(nwalk)]
+                sampler = emcee.EnsembleSampler(nwalk, ndim, self._gpll, *args,
+                                                random_state=seed, **kwargs)
+            # Sample given, call reset to clear it and prepare it for a new run
+            else:
+                sampler.reset()
+
+            # Run MCMC!
+            for ii, result in enumerate(sampler.sample(p0, iterations=nsteps, rstate0=seed)):
                 if verbose:
-                    print("%d/%d" % (i+1, nsteps))
+                    print("%d/%d" % (ii+1, nsteps))
             if verbose:
                 print("emcee finished!")
 
@@ -368,7 +379,7 @@ class ApproxPosterior(object):
 
     def forecast(self, theta=None, y=None, m0=20, m=10, seed=None, cv=None,
                 which_kernel="ExpSquaredKernel", bounds=None, verbose=True,
-                **kw):
+                **kwargs):
         """
         Predict where m new forward models should be ran in parameter space
         given input (theta) output (y) pairs (or use the ones we already have!).
@@ -414,7 +425,7 @@ class ApproxPosterior(object):
             # If we don't have stored values, simulate new ones
             if self.theta is None or self.y is None:
                 theta = self.prior_sample(m0)
-                y = self._lnlike(theta) + self._lnprior(theta)
+                y = self._lnlike(theta, *args, **kwargs) + self._lnprior(theta)
             # Have stored values, use a copy
             else:
                 theta = self.theta.copy()
@@ -434,7 +445,7 @@ class ApproxPosterior(object):
             theta_t = ut.minimize_objective(self.utility, y, gp,
                                             sample_fn=self.prior_sample,
                                             prior_fn=self._lnprior,
-                                            bounds=bounds, **kw)
+                                            bounds=bounds, **kwargs)
 
             # Save new values
             theta_hat.append(theta_t)

@@ -13,6 +13,7 @@ __all__ = ["autocorr","estimate_burnin"]
 
 import numpy as np
 import emcee
+import warnings
 from scipy.interpolate import UnivariateSpline
 
 
@@ -106,11 +107,19 @@ def estimate_burnin(sampler, nwalk, nsteps, ndim):
                 # Fit with spline
                 spline = UnivariateSpline(iterations, autoci, s=0)
 
-                # Find zero crossings
+                # Find zero crossing
                 roots = spline.roots()
 
                 # Save autocorrelation length
-                autolength.append(np.min(roots))
+                # If there are no roots, warn user that iburn = 1
+                try:
+                    min_root = np.min(roots)
+                except ValueError:
+                    min_root = 0
+                    warn_msg = "WARNING: Burn-in estimation failed.  iburn set to 0."
+                    warnings.warn(warn_msg)
+
+                autolength.append(min_root)
 
     # List of chains that we are keeping
     ikeep = list(set(ikeep))
