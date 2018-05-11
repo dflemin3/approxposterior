@@ -67,7 +67,7 @@ def _grad_nll(p, gp, y):
 # end function
 
 
-def optimize_gp(gp, theta, y, cv=None, seed=None,
+def optimize_gp(gp, theta, y, cv=None, seed=None, n_restarts=10,
                 which_kernel="ExpSquaredKernel", hyperparameters=None,
                 test_size=0.25):
     """
@@ -92,6 +92,8 @@ def optimize_gp(gp, theta, y, cv=None, seed=None,
         None (no CV)
     seed : int (optional)
         numpy RNG seed.  Defaults to None.
+    n_restarts : int (optional)
+        Number of times to restart the optimization.  Defaults to 10.
     which_kernel : str (optional)
         Name of the george kernel you want to use.  Defaults to ExpSquaredKernel
     hyperparameters : dict (optional)
@@ -112,7 +114,7 @@ def optimize_gp(gp, theta, y, cv=None, seed=None,
     # Optimize GP by maximizing log-likelihood
     if cv is None:
 
-        # Run the optimization routine.
+        # Run the optimization routine
         p0 = gp.get_parameter_vector()
         results = minimize(_nll, p0, jac=_grad_nll, args=(gp, y), method="bfgs")
 
@@ -122,6 +124,8 @@ def optimize_gp(gp, theta, y, cv=None, seed=None,
 
     # Optimize GP via cv=k fold cross-validation
     else:
+
+        raise NotImplementedError("CV GP optimization is currently broken.")
 
         # XXX hack hack hack: this will fail when fitting for means
         hyperparameters = {'kernel:metric:log_M_0_0': np.linspace(0.01, 100.0,
@@ -178,7 +182,8 @@ def optimize_gp(gp, theta, y, cv=None, seed=None,
 # end function
 
 
-def setup_gp(theta, y, which_kernel="ExpSquaredKernel", mean=None, seed=None):
+def setup_gp(theta, y, which_kernel="ExpSquaredKernel", mean=None, seed=None,
+             initial_metric=None):
     """
     Initialize a george GP object
 
@@ -192,9 +197,13 @@ def setup_gp(theta, y, which_kernel="ExpSquaredKernel", mean=None, seed=None):
         Options: ExpSquaredKernel, ExpKernel, Matern32Kernel, Matern52Kernel
     mean : scalar, callable (optional)
         specifies the mean function of the GP using a scalar or a callable fn.
-        Defaults to None.  If none, estimates the mean
+        Defaults to None.  If None, estimates the mean as np.mean(y).
     seed : int (optional)
         numpy RNG seed.  Defaults to None.
+    initial_metric : array (optional)
+        Initial guess for the GP metric.  Defaults to None and is estimated to
+        be the squared mean of theta.  In general, you should
+        provide your own!
 
     Returns
     -------
@@ -202,20 +211,21 @@ def setup_gp(theta, y, which_kernel="ExpSquaredKernel", mean=None, seed=None):
     """
 
     # Guess the bandwidth
-    bandwidth = np.mean(np.array(theta)**2, axis=0)/10.0
+    if initial_metric is None:
+        initial_metric = np.mean(np.array(theta)**2, axis=0)/10
 
     # Which kernel?
     if str(which_kernel).lower() == "expsquaredkernel":
-        kernel = george.kernels.ExpSquaredKernel(bandwidth,
+        kernel = george.kernels.ExpSquaredKernel(initial_metric,
                                                  ndim=np.array(theta).shape[-1])
     elif str(which_kernel).lower() == "expkernel":
-        kernel = george.kernels.ExpKernel(bandwidth,
+        kernel = george.kernels.ExpKernel(initial_metric,
                                           ndim=np.array(theta).shape[-1])
     elif str(which_kernel).lower() == "matern32kernel":
-        kernel = george.kernels.Matern32Kernel(bandwidth,
+        kernel = george.kernels.Matern32Kernel(initial_metric,
                                           ndim=np.array(theta).shape[-1])
     elif str(which_kernel).lower() == "matern52kernel":
-        kernel = george.kernels.Matern52Kernel(bandwidth,
+        kernel = george.kernels.Matern52Kernel(initial_metric,
                                           ndim=np.array(theta).shape[-1])
     else:
         avail = "Available kernels: ExpSquaredKernel, ExpKernel, Matern32Kernel, Matern52Kernel"

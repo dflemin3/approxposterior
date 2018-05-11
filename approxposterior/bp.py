@@ -90,7 +90,7 @@ class ApproxPosterior(object):
     # end function
 
 
-    def _gpll(self, theta):
+    def _gpll(self, theta, *args, **kwargs):
         """
         Compute the approximate posterior conditional distibution at a given
         point, theta (the likelihood * prior learned by the GP)
@@ -118,7 +118,8 @@ class ApproxPosterior(object):
             return -np.inf
 
         # Always add flat prior to keep it in bounds
-        mu += self._lnprior(theta_test)
+        # XXX do i need this?
+        mu += self._lnprior(theta_test.reshape(-1,))
 
         # Catch NaNs/Infs because they can (rarely) happen
         if not np.isfinite(mu):
@@ -129,9 +130,9 @@ class ApproxPosterior(object):
 
 
     def run(self, theta=None, y=None, m0=20, m=10, M=10000, nmax=2, Dmax=0.01,
-            kmax=5, sampler=None, cv=None, seed=None, timing=False,
-            which_kernel="ExpSquaredKernel", bounds=None, debug=True,
-            n_kl_samples=100000, verbose=True, update_prior=False, args=None, **kwargs):
+            kmax=5, sampler=None, p0=None, cv=None, seed=None, timing=False,
+            which_kernel="ExpSquaredKernel", bounds=None, n_kl_samples=100000,
+            verbose=True, initial_metric=None, args=None, **kwargs):
         """
         Core algorithm to estimate the posterior distribution via Gaussian
         Process regression to the joint distribution for the forward model
@@ -160,6 +161,9 @@ class ApproxPosterior(object):
             converged and terminates.  Defaults to 5.
         sample : emcee.EnsembleSampler (optional)
             emcee sampler object.  Defaults to None and is initialized internally.
+        p0 : array (optional)
+            Initial guess for MCMC walkers.  Defaults to None and creates guess
+            from priors.
         cv : int (optional)
             If not None, cv is the number (k) of k-folds CV to use.  Defaults to
             None (no CV)
@@ -173,8 +177,6 @@ class ApproxPosterior(object):
         bounds : tuple/iterable (optional)
             Bounds for minimization scheme.  See scipy.optimize.minimize details
             for more information.  Defaults to None.
-        debug : bool (optional)
-            Output/plot diagnostic stats/figures?  Defaults to True.
         n_kl_samples : int (optionals)
             Number of samples to draw for Monte Carlo approximation to KL
             divergence between current and previous estimate of the posterior.
@@ -182,9 +184,10 @@ class ApproxPosterior(object):
             1/sqrt(n_kl_samples).
         verbose : bool (optional)
             Output all the diagnostics? Defaults to True.
-        update_prior : bool (optional)
-            Update the prior function with the current estimate of the posterior
-            following Wang & Li (2017)?  Defaults to False (what BAPE does).
+        initial_metric : array (optional)
+            Initial guess for the GP metric.  Defaults to None and is estimated to
+            be the squared mean of theta.  In general, you should
+            provide your own!
 
         Returns
         -------
@@ -205,18 +208,27 @@ class ApproxPosterior(object):
         # If no input output pair is given, simulate m0 using the
         # forward model:
         if theta is None or y is None:
+            # Randomly draw m0 samples from the prior (dimensionality: m0 x dimensions)
             theta = self.prior_sample(m0)
-            y = np.array(self._lnlike(theta, *args, **kwargs)) + np.array(self._lnprior(theta))
-        else:
-            theta = np.array(theta)
+            y = list()
+
+            # Evaluate forward model + lnprior for each theta
+            for ii in range(len(theta)):
+                y.append(self._lnlike(theta[ii], *args, **kwargs) + self._lnprior(theta[ii]))
             y = np.array(y)
+        # Values given, make sure they're nicely formatted numpy arrays
+        else:
+            theta = np.array(theta).squeeze()
+            y = np.array(y).squeeze()
 
         # Store quantities
         self.theta = theta
         self.y = y
 
         # Setup, optimize gaussian process
-        self.gp = gp_utils.setup_gp(self.theta, self.y, which_kernel=which_kernel)
+        self.gp = gp_utils.setup_gp(self.theta, self.y,
+                                which_kernel=which_kernel,
+                                initial_metric=initial_metric)
         self.gp = gp_utils.optimize_gp(self.gp, theta, self.y, cv=cv, seed=seed,
                                        which_kernel=which_kernel)
 
@@ -225,6 +237,8 @@ class ApproxPosterior(object):
         for nn in range(nmax):
 
             # 1) Find m new points by maximizing utility function, one at a time
+            # Not we call a minimizer because minimizing negative of utility
+            # function is the same as maximizing it
             if timing:
                 start = time.time()
             for ii in range(m):
@@ -233,23 +247,23 @@ class ApproxPosterior(object):
                                                 prior_fn=self._lnprior,
                                                 bounds=bounds, **kwargs)
 
+                theta_t = np.array(theta_t).reshape(-1,)
+
                 # 2) Query forward model at new point, theta_t
-                if update_prior:
-                    y_t = self._lnlike(theta_t, *args, **kwargs) + self.posterior(theta_t)
-                else:
-                    y_t = self._lnlike(theta_t, *args, **kwargs) + self._lnprior(theta_t)
+                y_t = np.array([self._lnlike(theta_t, *args, **kwargs) + self._lnprior(theta_t)])
 
                 # If y_t isn't finite, you're likelihood function is messed up
-                err_msg = "ERROR: Non-finite likelihood, probably returning nans. y_t: %e" % y_t
+                err_msg = "ERROR: Non-finite likelihood, forward model probably returning nans. y_t: %e" % y_t
                 assert np.isfinite(y_t), err_msg
 
                 # Join theta, y arrays with new points
-                self.theta = np.concatenate([self.theta, theta_t])
+                self.theta = np.concatenate([self.theta, theta_t.reshape(1,-1)])
                 self.y = np.concatenate([self.y, y_t])
 
                 # 3) Initialize new GP with new point, optimize
                 self.gp = gp_utils.setup_gp(self.theta, self.y,
-                                            which_kernel=which_kernel)
+                                            which_kernel=which_kernel,
+                                            initial_metric=initial_metric)
                 self.gp = gp_utils.optimize_gp(self.gp, self.theta, self.y,
                                                cv=cv, seed=seed,
                                                which_kernel=which_kernel)
@@ -257,35 +271,39 @@ class ApproxPosterior(object):
             if timing:
                 self.training_time.append(time.time() - start)
 
-            # Plot GP debug diagnostics?
-            if debug:
-                fig, _ = pu.plot_gp(self.gp, self.theta, self.y,
-                                    return_type="mean", log=True,
-                                    save_plot="gp_mu_iter_%d.png" % nn)
-                plt.close(fig)
-
             # GP updated: run sampler to obtain new posterior conditioned on
             # {theta_n, log(L_t*prior)}. Use emcee to obtain posterior
 
             if timing:
                 start = time.time()
 
-            # Init emcee sampler if none provided
-            if sampler is None:
-                ndim = self.theta.shape[-1]
-                nwalk = 10 * ndim
-                nsteps = M
+            # Initialize emcee sampler if None provided
+            #if sampler is None:
+            ndim = self.theta.shape[-1]
+            nwalk = 10 * ndim
+            nsteps = M
 
-                # Initial guess (random over prior)
-                p0 = [self.prior_sample(1) for j in range(nwalk)]
-                sampler = emcee.EnsembleSampler(nwalk, ndim, self._gpll, *args,
-                                                random_state=seed, **kwargs)
+            # Create sampler using GP ll function as forward model surrogate
+            sampler = emcee.EnsembleSampler(nwalk, ndim, self._gpll, args=args, **kwargs)
+
             # Sample given, call reset to clear it and prepare it for a new run
-            else:
+            """else:
+                # Reset sampler attributes, make lnprob function the gp_ll
                 sampler.reset()
+                sampler.lnprobfn = self.__gpll
+
+                # Get MCMC parameters
+                ndim = sampler.dim # ndims
+                nwalk = sampler.k # number of walkers
+                nsteps = M
+            """
+
+            # Provide initial guess (random over prior) if None provided
+            if p0 is None:
+                p0 = [self.prior_sample(1) for j in range(nwalk)]
 
             # Run MCMC!
-            for ii, result in enumerate(sampler.sample(p0, iterations=nsteps, rstate0=seed)):
+            for ii, result in enumerate(sampler.sample(p0, iterations=nsteps)):
                 if verbose:
                     print("%d/%d" % (ii+1, nsteps))
             if verbose:
@@ -301,17 +319,6 @@ class ApproxPosterior(object):
             if timing:
                 self.mcmc_time.append(time.time() - start)
 
-            # Plot mcmc posterior distributions?
-            if debug:
-                if verbose:
-                    print(iburn)
-                fig = corner.corner(sampler.flatchain[iburn:],
-                                    quantiles=[0.16, 0.5, 0.84],
-                                    plot_contours=True);
-
-                fig.savefig("posterior_%d.png" % nn)
-                plt.clf()
-
             if timing:
                 start = time.time()
 
@@ -321,12 +328,6 @@ class ApproxPosterior(object):
 
             if timing:
                 self.gmm_time.append(time.time() - start)
-
-            # Plot GMM?
-            if debug:
-                fig, _ = pu.plot_GMM_loglike(GMM, self.theta,
-                                             save_plot="GMM_ll_iter_%d.png" % nn)
-                plt.close(fig)
 
             # Save current GMM model
             self.GMMs.append(GMM)
@@ -436,7 +437,8 @@ class ApproxPosterior(object):
             y = np.array(y)
 
         # Initialize a GP
-        gp = gp_utils.setup_gp(theta, y, which_kernel=which_kernel)
+        gp = gp_utils.setup_gp(theta, y, which_kernel=which_kernel,
+                               initial_metric=initial_metric)
         gp = gp_utils.optimize_gp(gp, theta, y, cv=cv, seed=seed,
                                        which_kernel=which_kernel)
 
