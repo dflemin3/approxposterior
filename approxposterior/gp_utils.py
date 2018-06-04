@@ -115,62 +115,29 @@ def optimize_gp(gp, theta, y, seed=None, n_restarts=10):
     return gp
 # end function
 
-"""
-def setup_gp(theta, y, which_kernel="ExpSquaredKernel", mean=None, seed=None,
-             initial_metric=None):
-    Initialize a george GP object
+def setup_gp(theta, y, gp):
+    """
+    Initialize a george GP object.  Utility function for creating a new GP when
+    the data its conditioned on changes sizes, i.e. when a new point is added
 
     Parameters
     ----------
     theta : array
     y : array
         data to condition GP on
-    which_kernel : str (optional)
-        Name of the george kernel you want to use.  Defaults to ExpSquaredKernel.
-        Options: ExpSquaredKernel, ExpKernel, Matern32Kernel, Matern52Kernel
-    mean : scalar, callable (optional)
-        specifies the mean function of the GP using a scalar or a callable fn.
-        Defaults to None.  If None, estimates the mean as np.mean(y).
-    seed : int (optional)
-        numpy RNG seed.  Defaults to None.
-    initial_metric : array (optional)
-        Initial guess for the GP metric.  Defaults to None and is estimated to
-        be the squared mean of theta.  In general, you should
-        provide your own!
+    gp : george.GP
+        Gaussian Process that learns the likelihood conditioned on forward
+        model input-output pairs (theta, y)
 
     Returns
     -------
-    gp : george.GP
+    new_gp : george.GP
+    """
 
-    # Guess the bandwidth
-    if initial_metric is None:
-        initial_metric = np.nanmedian(np.array(theta)**2, axis=0)/10
+    # Create GP using same kernel, updated estimate of the mean, but new theta
+    new_gp = george.GP(kernel=gp.kernel, fit_mean=True,
+                       mean=np.nanmedian(y))
+    new_gp.compute(theta)
 
-    # Which kernel?
-    if str(which_kernel).lower() == "expsquaredkernel":
-        kernel = george.kernels.ExpSquaredKernel(initial_metric,
-                                                 ndim=np.array(theta).shape[-1])
-    elif str(which_kernel).lower() == "expkernel":
-        kernel = george.kernels.ExpKernel(initial_metric,
-                                          ndim=np.array(theta).shape[-1])
-    elif str(which_kernel).lower() == "matern32kernel":
-        kernel = george.kernels.Matern32Kernel(initial_metric,
-                                          ndim=np.array(theta).shape[-1])
-    elif str(which_kernel).lower() == "matern52kernel":
-        kernel = george.kernels.Matern52Kernel(initial_metric,
-                                          ndim=np.array(theta).shape[-1])
-    else:
-        avail = "Available kernels: ExpSquaredKernel, ExpKernel, Matern32Kernel, Matern52Kernel"
-        raise NotImplementedError("Error: Available kernels: %s" % avail)
-
-    # Guess the mean value if nothing is given as the nanmeadian
-    if mean is None:
-        mean = np.nanmedian(np.array(y), axis=0)
-
-    # Create the GP conditioned on theta
-    gp = george.GP(kernel=kernel, fit_mean=True, mean=mean)
-    gp.compute(theta)
-
-    return gp
+    return new_gp
 # end function
-"""

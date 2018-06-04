@@ -35,12 +35,16 @@ class ApproxPosterior(object):
     the AGP (Adaptive Gaussian Process) by Wang & Li (2017).
     """
 
-    def __init__(self, gp, lnprior, lnlike, prior_sample, algorithm="BAPE"):
+    def __init__(self, theta, y, gp, lnprior, lnlike, prior_sample, algorithm="BAPE"):
         """
         Initializer.
 
         Parameters
         ----------
+        theta : array-like
+            Input features (n_samples x n_features).  Defaults to None.
+        y : array-like
+            Input result of forward model (n_samples,). Defaults to None.
         gp : george.GP
             Gaussian Process that learns the likelihood conditioned on forward
             model input-output pairs (theta, y)
@@ -61,15 +65,16 @@ class ApproxPosterior(object):
         None
         """
 
+        if theta is None or y is None:
+            raise ValueError("ERROR: must supply both theta and y")
+
+        self.theta = np.array(theta).squeeze()
+        self.y = np.array(y).squeeze()
         self.gp = gp
         self._lnprior = lnprior
         self._lnlike = lnlike
         self.prior_sample = prior_sample
         self.algorithm = algorithm
-
-        # No dataupon initialization
-        self.theta = None
-        self.y = None
 
         # Assign utility function
         if self.algorithm.lower() == "bape":
@@ -136,7 +141,7 @@ class ApproxPosterior(object):
     # end function
 
 
-    def run(self, theta=None, y=None, m0=20, m=10, M=10000, nmax=2, Dmax=0.01,
+    def run(self, m0=20, m=10, M=10000, nmax=2, Dmax=0.01,
             kmax=5, sampler=None, p0=None, seed=None, timing=False,
             bounds=None, n_kl_samples=100000, verbose=True, initial_metric=None,
             args=None, **kwargs):
@@ -147,10 +152,6 @@ class ApproxPosterior(object):
 
         Parameters
         ----------
-        theta : array (optional)
-            Input features (n_samples x n_features).  Defaults to None.
-        y : array (optional)
-            Input result of forward model (n_samples,). Defaults to None.
         m0 : int (optional)
             Initial number of design points.  Defaults to 20.
         m : int (optional)
@@ -207,26 +208,6 @@ class ApproxPosterior(object):
             self.gmm_time = list()
             self.kl_time = list()
 
-        # If no input output pair is given, simulate m0 using the
-        # forward model:
-        if theta is None or y is None:
-            # Randomly draw m0 samples from the prior (dimensionality: m0 x dimensions)
-            theta = self.prior_sample(m0)
-            y = list()
-
-            # Evaluate forward model + lnprior for each theta
-            for ii in range(len(theta)):
-                y.append(self._lnlike(theta[ii], *args, **kwargs) + self._lnprior(theta[ii]))
-            y = np.array(y)
-        # Values given, make sure they're nicely formatted numpy arrays
-        else:
-            theta = np.array(theta).squeeze()
-            y = np.array(y).squeeze()
-
-        # Store quantities
-        self.theta = theta
-        self.y = y
-
         # Optimize gaussian process
         self.gp = gp_utils.optimize_gp(self.gp, self.theta, self.y, seed=seed)
 
@@ -251,14 +232,18 @@ class ApproxPosterior(object):
                 y_t = np.array([self._lnlike(theta_t, *args, **kwargs) + self._lnprior(theta_t)])
 
                 # If y_t isn't finite, you're likelihood function is messed up
-                err_msg = "ERROR: Non-finite likelihood, forward model probably returning nans. y_t: %e" % y_t
+                err_msg = "ERROR: Non-finite likelihood, forward model probably returning NaNs. y_t: %e" % y_t
                 assert np.isfinite(y_t), err_msg
 
                 # Join theta, y arrays with new points
                 self.theta = np.concatenate([self.theta, theta_t.reshape(1,-1)])
                 self.y = np.concatenate([self.y, y_t])
 
-                # 3) Initialize new GP with new point, optimize
+                # 3) Re-optimize GP with new point, optimize
+
+                # Re-initialize GP since self.theta's shape changed
+                self.gp = gp_utils.setup_gp(self.theta, self.y, self.gp)
+
                 self.gp = gp_utils.optimize_gp(self.gp, self.theta, self.y,
                                                seed=seed)
 

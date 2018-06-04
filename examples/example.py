@@ -13,6 +13,7 @@ from __future__ import (print_function, division, absolute_import,
                         unicode_literals)
 
 from approxposterior import bp, likelihood as lh
+import numpy as np
 import george
 
 ### Define algorithm parameters ###
@@ -33,7 +34,7 @@ theta = np.array(lh.rosenbrock_sample(m0))
 # Evaluate forward model log likelihood + lnprior for each theta
 y = list()
 for ii in range(len(theta)):
-    y.append(lh.rosenbrock_lnlike(theta[ii], *args, **kwargs) + lh.rosenbrock_lnprior(theta[ii]))
+    y.append(lh.rosenbrock_lnlike(theta[ii]) + lh.rosenbrock_lnprior(theta[ii]))
 y = np.array(y)
 
 ### Initialize GP ###
@@ -52,7 +53,9 @@ gp = george.GP(kernel=kernel, fit_mean=True, mean=mean)
 gp.compute(theta)
 
 # Initialize object using the Wang & Li (2017) Rosenbrock function example
-ap = bp.ApproxPosterior(gp=gp,
+ap = bp.ApproxPosterior(theta=theta,
+                        y=y,
+                        gp=gp,
                         lnprior=lh.rosenbrock_lnprior,
                         lnlike=lh.rosenbrock_lnlike,
                         prior_sample=lh.rosenbrock_sample,

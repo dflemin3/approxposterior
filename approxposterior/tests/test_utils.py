@@ -11,6 +11,7 @@ from __future__ import (print_function, division, absolute_import,
                         unicode_literals)
 
 import numpy as np
+import george
 import scipy.stats as ss
 from approxposterior import utility as ut, gp_utils
 
@@ -30,7 +31,7 @@ def test_utils_gp():
     """
 
     # Define 20 input points
-    theta = [[-3.19134011, -2.91421701],
+    theta = np.array([[-3.19134011, -2.91421701],
          [-1.18523861,  1.19142021],
          [-0.18079129, -2.28992237],
          [-4.3620168 ,  3.21190854],
@@ -49,19 +50,32 @@ def test_utils_gp():
          [-3.05242599, -4.18389666],
          [-2.64969466, -2.55430067],
          [ 2.16145337, -4.80792732],
-         [-2.47627867, -1.40710833]]
+         [-2.47627867, -1.40710833]]).squeeze()
 
-    y = [-1.71756034e+02,  -9.32795815e-02,  -5.40844997e+00,
+    y = np.array([-1.71756034e+02,  -9.32795815e-02,  -5.40844997e+00,
         -2.50410657e+02,  -7.67534763e+00,  -4.86758102e+01,
         -3.04814897e+02,  -1.43048383e+00,  -2.01127580e+01,
         -3.93664011e-03,  -1.34083055e+02,  -3.61839586e+02,
         -6.60537302e+01,  -3.74287939e+02,  -7.12195137e+00,
         -4.80540985e+02,  -1.82446653e+02,  -9.18173221e+01,
-        -8.98802494e+01,  -5.69583369e+01]
+        -8.98802494e+01,  -5.69583369e+01]).squeeze()
 
     # Set up a gp
-    gp = gp_utils.setup_gp(theta, y, which_kernel="ExpSquaredKernel")
-    gp = gp_utils.optimize_gp(gp, theta, y, which_kernel="ExpSquaredKernel")
+
+    # Guess initial metric
+    initial_metric = np.nanmedian(theta**2, axis=0)/10.0
+
+    # Create kernel
+    kernel = george.kernels.ExpSquaredKernel(initial_metric, ndim=2)
+
+    # Guess initial mean function
+    mean = np.nanmedian(y)
+
+    # Create GP
+    gp = george.GP(kernel=kernel, fit_mean=True, mean=mean)
+    gp.compute(theta)
+
+    gp = gp_utils.optimize_gp(gp, theta, y)
 
     # Compute the AGP utility function at some point
     theta_test = np.array([-2.3573, 4.673])
