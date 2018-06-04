@@ -35,7 +35,8 @@ class ApproxPosterior(object):
     the AGP (Adaptive Gaussian Process) by Wang & Li (2017).
     """
 
-    def __init__(self, theta, y, gp, lnprior, lnlike, prior_sample, algorithm="BAPE"):
+    def __init__(self, theta, y, gp, lnprior, lnlike, prior_sample,
+                 algorithm="BAPE"):
         """
         Initializer.
 
@@ -129,9 +130,9 @@ class ApproxPosterior(object):
         except ValueError:
             return -np.inf
 
-        # Always add flat prior to keep it in bounds
-        # XXX do i need this?
-        mu += self._lnprior(theta_test.reshape(-1,))
+        # Reject point if prior forbids it
+        if not np.isfinite(self._lnprior(theta_test.reshape(-1,))):
+            return -np.inf
 
         # Catch NaNs/Infs because they can (rarely) happen
         if not np.isfinite(mu):
