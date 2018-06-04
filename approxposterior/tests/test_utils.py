@@ -69,7 +69,7 @@ def test_utils_gp():
     kernel = george.kernels.ExpSquaredKernel(initial_metric, ndim=2)
 
     # Guess initial mean function
-    mean = np.nanmedian(y)
+    mean = np.mean(y)
 
     # Create GP
     gp = george.GP(kernel=kernel, fit_mean=True, mean=mean)
@@ -84,13 +84,13 @@ def test_utils_gp():
     print(test_util)
 
     err_msg = "ERROR: AGP util fn bug.  Did you change gp_utils.setup_gp?"
-    assert np.allclose(test_util,11.35206957), err_msg
+    assert np.allclose(test_util, 39.20834604), err_msg
 
     # Now do the same using the BAPE utility function
     test_util = ut.BAPE_utility(theta_test, y, gp)
 
     err_msg = "ERROR: BAPE util fn bug.  Did you change gp_utils.setup_gp?"
-    assert np.allclose(test_util,21.51239966), err_msg
+    assert np.allclose(test_util, 80.20022868), err_msg
 
     return None
 # end function

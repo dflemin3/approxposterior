@@ -135,8 +135,7 @@ def setup_gp(theta, y, gp):
     """
 
     # Create GP using same kernel, updated estimate of the mean, but new theta
-    new_gp = george.GP(kernel=gp.kernel, fit_mean=True,
-                       mean=np.nanmedian(y))
+    new_gp = george.GP(kernel=gp.kernel, fit_mean=True, mean=np.nanmedian(y))
     new_gp.compute(theta)
 
     return new_gp

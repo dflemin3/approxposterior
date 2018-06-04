@@ -241,9 +241,8 @@ class ApproxPosterior(object):
 
                 # 3) Re-optimize GP with new point, optimize
 
-                # Re-initialize GP since self.theta's shape changed
+                # Re-initialize, optimize GP since self.theta's shape changed
                 self.gp = gp_utils.setup_gp(self.theta, self.y, self.gp)
-
                 self.gp = gp_utils.optimize_gp(self.gp, self.theta, self.y,
                                                seed=seed)
 
