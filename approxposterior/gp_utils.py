@@ -63,14 +63,19 @@ def _grad_nll(p, gp, y):
     """
 
     gp.set_parameter_vector(p)
-    return -gp.grad_log_likelihood(y, quiet=True)
+
+    # Negative gradient of log likelihood
+    ngr = -2.0 * gp.grad_log_likelihood(y, quiet=True) / \
+           np.sqrt(np.exp(gp.get_parameter_vector()))
+
+    return ngr
 # end function
 
 
-def optimize_gp(gp, theta, y, cv=None, seed=None, n_restarts=10,
-                which_kernel="ExpSquaredKernel", hyperparameters=None,
-                test_size=0.25):
+def optimize_gp(gp, theta, y, seed=None, n_restarts=10):
     """
+    TODO: implement n_restarts
+
     Optimize hyperparameters of an arbitrary george Gaussian Process kenerl
     using either a straight-up maximizing the log-likelihood or k-fold cv in which
     the log-likelihood is maximized for each fold and the best one is chosen.
@@ -87,24 +92,10 @@ def optimize_gp(gp, theta, y, cv=None, seed=None, n_restarts=10,
     theta : array
     y : array
         data to condition GP on
-    cv : int (optional)
-        If not None, cv is the number (k) of k-folds CV to use.  Defaults to
-        None (no CV)
     seed : int (optional)
         numpy RNG seed.  Defaults to None.
     n_restarts : int (optional)
         Number of times to restart the optimization.  Defaults to 10.
-    which_kernel : str (optional)
-        Name of the george kernel you want to use.  Defaults to ExpSquaredKernel
-    hyperparameters : dict (optional)
-        Grid of hyperparameters ranges to search over for cross-validation.
-        Defaults to None.  If supplied, it should look something like this:
-        {'kernel:metric:log_M_0_0': np.linspace(0.01*gp.get_parameter_vector()[0],
-                                                100.0*gp.get_parameter_vector()[0],
-                                                10)}
-    test_size : float (optional)
-        Fraction of y to use as holdout set for cross-validation.  Defaults to
-        0.25.  Must be in the range (0,1).
 
     Returns
     -------
@@ -112,79 +103,21 @@ def optimize_gp(gp, theta, y, cv=None, seed=None, n_restarts=10,
     """
 
     # Optimize GP by maximizing log-likelihood
-    if cv is None:
 
-        # Run the optimization routine
-        p0 = gp.get_parameter_vector()
-        results = minimize(_nll, p0, jac=_grad_nll, args=(gp, y), method="bfgs")
+    # Run the optimization routine
+    p0 = gp.get_parameter_vector()
+    results = minimize(_nll, p0, jac=_grad_nll, args=(gp, y), method="bfgs")
 
-        # Update the kernel
-        gp.set_parameter_vector(results.x)
-        gp.recompute()
-
-    # Optimize GP via cv=k fold cross-validation
-    else:
-
-        raise NotImplementedError("CV GP optimization is currently broken.")
-
-        # XXX hack hack hack: this will fail when fitting for means
-        hyperparameters = {'kernel:metric:log_M_0_0': np.linspace(0.01, 100.0,
-                           10),
-                           'kernel:metric:log_M_1_1': np.linspace(0.01, 100.0,
-                                              10)}
-
-        # Why CV if no grid given?
-        if hyperparameters is None:
-            err_msg = "ERROR: Trying CV but no dict of hyperparameters range given!"
-            raise RuntimeError(err_msg)
-
-        # Make a nice list of parameters
-        grid = list(ParameterGrid(hyperparameters))
-
-        # Do cv fold cross-validation
-        splitter = ShuffleSplit(n_splits=cv, test_size=0.25, random_state=seed)
-
-        nll = []
-        # Loop over each param combination
-        for ii in range(len(grid)):
-
-            iter_nll = 0.0
-            for train_split, test_split in splitter.split(y):
-
-                # Init up GP with the right dimensions
-                opt_gp = setup_gp(theta[train_split], y[train_split],
-                                  which_kernel="ExpSquaredKernel")
-
-                # Set GP parameters based on current iteration
-                for key in grid[ii].keys():
-                    opt_gp.set_parameter(key, grid[ii][key])
-                opt_gp.recompute(theta[train_split])
-
-                # Compute NLL
-                ll = opt_gp.log_likelihood(y[train_split], quiet=True)
-                if np.isfinite(ll):
-                    iter_nll += -ll
-                else:
-                    iter_nll += 1e25
-            # End of iteration: append mean nll
-            nll.append(iter_nll/cv)
-
-        min_nll = np.argmin(nll)
-
-        # Set GP parameters
-        for key in grid[min_nll].keys():
-            gp.set_parameter(key, grid[min_nll][key])
-
-        # Recompute with the optimized hyperparameters!
-        gp.recompute()
+    # Update the kernel
+    gp.set_parameter_vector(results.x)
+    gp.recompute()
 
     return gp
 # end function
 
-
+"""
 def setup_gp(theta, y, which_kernel="ExpSquaredKernel", mean=None, seed=None,
              initial_metric=None):
-    """
     Initialize a george GP object
 
     Parameters
@@ -208,11 +141,10 @@ def setup_gp(theta, y, which_kernel="ExpSquaredKernel", mean=None, seed=None,
     Returns
     -------
     gp : george.GP
-    """
 
     # Guess the bandwidth
     if initial_metric is None:
-        initial_metric = np.mean(np.array(theta)**2, axis=0)/10
+        initial_metric = np.nanmedian(np.array(theta)**2, axis=0)/10
 
     # Which kernel?
     if str(which_kernel).lower() == "expsquaredkernel":
@@ -231,9 +163,9 @@ def setup_gp(theta, y, which_kernel="ExpSquaredKernel", mean=None, seed=None,
         avail = "Available kernels: ExpSquaredKernel, ExpKernel, Matern32Kernel, Matern52Kernel"
         raise NotImplementedError("Error: Available kernels: %s" % avail)
 
-    # Guess the mean value if nothing is given
+    # Guess the mean value if nothing is given as the nanmeadian
     if mean is None:
-        mean = np.mean(np.array(y), axis=0)
+        mean = np.nanmedian(np.array(y), axis=0)
 
     # Create the GP conditioned on theta
     gp = george.GP(kernel=kernel, fit_mean=True, mean=mean)
@@ -241,3 +173,4 @@ def setup_gp(theta, y, which_kernel="ExpSquaredKernel", mean=None, seed=None,
 
     return gp
 # end function
+"""

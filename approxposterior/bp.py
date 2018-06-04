@@ -35,12 +35,15 @@ class ApproxPosterior(object):
     the AGP (Adaptive Gaussian Process) by Wang & Li (2017).
     """
 
-    def __init__(self, lnprior, lnlike, prior_sample, algorithm="BAPE"):
+    def __init__(self, gp, lnprior, lnlike, prior_sample, algorithm="BAPE"):
         """
         Initializer.
 
         Parameters
         ----------
+        gp : george.GP
+            Gaussian Process that learns the likelihood conditioned on forward
+            model input-output pairs (theta, y)
         lnprior : function
             Defines the log prior over the input features.
         lnlike : function
@@ -58,15 +61,15 @@ class ApproxPosterior(object):
         None
         """
 
+        self.gp = gp
         self._lnprior = lnprior
         self._lnlike = lnlike
         self.prior_sample = prior_sample
         self.algorithm = algorithm
 
-        # No data, GP upon initialization
+        # No dataupon initialization
         self.theta = None
         self.y = None
-        self.gp = None
 
         # Assign utility function
         if self.algorithm.lower() == "bape":
@@ -75,13 +78,14 @@ class ApproxPosterior(object):
             self.utility = ut.AGP_utility
         else:
             err_msg = "ERROR: Invalid algorithm. Valid options: BAPE, AGP."
-            raise IOError(err_msg)
+            raise ValueError(err_msg)
 
         # Initial approximate posteriors are the prior
         self.posterior = self._lnprior
         self.prev_posterior = self._lnprior
 
-        # Holders to save GMM fits to posteriors, raw samplers, KL divergences, GPs
+        # Holders to save GMM fits to posteriors, raw samplers, KL divergences,
+        # GPs
         self.Dkl = list()
         self.GMMs = list()
         self.samplers = list()
@@ -93,7 +97,7 @@ class ApproxPosterior(object):
     def _gpll(self, theta, *args, **kwargs):
         """
         Compute the approximate posterior conditional distibution at a given
-        point, theta (the likelihood * prior learned by the GP)
+        point, theta (the likelihood + prior learned by the GP)
 
         Parameters
         ----------
@@ -105,6 +109,8 @@ class ApproxPosterior(object):
         mu : float
             Mean of predicted GP conditional posterior estimate at theta
         """
+
+        # Make sure it's the right shape
         theta_test = np.array(theta).reshape(1,-1)
 
         # Sometimes the input values can be crazy and the GP will blow up
@@ -113,7 +119,8 @@ class ApproxPosterior(object):
 
         # Mean of predictive distribution conditioned on y (GP posterior estimate)
         try:
-            mu = self.gp.predict(self.y, theta_test, return_cov=False, return_var=False)
+            mu = self.gp.predict(self.y, theta_test, return_cov=False,
+                                 return_var=False)
         except ValueError:
             return -np.inf
 
@@ -130,9 +137,9 @@ class ApproxPosterior(object):
 
 
     def run(self, theta=None, y=None, m0=20, m=10, M=10000, nmax=2, Dmax=0.01,
-            kmax=5, sampler=None, p0=None, cv=None, seed=None, timing=False,
-            which_kernel="ExpSquaredKernel", bounds=None, n_kl_samples=100000,
-            verbose=True, initial_metric=None, args=None, **kwargs):
+            kmax=5, sampler=None, p0=None, seed=None, timing=False,
+            bounds=None, n_kl_samples=100000, verbose=True, initial_metric=None,
+            args=None, **kwargs):
         """
         Core algorithm to estimate the posterior distribution via Gaussian
         Process regression to the joint distribution for the forward model
@@ -164,16 +171,11 @@ class ApproxPosterior(object):
         p0 : array (optional)
             Initial guess for MCMC walkers.  Defaults to None and creates guess
             from priors.
-        cv : int (optional)
-            If not None, cv is the number (k) of k-folds CV to use.  Defaults to
-            None (no CV)
         seed : int (optional)
             RNG seed.  Defaults to None.
         timing : bool (optional)
             Whether or not to time the code for profiling/speed tests.
             Defaults to False.
-        which_kernel : str (optional)
-            Which george kernel to use.  Defaults to ExpSquaredKernel.
         bounds : tuple/iterable (optional)
             Bounds for minimization scheme.  See scipy.optimize.minimize details
             for more information.  Defaults to None.
@@ -225,12 +227,8 @@ class ApproxPosterior(object):
         self.theta = theta
         self.y = y
 
-        # Setup, optimize gaussian process
-        self.gp = gp_utils.setup_gp(self.theta, self.y,
-                                which_kernel=which_kernel,
-                                initial_metric=initial_metric)
-        self.gp = gp_utils.optimize_gp(self.gp, theta, self.y, cv=cv, seed=seed,
-                                       which_kernel=which_kernel)
+        # Optimize gaussian process
+        self.gp = gp_utils.optimize_gp(self.gp, self.theta, self.y, seed=seed)
 
         # Main loop
         kk = 0
@@ -261,12 +259,8 @@ class ApproxPosterior(object):
                 self.y = np.concatenate([self.y, y_t])
 
                 # 3) Initialize new GP with new point, optimize
-                self.gp = gp_utils.setup_gp(self.theta, self.y,
-                                            which_kernel=which_kernel,
-                                            initial_metric=initial_metric)
                 self.gp = gp_utils.optimize_gp(self.gp, self.theta, self.y,
-                                               cv=cv, seed=seed,
-                                               which_kernel=which_kernel)
+                                               seed=seed)
 
             if timing:
                 self.training_time.append(time.time() - start)
@@ -378,10 +372,12 @@ class ApproxPosterior(object):
         # end function
 
 
-    def forecast(self, theta=None, y=None, m0=20, m=10, seed=None, cv=None,
+    def forecast(self, theta=None, y=None, m0=20, m=10, seed=None,
                 which_kernel="ExpSquaredKernel", bounds=None, verbose=True,
                 **kwargs):
         """
+        XXX: Broken, needs to be fixed!
+
         Predict where m new forward models should be ran in parameter space
         given input (theta) output (y) pairs (or use the ones we already have!).
         If theta and y are not given, simulate m0 (theta, y) pairs, then
@@ -400,9 +396,6 @@ class ApproxPosterior(object):
             Number of new input features to find each iteration.  Defaults to 10.
         seed : int (optional)
             RNG seed.  Defaults to None.
-        cv : int (optional)
-            If not None, cv is the number (k) of k-folds CV to use.  Defaults to
-            None (no CV)
         which_kernel : str (optional)
             Which george kernel to use.  Defaults to ExpSquaredKernel.
         bounds : tuple/iterable (optional)
@@ -416,6 +409,8 @@ class ApproxPosterior(object):
         theta_hat : array
             New points in parameter space shape: (m, n_dim)
         """
+
+        raise NotImplementedError("dflemin3 broke this and needs to fix it!")
 
         # Containers for new points
         theta_hat = list()
@@ -437,10 +432,7 @@ class ApproxPosterior(object):
             y = np.array(y)
 
         # Initialize a GP
-        gp = gp_utils.setup_gp(theta, y, which_kernel=which_kernel,
-                               initial_metric=initial_metric)
-        gp = gp_utils.optimize_gp(gp, theta, y, cv=cv, seed=seed,
-                                       which_kernel=which_kernel)
+        gp = gp_utils.optimize_gp(gp, theta, y, seed=seed)
 
         # Find m new points
         for ii in range(m):
