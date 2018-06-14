@@ -16,7 +16,7 @@ from sklearn.model_selection import GridSearchCV
 from sklearn.mixture import GaussianMixture
 
 
-def fit_gmm(sampler, iburn, max_comp=6, cov_type="full", use_bic=True):
+def fit_gmm(sampler, iburn, max_comp=3, cov_type="full", use_bic=True):
     """
     Fit a Gaussian Mixture Model to the posterior samples to derive an
     approximation of the posterior density.  Fit for the number of components
@@ -30,7 +30,7 @@ def fit_gmm(sampler, iburn, max_comp=6, cov_type="full", use_bic=True):
     iburn : int
         number of burn-in steps to discard for fitting
     max_comp : int (optional)
-        Maximum number of mixture model components to fit for.  Defaults to 6.
+        Maximum number of mixture model components to fit for.  Defaults to 3.
     cov_type : str (optional)
         GMM covariance type.  Defaults to "full".  See the documentation here:
         http://scikit-learn.org/stable/modules/generated/sklearn.mixture.GaussianMixture.html

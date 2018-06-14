@@ -65,14 +65,14 @@ def _grad_nll(p, gp, y):
     gp.set_parameter_vector(p)
 
     # Negative gradient of log likelihood
-    ngr = -2.0 * gp.grad_log_likelihood(y, quiet=True) / \
-           np.sqrt(np.exp(gp.get_parameter_vector()))
+    gp.set_parameter_vector(p)
+    return -gp.grad_log_likelihood(y, quiet=True)
 
     return ngr
 # end function
 
 
-def optimize_gp(gp, theta, y, seed=None, n_restarts=10):
+def optimize_gp(gp, theta, y, seed=None, n_restarts=5):
     """
     TODO: implement n_restarts
 
@@ -95,7 +95,7 @@ def optimize_gp(gp, theta, y, seed=None, n_restarts=10):
     seed : int (optional)
         numpy RNG seed.  Defaults to None.
     n_restarts : int (optional)
-        Number of times to restart the optimization.  Defaults to 10.
+        Number of times to restart the optimization.  Defaults to 5.
 
     Returns
     -------
@@ -104,12 +104,28 @@ def optimize_gp(gp, theta, y, seed=None, n_restarts=10):
 
     # Optimize GP by maximizing log-likelihood
 
-    # Run the optimization routine
+    # Run the optimization routine n_restarts times
+    res = []
+    mll = []
     p0 = gp.get_parameter_vector()
-    results = minimize(_nll, p0, jac=_grad_nll, args=(gp, y), method="bfgs")
+    for _ in range(n_restarts):
+        p0_n = np.array(p0) + 1.0e-4 * np.random.randn(len(p0))
+        results = minimize(_nll, p0_n, jac=_grad_nll, args=(gp, y), method="bfgs")
 
-    # Update the kernel
-    gp.set_parameter_vector(results.x)
+        # Cache this result
+        res.append(results.x)
+
+        # Update the kernel
+        gp.set_parameter_vector(results.x)
+        gp.recompute()
+
+        # Compute marginal log likelihood
+        mll.append(gp.log_likelihood(y, quiet=True))
+
+    # Pick result with largest log likelihood
+    ind = np.argmax(mll)
+
+    gp.set_parameter_vector(res[ind])
     gp.recompute()
 
     return gp

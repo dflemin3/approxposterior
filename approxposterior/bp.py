@@ -24,8 +24,6 @@ from . import gmm_utils
 import numpy as np
 import time
 import emcee
-import corner
-import matplotlib.pyplot as plt
 
 
 class ApproxPosterior(object):
@@ -144,8 +142,8 @@ class ApproxPosterior(object):
 
     def run(self, m0=20, m=10, M=10000, nmax=2, Dmax=0.01,
             kmax=5, sampler=None, p0=None, seed=None, timing=False,
-            bounds=None, n_kl_samples=100000, verbose=True, initial_metric=None,
-            args=None, **kwargs):
+            bounds=None, n_kl_samples=100000, verbose=True,
+            args=None, max_comp=3, **kwargs):
         """
         Core algorithm to estimate the posterior distribution via Gaussian
         Process regression to the joint distribution for the forward model
@@ -188,10 +186,9 @@ class ApproxPosterior(object):
             1/sqrt(n_kl_samples).
         verbose : bool (optional)
             Output all the diagnostics? Defaults to True.
-        initial_metric : array (optional)
-            Initial guess for the GP metric.  Defaults to None and is estimated to
-            be the squared mean of theta.  In general, you should
-            provide your own!
+        max_comp : int (optional)
+            Maximum number of mixture model components to fit for when fitting a
+            GMM model to approximate the posterior distribution.  Defaults to 3.
 
         Returns
         -------
@@ -215,6 +212,8 @@ class ApproxPosterior(object):
         # Main loop
         kk = 0
         for nn in range(nmax):
+            if verbose:
+                print("Iteration: %d" % nn)
 
             # 1) Find m new points by maximizing utility function, one at a time
             # Not we call a minimizer because minimizing negative of utility
@@ -233,6 +232,7 @@ class ApproxPosterior(object):
                 y_t = np.array([self._lnlike(theta_t, *args, **kwargs) + self._lnprior(theta_t)])
 
                 # If y_t isn't finite, you're likelihood function is messed up
+                # XXX warning or log, then draw again
                 err_msg = "ERROR: Non-finite likelihood, forward model probably returning NaNs. y_t: %e" % y_t
                 assert np.isfinite(y_t), err_msg
 
@@ -293,6 +293,8 @@ class ApproxPosterior(object):
 
             # Estimate burn-in, save it
             iburn = mcmc_utils.estimate_burnin(sampler, nwalk, nsteps, ndim)
+            if verbose:
+                print("burnin estimate: %d" % iburn)
             self.iburns.append(iburn)
 
             if timing:
@@ -302,8 +304,11 @@ class ApproxPosterior(object):
                 start = time.time()
 
             # Approximate posterior distribution using a Gaussian Mixure model
-            GMM = gmm_utils.fit_gmm(sampler, iburn, max_comp=6, cov_type="full",
+            GMM = gmm_utils.fit_gmm(sampler, iburn, max_comp=max_comp, cov_type="full",
                                     use_bic=True)
+
+            if verbose:
+                print("GMM fit.")
 
             if timing:
                 self.gmm_time.append(time.time() - start)
