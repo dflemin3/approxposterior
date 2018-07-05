@@ -13,18 +13,20 @@ This will install approxposterior and all dependencies.
 
 Using :py:obj:`pip`:
 
-.. code-block:: bash
-
-   pip install approxposterior
-
-This step can fail if george (the Python Gaussian Process package) is not properly installed.
-To install george, run
+First install george
 
 .. code-block:: bash
 
     conda install -c conda-forge george
 
-then pip install :py:obj:`approxposterior`.
+then install :py:obj:`approxposterior`
+
+.. code-block:: bash
+
+   pip install approxposterior
+
+This step requires installing george (the Python Gaussian Process package) first before
+installing approxposterior to ensure george is setup properly.
 
 To upgrade:
 
@@ -33,6 +35,14 @@ To upgrade:
    pip install -U --no-deps approxposterior
 
 From source:
+
+First install george
+
+.. code-block:: bash
+
+    conda install -c conda-forge george
+
+then install :py:obj:`approxposterior`
 
 .. code-block:: bash
 

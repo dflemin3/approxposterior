@@ -198,20 +198,26 @@
 </div>
 <p>This will install approxposterior and all dependencies.</p>
 <p>Using <code class="xref py py-obj docutils literal notranslate"><span class="pre">pip</span></code>:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip install approxposterior
-</pre></div>
-</div>
-<p>This step can fail if george (the Python Gaussian Process package) is not properly installed.
-To install george, run</p>
+<p>First install george</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda install -c conda-forge george
 </pre></div>
 </div>
-<p>then pip install <code class="xref py py-obj docutils literal notranslate"><span class="pre">approxposterior</span></code>.</p>
+<p>then install <code class="xref py py-obj docutils literal notranslate"><span class="pre">approxposterior</span></code></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip install approxposterior
+</pre></div>
+</div>
+<p>This step requires installing george (the Python Gaussian Process package) first before
+installing approxposterior to ensure george is setup properly.</p>
 <p>To upgrade:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip install -U --no-deps approxposterior
 </pre></div>
 </div>
 <p>From source:</p>
+<p>First install george</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda install -c conda-forge george
+</pre></div>
+</div>
+<p>then install <code class="xref py py-obj docutils literal notranslate"><span class="pre">approxposterior</span></code></p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git clone git@github.com:dflemin3/approxposterior.git
 <span class="nb">cd</span> approxposterior
 python setup.py install
