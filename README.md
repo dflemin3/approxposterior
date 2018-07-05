@@ -20,20 +20,26 @@ Check out the [documentation](https://dflemin3.github.io/approxposterior/) for a
 Installation
 ============
 
-Using pip
+The preferred method for installing approxposterior and all dependencies is using conda via the following:
+
+```bash
+conda install -c conda-forge approxposterior
+```
+
+One can also use pip to install approxposterior via
 
 ```bash
 pip install approxposterior
 ```
 
-This step can fail if george (the Python Gaussian Process package) is not properly installed.
+This step can fail if george (the Python Gaussian Process package) is not properly installed and compiled.
 To install george, run
 
 ```bash
     conda install -c conda-forge george
 ```
 
-or clone the repository and run
+After installing george, one can then pip install approxposterior or clone the repository and run
 
 ```bash
 python setup.py install
