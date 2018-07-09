@@ -35,3 +35,12 @@ ap = bp.ApproxPosterior(lnprior=lh.rosenbrock_lnprior,
 ap.run(m0=m0, m=m, M=M, nmax=nmax, Dmax=Dmax, kmax=kmax,
         sampler=None, bounds=bounds, which_kernel=which_kernel,
         n_kl_samples=100000, verbose=True, debug=True)
+
+# Check out the final posterior distribution!
+import corner
+
+fig = corner.corner(ap.samplers[-1].flatchain[ap.iburns[-1]:],
+                            quantiles=[0.16, 0.5, 0.84], show_titles=True,
+                            scale_hist=True, plot_contours=True)
+
+#fig.savefig("final_posterior.png", bbox_inches="tight") # Uncomment to save

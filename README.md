@@ -48,6 +48,10 @@ python setup.py install
 A simple example
 ===================
 
+Below is a simple application of approxposterior to the Wang & Li (2017) example. Note that although this
+example is relatively straight-forward, it is still computationally non-trivial and will take of order
+10 minutes to run.
+
 ```python
 from approxposterior import bp, likelihood as lh
 
@@ -73,7 +77,22 @@ ap.run(m0=m0, m=m, M=M, nmax=nmax, Dmax=Dmax, kmax=kmax,
        bounds=bounds, which_kernel=which_kernel)
 ```     
 
-Check out the [examples](Notebooks) directory for Jupyter Notebook examples for detailed examples and explanations.
+To examine the final approximate posterior distribution, run the following:
+
+```python
+# Import corner to examine posterior distributions
+import corner
+
+fig = corner.corner(ap.samplers[-1].flatchain[ap.iburns[-1]:],
+                    quantiles=[0.16, 0.5, 0.84], show_titles=True, scale_hist=True,
+                    plot_contours=True)
+
+#fig.savefig("final_dist.png", bbox_inches="tight") # Uncomment to save
+```
+
+The final distribution will look something like this:
+
+Check out the [examples](https://github.com/dflemin3/approxposterior/tree/master/examples/Notebooks) directory for Jupyter Notebook examples for detailed examples and explanations.
 
 Contribution
 ============

@@ -18,7 +18,8 @@ and how we compute the true posterior distribution for the Rosenbrock function e
 
 Below is a quick example of how to use :py:obj:`approxposterior` to compute the posterior
 distribution of the Rosenbrock Function example from Wang & Li (2017) using the
-BAPE algorithm.
+BAPE algorithm. Note that although this example is relatively straight-forward,
+it is still computationally non-trivial and will take of order 10 minutes to run.
 
 1) First, the user must set model parameters.
 
@@ -54,3 +55,16 @@ BAPE algorithm.
   # Run!
   ap.run(m0=m0, m=m, M=M, nmax=nmax, Dmax=Dmax, kmax=kmax,
          bounds=bounds, which_kernel=which_kernel)
+
+4) Examine the posterior distributions!
+
+.. code-block:: python
+
+  # Import corner to examine posterior distributions
+  import corner
+
+  fig = corner.corner(ap.samplers[-1].flatchain[ap.iburns[-1]:],
+                      quantiles=[0.16, 0.5, 0.84], show_titles=True, scale_hist=True,
+                      plot_contours=True)
+
+  #fig.savefig("final_dist.png", bbox_inches="tight") # Uncomment to save
