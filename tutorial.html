@@ -216,7 +216,8 @@ and how we compute the true posterior distribution for the Rosenbrock function e
 </div>
 <p>Below is a quick example of how to use <code class="xref py py-obj docutils literal notranslate"><span class="pre">approxposterior</span></code> to compute the posterior
 distribution of the Rosenbrock Function example from Wang &amp; Li (2017) using the
-BAPE algorithm.</p>
+BAPE algorithm. Note that although this example is relatively straight-forward,
+it is still computationally non-trivial and will take of order 10 minutes to run.</p>
 <ol class="arabic simple">
 <li>First, the user must set model parameters.</li>
 </ol>
@@ -252,6 +253,21 @@ BAPE algorithm.</p>
        <span class="n">bounds</span><span class="o">=</span><span class="n">bounds</span><span class="p">,</span> <span class="n">which_kernel</span><span class="o">=</span><span class="n">which_kernel</span><span class="p">)</span>
 </pre></div>
 </div>
+<ol class="arabic simple" start="4">
+<li>Examine the final posterior distributions!</li>
+</ol>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Import corner to examine posterior distributions</span>
+<span class="kn">import</span> <span class="nn">corner</span>
+
+<span class="n">fig</span> <span class="o">=</span> <span class="n">corner</span><span class="o">.</span><span class="n">corner</span><span class="p">(</span><span class="n">ap</span><span class="o">.</span><span class="n">samplers</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">flatchain</span><span class="p">[</span><span class="n">ap</span><span class="o">.</span><span class="n">iburns</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]:],</span>
+                    <span class="n">quantiles</span><span class="o">=</span><span class="p">[</span><span class="mf">0.16</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.84</span><span class="p">],</span> <span class="n">show_titles</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">scale_hist</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+                    <span class="n">plot_contours</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+<span class="c1">#fig.savefig(&quot;final_dist.png&quot;, bbox_inches=&quot;tight&quot;) # Uncomment to save</span>
+</pre></div>
+</div>
+<p>The final posterior distribution will look something like the following:</p>
+<a class="reference internal image-reference" href="_images/final_posterior.png"><img alt="Final posterior distribution for approxposterior run of the Wang &amp; Li (2017) example." src="_images/final_posterior.png" style="width: 400px;" /></a>
 </div>
 
 
