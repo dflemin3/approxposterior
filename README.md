@@ -13,6 +13,8 @@ This package is a Python implementation of [Bayesian Active Learning for Posteri
 These algorithms allows the user to compute approximate posterior probability distributions using computationally expensive forward models by training a Gaussian Process (GP) surrogate for the likelihood evaluation.  The algorithms leverage the inherent uncertainty in the GP's predictions to identify high-likelihood regions in parameter space where the GP is uncertain.  The algorithms then run the forward model at these points to compute their likelihood and re-trains the GP to maximize the GP's predictive ability while minimizing the number of forward model evaluations.  Check out [Bayesian Active Learning for Posterior Estimation](https://www.cs.cmu.edu/~kkandasa/pubs/kandasamyIJCAI15activePostEst.pdf) by Kandasamy et al. (2015) and [Adaptive Gaussian process approximation for Bayesian inference with expensive likelihood functions](https://arxiv.org/abs/1703.09930) by Wang & Li (2017)
 for in-depth descriptions of the respective algorithms.
 
+approxposterior runs on both Python 2.7+ and 3.6.
+
 [![build status](http://img.shields.io/travis/dflemin3/approxposterior/master.svg?style=flat)](https://travis-ci.org/dflemin3/approxposterior)
 
 Check out the [documentation](https://dflemin3.github.io/approxposterior/) for a more in-depth explanation about the code!
@@ -91,6 +93,8 @@ fig = corner.corner(ap.samplers[-1].flatchain[ap.iburns[-1]:],
 ```
 
 The final distribution will look something like this:
+
+![Final posterior probability distribution for the Wang & Li (2017) example.](paper/final_posterior.png)
 
 Check out the [examples](https://github.com/dflemin3/approxposterior/tree/master/examples/Notebooks) directory for Jupyter Notebook examples for detailed examples and explanations.
 
