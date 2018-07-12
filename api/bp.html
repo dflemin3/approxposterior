@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>ApproxPosterior Class &mdash; approxposterior 0.1.1 documentation</title>
+  <title>ApproxPosterior Class &mdash; approxposterior 0.1.post1 documentation</title>
   
 
   
@@ -35,7 +35,7 @@
         <link rel="index" title="Index"
               href="../genindex.html"/>
         <link rel="search" title="Search" href="../search.html"/>
-    <link rel="top" title="approxposterior 0.1.1 documentation" href="../index.html"/>
+    <link rel="top" title="approxposterior 0.1.post1 documentation" href="../index.html"/>
         <link rel="up" title="API" href="../api.html"/>
         <link rel="prev" title="API" href="../api.html"/> 
 
@@ -224,11 +224,76 @@ the AGP (Adaptive Gaussian Process) by Wang &amp; Li (2017).</p>
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="#approxposterior.bp.ApproxPosterior.run" title="approxposterior.bp.ApproxPosterior.run"><code class="xref py py-obj docutils literal notranslate"><span class="pre">run</span></code></a>([theta,&nbsp;y,&nbsp;m0,&nbsp;m,&nbsp;M,&nbsp;nmax,&nbsp;Dmax,&nbsp;kmax,&nbsp;…])</td>
+<tr class="row-odd"><td><a class="reference internal" href="#approxposterior.bp.ApproxPosterior.forecast" title="approxposterior.bp.ApproxPosterior.forecast"><code class="xref py py-obj docutils literal notranslate"><span class="pre">forecast</span></code></a>([theta,&nbsp;y,&nbsp;m0,&nbsp;m,&nbsp;seed,&nbsp;cv,&nbsp;…])</td>
+<td>Predict where m new forward models should be ran in parameter space given input (theta) output (y) pairs (or use the ones we already have!).</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#approxposterior.bp.ApproxPosterior.run" title="approxposterior.bp.ApproxPosterior.run"><code class="xref py py-obj docutils literal notranslate"><span class="pre">run</span></code></a>([theta,&nbsp;y,&nbsp;m0,&nbsp;m,&nbsp;M,&nbsp;nmax,&nbsp;Dmax,&nbsp;kmax,&nbsp;…])</td>
 <td>Core algorithm to estimate the posterior distribution via Gaussian</td>
 </tr>
 </tbody>
 </table>
+<dl class="method">
+<dt id="approxposterior.bp.ApproxPosterior.forecast">
+<code class="descname">forecast</code><span class="sig-paren">(</span><em>theta=None</em>, <em>y=None</em>, <em>m0=20</em>, <em>m=10</em>, <em>seed=None</em>, <em>cv=None</em>, <em>which_kernel='ExpSquaredKernel'</em>, <em>bounds=None</em>, <em>verbose=True</em>, <em>**kw</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/bp.html#ApproxPosterior.forecast"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.bp.ApproxPosterior.forecast" title="Permalink to this definition">¶</a></dt>
+<dd><p>Predict where m new forward models should be ran in parameter space
+given input (theta) output (y) pairs (or use the ones we already have!).
+If theta and y are not given, simulate m0 (theta, y) pairs, then
+train a GP to make the prediction.  This is pretty much kriging, aka
+GP regression, but with a predictive step using the utility function.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>theta</strong> : array (optional)</p>
+<blockquote>
+<div><p>Input features (n_samples x n_features).  Defaults to None.</p>
+</div></blockquote>
+<p><strong>y</strong> : array (optional)</p>
+<blockquote>
+<div><p>Input result of forward model (n_samples,). Defaults to None.</p>
+</div></blockquote>
+<p><strong>m0</strong> : int (optional)</p>
+<blockquote>
+<div><p>Initial number of design points.  Defaults to 20.</p>
+</div></blockquote>
+<p><strong>m</strong> : int (optional)</p>
+<blockquote>
+<div><p>Number of new input features to find each iteration.  Defaults to 10.</p>
+</div></blockquote>
+<p><strong>seed</strong> : int (optional)</p>
+<blockquote>
+<div><p>RNG seed.  Defaults to None.</p>
+</div></blockquote>
+<p><strong>cv</strong> : int (optional)</p>
+<blockquote>
+<div><p>If not None, cv is the number (k) of k-folds CV to use.  Defaults to
+None (no CV)</p>
+</div></blockquote>
+<p><strong>which_kernel</strong> : str (optional)</p>
+<blockquote>
+<div><p>Which george kernel to use.  Defaults to ExpSquaredKernel.</p>
+</div></blockquote>
+<p><strong>bounds</strong> : tuple/iterable (optional)</p>
+<blockquote>
+<div><p>Bounds for minimization scheme.  See scipy.optimize.minimize details
+for more information.  Defaults to None.</p>
+</div></blockquote>
+<p><strong>verbose</strong> : bool (optional)</p>
+<blockquote>
+<div><p>Output all the diagnostics? Defaults to True.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>theta_hat</strong> : array</p>
+<blockquote class="last">
+<div><p>New points in parameter space shape: (m, n_dim)</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
 <dl class="method">
 <dt id="approxposterior.bp.ApproxPosterior.run">
 <code class="descname">run</code><span class="sig-paren">(</span><em>theta=None</em>, <em>y=None</em>, <em>m0=20</em>, <em>m=10</em>, <em>M=10000</em>, <em>nmax=2</em>, <em>Dmax=0.01</em>, <em>kmax=5</em>, <em>sampler=None</em>, <em>cv=None</em>, <em>seed=None</em>, <em>timing=False</em>, <em>which_kernel='ExpSquaredKernel'</em>, <em>bounds=None</em>, <em>debug=True</em>, <em>n_kl_samples=100000</em>, <em>verbose=True</em>, <em>update_prior=False</em>, <em>**kw</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/bp.html#ApproxPosterior.run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.bp.ApproxPosterior.run" title="Permalink to this definition">¶</a></dt>
@@ -291,6 +356,10 @@ None (no CV)</p>
 <blockquote>
 <div><p>Whether or not to time the code for profiling/speed tests.
 Defaults to False.</p>
+</div></blockquote>
+<p><strong>which_kernel</strong> : str (optional)</p>
+<blockquote>
+<div><p>Which george kernel to use.  Defaults to ExpSquaredKernel.</p>
 </div></blockquote>
 <p><strong>bounds</strong> : tuple/iterable (optional)</p>
 <blockquote>
@@ -372,7 +441,7 @@ following Wang &amp; Li (2017)?  Defaults to False (what BAPE does).</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../',
-            VERSION:'0.1.1',
+            VERSION:'0.1.post1',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
