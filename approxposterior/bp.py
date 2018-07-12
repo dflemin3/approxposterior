@@ -18,14 +18,11 @@ __all__ = ["ApproxPosterior"]
 from . import utility as ut
 from . import gp_utils
 from . import mcmc_utils
-from . import plot_utils as pu
 from . import gmm_utils
 
 import numpy as np
 import time
 import emcee
-import corner
-import matplotlib.pyplot as plt
 
 
 class ApproxPosterior(object):
@@ -249,13 +246,6 @@ class ApproxPosterior(object):
             if timing:
                 self.training_time.append(time.time() - start)
 
-            # Plot GP debug diagnostics?
-            if debug:
-                fig, _ = pu.plot_gp(self.gp, self.theta, self.y,
-                                    return_type="mean", log=True,
-                                    save_plot="gp_mu_iter_%d.png" % nn)
-                plt.close(fig)
-
             # GP updated: run sampler to obtain new posterior conditioned on
             # {theta_n, log(L_t*prior)}. Use emcee to obtain posterior
             ndim = self.theta.shape[-1]
@@ -286,16 +276,10 @@ class ApproxPosterior(object):
             if timing:
                 self.mcmc_time.append(time.time() - start)
 
-            # Plot mcmc posterior distributions?
+            # Examine burnin?
             if debug:
                 if verbose:
                     print(iburn)
-                fig = corner.corner(sampler.flatchain[iburn:],
-                                    quantiles=[0.16, 0.5, 0.84],
-                                    plot_contours=True);
-
-                fig.savefig("posterior_%d.png" % nn)
-                plt.clf()
 
             if timing:
                 start = time.time()
@@ -306,12 +290,6 @@ class ApproxPosterior(object):
 
             if timing:
                 self.gmm_time.append(time.time() - start)
-
-            # Plot GMM?
-            if debug:
-                fig, _ = pu.plot_GMM_loglike(GMM, self.theta,
-                                             save_plot="GMM_ll_iter_%d.png" % nn)
-                plt.close(fig)
 
             # Save current GMM model
             self.GMMs.append(GMM)
