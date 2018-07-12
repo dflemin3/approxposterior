@@ -10,9 +10,6 @@ from __future__ import (print_function, division, absolute_import,
                         unicode_literals)
 
 import numpy as np
-import matplotlib as mpl
-import matplotlib.pyplot as plt
-from matplotlib.colors import LogNorm
 
 
 __all__ = ["plot_gp", "plot_GMM_loglike"]
@@ -51,6 +48,10 @@ def plot_gp(gp, theta, y, xmin=-5, xmax=5, ymin=-5, ymax=5, n=100,
     fig : matplotlib figure object
     ax : matplotlib axis object
     """
+
+    import matplotlib as mpl
+    import matplotlib.pyplot as plt
+    from matplotlib.colors import LogNorm
 
     xx = np.linspace(xmin, xmax, n)
     yy = np.linspace(ymin, ymax, n)
@@ -130,6 +131,10 @@ def plot_GMM_loglike(GMM, theta, save_plot=None, xmin=-5, xmax=5, ymin=-5, ymax=
     fig : matplotlib figure object
     ax : matplotlib axis object
     """
+
+    import matplotlib as mpl
+    import matplotlib.pyplot as plt
+    from matplotlib.colors import LogNorm
 
     # display predicted scores by the model as a contour plot
     x = np.linspace(xmin, xmax)

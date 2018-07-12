@@ -56,7 +56,7 @@ it is still computationally non-trivial and will take of order 10 minutes to run
   ap.run(m0=m0, m=m, M=M, nmax=nmax, Dmax=Dmax, kmax=kmax,
          bounds=bounds, which_kernel=which_kernel)
 
-4) Examine the posterior distributions!
+4) Examine the final posterior distributions!
 
 .. code-block:: python
 
@@ -68,3 +68,9 @@ it is still computationally non-trivial and will take of order 10 minutes to run
                       plot_contours=True)
 
   #fig.savefig("final_dist.png", bbox_inches="tight") # Uncomment to save
+
+The final posterior distribution will look something like the following:
+
+.. image:: _figures/final_posterior.png
+  :width: 400
+  :alt: Final posterior distribution for approxposterior run of the Wang & Li (2017) example.
