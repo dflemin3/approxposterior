@@ -15,15 +15,15 @@ from __future__ import (print_function, division, absolute_import,
 from approxposterior import bp, likelihood as lh
 
 # Define algorithm parameters
-m0 = 20                           # Initial size of training set
-m = 10                            # Number of new points to find each iteration
-nmax = 10                         # Maximum number of iterations
-M = int(1.0e4)                    # Number of MCMC steps to estimate approximate posterior
+m0 = 200                          # Initial size of training set
+m = 20                            # Number of new points to find each iteration
+nmax = 2                          # Maximum number of iterations
+M = int(5.0e3)                    # Number of MCMC steps to estimate approximate posterior
 Dmax = 0.1                        # KL-Divergence convergence limit
 kmax = 5                          # Number of iterations for Dmax convergence to kick in
 which_kernel = "ExpSquaredKernel" # Which Gaussian Process kernel to use
 bounds = ((-5,5), (-5,5))         # Prior bounds
-algorithm = "bape"                 # Use the Kandasamy et al. (2015) formalism
+algorithm = "bape"                # Use the Kandasamy et al. (2015) formalism
 
 # Initialize object using the Wang & Li (2017) Rosenbrock function example
 ap = bp.ApproxPosterior(lnprior=lh.rosenbrock_lnprior,
@@ -34,7 +34,7 @@ ap = bp.ApproxPosterior(lnprior=lh.rosenbrock_lnprior,
 # Run!
 ap.run(m0=m0, m=m, M=M, nmax=nmax, Dmax=Dmax, kmax=kmax,
         sampler=None, bounds=bounds, which_kernel=which_kernel,
-        n_kl_samples=100000, verbose=True, debug=True)
+        n_kl_samples=100000, verbose=False, debug=False)
 
 # Check out the final posterior distribution!
 import corner
@@ -43,4 +43,4 @@ fig = corner.corner(ap.samplers[-1].flatchain[ap.iburns[-1]:],
                             quantiles=[0.16, 0.5, 0.84], show_titles=True,
                             scale_hist=True, plot_contours=True)
 
-#fig.savefig("final_posterior.png", bbox_inches="tight") # Uncomment to save
+fig.savefig("final_posterior.png", bbox_inches="tight") # Uncomment to save
