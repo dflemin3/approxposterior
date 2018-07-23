@@ -18,8 +18,11 @@ and how we compute the true posterior distribution for the Rosenbrock function e
 
 Below is a quick example of how to use :py:obj:`approxposterior` to compute the posterior
 distribution of the Rosenbrock Function example from Wang & Li (2017) using the
-BAPE algorithm. Note that although this example is relatively straight-forward,
-it is still computationally non-trivial and will take of order 10 minutes to run.
+BAPE algorithm. To keep track of the MCMC progress, set verbose = True in the ap.run method. This setting
+outputs X/M where M is the total number of MCMC iterations to be evaluated, 5,000 in this example, and x is the current
+iteration number.  Note that setting verbose = True also outputs additional diagnostic information, such as when
+the MCMC finishes, what the estimated burn-in is, and other quantities that are useful for tracking the progress of
+your code.  In this example, we set verbose = False for simplicity.
 
 1) First, the user must set model parameters.
 
