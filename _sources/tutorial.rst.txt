@@ -28,15 +28,15 @@ it is still computationally non-trivial and will take of order 10 minutes to run
   from approxposterior import bp, likelihood as lh
 
   # Define algorithm parameters
-  m0 = 20                           # Initial size of training set to generate (if None is supplied)
-  m = 10                            # Number of new points to find each iteration
-  nmax = 10                         # Maximum number of iterations
-  M = int(1.0e4)                    # Number of MCMC steps to estimate approximate posterior
+  m0 = 200                          # Initial size of training set
+  m = 20                            # Number of new points to find each iteration
+  nmax = 2                          # Maximum number of iterations
+  M = int(5.0e3)                    # Number of MCMC steps to estimate approximate posterior
   Dmax = 0.1                        # KL-Divergence convergence limit
   kmax = 5                          # Number of iterations for Dmax convergence to kick in
   which_kernel = "ExpSquaredKernel" # Which Gaussian Process kernel to use
   bounds = ((-5,5), (-5,5))         # Prior bounds
-  algorithm = "agp"                 # Use the Wang & Li (2017) formalism
+  algorithm = "bape"                # Use the Kandasamy et al. (2015) formalism
 
 2) Initialize the :py:obj:`approxposterior` object.
 
@@ -54,7 +54,8 @@ it is still computationally non-trivial and will take of order 10 minutes to run
 
   # Run!
   ap.run(m0=m0, m=m, M=M, nmax=nmax, Dmax=Dmax, kmax=kmax,
-         bounds=bounds, which_kernel=which_kernel)
+          sampler=None, bounds=bounds, which_kernel=which_kernel,
+          n_kl_samples=100000, verbose=False)
 
 4) Examine the final posterior distributions!
 
