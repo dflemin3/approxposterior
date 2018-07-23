@@ -50,23 +50,26 @@ python setup.py install
 A simple example
 ===================
 
-Below is a simple application of approxposterior to the Wang & Li (2017) example. Note that although this
-example is relatively straight-forward, it is still computationally non-trivial and will take of order
-10 minutes to run.
+Below is a simple application of approxposterior based on the Wang & Li (2017) example. Note that
+we adapted this example and shortened it so that it only takes about 1 minute to run.
+
+To keep track of the MCMC progress, set ```verbose = True``` in the ```ap.run``` method. This setting
+outputs X/M where M is the total number of MCMC iterations to be evaluated, 5,000 in this example, and x is the current
+iteration number.  Note that setting ```verbose = True``` also outputs additional diagnostic information, such as when
+the MCMC finishes, what the estimated burn-in is, and other quantities that are useful for tracking the progress of
+your code.  In this example, we set ```verbose = False``` for simplicity.
 
 ```python
-from approxposterior import bp, likelihood as lh
-
 # Define algorithm parameters
-m0 = 20                           # Initial size of training set
-m = 10                            # Number of new points to find each iteration
-nmax = 10                         # Maximum number of iterations
-M = int(1.0e4)                    # Number of MCMC steps to estimate approximate posterior
+m0 = 200                          # Initial size of training set
+m = 20                            # Number of new points to find each iteration
+nmax = 2                          # Maximum number of iterations
+M = int(5.0e3)                    # Number of MCMC steps to estimate approximate posterior
 Dmax = 0.1                        # KL-Divergence convergence limit
 kmax = 5                          # Number of iterations for Dmax convergence to kick in
 which_kernel = "ExpSquaredKernel" # Which Gaussian Process kernel to use
 bounds = ((-5,5), (-5,5))         # Prior bounds
-algorithm = "agp"                 # Use the Wang & Li (2017) formalism
+algorithm = "bape"                # Use the Kandasamy et al. (2015) formalism
 
 # Initialize object using the Wang & Li (2017) Rosenbrock function example
 ap = bp.ApproxPosterior(lnprior=lh.rosenbrock_lnprior,
@@ -76,27 +79,24 @@ ap = bp.ApproxPosterior(lnprior=lh.rosenbrock_lnprior,
 
 # Run!
 ap.run(m0=m0, m=m, M=M, nmax=nmax, Dmax=Dmax, kmax=kmax,
-       bounds=bounds, which_kernel=which_kernel)
-```     
+        sampler=None, bounds=bounds, which_kernel=which_kernel,
+        n_kl_samples=100000, verbose=False)
 
-To examine the final approximate posterior distribution, run the following:
-
-```python
-# Import corner to examine posterior distributions
+# Check out the final posterior distribution!
 import corner
 
 fig = corner.corner(ap.samplers[-1].flatchain[ap.iburns[-1]:],
-                    quantiles=[0.16, 0.5, 0.84], show_titles=True, scale_hist=True,
-                    plot_contours=True)
+                            quantiles=[0.16, 0.5, 0.84], show_titles=True,
+                            scale_hist=True, plot_contours=True)
 
-#fig.savefig("final_dist.png", bbox_inches="tight") # Uncomment to save
+#fig.savefig("final_posterior.png", bbox_inches="tight") # Uncomment to save
 ```
 
 The final distribution will look something like this:
 
 ![Final posterior probability distribution for the Wang & Li (2017) example.](paper/final_posterior.png)
 
-Check out the [examples](https://github.com/dflemin3/approxposterior/tree/master/examples/Notebooks) directory for Jupyter Notebook examples for detailed examples and explanations.
+Check out the [examples](https://github.com/dflemin3/approxposterior/tree/master/examples/Notebooks) directory for Jupyter Notebook examples for detailed examples and explanations and check out the full [documentation](https://dflemin3.github.io/approxposterior/) for a more in-depth explanation of classes, methods, variables, and how to use the code.
 
 Contribution
 ============

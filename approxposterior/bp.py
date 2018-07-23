@@ -127,7 +127,7 @@ class ApproxPosterior(object):
 
     def run(self, theta=None, y=None, m0=20, m=10, M=10000, nmax=2, Dmax=0.01,
             kmax=5, sampler=None, cv=None, seed=None, timing=False,
-            which_kernel="ExpSquaredKernel", bounds=None, debug=True,
+            which_kernel="ExpSquaredKernel", bounds=None, debug=False,
             n_kl_samples=100000, verbose=True, update_prior=False, **kw):
         """
         Core algorithm to estimate the posterior distribution via Gaussian
