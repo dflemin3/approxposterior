@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 
-Test loading approxposterior and running the core algorithm for 2 iterations.
+Test loading approxposterior and running the core algorithm for 1 iteration.
 
 @author: David P. Fleming [University of Washington, Seattle], 2018
 @email: dflemin3 (at) uw (dot) edu
