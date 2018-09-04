@@ -17,6 +17,8 @@ approxposterior runs on both Python 2.7+ and 3.6.
 
 [![build status](http://img.shields.io/travis/dflemin3/approxposterior/master.svg?style=flat)](https://travis-ci.org/dflemin3/approxposterior)
 
+[![DOI](http://joss.theoj.org/papers/10.21105/joss.00781/status.svg)](https://doi.org/10.21105/joss.00781)
+
 Check out the [documentation](https://dflemin3.github.io/approxposterior/) for a more in-depth explanation about the code!
 
 Installation
