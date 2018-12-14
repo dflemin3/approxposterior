@@ -80,8 +80,8 @@ class ApproxPosterior(object):
         elif self.algorithm.lower() == "agp":
             self.utility = ut.AGPUtility
         else:
-            err_msg = "ERROR: Invalid algorithm. Valid options: BAPE, AGP."
-            raise ValueError(err_msg)
+            errMsg = "ERROR: Invalid algorithm. Valid options: BAPE, AGP."
+            raise ValueError(errMsg)
 
         # Initial approximate posteriors are the prior
         self.posterior = self._lnprior
@@ -232,8 +232,8 @@ class ApproxPosterior(object):
 
                 # If yT isn't finite, you're likelihood function is messed up
                 # XXX warning or log, then draw again
-                err_msg = "ERROR: Non-finite likelihood, forward model probably returning NaNs. yT: %e" % yT
-                assert np.isfinite(yT), err_msg
+                errMsg = "ERROR: Non-finite likelihood, forward model probably returning NaNs. yT: %e" % yT
+                assert np.isfinite(yT), errMsg
 
                 # Join theta, y arrays with new points
                 self.theta = np.concatenate([self.theta, thetaT.reshape(1,-1)])

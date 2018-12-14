@@ -61,7 +61,7 @@ def test_run():
                                 gp=gp,
                                 lnprior=lh.rosenbrockLnprior,
                                 lnlike=lh.rosenbrockLnlike,
-                                prior_sample=lh.rosenbrockSample,
+                                priorSample=lh.rosenbrockSample,
                                 algorithm=algorithm)
 
     # Run!
@@ -70,14 +70,14 @@ def test_run():
            verbose=False)
 
     # Ensure medians of chains are consistent with the true values
-    x1_med, x2_med = np.median(ap.samplers[-1].flatchain[ap.iburns[-1]:], axis=0)
+    x1Med, x2Med = np.median(ap.samplers[-1].flatchain[ap.iburns[-1]:], axis=0)
 
-    diff_x1 = np.fabs(0.04 - x1_med)
-    diff_x2 = np.fabs(1.29 - x2_med)
+    diffX1 = np.fabs(0.04 - x1Med)
+    diffX2 = np.fabs(1.29 - x2Med)
 
     # Differences between estimated and true medians must be less than
     # the true error bars
-    err_msg = "Medians of marginal posteriors are incosistent with true values."
-    assert((diff_x1 < 1.5) & (diff_x2 < 1.3)), err_msg
+    errMsg = "Medians of marginal posteriors are incosistent with true values."
+    assert((diffX1 < 1.5) & (diffX2 < 1.3)), errMsg
 
 # end function

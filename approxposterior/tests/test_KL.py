@@ -40,19 +40,19 @@ def testKLApproximation():
     KLDiff = ss.entropy(pDiff, qDiff)
 
     # Now numerically estimate the KL-divergence
-    p_kwargs = {"loc": 1.2, "scale": 1}
-    q_kwargs = {"loc" : -1.2, "scale" : 1}
+    pKwargs = {"loc": 1.2, "scale": 1}
+    qKwargs = {"loc" : -1.2, "scale" : 1}
 
     # Wrap the functions
-    p_pdf = ut.functionWrapper(ss.norm.pdf, **p_kwargs)
-    q_pdf = ut.functionWrapper(ss.norm.pdf, **q_kwargs)
+    pPdf = ut.functionWrapper(ss.norm.pdf, **pKwargs)
+    qPdf = ut.functionWrapper(ss.norm.pdf, **qKwargs)
 
     x = ss.norm.rvs(loc=1.2, scale=1, size=10000)
-    numerical = ut.klNumerical(x, p_pdf, q_pdf)
+    numerical = ut.klNumerical(x, pPdf, qPdf)
 
     # Answer better be close (small percent difference)
-    err_msg = "ERROR: Numerical KL divergence approximation incorrect by >0.5%!"
-    assert(100*np.fabs((KLDiff - numerical)/KLDiff) < 0.5), err_msg
+    errMsg = "ERROR: Numerical KL divergence approximation incorrect by >0.5%!"
+    assert(100*np.fabs((KLDiff - numerical)/KLDiff) < 0.5), errMsg
 
     return None
 # end function

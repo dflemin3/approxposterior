@@ -92,8 +92,8 @@ def klNumerical(x, p, q):
     try:
         res = np.sum(np.log(p(x)/q(x)))/len(x)
     except ValueError:
-        err_msg = "ERROR: inf/NaN encountered.  q(x) = 0 likely occured."
-        raise ValueError(err_msg)
+        errMsg = "ERROR: inf/NaN encountered.  q(x) = 0 likely occured."
+        raise ValueError(errMsg)
 
     return res
 # end function
