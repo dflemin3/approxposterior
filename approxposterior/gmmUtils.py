@@ -16,7 +16,7 @@ from sklearn.model_selection import GridSearchCV
 from sklearn.mixture import GaussianMixture
 
 
-def fitGMM(sampler, iburn=0, max_comp=3, cov_type="full", use_bic=True):
+def fitGMM(chain, iburn=0, maxComp=3, covType="full", useBic=True):
     """
     Fit a Gaussian Mixture Model to the posterior samples to derive an
     approximation of the posterior density.  Fit for the number of components
@@ -25,17 +25,17 @@ def fitGMM(sampler, iburn=0, max_comp=3, cov_type="full", use_bic=True):
 
     Parameters
     ----------
-    sampler : emcee.EnsembleSampler
-        sampler object containing the MCMC chains
+    chain : numpy array
+        sampler.flatchain MCMC chain array of dimensions (nwalkers x nsteps)
     iburn : int (optional)
         number of burn-in steps to discard for fitting. Defaults to 0 (no burnin)
-    max_comp : int (optional)
+    maxComp : int (optional)
         Maximum number of mixture model components to fit for.  Defaults to 3.
-    cov_type : str (optional)
+    covType : str (optional)
         GMM covariance type.  Defaults to "full".  See the documentation here:
         http://scikit-learn.org/stable/modules/generated/sklearn.mixture.GaussianMixture.html
         for more info
-    use_bic : bool (optional)
+    useBic : bool (optional)
         Minimize the BIC to pick the number of GMM components or use cross
         validation?  Defaults to True (aka, use the BIC)
 
@@ -46,35 +46,36 @@ def fitGMM(sampler, iburn=0, max_comp=3, cov_type="full", use_bic=True):
     """
 
     # Select optimal number of components via minimizing BIC
-    if use_bic:
+    if useBic:
 
         bic = None
-        lowest_bic = np.inf
-        best_gmm = None
+        lowestBic = np.inf
+        bestGMM = None
         gmm = GaussianMixture()
 
-        for n_components in range(1,max_comp+1):
-          gmm.set_params(**{"n_components" : n_components,
-                         "covariance_type" : cov_type})
-          gmm.fit(sampler.flatchain[iburn:])
-          bic = gmm.bic(sampler.flatchain[iburn:])
+        for nComponents in range(1,maxComp+1):
+          gmm.set_params(**{"n_components" : nComponents,
+                         "covariance_type" : covType})
+          gmm.fit(chain[iburn:])
+          bic = gmm.bic(chain[iburn:])
 
-          if bic < lowest_bic:
-              lowest_bic = bic
-              best_gmm = gmm
+          if bic < lowestBic:
+              lowestBic = bic
+              bestN = nComponents
+              bestCovType = covType
 
         # Refit GMM with the lowest bic
-        GMM = best_gmm
-        GMM.fit(sampler.flatchain[iburn:])
+        GMM = GaussianMixture(n_components=bestN, covariance_type=bestCovType)
+        GMM.fit(chain[iburn:])
 
     # Select optimal number of components via 5 fold cross-validation
     else:
-        hyperparams = {"n_components" : np.arange(max_comp+1)}
-        gmm = GridSearchCV(GaussianMixture(covariance_type=cov_type),
+        hyperparams = {"n_components" : np.arange(maxComp+1)}
+        gmm = GridSearchCV(GaussianMixture(covariance_type=covType),
                          hyperparams, cv=5)
-        gmm.fit(sampler.flatchain[iburn:])
+        gmm.fit(chain[iburn:])
         GMM = gmm.best_estimator_
-        GMM.fit(sampler.flatchain[iburn:])
+        GMM.fit(chain[iburn:])
 
     return GMM
 # end function

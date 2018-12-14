@@ -142,7 +142,7 @@ class ApproxPosterior(object):
     def run(self, m0=20, m=10, M=10000, nmax=2, Dmax=0.01,
             kmax=5, sampler=None, p0=None, seed=None, timing=False,
             bounds=None, nKLSamples=100000, verbose=True,
-            args=None, max_comp=3, **kwargs):
+            args=None, maxComp=3, **kwargs):
         """
         Core algorithm to estimate the posterior distribution via Gaussian
         Process regression to the joint distribution for the forward model
@@ -185,7 +185,7 @@ class ApproxPosterior(object):
             1/sqrt(nKLSamples).
         verbose : bool (optional)
             Output all the diagnostics? Defaults to True.
-        max_comp : int (optional)
+        maxComp : int (optional)
             Maximum number of mixture model components to fit for when fitting a
             GMM model to approximate the posterior distribution.  Defaults to 3.
 
@@ -264,18 +264,6 @@ class ApproxPosterior(object):
             # Create sampler using GP ll function as forward model surrogate
             sampler = emcee.EnsembleSampler(nwalk, ndim, self._gpll, args=args, **kwargs)
 
-            # Sample given, call reset to clear it and prepare it for a new run
-            """else:
-                # Reset sampler attributes, make lnprob function the gp_ll
-                sampler.reset()
-                sampler.lnprobfn = self.__gpll
-
-                # Get MCMC parameters
-                ndim = sampler.dim # ndims
-                nwalk = sampler.k # number of walkers
-                nsteps = M
-            """
-
             # Provide initial guess (random over prior) if None provided
             if p0 is None:
                 p0 = [self.priorSample(1) for j in range(nwalk)]
@@ -303,8 +291,8 @@ class ApproxPosterior(object):
                 start = time.time()
 
             # Approximate posterior distribution using a Gaussian Mixure model
-            GMM = gmmUtils.fitGMM(sampler, iburn, max_comp=max_comp, cov_type="full",
-                                  use_bic=True)
+            GMM = gmmUtils.fitGMM(sampler.flatchain, iburn, maxComp=maxComp,
+                                  covType="full", useBic=True)
 
             if verbose:
                 print("GMM fit.")
