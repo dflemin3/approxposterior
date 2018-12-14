@@ -72,7 +72,7 @@ def _grad_nll(p, gp, y):
 # end function
 
 
-def optimizeGp(gp, theta, y, seed=None, n_restarts=5):
+def optimizeGP(gp, theta, y, seed=None, n_restarts=5):
     """
     TODO: implement n_restarts
 
