@@ -18,7 +18,6 @@ __all__ = ["ApproxPosterior"]
 from . import utility as ut
 from . import gp_utils
 from . import mcmc_utils
-from . import plot_utils as pu
 from . import gmm_utils
 
 import numpy as np

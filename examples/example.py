@@ -16,15 +16,16 @@ from approxposterior import bp, likelihood as lh
 import numpy as np
 import george
 
-### Define algorithm parameters ###
-m0 = 20                           # Initial size of training set
-m = 10                            # Number of new points to find each iteration
-nmax = 10                         # Maximum number of iterations
-M = int(1.0e2)                    # Number of MCMC steps to estimate approximate posterior
+
+# Define algorithm parameters
+m0 = 200                          # Initial size of training set
+m = 20                            # Number of new points to find each iteration
+nmax = 2                          # Maximum number of iterations
+M = int(5.0e3)                    # Number of MCMC steps to estimate approximate posterior
 Dmax = 0.1                        # KL-Divergence convergence limit
 kmax = 5                          # Number of iterations for Dmax convergence to kick in
 bounds = ((-5,5), (-5,5))         # Prior bounds
-algorithm = "bape"                 # Use the Kandasamy et al. (2015) formalism
+algorithm = "bape"                # Use the Kandasamy et al. (2015) formalism
 
 ### Create a training set (if you don't already have one!) ###
 
@@ -65,3 +66,12 @@ ap = bp.ApproxPosterior(theta=theta,
 ap.run(m0=m0, m=m, M=M, nmax=nmax, Dmax=Dmax, kmax=kmax,
        sampler=None, bounds=bounds, n_kl_samples=100000,
        verbose=True)
+
+# Check out the final posterior distribution!
+import corner
+
+fig = corner.corner(ap.samplers[-1].flatchain[ap.iburns[-1]:],
+                            quantiles=[0.16, 0.5, 0.84], show_titles=True,
+                            scale_hist=True, plot_contours=True)
+
+fig.savefig("final_posterior.png", bbox_inches="tight") # Uncomment to save
