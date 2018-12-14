@@ -221,7 +221,7 @@ class ApproxPosterior(object):
                 start = time.time()
             for ii in range(m):
                 thetaT = ut.minimizeObjective(self.utility, self.y, self.gp,
-                                              sample_fn=self.priorSample,
+                                              sampleFn=self.priorSample,
                                               priorFn=self._lnprior,
                                               bounds=bounds, **kwargs)
 
@@ -291,7 +291,7 @@ class ApproxPosterior(object):
             self.samplers.append(sampler)
 
             # Estimate burn-in, save it
-            iburn = mcmc_utils.estimateBurnin(sampler, nwalk, nsteps, ndim)
+            iburn = mcmcUtils.estimateBurnin(sampler, nwalk, nsteps, ndim)
             if verbose:
                 print("burnin estimate: %d" % iburn)
             self.iburns.append(iburn)
@@ -426,7 +426,7 @@ class ApproxPosterior(object):
         # Find m new points
         for ii in range(m):
             thetaT = ut.minimizeObjective(self.utility, y, gp,
-                                          sample_fn=self.priorSample,
+                                          sampleFn=self.priorSample,
                                           priorFn=self._lnprior,
                                           bounds=bounds, **kwargs)
 

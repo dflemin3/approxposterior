@@ -43,10 +43,10 @@ def test_run():
     ### Initialize GP ###
 
     # Guess initial metric
-    initial_metric = np.nanmedian(theta**2, axis=0)/10.0
+    initialMetric = np.nanmedian(theta**2, axis=0)/10.0
 
     # Create kernel
-    kernel = george.kernels.ExpSquaredKernel(initial_metric, ndim=2)
+    kernel = george.kernels.ExpSquaredKernel(initialMetric, ndim=2)
 
     # Guess initial mean function
     mean = np.nanmedian(y)

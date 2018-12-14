@@ -208,7 +208,7 @@ def BAPEUtility(theta, y, gp):
 # end function
 
 
-def minimizeObjective(fn, y, gp, sample_fn, prior_fn, bounds=None, **kw):
+def minimizeObjective(fn, y, gp, sampleFn, priorFn, bounds=None, **kw):
     """
     Find point that minimizes fn for a gaussian process gp conditioned on y,
     the data.
@@ -221,9 +221,9 @@ def minimizeObjective(fn, y, gp, sample_fn, prior_fn, bounds=None, **kw):
     y : array
         y values to condition the gp prediction on.
     gp : george GP object
-    sample_fn : function
+    sampleFn : function
         Function to sample initial conditions from.
-    prior_fn : function
+    priorFn : function
         Function to apply prior to.
     kw : dict (optional)
         Any additional keyword arguments scipy.optimize.minimize could use,
@@ -243,7 +243,7 @@ def minimizeObjective(fn, y, gp, sample_fn, prior_fn, bounds=None, **kw):
         # Solve for theta that maximize fn and is allowed by prior
 
         # Choose theta0 by uniformly sampling over parameter space
-        theta0 = sample_fn(1).reshape(1,-1)
+        theta0 = sampleFn(1).reshape(1,-1)
 
         args=(y, gp)
 
@@ -261,7 +261,7 @@ def minimizeObjective(fn, y, gp, sample_fn, prior_fn, bounds=None, **kw):
         # Are all values finite?
         if np.all(np.isfinite(tmp)):
             # Is this point in parameter space allowed by the prior?
-            if np.isfinite(prior_fn(tmp)):
+            if np.isfinite(priorFn(tmp)):
                 theta = tmp
                 is_finite = True
     # end while
