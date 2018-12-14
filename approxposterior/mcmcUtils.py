@@ -9,7 +9,7 @@ from __future__ import (print_function, division, absolute_import,
                         unicode_literals)
 
 # Tell module what it's allowed to import
-__all__ = ["autocorr","estimate_burnin"]
+__all__ = ["autocorr","estimateBurnin"]
 
 import numpy as np
 import emcee
@@ -42,7 +42,7 @@ def autocorr(x):
 # end function
 
 
-def estimate_burnin(sampler, nwalk, nsteps, ndim):
+def estimateBurnin(sampler, nwalk, nsteps, ndim):
     """
     Given an MCMC chain, estimate the burn-in time (credit: Jacob Lustig-Jaeger)
     This function computes the maximum autocorrelation length of all the walkers

@@ -12,7 +12,7 @@ Example script
 from __future__ import (print_function, division, absolute_import,
                         unicode_literals)
 
-from approxposterior import bp, likelihood as lh
+from approxposterior import approx, likelihood as lh
 import numpy as np
 import george
 
@@ -30,12 +30,12 @@ algorithm = "bape"                # Use the Kandasamy et al. (2015) formalism
 ### Create a training set (if you don't already have one!) ###
 
 # Randomly sample initial conditions from the prior
-theta = np.array(lh.rosenbrock_sample(m0))
+theta = np.array(lh.rosenbrockSample(m0))
 
 # Evaluate forward model log likelihood + lnprior for each theta
 y = np.zeros(len(theta))
 for ii in range(len(theta)):
-    y[ii] = lh.rosenbrock_lnlike(theta[ii]) + lh.rosenbrock_lnprior(theta[ii])
+    y[ii] = lh.rosenbrockLnlike(theta[ii]) + lh.rosenbrockLnprior(theta[ii])
 
 ### Initialize GP ###
 
@@ -53,17 +53,17 @@ gp = george.GP(kernel=kernel, fit_mean=True, mean=mean)
 gp.compute(theta)
 
 # Initialize object using the Wang & Li (2017) Rosenbrock function example
-ap = bp.ApproxPosterior(theta=theta,
-                        y=y,
-                        gp=gp,
-                        lnprior=lh.rosenbrock_lnprior,
-                        lnlike=lh.rosenbrock_lnlike,
-                        prior_sample=lh.rosenbrock_sample,
-                        algorithm=algorithm)
+ap = approx.ApproxPosterior(theta=theta,
+                            y=y,
+                            gp=gp,
+                            lnprior=lh.rosenbrockLnprior,
+                            lnlike=lh.rosenbrockLnlike,
+                            priorSample=lh.rosenbrockSample,
+                            algorithm=algorithm)
 
 # Run!
 ap.run(m0=m0, m=m, M=M, nmax=nmax, Dmax=Dmax, kmax=kmax,
-       sampler=None, bounds=bounds, n_kl_samples=100000,
+       sampler=None, bounds=bounds, nKLSamples=100000,
        verbose=True)
 
 # Check out the final posterior distribution!
@@ -73,4 +73,4 @@ fig = corner.corner(ap.samplers[-1].flatchain[ap.iburns[-1]:],
                             quantiles=[0.16, 0.5, 0.84], show_titles=True,
                             scale_hist=True, plot_contours=True)
 
-fig.savefig("final_posterior.png", bbox_inches="tight") # Uncomment to save
+fig.savefig("finalPosterior.png", bbox_inches="tight") # Uncomment to save

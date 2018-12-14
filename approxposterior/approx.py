@@ -16,9 +16,9 @@ from __future__ import (print_function, division, absolute_import,
 __all__ = ["ApproxPosterior"]
 
 from . import utility as ut
-from . import gp_utils
-from . import mcmc_utils
-from . import gmm_utils
+from . import gpUtils
+from . import mcmcUtils
+from . import gmmUtils
 
 import numpy as np
 import time
@@ -32,7 +32,7 @@ class ApproxPosterior(object):
     the AGP (Adaptive Gaussian Process) by Wang & Li (2017).
     """
 
-    def __init__(self, theta, y, gp, lnprior, lnlike, prior_sample,
+    def __init__(self, theta, y, gp, lnprior, lnlike, priorSample,
                  algorithm="BAPE"):
         """
         Initializer.
@@ -52,7 +52,7 @@ class ApproxPosterior(object):
             Defines the log likelihood function.  In this function, it is assumed
             that the forward model is evaluated on the input theta and the output
             is used to evaluate the log likelihood.
-        prior_sample : function
+        priorSample : function
             Method to randomly sample points over region allowed by prior
         algorithm : str (optional)
             Which utility function to use.  Defaults to BAPE.  Options are BAPE
@@ -71,21 +71,21 @@ class ApproxPosterior(object):
         self.gp = gp
         self._lnprior = lnprior
         self._lnlike = lnlike
-        self.prior_sample = prior_sample
+        self.priorSample = priorSample
         self.algorithm = algorithm
 
         # Assign utility function
         if self.algorithm.lower() == "bape":
-            self.utility = ut.BAPE_utility
+            self.utility = ut.BAPEUtility
         elif self.algorithm.lower() == "agp":
-            self.utility = ut.AGP_utility
+            self.utility = ut.AGPUtility
         else:
             err_msg = "ERROR: Invalid algorithm. Valid options: BAPE, AGP."
             raise ValueError(err_msg)
 
         # Initial approximate posteriors are the prior
         self.posterior = self._lnprior
-        self.prev_posterior = self._lnprior
+        self.prevPosterior = self._lnprior
 
         # Holders to save GMM fits to posteriors, raw samplers, KL divergences,
         # GPs
@@ -114,21 +114,21 @@ class ApproxPosterior(object):
         """
 
         # Make sure it's the right shape
-        theta_test = np.array(theta).reshape(1,-1)
+        thetaTest = np.array(theta).reshape(1,-1)
 
         # Sometimes the input values can be crazy and the GP will blow up
-        if not np.isfinite(theta_test).any():
+        if not np.isfinite(thetaTest).any():
             return -np.inf
 
         # Mean of predictive distribution conditioned on y (GP posterior estimate)
         try:
-            mu = self.gp.predict(self.y, theta_test, return_cov=False,
+            mu = self.gp.predict(self.y, thetaTest, return_cov=False,
                                  return_var=False)
         except ValueError:
             return -np.inf
 
         # Reject point if prior forbids it
-        if not np.isfinite(self._lnprior(theta_test.reshape(-1,))):
+        if not np.isfinite(self._lnprior(thetaTest.reshape(-1,))):
             return -np.inf
 
         # Catch NaNs/Infs because they can (rarely) happen
@@ -141,7 +141,7 @@ class ApproxPosterior(object):
 
     def run(self, m0=20, m=10, M=10000, nmax=2, Dmax=0.01,
             kmax=5, sampler=None, p0=None, seed=None, timing=False,
-            bounds=None, n_kl_samples=100000, verbose=True,
+            bounds=None, nKLSamples=100000, verbose=True,
             args=None, max_comp=3, **kwargs):
         """
         Core algorithm to estimate the posterior distribution via Gaussian
@@ -178,11 +178,11 @@ class ApproxPosterior(object):
         bounds : tuple/iterable (optional)
             Bounds for minimization scheme.  See scipy.optimize.minimize details
             for more information.  Defaults to None.
-        n_kl_samples : int (optionals)
+        nKLSamples : int (optionals)
             Number of samples to draw for Monte Carlo approximation to KL
             divergence between current and previous estimate of the posterior.
             Defaults to 10000.  Error on estimation decreases as approximately
-            1/sqrt(n_kl_samples).
+            1/sqrt(nKLSamples).
         verbose : bool (optional)
             Output all the diagnostics? Defaults to True.
         max_comp : int (optional)
@@ -200,13 +200,13 @@ class ApproxPosterior(object):
 
         # Create containers for timing?
         if timing:
-            self.training_time = list()
-            self.mcmc_time = list()
-            self.gmm_time = list()
-            self.kl_time = list()
+            self.trainingTime = list()
+            self.mcmcTime = list()
+            self.gmmTime = list()
+            self.klTime = list()
 
         # Optimize gaussian process
-        self.gp = gp_utils.optimize_gp(self.gp, self.theta, self.y, seed=seed)
+        self.gp = gpUtils.optimizeGP(self.gp, self.theta, self.y, seed=seed)
 
         # Main loop
         kk = 0
@@ -220,34 +220,34 @@ class ApproxPosterior(object):
             if timing:
                 start = time.time()
             for ii in range(m):
-                theta_t = ut.minimize_objective(self.utility, self.y, self.gp,
-                                                sample_fn=self.prior_sample,
-                                                prior_fn=self._lnprior,
-                                                bounds=bounds, **kwargs)
+                thetaT = ut.minimizeObjective(self.utility, self.y, self.gp,
+                                              sample_fn=self.priorSample,
+                                              priorFn=self._lnprior,
+                                              bounds=bounds, **kwargs)
 
-                theta_t = np.array(theta_t).reshape(-1,)
+                thetaT = np.array(thetaT).reshape(-1,)
 
-                # 2) Query forward model at new point, theta_t
-                y_t = np.array([self._lnlike(theta_t, *args, **kwargs) + self._lnprior(theta_t)])
+                # 2) Query forward model at new point, thetaT
+                yT = np.array([self._lnlike(thetaT, *args, **kwargs) + self._lnprior(thetaT)])
 
-                # If y_t isn't finite, you're likelihood function is messed up
+                # If yT isn't finite, you're likelihood function is messed up
                 # XXX warning or log, then draw again
-                err_msg = "ERROR: Non-finite likelihood, forward model probably returning NaNs. y_t: %e" % y_t
-                assert np.isfinite(y_t), err_msg
+                err_msg = "ERROR: Non-finite likelihood, forward model probably returning NaNs. yT: %e" % yT
+                assert np.isfinite(yT), err_msg
 
                 # Join theta, y arrays with new points
-                self.theta = np.concatenate([self.theta, theta_t.reshape(1,-1)])
-                self.y = np.concatenate([self.y, y_t])
+                self.theta = np.concatenate([self.theta, thetaT.reshape(1,-1)])
+                self.y = np.concatenate([self.y, yT])
 
                 # 3) Re-optimize GP with new point, optimize
 
                 # Re-initialize, optimize GP since self.theta's shape changed
-                self.gp = gp_utils.setup_gp(self.theta, self.y, self.gp)
-                self.gp = gp_utils.optimize_gp(self.gp, self.theta, self.y,
+                self.gp = gpUtils.setupGP(self.theta, self.y, self.gp)
+                self.gp = gpUtils.optimizeGP(self.gp, self.theta, self.y,
                                                seed=seed)
 
             if timing:
-                self.training_time.append(time.time() - start)
+                self.trainingTime.append(time.time() - start)
 
             # GP updated: run sampler to obtain new posterior conditioned on
             # {theta_n, log(L_t*prior)}. Use emcee to obtain posterior
@@ -278,7 +278,7 @@ class ApproxPosterior(object):
 
             # Provide initial guess (random over prior) if None provided
             if p0 is None:
-                p0 = [self.prior_sample(1) for j in range(nwalk)]
+                p0 = [self.priorSample(1) for j in range(nwalk)]
 
             # Run MCMC!
             for ii, result in enumerate(sampler.sample(p0, iterations=nsteps)):
@@ -291,32 +291,32 @@ class ApproxPosterior(object):
             self.samplers.append(sampler)
 
             # Estimate burn-in, save it
-            iburn = mcmc_utils.estimate_burnin(sampler, nwalk, nsteps, ndim)
+            iburn = mcmc_utils.estimateBurnin(sampler, nwalk, nsteps, ndim)
             if verbose:
                 print("burnin estimate: %d" % iburn)
             self.iburns.append(iburn)
 
             if timing:
-                self.mcmc_time.append(time.time() - start)
+                self.mcmcTime.append(time.time() - start)
 
             if timing:
                 start = time.time()
 
             # Approximate posterior distribution using a Gaussian Mixure model
-            GMM = gmm_utils.fit_gmm(sampler, iburn, max_comp=max_comp, cov_type="full",
-                                    use_bic=True)
+            GMM = gmmUtils.fitGMM(sampler, iburn, max_comp=max_comp, cov_type="full",
+                                  use_bic=True)
 
             if verbose:
                 print("GMM fit.")
 
             if timing:
-                self.gmm_time.append(time.time() - start)
+                self.gmmTime.append(time.time() - start)
 
             # Save current GMM model
             self.GMMs.append(GMM)
 
             # Update posterior estimate
-            self.prev_posterior = self.posterior
+            self.prevPosterior = self.posterior
             self.posterior = GMM.score_samples
 
             if timing:
@@ -326,29 +326,29 @@ class ApproxPosterior(object):
             # Only do this after the 1st (0th) iteration!
             if nn > 0:
                 # Sample from last iteration's GMM
-                prev_samples, _ = self.GMMs[-2].sample(n_kl_samples)
+                prevSamples, _ = self.GMMs[-2].sample(nKLSamples)
 
                 # Numerically estimate KL divergence
-                self.Dkl.append(ut.kl_numerical(prev_samples,
-                                               self.prev_posterior,
+                self.Dkl.append(ut.klNumerical(prevSamples,
+                                               self.prevPosterior,
                                                self.posterior))
             else:
                 self.Dkl.append(0.0)
 
             if timing:
-                self.kl_time.append(time.time() - start)
+                self.klTime.append(time.time() - start)
 
             # Convergence diagnostics: If KL divergence is less than threshold
             # for kmax consecutive iterations, we're finished
 
             # Can't check for convergence on 1st (0th) iteration
             if nn < 1:
-                delta_Dkl = 1.0e10
+                deltaDkl = 1.0e10
             else:
-                delta_Dkl = np.fabs(self.Dkl[-1] - self.Dkl[-2])
+                deltaDkl = np.fabs(self.Dkl[-1] - self.Dkl[-2])
 
             # If the KL divergence is too large, reset counter
-            if delta_Dkl <= Dmax:
+            if deltaDkl <= Dmax:
                 kk = kk + 1
             else:
                 kk = 0
@@ -356,7 +356,7 @@ class ApproxPosterior(object):
             # Have we converged?
             if kk >= kmax:
                 if verbose:
-                    print("Converged! n_iters, Dkl, Delta Dkl: %d, %e, %e" % (nn,self.Dkl[-1],delta_Dkl))
+                    print("Converged! n_iters, Dkl, Delta Dkl: %d, %e, %e" % (nn,self.Dkl[-1],deltaDkl))
                 return
         # end function
 
@@ -395,21 +395,21 @@ class ApproxPosterior(object):
 
         Returns
         -------
-        theta_hat : array
+        thetaHat : array
             New points in parameter space shape: (m, n_dim)
         """
 
         raise NotImplementedError("dflemin3 broke this and needs to fix it!")
 
         # Containers for new points
-        theta_hat = list()
+        thetaHat = list()
 
         # If no input output pair is given, simulate m0 using the
         # forward model or use ones object already has:
         if theta is None or y is None:
             # If we don't have stored values, simulate new ones
             if self.theta is None or self.y is None:
-                theta = self.prior_sample(m0)
+                theta = self.priorSample(m0)
                 y = self._lnlike(theta, *args, **kwargs) + self._lnprior(theta)
             # Have stored values, use a copy
             else:
@@ -421,18 +421,18 @@ class ApproxPosterior(object):
             y = np.array(y)
 
         # Initialize a GP
-        gp = gp_utils.optimize_gp(gp, theta, y, seed=seed)
+        gp = gpUtils.optimizeGP(gp, theta, y, seed=seed)
 
         # Find m new points
         for ii in range(m):
-            theta_t = ut.minimize_objective(self.utility, y, gp,
-                                            sample_fn=self.prior_sample,
-                                            prior_fn=self._lnprior,
-                                            bounds=bounds, **kwargs)
+            thetaT = ut.minimizeObjective(self.utility, y, gp,
+                                          sample_fn=self.priorSample,
+                                          priorFn=self._lnprior,
+                                          bounds=bounds, **kwargs)
 
             # Save new values
-            theta_hat.append(theta_t)
+            thetaHat.append(thetaT)
 
         # Done! return new points
-        return np.array(theta_hat).squeeze()
+        return np.array(thetaHat).squeeze()
     # end function

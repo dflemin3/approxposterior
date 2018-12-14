@@ -13,7 +13,7 @@ from __future__ import (print_function, division, absolute_import,
                         unicode_literals)
 
 
-from approxposterior import bp, likelihood as lh
+from approxposterior import approx, likelihood as lh
 import numpy as np
 import george
 
@@ -33,12 +33,12 @@ def test_run():
     algorithm = "bape"                # Use the Kandasamy et al. (2015) formalism
 
     # Randomly sample initial conditions from the prior
-    theta = np.array(lh.rosenbrock_sample(m0))
+    theta = np.array(lh.rosenbrockSample(m0))
 
     # Evaluate forward model log likelihood + lnprior for each theta
     y = np.zeros(len(theta))
     for ii in range(len(theta)):
-        y[ii] = lh.rosenbrock_lnlike(theta[ii]) + lh.rosenbrock_lnprior(theta[ii])
+        y[ii] = lh.rosenbrockLnlike(theta[ii]) + lh.rosenbrockLnprior(theta[ii])
 
     ### Initialize GP ###
 
@@ -56,17 +56,17 @@ def test_run():
     gp.compute(theta)
 
     # Initialize object using the Wang & Li (2017) Rosenbrock function example
-    ap = bp.ApproxPosterior(theta=theta,
-                            y=y,
-                            gp=gp,
-                            lnprior=lh.rosenbrock_lnprior,
-                            lnlike=lh.rosenbrock_lnlike,
-                            prior_sample=lh.rosenbrock_sample,
-                            algorithm=algorithm)
+    ap = approx.ApproxPosterior(theta=theta,
+                                y=y,
+                                gp=gp,
+                                lnprior=lh.rosenbrockLnprior,
+                                lnlike=lh.rosenbrockLnlike,
+                                prior_sample=lh.rosenbrockSample,
+                                algorithm=algorithm)
 
     # Run!
     ap.run(m0=m0, m=m, M=M, nmax=nmax, Dmax=Dmax, kmax=kmax,
-           sampler=None, bounds=bounds, n_kl_samples=100000,
+           sampler=None, bounds=bounds, nKLSamples=100000,
            verbose=False)
 
     # Ensure medians of chains are consistent with the true values

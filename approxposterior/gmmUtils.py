@@ -9,14 +9,14 @@ from __future__ import (print_function, division, absolute_import,
                         unicode_literals)
 
 # Tell module what it's allowed to import
-__all__ = ["fit_gmm"]
+__all__ = ["fitGMM"]
 
 import numpy as np
 from sklearn.model_selection import GridSearchCV
 from sklearn.mixture import GaussianMixture
 
 
-def fit_gmm(sampler, iburn, max_comp=3, cov_type="full", use_bic=True):
+def fitGMM(sampler, iburn=0, max_comp=3, cov_type="full", use_bic=True):
     """
     Fit a Gaussian Mixture Model to the posterior samples to derive an
     approximation of the posterior density.  Fit for the number of components
@@ -27,8 +27,8 @@ def fit_gmm(sampler, iburn, max_comp=3, cov_type="full", use_bic=True):
     ----------
     sampler : emcee.EnsembleSampler
         sampler object containing the MCMC chains
-    iburn : int
-        number of burn-in steps to discard for fitting
+    iburn : int (optional)
+        number of burn-in steps to discard for fitting. Defaults to 0 (no burnin)
     max_comp : int (optional)
         Maximum number of mixture model components to fit for.  Defaults to 3.
     cov_type : str (optional)
@@ -48,8 +48,8 @@ def fit_gmm(sampler, iburn, max_comp=3, cov_type="full", use_bic=True):
     # Select optimal number of components via minimizing BIC
     if use_bic:
 
-        bic = []
-        lowest_bic = 1.0e10
+        bic = None
+        lowest_bic = np.inf
         best_gmm = None
         gmm = GaussianMixture()
 
@@ -57,10 +57,10 @@ def fit_gmm(sampler, iburn, max_comp=3, cov_type="full", use_bic=True):
           gmm.set_params(**{"n_components" : n_components,
                          "covariance_type" : cov_type})
           gmm.fit(sampler.flatchain[iburn:])
-          bic.append(gmm.bic(sampler.flatchain[iburn:]))
+          bic = gmm.bic(sampler.flatchain[iburn:])
 
-          if bic[-1] < lowest_bic:
-              lowest_bic = bic[-1]
+          if bic < lowest_bic:
+              lowest_bic = bic
               best_gmm = gmm
 
         # Refit GMM with the lowest bic

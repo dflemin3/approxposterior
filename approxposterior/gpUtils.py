@@ -9,7 +9,7 @@ from __future__ import (print_function, division, absolute_import,
                         unicode_literals)
 
 # Tell module what it's allowed to import
-__all__ = ["setup_gp","optimize_gp"]
+__all__ = ["setupGP","optimizeGP"]
 
 import numpy as np
 import george
@@ -72,7 +72,7 @@ def _grad_nll(p, gp, y):
 # end function
 
 
-def optimize_gp(gp, theta, y, seed=None, n_restarts=5):
+def optimizeGp(gp, theta, y, seed=None, n_restarts=5):
     """
     TODO: implement n_restarts
 
@@ -131,7 +131,7 @@ def optimize_gp(gp, theta, y, seed=None, n_restarts=5):
     return gp
 # end function
 
-def setup_gp(theta, y, gp):
+def setupGP(theta, y, gp):
     """
     Initialize a george GP object.  Utility function for creating a new GP when
     the data its conditioned on changes sizes, i.e. when a new point is added

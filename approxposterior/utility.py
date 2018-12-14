@@ -9,8 +9,8 @@ from __future__ import (print_function, division, absolute_import,
                         unicode_literals)
 
 # Tell module what it's allowed to import
-__all__ = ["logsubexp","AGP_utility","BAPE_utility","minimize_objective",
-           "function_wrapper","kl_numerical"]
+__all__ = ["logsubexp","AGPUtility","BAPEUtility","minimizeObjective",
+           "functionWrapper","klNumerical"]
 
 import numpy as np
 from scipy.optimize import minimize
@@ -23,7 +23,7 @@ from scipy.optimize import minimize
 ################################################################################
 
 
-class function_wrapper(object):
+class functionWrapper(object):
     """
     Wrapper class for functions.
     """
@@ -57,7 +57,7 @@ class function_wrapper(object):
 ################################################################################
 
 
-def kl_numerical(x, p, q):
+def klNumerical(x, p, q):
     """
     Estimate the KL-Divergence between pdfs p and q via Monte Carlo intergration
     using x, samples from p.
@@ -129,7 +129,7 @@ def logsubexp(x1, x2):
 ################################################################################
 
 
-def AGP_utility(theta, y, gp):
+def AGPUtility(theta, y, gp):
     """
     AGP (Adaptive Gaussian Process) utility function, the entropy of the
     posterior distribution. This is what you maximize to find the next x under
@@ -168,7 +168,7 @@ def AGP_utility(theta, y, gp):
 # end function
 
 
-def BAPE_utility(theta, y, gp):
+def BAPEUtility(theta, y, gp):
     """
     BAPE (Bayesian Active Posterior Estimation) utility function.  This is what
     you maximize to find the next theta under the BAPE formalism.  Note here we
@@ -208,7 +208,7 @@ def BAPE_utility(theta, y, gp):
 # end function
 
 
-def minimize_objective(fn, y, gp, sample_fn, prior_fn, bounds=None, **kw):
+def minimizeObjective(fn, y, gp, sample_fn, prior_fn, bounds=None, **kw):
     """
     Find point that minimizes fn for a gaussian process gp conditioned on y,
     the data.
