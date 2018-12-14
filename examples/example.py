@@ -33,10 +33,9 @@ algorithm = "bape"                # Use the Kandasamy et al. (2015) formalism
 theta = np.array(lh.rosenbrock_sample(m0))
 
 # Evaluate forward model log likelihood + lnprior for each theta
-y = list()
+y = np.zeros(len(theta))
 for ii in range(len(theta)):
-    y.append(lh.rosenbrock_lnlike(theta[ii]) + lh.rosenbrock_lnprior(theta[ii]))
-y = np.array(y)
+    y[ii] = lh.rosenbrock_lnlike(theta[ii]) + lh.rosenbrock_lnprior(theta[ii])
 
 ### Initialize GP ###
 
