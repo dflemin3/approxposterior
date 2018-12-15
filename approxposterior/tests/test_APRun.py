@@ -22,6 +22,8 @@ def test_run():
     Test the core approxposterior algorithm for 2 iterations.
     """
 
+    np.random.seed(42)
+
     # Define algorithm parameters
     m0 = 200                          # Initial size of training set
     m = 20                            # Number of new points to find each iteration
@@ -72,12 +74,17 @@ def test_run():
     # Ensure medians of chains are consistent with the true values
     x1Med, x2Med = np.median(ap.samplers[-1].flatchain[ap.iburns[-1]:], axis=0)
 
+    print(x1Med, x2Med)
     diffX1 = np.fabs(0.04 - x1Med)
     diffX2 = np.fabs(1.29 - x2Med)
 
-    # Differences between estimated and true medians must be less than
-    # the true error bars
+    # Differences between estimated and true medians must be close-ish, but not
+    # perfect because we've using a small number of samples to make this test
+    # quick enough
     errMsg = "Medians of marginal posteriors are incosistent with true values."
-    assert((diffX1 < 1.5) & (diffX2 < 1.3)), errMsg
+    assert((diffX1 < 0.5) & (diffX2 < 0.5)), errMsg
 
 # end function
+
+if __name__ == "__main__":
+    test_run()
