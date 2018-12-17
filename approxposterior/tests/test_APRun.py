@@ -9,10 +9,6 @@ Test loading approxposterior and running the core algorithm for 1 iteration.
 
 """
 
-from __future__ import (print_function, division, absolute_import,
-                        unicode_literals)
-
-
 from approxposterior import approx, likelihood as lh
 import numpy as np
 import george
@@ -28,11 +24,13 @@ def test_run():
     m0 = 200                          # Initial size of training set
     m = 20                            # Number of new points to find each iteration
     nmax = 1                          # Maximum number of iterations
-    M = int(5.0e3)                    # Number of MCMC steps to estimate approximate posterior
     Dmax = 0.1                        # KL-Divergence convergence limit
     kmax = 5                          # Number of iterations for Dmax convergence to kick in
     bounds = ((-5,5), (-5,5))         # Prior bounds
     algorithm = "bape"                # Use the Kandasamy et al. (2015) formalism
+    # emcee MCMC parameters
+    mcmcKwargs = {"iterations" : int(5.0e3)} # Number of MCMC steps to estimate approximate posterior
+    samplerKwargs = {"nwalkers" : 20}        # emcee.EnsembleSampler parameters
 
     # Randomly sample initial conditions from the prior
     theta = np.array(lh.rosenbrockSample(m0))
@@ -67,8 +65,8 @@ def test_run():
                                 algorithm=algorithm)
 
     # Run!
-    ap.run(m0=m0, m=m, M=M, nmax=nmax, Dmax=Dmax, kmax=kmax,
-           sampler=None, bounds=bounds, nKLSamples=100000,
+    ap.run(m0=m0, m=m, nmax=nmax, Dmax=Dmax, kmax=kmax, bounds=bounds,
+           nKLSamples=100000, mcmcKwargs=mcmcKwargs, samplerKwargs=samplerKwargs,
            verbose=False)
 
     # Ensure medians of chains are consistent with the true values

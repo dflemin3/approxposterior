@@ -5,9 +5,6 @@ Gaussian process utility functions.
 
 """
 
-from __future__ import (print_function, division, absolute_import,
-                        unicode_literals)
-
 # Tell module what it's allowed to import
 __all__ = ["setupGP","optimizeGP"]
 

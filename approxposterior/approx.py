@@ -9,9 +9,6 @@ use this, cite them!
 
 """
 
-from __future__ import (print_function, division, absolute_import,
-                        unicode_literals)
-
 # Tell module what it's allowed to import
 __all__ = ["ApproxPosterior"]
 
@@ -63,6 +60,7 @@ class ApproxPosterior(object):
         None
         """
 
+        # Need to supply the training set
         if theta is None or y is None:
             raise ValueError("ERROR: must supply both theta and y")
 
@@ -120,15 +118,15 @@ class ApproxPosterior(object):
         if not np.isfinite(thetaTest).any():
             return -np.inf
 
+        # Reject point if prior forbids it
+        if not np.isfinite(self._lnprior(thetaTest.reshape(-1,))):
+            return -np.inf
+
         # Mean of predictive distribution conditioned on y (GP posterior estimate)
         try:
             mu = self.gp.predict(self.y, thetaTest, return_cov=False,
                                  return_var=False)
         except ValueError:
-            return -np.inf
-
-        # Reject point if prior forbids it
-        if not np.isfinite(self._lnprior(thetaTest.reshape(-1,))):
             return -np.inf
 
         # Catch NaNs/Infs because they can (rarely) happen
@@ -139,10 +137,10 @@ class ApproxPosterior(object):
     # end function
 
 
-    def run(self, m0=20, m=10, M=10000, nmax=2, Dmax=0.01,
-            kmax=5, sampler=None, p0=None, seed=None, timing=False,
-            bounds=None, nKLSamples=100000, verbose=True,
-            args=None, maxComp=3, **kwargs):
+    def run(self, m0=20, m=10, nmax=2, Dmax=0.01, kmax=5, seed=None,
+            timing=False, bounds=None, nKLSamples=100000, verbose=True,
+            args=None, maxComp=3, mcmcKwargs=None, samplerKwargs=None,
+            **kwargs):
         """
         Core algorithm to estimate the posterior distribution via Gaussian
         Process regression to the joint distribution for the forward model
@@ -154,9 +152,6 @@ class ApproxPosterior(object):
             Initial number of design points.  Defaults to 20.
         m : int (optional)
             Number of new input features to find each iteration.  Defaults to 10.
-        M : int (optional)
-            Number of MCMC steps to sample GP to estimate the approximate posterior.
-            Defaults to 10^4.
         nmax : int (optional)
             Maximum number of iterations.  Defaults to 2 for testing.
         Dmax : float (optional)
@@ -165,11 +160,6 @@ class ApproxPosterior(object):
             Maximum number of iterators such that if the change in KL divergence is
             less than Dmax for kmax iterators, the algorithm is considered
             converged and terminates.  Defaults to 5.
-        sample : emcee.EnsembleSampler (optional)
-            emcee sampler object.  Defaults to None and is initialized internally.
-        p0 : array (optional)
-            Initial guess for MCMC walkers.  Defaults to None and creates guess
-            from priors.
         seed : int (optional)
             RNG seed.  Defaults to None.
         timing : bool (optional)
@@ -188,6 +178,26 @@ class ApproxPosterior(object):
         maxComp : int (optional)
             Maximum number of mixture model components to fit for when fitting a
             GMM model to approximate the posterior distribution.  Defaults to 3.
+        samplerKwargs : dict (optional)
+            Parameters for emcee.EnsembleSampler object
+            If None, defaults to the following:
+                nwalkers : int (optional)
+                    Number of emcee walkers.  Defaults to 10 * dim
+        mcmcKwargs : dict (optional)
+            Parameters for emcee.EnsembleSampler.sample/.run_mcmc methods. If
+            None, defaults to the following required parameters:
+                iterations : int (optional)
+                    Number of MCMC steps.  Defaults to 10,000
+                initial_state : array/emcee.State (optional)
+                    Initial guess for MCMC walkers.  Defaults to None and
+                    creates guess from priors.
+        args : iterable (optional)
+            Arguments for user-specified loglikelihood function that calls the
+            forward model.
+        kwargs : dict (optional)
+            Keyword arguments for user-specified loglikelihood function that
+            calls the forward model.
+
 
         Returns
         -------
@@ -205,7 +215,12 @@ class ApproxPosterior(object):
             self.gmmTime = list()
             self.klTime = list()
 
-        # Optimize gaussian process
+        # Initialize, validate emcee.EnsembleSampler and run_mcmc parameters
+        samplerKwargs["ndim"] = self.theta.shape[-1]
+        samplerKwargs = mcmcUtils.validateSamplerKwargs(samplerKwargs, self)
+        mcmcKwargs = mcmcUtils.validateMCMCKwargs(mcmcKwargs)
+
+        # Inital optimization of gaussian process
         self.gp = gpUtils.optimizeGP(self.gp, self.theta, self.y, seed=seed)
 
         # Main loop
@@ -215,8 +230,8 @@ class ApproxPosterior(object):
                 print("Iteration: %d" % nn)
 
             # 1) Find m new points by maximizing utility function, one at a time
-            # Not we call a minimizer because minimizing negative of utility
-            # function is the same as maximizing it
+            # Note that we call a minimizer because minimizing negative of
+            # utility function is the same as maximizing it
             if timing:
                 start = time.time()
             for ii in range(m):
@@ -225,13 +240,14 @@ class ApproxPosterior(object):
                                               priorFn=self._lnprior,
                                               bounds=bounds, **kwargs)
 
+                # I'm very particular about my shapes
                 thetaT = np.array(thetaT).reshape(-1,)
 
                 # 2) Query forward model at new point, thetaT
+                ### TODO: try multiprocessing here for lnlike to speed it up?
                 yT = np.array([self._lnlike(thetaT, *args, **kwargs) + self._lnprior(thetaT)])
 
-                # If yT isn't finite, you're likelihood function is messed up
-                # XXX warning or log, then draw again
+                # If yT isn't finite, your likelihood function is messed up
                 errMsg = "ERROR: Non-finite likelihood, forward model probably returning NaNs. yT: %e" % yT
                 assert np.isfinite(yT), errMsg
 
@@ -255,21 +271,12 @@ class ApproxPosterior(object):
             if timing:
                 start = time.time()
 
-            # Initialize emcee sampler if None provided
-            #if sampler is None:
-            ndim = self.theta.shape[-1]
-            nwalk = 10 * ndim
-            nsteps = M
-
-            # Create sampler using GP ll function as forward model surrogate
-            sampler = emcee.EnsembleSampler(nwalk, ndim, self._gpll, args=args, **kwargs)
-
-            # Provide initial guess (random over prior) if None provided
-            if p0 is None:
-                p0 = [self.priorSample(1) for j in range(nwalk)]
+            # Create sampler using GP lnlike function as forward model surrogate
+            sampler = emcee.EnsembleSampler(**samplerKwargs, args=args,
+                                            kwargs=kwargs)
 
             # Run MCMC!
-            for ii, result in enumerate(sampler.sample(p0, iterations=nsteps)):
+            for ii, result in enumerate(sampler.sample(**mcmcKwargs)):
                 if verbose:
                     print("%d/%d" % (ii+1, nsteps))
             if verbose:
@@ -279,7 +286,9 @@ class ApproxPosterior(object):
             self.samplers.append(sampler)
 
             # Estimate burn-in, save it
-            iburn = mcmcUtils.estimateBurnin(sampler, nwalk, nsteps, ndim)
+            iburn = mcmcUtils.estimateBurnin(sampler, mcmcKwargs["nwalkers"],
+                                             mcmcKwargs["iterations"],
+                                             mcmcKwargs["dim"])
             if verbose:
                 print("burnin estimate: %d" % iburn)
             self.iburns.append(iburn)

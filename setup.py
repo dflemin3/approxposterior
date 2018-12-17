@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from __future__ import (absolute_import, division, print_function,
-                            unicode_literals)
 import warnings
 import os
 import io
@@ -52,7 +50,6 @@ setup(name = 'approxposterior',
                       'Development Status :: 3 - Alpha',
                       'License :: OSI Approved :: MIT License',
                       'Programming Language :: Python',
-                      'Programming Language :: Python :: 2.7',
                       'Programming Language :: Python :: 3.5',
                       'Programming Language :: Python :: 3.6',
                       'Topic :: Scientific/Engineering :: Astronomy',
@@ -62,16 +59,14 @@ setup(name = 'approxposterior',
       author_email = 'dflemin3@uw.edu',
       license = 'MIT',
       packages = ['approxposterior'],
-      install_requires = [
-                          'numpy',
+      install_requires = ['numpy',
                           'matplotlib >= 2.0.0',
                           'scipy',
                           'george',
-                          'emcee',
+                          'emcee >= 3.0.0',
                           'corner',
                           'sklearn',
                           'pybind11',
-                          'pytest'
-                          ],
+                          'pytest'],
       include_package_data = True,
       zip_safe = False)

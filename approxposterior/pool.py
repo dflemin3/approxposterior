@@ -15,8 +15,6 @@ An implementation of three different types of pools:
     Original Authors: Rodrigo Luger & Dan Forman-Mackey
 """
 
-from __future__ import (division, print_function, absolute_import,
-                        unicode_literals)
 import sys
 try:
     from mpi4py import MPI
