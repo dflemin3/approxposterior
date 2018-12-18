@@ -18,16 +18,18 @@ import george
 
 
 # Define algorithm parameters
-m0 = 200                          # Initial size of training set
+m0 = 50                           # Initial size of training set
 m = 20                            # Number of new points to find each iteration
 nmax = 2                          # Maximum number of iterations
-M = int(5.0e3)                    # Number of MCMC steps to estimate approximate posterior
 Dmax = 0.1                        # KL-Divergence convergence limit
 kmax = 5                          # Number of iterations for Dmax convergence to kick in
+nKLSamples = 100000               # Number of samples from posterior to use to calculate KL-Divergence
 bounds = ((-5,5), (-5,5))         # Prior bounds
 algorithm = "bape"                # Use the Kandasamy et al. (2015) formalism
 
-### Create a training set (if you don't already have one!) ###
+# emcee MCMC parameters
+samplerKwargs = {"nwalkers" : 20}        # emcee.EnsembleSampler parameters
+mcmcKwargs = {"iterations" : int(2.0e4)} # emcee.EnsembleSampler.run_mcmc parameters
 
 # Randomly sample initial conditions from the prior
 theta = np.array(lh.rosenbrockSample(m0))
@@ -39,16 +41,18 @@ for ii in range(len(theta)):
 
 ### Initialize GP ###
 
-# Guess initial metric
-initial_metric = np.nanmedian(theta**2, axis=0)/10.0
+# Guess initial metric, or scale length of the covariances in loglikelihood space
+initialMetric = np.nanmedian(theta**2, axis=0)/10.0
 
-# Create kernel
-kernel = george.kernels.ExpSquaredKernel(initial_metric, ndim=2)
+# Create kernel: We'll model coverianges in loglikelihood space using a
+# Squared Expoential Kernel as we anticipate Gaussian-ish posterior
+# distributions in our 2-dimensional parameter space
+kernel = george.kernels.ExpSquaredKernel(initialMetric, ndim=2)
 
 # Guess initial mean function
 mean = np.nanmedian(y)
 
-# Create GP
+# Create GP and compute the kernel
 gp = george.GP(kernel=kernel, fit_mean=True, mean=mean)
 gp.compute(theta)
 
@@ -62,9 +66,9 @@ ap = approx.ApproxPosterior(theta=theta,
                             algorithm=algorithm)
 
 # Run!
-ap.run(m0=m0, m=m, M=M, nmax=nmax, Dmax=Dmax, kmax=kmax,
-       sampler=None, bounds=bounds, nKLSamples=100000,
-       verbose=True)
+ap.run(m0=m0, m=m, nmax=nmax, Dmax=Dmax, kmax=kmax, bounds=bounds,
+       estBurnin=True, nKLSamples=nKLSamples, mcmcKwargs=mcmcKwargs,
+       samplerKwargs=samplerKwargs, verbose=True)
 
 # Check out the final posterior distribution!
 import corner

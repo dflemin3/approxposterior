@@ -6,25 +6,23 @@ MCMC utility functions.
 """
 
 # Tell module what it's allowed to import
-__all__ = ["validateSamplerKwargs", "validateMCMCKwargs", "autocorr",
-           "estimateBurnin"]
+__all__ = ["validateMCMCKwargs", "autocorr", "estimateBurnin"]
 
 import numpy as np
 import emcee
 import warnings
 from scipy.interpolate import UnivariateSpline
 
-# Figure out emcee version number so approxposterior can handle it accordingly
+import emcee
 version = emcee.__version__
-if int(version.split(".")[0]) > 2
+if int(version.split(".")[0]) > 2:
     version = 3
 else:
     version = 2
-if version < 3:
-    raise RuntimeError("approxposterior is only compatible with emcee versions >= 3")
+assert version > 2, "approxposterior is only compatible with emcee versions >= 3"
 
 
-def validateSamplerKwargs(samplerKwargs, ap):
+def validateMCMCKwargs(samplerKwargs, mcmcKwargs, ap, verbose=False):
     """
     Validates emcee.EnsembleSampler parameters/kwargs
 
@@ -33,15 +31,23 @@ def validateSamplerKwargs(samplerKwargs, ap):
     samplerKwargs : dict
         dictionary containing parameters intended for emcee.EnsembleSampler
         object
+    mcmcKwargs : dict
+        dictionary containing parameters intended for
+        emcee.EnsembleSampler.run_mcmc/.sample object
     ap : approxposterior.ApproxPosterior
+    verbose : bool (optional)
+        verboisty level. Defaults to False (no output)
     Returns
     -------
     samplerKwargs : dict
         Sanitized dictionary containing parameters intended for
         emcee.EnsembleSampler object
+    mcmcKwargs : dict
+        Sanitized dictionary containing parameters intended for
+        emcee.EnsembleSampler.run_mcmc/.sample object
     """
 
-    # Required default parameters if None are provided
+    # First validate kwargs for emcee.EnsembleSampler object
     if samplerKwargs is None:
         samplerKwargs = dict()
 
@@ -55,38 +61,24 @@ def validateSamplerKwargs(samplerKwargs, ap):
             print("Defaulting to nwalkers = 10 * dim")
             samplerKwargs["nwalkers"] = 10 * samplerKwargs["ndim"]
 
-    # Handle case when user supplies own loglikelihood function
-    if "log_prob_fn" in samplerKwargs.keys():
-        if verbose:
-            print("WARNING: log_prob_fn in samplerKwargs. approxposterior only uses the GP surrogate model for the lnlikelihood!")
-            print("Disregarding log_prob_fn...")
+        # Handle case when user supplies own loglikelihood function
+        if "log_prob_fn" in samplerKwargs.keys():
+            if verbose:
+                print("WARNING: log_prob_fn in samplerKwargs. approxposterior only uses the GP surrogate model for the lnlikelihood!")
+                print("Disregarding log_prob_fn...")
+
+            # Remove any other log_prob_fn
             samplerKwargs.pop("log_prob_fn", None)
-            samplerKwargs["log_prob_fn"] = ap._gpll
 
-    return samplerKwargs
-# end function
+        # Properly initialize log_prob_fn to be GP loglikelihood estimate
+        samplerKwargs["log_prob_fn"] = ap._gpll
 
-
-def validateMCMCKwargs(mcmcKwargs):
-    """
-    Validates emcee.EnsembleSampler.sample/.run_mcmc parameters/kwargs
-
-    Parameters
-    ----------
-    MCMC : dict
-        dictionary containing parameters intended for
-        emcee.EnsembleSampler.run_mcmc/.sample object
-    Returns
-    -------
-    samplerKwargs : dict
-        Sanitized dictionary containing parameters intended for
-        emcee.EnsembleSampler.run_mcmc/.sample object
-    """
-
+    # Validate mcmcKwargs dict used in sampling posterior distribution
+    # e.g. emcee.EnsembleSampler.run_mcmc method
     if mcmcKwargs is None:
         mcmcKwargs = dict()
         mcmcKwargs["iterations"] = 10000
-        mcmcKwargs["initial_state"] = emcee.State([self.priorSample(1) for j in range(mcmcKwargs["nwalkers"])])
+        mcmcKwargs["initial_state"] = emcee.State([ap.priorSample(1) for j in range(samplerKwargs["nwalkers"])])
     else:
         try:
             nsteps = mcmcKwargs["iterations"]
@@ -98,13 +90,14 @@ def validateMCMCKwargs(mcmcKwargs):
         try:
             p0 = mcmcKwargs["initial_state"]
         except KeyError:
-            mcmcKwargs["initial_state"] = emcee.State([self.priorSample(1) for j in range(mcmcKwargs["nwalkers"])])
+            mcmcKwargs["initial_state"] = emcee.State([ap.priorSample(1) for j in range(samplerKwargs["nwalkers"])])
             if verbose:
                 print("WARNING: mcmcKwargs provided, but p0 not in mcmcKwargs.")
-                print("Defaulting to nwalkers samples from priorSample.")
+                print("Defaulting to nwalkers initial states from priorSample.")
 
-    return mcmcKwargs
+    return samplerKwargs, mcmcKwargs
 # end function
+
 
 
 def autocorr(x):

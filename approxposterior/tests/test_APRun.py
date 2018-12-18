@@ -18,6 +18,7 @@ def test_run():
     Test the core approxposterior algorithm for 2 iterations.
     """
 
+    # For reproducibility
     np.random.seed(42)
 
     # Define algorithm parameters
@@ -29,7 +30,7 @@ def test_run():
     bounds = ((-5,5), (-5,5))         # Prior bounds
     algorithm = "bape"                # Use the Kandasamy et al. (2015) formalism
     # emcee MCMC parameters
-    mcmcKwargs = {"iterations" : int(5.0e3)} # Number of MCMC steps to estimate approximate posterior
+    mcmcKwargs = {"iterations" : int(5.0e3)} # Number of MCMC steps
     samplerKwargs = {"nwalkers" : 20}        # emcee.EnsembleSampler parameters
 
     # Randomly sample initial conditions from the prior

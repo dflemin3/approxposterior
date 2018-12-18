@@ -140,7 +140,7 @@ class ApproxPosterior(object):
     def run(self, m0=20, m=10, nmax=2, Dmax=0.01, kmax=5, seed=None,
             timing=False, bounds=None, nKLSamples=100000, verbose=True,
             args=None, maxComp=3, mcmcKwargs=None, samplerKwargs=None,
-            **kwargs):
+            estBurnin=False, **kwargs):
         """
         Core algorithm to estimate the posterior distribution via Gaussian
         Process regression to the joint distribution for the forward model
@@ -194,6 +194,11 @@ class ApproxPosterior(object):
         args : iterable (optional)
             Arguments for user-specified loglikelihood function that calls the
             forward model.
+        estBurnin : bool (optional)
+            Estimate burn-in time using integrated autocorrelation time
+            heuristic.  Defaults to False as in general, we recommend users
+            inspect the chains and calculate the burnin after the fact to ensure
+            convergence.
         kwargs : dict (optional)
             Keyword arguments for user-specified loglikelihood function that
             calls the forward model.
@@ -217,8 +222,10 @@ class ApproxPosterior(object):
 
         # Initialize, validate emcee.EnsembleSampler and run_mcmc parameters
         samplerKwargs["ndim"] = self.theta.shape[-1]
-        samplerKwargs = mcmcUtils.validateSamplerKwargs(samplerKwargs, self)
-        mcmcKwargs = mcmcUtils.validateMCMCKwargs(mcmcKwargs)
+        samplerKwargs, mcmcKwargs = mcmcUtils.validateMCMCKwargs(samplerKwargs,
+                                                                 mcmcKwargs,
+                                                                 self,
+                                                                 verbose)
 
         # Inital optimization of gaussian process
         self.gp = gpUtils.optimizeGP(self.gp, self.theta, self.y, seed=seed)
@@ -278,7 +285,7 @@ class ApproxPosterior(object):
             # Run MCMC!
             for ii, result in enumerate(sampler.sample(**mcmcKwargs)):
                 if verbose:
-                    print("%d/%d" % (ii+1, nsteps))
+                    print("%d/%d" % (ii+1, mcmcKwargs["iterations"]))
             if verbose:
                 print("emcee finished!")
 
@@ -286,9 +293,14 @@ class ApproxPosterior(object):
             self.samplers.append(sampler)
 
             # Estimate burn-in, save it
-            iburn = mcmcUtils.estimateBurnin(sampler, mcmcKwargs["nwalkers"],
-                                             mcmcKwargs["iterations"],
-                                             mcmcKwargs["dim"])
+            if estBurnin:
+                # Note we set tol=0 so it always provides an estimate, even if
+                # the estimate isn't good
+                iburn = int(2.0*np.max(sampler.get_autocorr_time(tol=0)))
+            # Don't estimate burnin, keep all chains
+            else:
+                iburn = 0
+
             if verbose:
                 print("burnin estimate: %d" % iburn)
             self.iburns.append(iburn)
@@ -300,7 +312,7 @@ class ApproxPosterior(object):
                 start = time.time()
 
             # Approximate posterior distribution using a Gaussian Mixure model
-            GMM = gmmUtils.fitGMM(sampler.flatchain, iburn, maxComp=maxComp,
+            GMM = gmmUtils.fitGMM(sampler.flatchain[iburn:], maxComp=maxComp,
                                   covType="full", useBic=True)
 
             if verbose:

@@ -45,7 +45,7 @@ def testGMMFit():
     np.random.shuffle(data)
 
     # Fit!
-    gmm = gmmUtils.fitGMM(data, iburn=0, maxComp=10, covType="full")
+    gmm = gmmUtils.fitGMM(data, maxComp=10, covType="full")
 
     # Did it infer 2 components for data generated from two disjoint dists?
     errMsg = "ERROR: fitGMM did not infer 2 components! n_components = %d" % gmm.n_components
