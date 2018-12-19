@@ -252,7 +252,15 @@ class ApproxPosterior(object):
 
                 # 2) Query forward model at new point, thetaT
                 ### TODO: try multiprocessing here for lnlike to speed it up?
-                yT = np.array([self._lnlike(thetaT, *args, **kwargs) + self._lnprior(thetaT)])
+
+                # Evaluate forward model via loglikelihood function
+                loglikeT = self._lnlike(thetaT, *args, **kwargs)
+
+                # If loglike function returns loglike, blobs, ..., only use loglike
+                if hasattr(loglikeT, "__iter__"):
+                    yT = np.array([loglikeT[0] + self._lnprior(thetaT)])
+                else:
+                    yT = np.array([loglikeT + self._lnprior(thetaT)])
 
                 # If yT isn't finite, your likelihood function is messed up
                 errMsg = "ERROR: Non-finite likelihood, forward model probably returning NaNs. yT: %e" % yT
