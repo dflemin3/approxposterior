@@ -15,11 +15,7 @@ from scipy.interpolate import UnivariateSpline
 
 import emcee
 version = emcee.__version__
-if int(version.split(".")[0]) > 2:
-    version = 3
-else:
-    version = 2
-assert version > 2, "approxposterior is only compatible with emcee versions >= 3"
+assert int(version.split(".")[0]) > 2, "approxposterior is only compatible with emcee versions >= 3"
 
 
 def validateMCMCKwargs(samplerKwargs, mcmcKwargs, ap, verbose=False):
