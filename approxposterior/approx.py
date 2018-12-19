@@ -295,7 +295,8 @@ class ApproxPosterior(object):
             # Estimate burn-in, save it
             if estBurnin:
                 # Note we set tol=0 so it always provides an estimate, even if
-                # the estimate isn't good
+                # the estimate isn't good.  If estimate isn't good, run longer
+                # chains!
                 iburn = int(2.0*np.max(sampler.get_autocorr_time(tol=0)))
             # Don't estimate burnin, keep all chains
             else:
