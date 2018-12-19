@@ -239,7 +239,8 @@ def minimizeObjective(fn, y, gp, sampleFn, priorFn, bounds=None, **kw):
     while not is_finite:
         # Solve for theta that maximize fn and is allowed by prior
 
-        # Choose theta0 by uniformly sampling over parameter space
+        # Choose theta0 by uniformly sampling over parameter space and reshape
+        # theta0 for the gp
         theta0 = sampleFn(1).reshape(1,-1)
 
         args=(y, gp)
@@ -263,5 +264,5 @@ def minimizeObjective(fn, y, gp, sampleFn, priorFn, bounds=None, **kw):
                 is_finite = True
     # end while
 
-    return np.array(theta).reshape(1,-1)
+    return theta
 # end function

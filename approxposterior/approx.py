@@ -247,9 +247,6 @@ class ApproxPosterior(object):
                                               priorFn=self._lnprior,
                                               bounds=bounds, **kwargs)
 
-                # I'm very particular about my shapes
-                thetaT = np.array(thetaT).reshape(-1,)
-
                 # 2) Query forward model at new point, thetaT
                 ### TODO: try multiprocessing here for lnlike to speed it up?
 
@@ -267,8 +264,8 @@ class ApproxPosterior(object):
                 assert np.isfinite(yT), errMsg
 
                 # Join theta, y arrays with new points
-                self.theta = np.concatenate([self.theta, thetaT.reshape(1,-1)])
-                self.y = np.concatenate([self.y, yT])
+                self.theta = np.vstack([self.theta, np.array(thetaT)])
+                self.y = np.hstack([self.y, yT])
 
                 # 3) Re-optimize GP with new point, optimize
 
@@ -285,6 +282,8 @@ class ApproxPosterior(object):
 
             if timing:
                 start = time.time()
+
+            print(self.y.shape, self.theta.shape)
 
             # Create sampler using GP lnlike function as forward model surrogate
             sampler = emcee.EnsembleSampler(**samplerKwargs, args=args,

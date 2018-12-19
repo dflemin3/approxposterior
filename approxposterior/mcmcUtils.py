@@ -74,7 +74,7 @@ def validateMCMCKwargs(samplerKwargs, mcmcKwargs, ap, verbose=False):
     if mcmcKwargs is None:
         mcmcKwargs = dict()
         mcmcKwargs["iterations"] = 10000
-        mcmcKwargs["initial_state"] = emcee.State([ap.priorSample(1) for j in range(samplerKwargs["nwalkers"])])
+        mcmcKwargs["initial_state"] = emcee.State(np.asarray([ap.priorSample(1) for j in range(samplerKwargs["nwalkers"])]))
     else:
         try:
             nsteps = mcmcKwargs["iterations"]
@@ -86,10 +86,12 @@ def validateMCMCKwargs(samplerKwargs, mcmcKwargs, ap, verbose=False):
         try:
             p0 = mcmcKwargs["initial_state"]
         except KeyError:
-            mcmcKwargs["initial_state"] = emcee.State([ap.priorSample(1) for j in range(samplerKwargs["nwalkers"])])
+            mcmcKwargs["initial_state"] = emcee.State(np.asarray([ap.priorSample(1) for j in range(samplerKwargs["nwalkers"])]))
             if verbose:
                 print("WARNING: mcmcKwargs provided, but p0 not in mcmcKwargs.")
                 print("Defaulting to nwalkers initial states from priorSample.")
+
+    print(np.shape(mcmcKwargs["initial_state"].coords))
 
     return samplerKwargs, mcmcKwargs
 # end function
