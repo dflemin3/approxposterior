@@ -208,7 +208,9 @@ def BAPEUtility(theta, y, gp):
 def minimizeObjective(fn, y, gp, sampleFn, priorFn, bounds=None, **kw):
     """
     Find point that minimizes fn for a gaussian process gp conditioned on y,
-    the data.
+    the data and is allowed by the prior, priorFn.  PriorFn is required as it
+    helps to select against points with non-finite likelihoods, e.g. NaNs or
+    infs.  This is required as the GP can only train on finite values.
 
     Parameters
     ----------
