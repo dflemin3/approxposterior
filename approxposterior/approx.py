@@ -111,20 +111,20 @@ class ApproxPosterior(object):
             Mean of predicted GP conditional posterior estimate at theta
         """
 
-        # Make sure it's the right shape
-        thetaTest = np.array(theta).reshape(1,-1)
-
         # Sometimes the input values can be crazy and the GP will blow up
-        if not np.isfinite(thetaTest).any():
+        if not np.isfinite(theta).any():
             return -np.inf
 
         # Reject point if prior forbids it
-        if not np.isfinite(self._lnprior(thetaTest.reshape(-1,))):
+        if not np.isfinite(self._lnprior(theta)):
             return -np.inf
 
         # Mean of predictive distribution conditioned on y (GP posterior estimate)
+        # and make sure theta is the right shape for the GP
         try:
-            mu = self.gp.predict(self.y, thetaTest, return_cov=False,
+            mu = self.gp.predict(self.y,
+                                 np.array(theta).reshape(1,-1),
+                                 return_cov=False,
                                  return_var=False)
         except ValueError:
             return -np.inf
