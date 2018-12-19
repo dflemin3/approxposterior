@@ -209,6 +209,10 @@ class ApproxPosterior(object):
         None
         """
 
+        # Set RNG seed?
+        if seed is not None:
+            np.random.seed(seed)
+
         # Make args empty list if not supplied
         if args is None:
             args = list()
@@ -272,7 +276,7 @@ class ApproxPosterior(object):
                 # Re-initialize, optimize GP since self.theta's shape changed
                 self.gp = gpUtils.setupGP(self.theta, self.y, self.gp)
                 self.gp = gpUtils.optimizeGP(self.gp, self.theta, self.y,
-                                               seed=seed)
+                                             seed=seed)
 
             if timing:
                 self.trainingTime.append(time.time() - start)

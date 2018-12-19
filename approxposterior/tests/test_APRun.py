@@ -18,9 +18,6 @@ def test_run():
     Test the core approxposterior algorithm for 2 iterations.
     """
 
-    # For reproducibility
-    np.random.seed(42)
-
     # Define algorithm parameters
     m0 = 200                          # Initial size of training set
     m = 20                            # Number of new points to find each iteration
@@ -29,6 +26,9 @@ def test_run():
     kmax = 5                          # Number of iterations for Dmax convergence to kick in
     bounds = ((-5,5), (-5,5))         # Prior bounds
     algorithm = "bape"                # Use the Kandasamy et al. (2015) formalism
+    seed = 42                         # For reproducibility
+    np.random.seed(seed)
+
     # emcee MCMC parameters
     mcmcKwargs = {"iterations" : int(5.0e3)} # Number of MCMC steps
     samplerKwargs = {"nwalkers" : 20}        # emcee.EnsembleSampler parameters
@@ -68,7 +68,7 @@ def test_run():
     # Run!
     ap.run(m0=m0, m=m, nmax=nmax, Dmax=Dmax, kmax=kmax, bounds=bounds,
            nKLSamples=100000, mcmcKwargs=mcmcKwargs, samplerKwargs=samplerKwargs,
-           verbose=False)
+           verbose=False, seed=seed)
 
     # Ensure medians of chains are consistent with the true values
     x1Med, x2Med = np.median(ap.samplers[-1].flatchain[ap.iburns[-1]:], axis=0)
