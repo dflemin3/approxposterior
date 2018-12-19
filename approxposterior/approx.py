@@ -257,15 +257,15 @@ class ApproxPosterior(object):
                 # Evaluate forward model via loglikelihood function
                 loglikeT = self._lnlike(thetaT, *args, **kwargs)
 
+                # If loglikeT isn't finite, your likelihood function is messed up
+                errMsg = "ERROR: Non-finite likelihood, forward model probably returning NaNs. loglikeT: %e" % loglikeT
+                assert np.isfinite(loglikeT), errMsg
+
                 # If loglike function returns loglike, blobs, ..., only use loglike
                 if hasattr(loglikeT, "__iter__"):
                     yT = np.array([loglikeT[0] + self._lnprior(thetaT)])
                 else:
                     yT = np.array([loglikeT + self._lnprior(thetaT)])
-
-                # If yT isn't finite, your likelihood function is messed up
-                errMsg = "ERROR: Non-finite likelihood, forward model probably returning NaNs. yT: %e" % yT
-                assert np.isfinite(yT), errMsg
 
                 # Join theta, y arrays with new points
                 self.theta = np.vstack([self.theta, np.array(thetaT)])
