@@ -67,6 +67,7 @@ setup(name = 'approxposterior',
                           'corner',
                           'sklearn',
                           'pybind11',
-                          'pytest'],
+                          'pytest',
+                          'h5py'],
       include_package_data = True,
       zip_safe = False)

@@ -68,12 +68,11 @@ def test_run():
     # Run!
     ap.run(m0=m0, m=m, nmax=nmax, Dmax=Dmax, kmax=kmax, bounds=bounds,
            nKLSamples=100000, mcmcKwargs=mcmcKwargs, samplerKwargs=samplerKwargs,
-           verbose=False, seed=seed)
+           verbose=True, seed=seed)
 
     # Ensure medians of chains are consistent with the true values
     x1Med, x2Med = np.median(ap.samplers[-1].flatchain[ap.iburns[-1]:], axis=0)
 
-    print(x1Med, x2Med)
     diffX1 = np.fabs(0.04 - x1Med)
     diffX2 = np.fabs(1.29 - x2Med)
 

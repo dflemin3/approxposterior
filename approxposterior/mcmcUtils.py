@@ -20,7 +20,7 @@ assert int(version.split(".")[0]) > 2, "approxposterior is only compatible with 
 
 def validateMCMCKwargs(samplerKwargs, mcmcKwargs, ap, verbose=False):
     """
-    Validates emcee.EnsembleSampler parameters/kwargs
+    Validates emcee.EnsembleSampler parameters/kwargs.
 
     Parameters
     ----------
@@ -57,6 +57,10 @@ def validateMCMCKwargs(samplerKwargs, mcmcKwargs, ap, verbose=False):
             print("Defaulting to nwalkers = 10 * dim")
             samplerKwargs["nwalkers"] = 10 * samplerKwargs["ndim"]
 
+        if "backend" in samplerKwargs.keys():
+            print("WARNING: backend in samplerKwargs. approxposterior creates its own")
+            print("with filename = apRun.h5")
+
         # Handle case when user supplies own loglikelihood function
         if "log_prob_fn" in samplerKwargs.keys():
             if verbose:
@@ -66,6 +70,9 @@ def validateMCMCKwargs(samplerKwargs, mcmcKwargs, ap, verbose=False):
             # Remove any other log_prob_fn
             samplerKwargs.pop("log_prob_fn", None)
 
+        # Prevent users from providing their own backend
+        samplerKwargs.pop("backend", None)
+
         # Properly initialize log_prob_fn to be GP loglikelihood estimate
         samplerKwargs["log_prob_fn"] = ap._gpll
 
@@ -74,7 +81,7 @@ def validateMCMCKwargs(samplerKwargs, mcmcKwargs, ap, verbose=False):
     if mcmcKwargs is None:
         mcmcKwargs = dict()
         mcmcKwargs["iterations"] = 10000
-        mcmcKwargs["initial_state"] = emcee.State(np.asarray([ap.priorSample(1) for j in range(samplerKwargs["nwalkers"])]))
+        mcmcKwargs["initial_state"] = ap.priorSample(samplerKwargs["nwalkers"])
     else:
         try:
             nsteps = mcmcKwargs["iterations"]
@@ -86,12 +93,10 @@ def validateMCMCKwargs(samplerKwargs, mcmcKwargs, ap, verbose=False):
         try:
             p0 = mcmcKwargs["initial_state"]
         except KeyError:
-            mcmcKwargs["initial_state"] = emcee.State(np.asarray([ap.priorSample(1) for j in range(samplerKwargs["nwalkers"])]))
+            mcmcKwargs["initial_state"] = ap.priorSample(samplerKwargs["nwalkers"])
             if verbose:
                 print("WARNING: mcmcKwargs provided, but p0 not in mcmcKwargs.")
                 print("Defaulting to nwalkers initial states from priorSample.")
-
-    print(np.shape(mcmcKwargs["initial_state"].coords))
 
     return samplerKwargs, mcmcKwargs
 # end function

@@ -89,9 +89,10 @@ class ApproxPosterior(object):
         # GPs
         self.Dkl = list()
         self.GMMs = list()
-        self.samplers = list()
         self.iburns = list()
+        self.ithins = list()
         self.gps = list()
+        self.backends = list()
     # end function
 
 
@@ -109,15 +110,18 @@ class ApproxPosterior(object):
         -------
         mu : float
             Mean of predicted GP conditional posterior estimate at theta
+        lnprior : float
+            log prior evlatuated at theta
         """
 
         # Sometimes the input values can be crazy and the GP will blow up
         if not np.isfinite(theta).any():
-            return -np.inf
+            return -np.inf, np.nan
 
         # Reject point if prior forbids it
-        if not np.isfinite(self._lnprior(theta)):
-            return -np.inf
+        lnprior = self._lnprior(theta)
+        if not np.isfinite(lnprior):
+            return -np.inf, np.nan
 
         # Mean of predictive distribution conditioned on y (GP posterior estimate)
         # and make sure theta is the right shape for the GP
@@ -127,20 +131,20 @@ class ApproxPosterior(object):
                                  return_cov=False,
                                  return_var=False)
         except ValueError:
-            return -np.inf
+            return -np.inf, np.nan
 
         # Catch NaNs/Infs because they can (rarely) happen
         if not np.isfinite(mu):
-            return -np.inf
+            return -np.inf, np.nan
         else:
-            return mu
+            return mu, lnprior
     # end function
 
 
     def run(self, m0=20, m=10, nmax=2, Dmax=0.01, kmax=5, seed=None,
             timing=False, bounds=None, nKLSamples=100000, verbose=True,
             args=None, maxComp=3, mcmcKwargs=None, samplerKwargs=None,
-            estBurnin=False, **kwargs):
+            estBurnin=False, thinChains=False, chainFile="apRun", **kwargs):
         """
         Core algorithm to estimate the posterior distribution via Gaussian
         Process regression to the joint distribution for the forward model
@@ -199,6 +203,14 @@ class ApproxPosterior(object):
             heuristic.  Defaults to False as in general, we recommend users
             inspect the chains and calculate the burnin after the fact to ensure
             convergence.
+        thinChains : bool (optional)
+            Whether or not to thin chains before GMM fitting.  Useful if running
+            long chains.  Defaults to False.  If true, estimates a thin cadence
+            via int(0.5*np.min(tau)) where tau is the intergrated autocorrelation
+            time.
+        chainFile : str (optional)
+            Filename for hdf5 file where mcmc chains are saved.  Defaults to
+            apRun and will be saved as apRunii.h5 for ii in nmax.
         kwargs : dict (optional)
             Keyword arguments for user-specified loglikelihood function that
             calls the forward model.
@@ -230,6 +242,8 @@ class ApproxPosterior(object):
                                                                  mcmcKwargs,
                                                                  self,
                                                                  verbose)
+        ## Save initial state
+        #initState = mcmcKwargs.pop("initial_state")
 
         # Inital optimization of gaussian process
         self.gp = gpUtils.optimizeGP(self.gp, self.theta, self.y, seed=seed)
@@ -252,7 +266,6 @@ class ApproxPosterior(object):
                                               bounds=bounds, **kwargs)
 
                 # 2) Query forward model at new point, thetaT
-                ### TODO: try multiprocessing here for lnlike to speed it up?
 
                 # Evaluate forward model via loglikelihood function
                 loglikeT = self._lnlike(thetaT, *args, **kwargs)
@@ -287,21 +300,24 @@ class ApproxPosterior(object):
             if timing:
                 start = time.time()
 
-            print(self.y.shape, self.theta.shape)
+            # Create backend
+            bname = chainFile + str(nn) + ".h5"
+            self.backends.append(bname)
+            backend = emcee.backends.HDFBackend(bname)
+            backend.reset(samplerKwargs["nwalkers"], samplerKwargs["ndim"])
 
             # Create sampler using GP lnlike function as forward model surrogate
-            sampler = emcee.EnsembleSampler(**samplerKwargs, args=args,
-                                            kwargs=kwargs)
+            sampler = emcee.EnsembleSampler(**samplerKwargs,
+                                            backend=backend,
+                                            args=args,
+                                            kwargs=kwargs,
+                                            blobs_dtype=[("lnprior", float)])
 
             # Run MCMC!
-            for ii, result in enumerate(sampler.sample(**mcmcKwargs)):
-                if verbose:
-                    print("%d/%d" % (ii+1, mcmcKwargs["iterations"]))
+            for _ in sampler.sample(**mcmcKwargs):
+                pass
             if verbose:
-                print("emcee finished!")
-
-            # Save current sampler object
-            self.samplers.append(sampler)
+                print("mcmc finished")
 
             # Estimate burn-in, save it
             if estBurnin:
@@ -309,13 +325,21 @@ class ApproxPosterior(object):
                 # the estimate isn't good.  If estimate isn't good, run longer
                 # chains!
                 iburn = int(2.0*np.max(sampler.get_autocorr_time(tol=0)))
-            # Don't estimate burnin, keep all chains
+            # Don't estimate burnin, keep all values in chain
             else:
                 iburn = 0
 
+            # Thin chains?
+            if thinChains:
+                ithin = int(0.5*np.min(sampler.get_autocorr_time(tol=0)))
+            else:
+                ithin = 1
+
             if verbose:
-                print("burnin estimate: %d" % iburn)
+                print("burn-in estimate: %d" % iburn)
+                print("thin estimate: %d" % ithin)
             self.iburns.append(iburn)
+            self.ithins.append(ithin)
 
             if timing:
                 self.mcmcTime.append(time.time() - start)
@@ -324,11 +348,13 @@ class ApproxPosterior(object):
                 start = time.time()
 
             # Approximate posterior distribution using a Gaussian Mixure model
-            GMM = gmmUtils.fitGMM(sampler.flatchain[iburn:], maxComp=maxComp,
-                                  covType="full", useBic=True)
+            GMM = gmmUtils.fitGMM(sampler.get_chain(discard=iburn, flat=True, thin=ithin),
+                                  maxComp=maxComp,
+                                  covType="full",
+                                  useBic=True)
 
             if verbose:
-                print("GMM fit.")
+                print("GMM fit complete")
 
             if timing:
                 self.gmmTime.append(time.time() - start)
