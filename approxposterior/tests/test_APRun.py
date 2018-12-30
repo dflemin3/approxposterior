@@ -13,6 +13,7 @@ from approxposterior import approx, likelihood as lh
 import numpy as np
 import george
 import emcee
+import os
 
 def test_run():
     """
@@ -67,7 +68,7 @@ def test_run():
                                 algorithm=algorithm)
 
     # Run!
-    ap.run(m0=m0, m=m, nmax=nmax, Dmax=Dmax, kmax=kmax, bounds=bounds,
+    ap.run(m=m, nmax=nmax, Dmax=Dmax, kmax=kmax, bounds=bounds,
            nKLSamples=100000, mcmcKwargs=mcmcKwargs, samplerKwargs=samplerKwargs,
            verbose=False, seed=seed)
 
@@ -85,6 +86,9 @@ def test_run():
     errMsg = "Medians of marginal posteriors are incosistent with true values."
     assert((diffX1 < 0.5) & (diffX2 < 0.5)), errMsg
 
+    # Remove backends so they don't take up space
+    for back in ap.backends:
+        os.remove(back)
 # end function
 
 if __name__ == "__main__":

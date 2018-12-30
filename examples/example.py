@@ -16,7 +16,6 @@ from approxposterior import approx, likelihood as lh
 import numpy as np
 import george
 
-
 # Define algorithm parameters
 m0 = 50                           # Initial size of training set
 m = 20                            # Number of new points to find each iteration
@@ -66,15 +65,19 @@ ap = approx.ApproxPosterior(theta=theta,
                             algorithm=algorithm)
 
 # Run!
-ap.run(m0=m0, m=m, nmax=nmax, Dmax=Dmax, kmax=kmax, bounds=bounds,
-       estBurnin=True, nKLSamples=nKLSamples, mcmcKwargs=mcmcKwargs,
+ap.run(m=m, nmax=nmax, Dmax=Dmax, kmax=kmax, bounds=bounds,  estBurnin=True,
+       nKLSamples=nKLSamples, mcmcKwargs=mcmcKwargs,
        samplerKwargs=samplerKwargs, verbose=True)
 
 # Check out the final posterior distribution!
-import corner
+import emcee, corner
 
-fig = corner.corner(ap.samplers[-1].flatchain[ap.iburns[-1]:],
-                            quantiles=[0.16, 0.5, 0.84], show_titles=True,
-                            scale_hist=True, plot_contours=True)
+# Load in chain from last iteration
+reader = emcee.backends.HDFBackend(ap.backends[-1], read_only=True)
+samples = reader.get_chain(discard=ap.iburns[-1], flat=True, thin=ap.ithins[-1])
+
+# Corner plot!
+fig = corner.corner(samples, quantiles=[0.16, 0.5, 0.84], show_titles=True,
+                    scale_hist=True, plot_contours=True)
 
 fig.savefig("finalPosterior.png", bbox_inches="tight") # Uncomment to save

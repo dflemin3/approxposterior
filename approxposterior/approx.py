@@ -85,13 +85,11 @@ class ApproxPosterior(object):
         self.posterior = self._lnprior
         self.prevPosterior = self._lnprior
 
-        # Holders to save GMM fits to posteriors, raw samplers, KL divergences,
-        # GPs
+        # Holders to save GMM fits to posteriors, raw samplers, KL divergences
         self.Dkl = list()
         self.GMMs = list()
         self.iburns = list()
         self.ithins = list()
-        self.gps = list()
         self.backends = list()
     # end function
 
@@ -141,7 +139,7 @@ class ApproxPosterior(object):
     # end function
 
 
-    def run(self, m0=20, m=10, nmax=2, Dmax=0.01, kmax=5, seed=None,
+    def run(self, m=10, nmax=2, Dmax=0.01, kmax=5, seed=None,
             timing=False, bounds=None, nKLSamples=100000, verbose=True,
             args=None, maxComp=3, mcmcKwargs=None, samplerKwargs=None,
             estBurnin=False, thinChains=False, chainFile="apRun", **kwargs):
@@ -152,8 +150,6 @@ class ApproxPosterior(object):
 
         Parameters
         ----------
-        m0 : int (optional)
-            Initial number of design points.  Defaults to 20.
         m : int (optional)
             Number of new input features to find each iteration.  Defaults to 10.
         nmax : int (optional)
@@ -242,8 +238,6 @@ class ApproxPosterior(object):
                                                                  mcmcKwargs,
                                                                  self,
                                                                  verbose)
-        ## Save initial state
-        #initState = mcmcKwargs.pop("initial_state")
 
         # Inital optimization of gaussian process
         self.gp = gpUtils.optimizeGP(self.gp, self.theta, self.y, seed=seed)
@@ -322,8 +316,7 @@ class ApproxPosterior(object):
             # Estimate burn-in, save it
             if estBurnin:
                 # Note we set tol=0 so it always provides an estimate, even if
-                # the estimate isn't good.  If estimate isn't good, run longer
-                # chains!
+                # the estimate isn't good, in which case run longer chains!
                 iburn = int(2.0*np.max(sampler.get_autocorr_time(tol=0)))
             # Don't estimate burnin, keep all values in chain
             else:

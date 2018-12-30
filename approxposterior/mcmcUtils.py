@@ -47,19 +47,19 @@ def validateMCMCKwargs(samplerKwargs, mcmcKwargs, ap, verbose=False):
     if samplerKwargs is None:
         samplerKwargs = dict()
 
-        samplerKwargs["nwalkers"] = 10 * samplerKwargs["dim"]
+        samplerKwargs["nwalkers"] = 20 * samplerKwargs["dim"]
         samplerKwargs["log_prob_fn"] = ap._gpll
     else:
         try:
             nwalkers = samplerKwargs["nwalkers"]
         except KeyError:
             print("WARNING: samplerKwargs provided but nwalkers not in samplerKwargs")
-            print("Defaulting to nwalkers = 10 * dim")
-            samplerKwargs["nwalkers"] = 10 * samplerKwargs["ndim"]
+            print("Defaulting to nwalkers = 20 per dimension.")
+            samplerKwargs["nwalkers"] = 20 * samplerKwargs["ndim"]
 
         if "backend" in samplerKwargs.keys():
-            print("WARNING: backend in samplerKwargs. approxposterior creates its own")
-            print("with filename = apRun.h5")
+            print("WARNING: backend in samplerKwargs. approxposterior creates its own!")
+            print("with filename = apRun.h5. Disregarding user-supplied backend.")
 
         # Handle case when user supplies own loglikelihood function
         if "log_prob_fn" in samplerKwargs.keys():
@@ -88,15 +88,15 @@ def validateMCMCKwargs(samplerKwargs, mcmcKwargs, ap, verbose=False):
         except KeyError:
             mcmcKwargs["iterations"] = 10000
             if verbose:
-                print("WARNING: mcmcKwargs provided, but N not in mcmcKwargs.")
-                print("Defaulting to N = 10000.")
+                print("WARNING: mcmcKwargs provided, but iterations not in mcmcKwargs.")
+                print("Defaulting to iterations = 10000.")
         try:
             p0 = mcmcKwargs["initial_state"]
         except KeyError:
             mcmcKwargs["initial_state"] = ap.priorSample(samplerKwargs["nwalkers"])
             if verbose:
-                print("WARNING: mcmcKwargs provided, but p0 not in mcmcKwargs.")
-                print("Defaulting to nwalkers initial states from priorSample.")
+                print("WARNING: mcmcKwargs provided, but initial_state not in mcmcKwargs.")
+                print("Defaulting to nwalkers samples from priorSample.")
 
     return samplerKwargs, mcmcKwargs
 # end function
