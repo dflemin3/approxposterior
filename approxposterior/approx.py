@@ -144,7 +144,7 @@ class ApproxPosterior(object):
             timing=False, bounds=None, nKLSamples=100000, verbose=True,
             args=None, maxComp=3, mcmcKwargs=None, samplerKwargs=None,
             estBurnin=False, thinChains=False, chainFile="apRun", cache=True,
-            **kwargs):
+            maxLnLikeRestarts=5, **kwargs):
         """
         Core algorithm to estimate the posterior distribution via Gaussian
         Process regression to the joint distribution for the forward model
@@ -216,6 +216,10 @@ class ApproxPosterior(object):
             ancillary parameters, etc in each likelihood function evaluation,
             but saving theta and y here doesn't hurt.  Saves the results to
             apFModelCache.npz in the current working directory.
+        maxLnLikeRestarts : int (optional)
+            Number of times to restart loglikelihood function (the one that
+            calls the forward model) if the lnlike fn returns infs/NaNs. Defaults
+            to 5.
         kwargs : dict (optional)
             Keyword arguments for user-specified loglikelihood function that
             calls the forward model.
@@ -248,6 +252,12 @@ class ApproxPosterior(object):
                                                                  self,
                                                                  verbose)
 
+        # If scipy.minimize bounds are provided, make sure it has ndim elements
+        if bounds is not None and (len(bounds) != samplerKwargs["ndim"]):
+            err_msg = "ERROR: bounds provided but len(bounds) != ndim.\n"
+            err_msg += "ndim = %d, len(bounds) = %d" % (samplerKwargs["ndim"], len(bounds))
+            raise ValueError(err_msg)
+
         # Inital optimization of gaussian process
         self.gp = gpUtils.optimizeGP(self.gp, self.theta, self.y, seed=seed)
 
@@ -257,31 +267,49 @@ class ApproxPosterior(object):
             if verbose:
                 print("Iteration: %d" % nn)
 
+            # Save forward model input-output pairs since they take forever to
+            # calculate and we want them around in case something weird happens.
+            # Users should probably do this in their likelihood function
+            # anyways, but might as well do it here too.
+            if cache:
+                np.savez("apFModelCache.npz", theta=self.theta, y=self.y)
+
+            if timing:
+                start = time.time()
+
             # 1) Find m new points by maximizing utility function, one at a time
             # Note that we call a minimizer because minimizing negative of
             # utility function is the same as maximizing it
-            if timing:
-                start = time.time()
             for ii in range(m):
-                thetaT = ut.minimizeObjective(self.utility, self.y, self.gp,
-                                              sampleFn=self.priorSample,
-                                              priorFn=self._lnprior,
-                                              bounds=bounds, **kwargs)
+                yT = np.nan
+                llIters = 0
+                # Find new theta that produces a valid loglikelihood
+                while not np.isfinite(yT):
+                    thetaT = ut.minimizeObjective(self.utility, self.y, self.gp,
+                                                  sampleFn=self.priorSample,
+                                                  priorFn=self._lnprior,
+                                                  bounds=bounds, **kwargs)
 
-                # 2) Query forward model at new point, thetaT
+                    # 2) Query forward model at new point, thetaT
+                    # Evaluate forward model via loglikelihood function
+                    loglikeT = self._lnlike(thetaT, *args, **kwargs)
 
-                # Evaluate forward model via loglikelihood function
-                loglikeT = self._lnlike(thetaT, *args, **kwargs)
+                    # If loglike function returns loglike, blobs, ..., only use loglike
+                    if hasattr(loglikeT, "__iter__"):
+                        yT = np.array([loglikeT[0] + self._lnprior(thetaT)])
+                    else:
+                        yT = np.array([loglikeT + self._lnprior(thetaT)])
 
-                # If loglikeT isn't finite, your likelihood function is messed up
-                errMsg = "ERROR: Non-finite likelihood, forward model probably returning NaNs. loglikeT: %e" % loglikeT
-                assert np.isfinite(loglikeT), errMsg
+                    llIters += 1
 
-                # If loglike function returns loglike, blobs, ..., only use loglike
-                if hasattr(loglikeT, "__iter__"):
-                    yT = np.array([loglikeT[0] + self._lnprior(thetaT)])
-                else:
-                    yT = np.array([loglikeT + self._lnprior(thetaT)])
+                    # If loglikeT isn't finite after maxLnLikeRestarts tries,
+                    # your likelihood function is not executing properly
+                    if llIters >= maxLnLikeRestarts:
+                        errMsg = "ERROR: Non-finite likelihood for %d iterations." % maxLnLikeRestarts
+                        errMsg += "forward model probably returning NaNs."
+                        print(errMsg)
+                        print("loglike:", loglikeT)
+                        raise RuntimeError()
 
                 # Join theta, y arrays with new points
                 self.theta = np.vstack([self.theta, np.array(thetaT)])
@@ -408,9 +436,4 @@ class ApproxPosterior(object):
                     print("Converged! n_iters, Dkl, Delta Dkl: %d, %e, %e" % (nn,self.Dkl[-1],deltaDkl))
                 return
 
-            # Save forward model input-output pairs since they take forever to
-            # calculate. Users should probably do this in their likelihood
-            # function anyways, but might as well do it here too.
-            if cache:
-                np.savez("apFModelCache.npz", theta=self.theta, y=self.y)
         # end function
