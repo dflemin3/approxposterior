@@ -9,9 +9,6 @@ Example script
 
 """
 
-from __future__ import (print_function, division, absolute_import,
-                        unicode_literals)
-
 from approxposterior import approx, likelihood as lh
 import numpy as np
 import george

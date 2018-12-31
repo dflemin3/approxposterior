@@ -205,7 +205,7 @@ def BAPEUtility(theta, y, gp):
 # end function
 
 
-def minimizeObjective(fn, y, gp, sampleFn, priorFn, bounds=None, **kw):
+def minimizeObjective(fn, y, gp, sampleFn, priorFn, bounds=None, **kwargs):
     """
     Find point that minimizes fn for a gaussian process gp conditioned on y,
     the data and is allowed by the prior, priorFn.  PriorFn is required as it
@@ -224,7 +224,7 @@ def minimizeObjective(fn, y, gp, sampleFn, priorFn, bounds=None, **kw):
         Function to sample initial conditions from.
     priorFn : function
         Function to apply prior to.
-    kw : dict (optional)
+    kwargs : dict (optional)
         Any additional keyword arguments scipy.optimize.minimize could use,
         e.g., method.
     bounds : tuple/iterable (optional)
@@ -243,15 +243,14 @@ def minimizeObjective(fn, y, gp, sampleFn, priorFn, bounds=None, **kw):
 
         # Choose theta0 by uniformly sampling over parameter space and reshape
         # theta0 for the gp
-        theta0 = sampleFn(1).reshape(1,-1)
+        theta0 = np.array(sampleFn(1)).reshape(1,-1)
 
         args=(y, gp)
 
         # Mimimze fn, see if prior allows solution
         try:
             tmp = minimize(fn, theta0, args=args, bounds=bounds,
-                           method="l-bfgs-b", options={"ftol" : 1.0e-3},
-                           **kw)["x"]
+                           method="l-bfgs-b", options={"ftol" : 1.0e-3})["x"]
 
         # ValueError.  Try again.
         except ValueError:
@@ -261,7 +260,7 @@ def minimizeObjective(fn, y, gp, sampleFn, priorFn, bounds=None, **kw):
         # Are all values finite?
         if np.all(np.isfinite(tmp)):
             # Is this point in parameter space allowed by the prior?
-            if np.isfinite(priorFn(tmp)):
+            if np.isfinite(priorFn(tmp, **kwargs)):
                 theta = tmp
                 is_finite = True
     # end while
