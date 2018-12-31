@@ -20,6 +20,7 @@ from . import gmmUtils
 import numpy as np
 import time
 import emcee
+import os
 
 
 class ApproxPosterior(object):
@@ -142,11 +143,12 @@ class ApproxPosterior(object):
     def run(self, m=10, nmax=2, Dmax=0.01, kmax=5, seed=None,
             timing=False, bounds=None, nKLSamples=100000, verbose=True,
             args=None, maxComp=3, mcmcKwargs=None, samplerKwargs=None,
-            estBurnin=False, thinChains=False, chainFile="apRun", **kwargs):
+            estBurnin=False, thinChains=False, chainFile="apRun", cache=True,
+            **kwargs):
         """
         Core algorithm to estimate the posterior distribution via Gaussian
         Process regression to the joint distribution for the forward model
-        input/output pairs (in a Bayesian framework, of course!)
+        input/output pairs
 
         Parameters
         ----------
@@ -207,6 +209,13 @@ class ApproxPosterior(object):
         chainFile : str (optional)
             Filename for hdf5 file where mcmc chains are saved.  Defaults to
             apRun and will be saved as apRunii.h5 for ii in nmax.
+        cache : bool (optional)
+            Whether or not to cache forward model input-output pairs.  Defaults
+            to True since the forward model is expensive to evaluate. In
+            practice, users should cache forward model inputs, outputs,
+            ancillary parameters, etc in each likelihood function evaluation,
+            but saving theta and y here doesn't hurt.  Saves the results to
+            apFModelCache.npz in the current working directory.
         kwargs : dict (optional)
             Keyword arguments for user-specified loglikelihood function that
             calls the forward model.
@@ -398,81 +407,10 @@ class ApproxPosterior(object):
                 if verbose:
                     print("Converged! n_iters, Dkl, Delta Dkl: %d, %e, %e" % (nn,self.Dkl[-1],deltaDkl))
                 return
+
+            # Save forward model input-output pairs since they take forever to
+            # calculate. Users should probably do this in their likelihood
+            # function anyways, but might as well do it here too.
+            if cache:
+                np.savez("apFModelCache.npz", theta=self.theta, y=self.y)
         # end function
-
-
-    def forecast(self, theta=None, y=None, m0=20, m=10, seed=None,
-                which_kernel="ExpSquaredKernel", bounds=None, verbose=True,
-                **kwargs):
-        """
-        XXX: Broken, needs to be fixed!
-
-        Predict where m new forward models should be ran in parameter space
-        given input (theta) output (y) pairs (or use the ones we already have!).
-        If theta and y are not given, simulate m0 (theta, y) pairs, then
-        train a GP to make the prediction.  This is pretty much kriging, aka
-        GP regression, but with a predictive step using the utility function.
-
-        Parameters
-        ----------
-        theta : array (optional)
-            Input features (n_samples x n_features).  Defaults to None.
-        y : array (optional)
-            Input result of forward model (n_samples,). Defaults to None.
-        m0 : int (optional)
-            Initial number of design points.  Defaults to 20.
-        m : int (optional)
-            Number of new input features to find each iteration.  Defaults to 10.
-        seed : int (optional)
-            RNG seed.  Defaults to None.
-        which_kernel : str (optional)
-            Which george kernel to use.  Defaults to ExpSquaredKernel.
-        bounds : tuple/iterable (optional)
-            Bounds for minimization scheme.  See scipy.optimize.minimize details
-            for more information.  Defaults to None.
-        verbose : bool (optional)
-            Output all the diagnostics? Defaults to True.
-
-        Returns
-        -------
-        thetaHat : array
-            New points in parameter space shape: (m, n_dim)
-        """
-
-        raise NotImplementedError("dflemin3 broke this and needs to fix it!")
-
-        # Containers for new points
-        thetaHat = list()
-
-        # If no input output pair is given, simulate m0 using the
-        # forward model or use ones object already has:
-        if theta is None or y is None:
-            # If we don't have stored values, simulate new ones
-            if self.theta is None or self.y is None:
-                theta = self.priorSample(m0)
-                y = self._lnlike(theta, *args, **kwargs) + self._lnprior(theta)
-            # Have stored values, use a copy
-            else:
-                theta = self.theta.copy()
-                y = self.y.copy()
-        # Better be numpy arrays
-        else:
-            theta = np.array(theta)
-            y = np.array(y)
-
-        # Initialize a GP
-        gp = gpUtils.optimizeGP(gp, theta, y, seed=seed)
-
-        # Find m new points
-        for ii in range(m):
-            thetaT = ut.minimizeObjective(self.utility, y, gp,
-                                          sampleFn=self.priorSample,
-                                          priorFn=self._lnprior,
-                                          bounds=bounds, **kwargs)
-
-            # Save new values
-            thetaHat.append(thetaT)
-
-        # Done! return new points
-        return np.array(thetaHat).squeeze()
-    # end function
