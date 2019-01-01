@@ -144,7 +144,7 @@ class ApproxPosterior(object):
             timing=False, bounds=None, nKLSamples=100000, verbose=True,
             args=None, maxComp=3, mcmcKwargs=None, samplerKwargs=None,
             estBurnin=False, thinChains=False, chainFile="apRun", cache=True,
-            maxLnLikeRestarts=5, **kwargs):
+            maxLnLikeRestarts=5, gmmKwargs=None, **kwargs):
         """
         Core algorithm to estimate the posterior distribution via Gaussian
         Process regression to the joint distribution for the forward model
@@ -220,6 +220,9 @@ class ApproxPosterior(object):
             Number of times to restart loglikelihood function (the one that
             calls the forward model) if the lnlike fn returns infs/NaNs. Defaults
             to 5.
+        gmmKwargs : dict (optional)
+            keyword arguments for sklearn.mixture.GaussianMixture. Defaults to
+            None
         kwargs : dict (optional)
             Keyword arguments for user-specified loglikelihood function that
             calls the forward model.
@@ -229,6 +232,13 @@ class ApproxPosterior(object):
         -------
         None
         """
+
+        # Save forward model input-output pairs since they take forever to
+        # calculate and we want them around in case something weird happens.
+        # Users should probably do this in their likelihood function
+        # anyways, but might as well do it here too.
+        if cache:
+            np.savez("apFModelCache.npz", theta=self.theta, y=self.y)
 
         # Set RNG seed?
         if seed is not None:
@@ -266,13 +276,6 @@ class ApproxPosterior(object):
         for nn in range(nmax):
             if verbose:
                 print("Iteration: %d" % nn)
-
-            # Save forward model input-output pairs since they take forever to
-            # calculate and we want them around in case something weird happens.
-            # Users should probably do this in their likelihood function
-            # anyways, but might as well do it here too.
-            if cache:
-                np.savez("apFModelCache.npz", theta=self.theta, y=self.y)
 
             if timing:
                 start = time.time()
@@ -321,6 +324,13 @@ class ApproxPosterior(object):
                 self.gp = gpUtils.setupGP(self.theta, self.y, self.gp)
                 self.gp = gpUtils.optimizeGP(self.gp, self.theta, self.y,
                                              seed=seed)
+
+                # Save forward model input-output pairs since they take forever to
+                # calculate and we want them around in case something weird happens.
+                # Users should probably do this in their likelihood function
+                # anyways, but might as well do it here too.
+                if cache:
+                    np.savez("apFModelCache.npz", theta=self.theta, y=self.y)
 
             if timing:
                 self.trainingTime.append(time.time() - start)
@@ -381,7 +391,8 @@ class ApproxPosterior(object):
             GMM = gmmUtils.fitGMM(sampler.get_chain(discard=iburn, flat=True, thin=ithin),
                                   maxComp=maxComp,
                                   covType="full",
-                                  useBic=True)
+                                  useBic=True,
+                                  gmmKwargs=gmmKwargs)
 
             if verbose:
                 print("GMM fit complete")
