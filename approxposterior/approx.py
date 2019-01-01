@@ -21,6 +21,7 @@ import numpy as np
 import time
 import emcee
 import os
+from scipy.optimize import minimize
 
 
 class ApproxPosterior(object):
@@ -286,8 +287,9 @@ class ApproxPosterior(object):
             for ii in range(m):
                 yT = np.nan
                 llIters = 0
-                # Find new theta that produces a valid loglikelihood
-                while not np.isfinite(yT):
+                # Find new theta that produces a valid loglikelihood, aka both
+                # thetaT and yT must both be finite values
+                while (not np.isfinite(yT) or not np.all(np.isfinite(thetaT))):
                     thetaT = ut.minimizeObjective(self.utility, self.y, self.gp,
                                                   sampleFn=self.priorSample,
                                                   priorFn=self._lnprior,
@@ -310,11 +312,9 @@ class ApproxPosterior(object):
                     if llIters >= maxLnLikeRestarts:
                         errMsg = "ERROR: Non-finite likelihood for %d iterations." % maxLnLikeRestarts
                         errMsg += "forward model probably returning NaNs."
-                        print(errMsg)
-                        print("loglike:", loglikeT)
-                        raise RuntimeError()
+                        raise RuntimeError(errMsg)
 
-                # Join theta, y arrays with new points
+                # Valid theta, y found. Join theta, y arrays with new points.
                 self.theta = np.vstack([self.theta, np.array(thetaT)])
                 self.y = np.hstack([self.y, yT])
 
@@ -446,5 +446,68 @@ class ApproxPosterior(object):
                 if verbose:
                     print("Converged! n_iters, Dkl, Delta Dkl: %d, %e, %e" % (nn,self.Dkl[-1],deltaDkl))
                 return
+            # end function
 
+
+    def findMLE(self, x0, method="l-bfgs-b", bounds=None, options=None,
+                *args, **kwargs):
+        """
+        Find the maximum likelihood solution according to the GP.
+
+        Parameters
+        ----------
+        x0 : array
+            Initial guess
+        method: str (optional)
+            minimizer method.  Defaults to l-bfgs-b.
+        bounds : iterable (optional)
+            bounds for optimizer.  One should probably use bounds to ensure
+            minimizer stays in valid regions of parameter space, e.g. those
+            allowed by the prior.
+        options : dict (optional)
+            kwargs for the minimizer
+
+        Returns
+        -------
+        thetaHat : array
+            Maximum likelihood parameter values
+        yHat : float
+            Maximal likelihood value
+        """
+
+        # Guess better be correct shape
+        err_msg = "Initial guess must have same number of dimensions as theta!"
+        assert len(x0) == self.theta.shape[-1], err_msg
+
+        # Make sure GP is properly setup
+        if self.gp.computed:
+            pass
+        else:
+            raise RuntimeError("ERROR: Need to compute GP before using it!")
+
+        def fn(x, *args, **kwargs):
+            """Dummy function to return -loglikelihood function"""
+            return -self._gpll(x, *args, **kwargs)[0]
+
+        # Take extra precautions to make sure thetaHat is a valid number
+        # since GPs can get a little weird
+        thetaHat = np.inf
+        while not np.all(np.isfinite(thetaHat)):
+            try:
+                thetaHat = minimize(fn, x0, method=method, bounds=bounds,
+                                    options=options)["x"]
+            except ValueError:
+                thetaHat = np.inf
+
+            # Vet answer: must be finite, allowed by prior
+            # Are all values finite?
+            if np.all(np.isfinite(thetaHat)):
+                # Is this point allowed by the prior?
+                if np.isfinite(self._lnprior(thetaHat, **kwargs)):
+                    break
+
+        # Now compute maximum likelihood value at MLE
+        yHat = self._gpll(thetaHat)
+
+        return thetaHat, yHat
         # end function
