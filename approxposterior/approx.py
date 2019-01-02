@@ -356,7 +356,8 @@ class ApproxPosterior(object):
             if timing:
                 start = time.time()
 
-            # Approximate posterior distribution using a Gaussian Mixure model
+            # Fit for the approximate posterior distribution using a Gaussian
+            # Mixure model
             GMM = gmmUtils.fitGMM(self.sampler.get_chain(discard=iburn, flat=True, thin=ithin),
                                   maxComp=maxComp,
                                   covType="full",
