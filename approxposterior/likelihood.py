@@ -68,7 +68,7 @@ def rosenbrockLnprior(x):
 # end function
 
 
-def rosenbrockSample(n):
+def rosenbrockSample(n=1):
     """
     Sample N points from the prior pi(x) is a uniform distribution over
     [-5, 5] x [-5, 5]

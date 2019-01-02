@@ -93,6 +93,9 @@ class ApproxPosterior(object):
         self.iburns = list()
         self.ithins = list()
         self.backends = list()
+
+        # Only save last sampler object since they can get pretty huge
+        self.sampler = None
     # end function
 
 
@@ -115,7 +118,7 @@ class ApproxPosterior(object):
         """
 
         # Sometimes the input values can be crazy and the GP will blow up
-        if not np.isfinite(theta).any():
+        if not np.any(np.isfinite(theta)):
             return -np.inf, np.nan
 
         # Reject point if prior forbids it
@@ -194,9 +197,6 @@ class ApproxPosterior(object):
                 initial_state : array/emcee.State (optional)
                     Initial guess for MCMC walkers.  Defaults to None and
                     creates guess from priors.
-        args : iterable (optional)
-            Arguments for user-specified loglikelihood function that calls the
-            forward model.
         estBurnin : bool (optional)
             Estimate burn-in time using integrated autocorrelation time
             heuristic.  Defaults to False as in general, we recommend users
@@ -211,12 +211,13 @@ class ApproxPosterior(object):
             Filename for hdf5 file where mcmc chains are saved.  Defaults to
             apRun and will be saved as apRunii.h5 for ii in nmax.
         cache : bool (optional)
-            Whether or not to cache forward model input-output pairs.  Defaults
-            to True since the forward model is expensive to evaluate. In
-            practice, users should cache forward model inputs, outputs,
+            Whether or not to cache MCMC chains and forward model input-output
+            pairs.  Defaults to True since the both are expensive to evaluate.
+            In practice, users should cache forward model inputs, outputs,
             ancillary parameters, etc in each likelihood function evaluation,
-            but saving theta and y here doesn't hurt.  Saves the results to
-            apFModelCache.npz in the current working directory.
+            but saving theta and y here doesn't hurt.  Saves the forward model
+            results to apFModelCache.npz and the chains as apRunii.h5 for each
+            iteration ii in the current working directory.
         maxLnLikeRestarts : int (optional)
             Number of times to restart loglikelihood function (the one that
             calls the forward model) if the lnlike fn returns infs/NaNs. Defaults
@@ -224,10 +225,12 @@ class ApproxPosterior(object):
         gmmKwargs : dict (optional)
             keyword arguments for sklearn.mixture.GaussianMixture. Defaults to
             None
+        args : iterable (optional)
+            Arguments for user-specified loglikelihood function that calls the
+            forward model. Defaults to None.
         kwargs : dict (optional)
             Keyword arguments for user-specified loglikelihood function that
             calls the forward model.
-
 
         Returns
         -------
@@ -245,9 +248,9 @@ class ApproxPosterior(object):
         if seed is not None:
             np.random.seed(seed)
 
-        # Make args empty list if not supplied
+        # Make args empty tuple if not supplied
         if args is None:
-            args = list()
+            args = ()
 
         # Create containers for timing?
         if timing:
@@ -269,7 +272,7 @@ class ApproxPosterior(object):
             err_msg += "ndim = %d, len(bounds) = %d" % (samplerKwargs["ndim"], len(bounds))
             raise ValueError(err_msg)
 
-        # Inital optimization of gaussian process
+        # Initial optimization of gaussian process
         self.gp = gpUtils.optimizeGP(self.gp, self.theta, self.y, seed=seed)
 
         # Main loop
@@ -285,52 +288,15 @@ class ApproxPosterior(object):
             # Note that we call a minimizer because minimizing negative of
             # utility function is the same as maximizing it
             for ii in range(m):
-                yT = np.nan
-                llIters = 0
-                # Find new theta that produces a valid loglikelihood, aka both
-                # thetaT and yT must both be finite values
-                while (not np.isfinite(yT) or not np.all(np.isfinite(thetaT))):
-                    thetaT = ut.minimizeObjective(self.utility, self.y, self.gp,
-                                                  sampleFn=self.priorSample,
-                                                  priorFn=self._lnprior,
-                                                  bounds=bounds, **kwargs)
-
-                    # 2) Query forward model at new point, thetaT
-                    # Evaluate forward model via loglikelihood function
-                    loglikeT = self._lnlike(thetaT, *args, **kwargs)
-
-                    # If loglike function returns loglike, blobs, ..., only use loglike
-                    if hasattr(loglikeT, "__iter__"):
-                        yT = np.array([loglikeT[0] + self._lnprior(thetaT)])
-                    else:
-                        yT = np.array([loglikeT + self._lnprior(thetaT)])
-
-                    llIters += 1
-
-                    # If loglikeT isn't finite after maxLnLikeRestarts tries,
-                    # your likelihood function is not executing properly
-                    if llIters >= maxLnLikeRestarts:
-                        errMsg = "ERROR: Non-finite likelihood for %d iterations." % maxLnLikeRestarts
-                        errMsg += "forward model probably returning NaNs."
-                        raise RuntimeError(errMsg)
-
-                # Valid theta, y found. Join theta, y arrays with new points.
-                self.theta = np.vstack([self.theta, np.array(thetaT)])
-                self.y = np.hstack([self.y, yT])
-
-                # 3) Re-optimize GP with new point, optimize
-
-                # Re-initialize, optimize GP since self.theta's shape changed
-                self.gp = gpUtils.setupGP(self.theta, self.y, self.gp)
-                self.gp = gpUtils.optimizeGP(self.gp, self.theta, self.y,
-                                             seed=seed)
-
-                # Save forward model input-output pairs since they take forever to
-                # calculate and we want them around in case something weird happens.
-                # Users should probably do this in their likelihood function
-                # anyways, but might as well do it here too.
-                if cache:
-                    np.savez("apFModelCache.npz", theta=self.theta, y=self.y)
+                # computeLnLike=True means new points are saved in self.theta,
+                # and self.y
+                self.findNextPoint(computeLnLike=True,
+                                   bounds=bounds,
+                                   maxLnLikeRestarts=maxLnLikeRestarts,
+                                   seed=seed,
+                                   cache=cache,
+                                   *args,
+                                   **kwargs)
 
             if timing:
                 self.trainingTime.append(time.time() - start)
@@ -341,37 +307,40 @@ class ApproxPosterior(object):
             if timing:
                 start = time.time()
 
-            # Create backend
-            bname = chainFile + str(nn) + ".h5"
-            self.backends.append(bname)
-            backend = emcee.backends.HDFBackend(bname)
-            backend.reset(samplerKwargs["nwalkers"], samplerKwargs["ndim"])
+            # Create backend to save chains
+            if cache:
+                bname = chainFile + str(nn) + ".h5"
+                self.backends.append(bname)
+                backend = emcee.backends.HDFBackend(bname)
+                backend.reset(samplerKwargs["nwalkers"], samplerKwargs["ndim"])
+            # Only keep last sampler object in memory
+            else:
+                backend = None
 
             # Create sampler using GP lnlike function as forward model surrogate
-            sampler = emcee.EnsembleSampler(**samplerKwargs,
-                                            backend=backend,
-                                            args=args,
-                                            kwargs=kwargs,
-                                            blobs_dtype=[("lnprior", float)])
+            self.sampler = emcee.EnsembleSampler(**samplerKwargs,
+                                                 backend=backend,
+                                                 args=args,
+                                                 kwargs=kwargs,
+                                                 blobs_dtype=[("lnprior", float)])
 
             # Run MCMC!
-            for _ in sampler.sample(**mcmcKwargs):
+            for _ in self.sampler.sample(**mcmcKwargs):
                 pass
             if verbose:
                 print("mcmc finished")
 
-            # Estimate burn-in, save it
+            # Estimate burn-in?
             if estBurnin:
                 # Note we set tol=0 so it always provides an estimate, even if
                 # the estimate isn't good, in which case run longer chains!
-                iburn = int(2.0*np.max(sampler.get_autocorr_time(tol=0)))
-            # Don't estimate burnin, keep all values in chain
+                iburn = int(2.0*np.max(self.sampler.get_autocorr_time(tol=0)))
             else:
                 iburn = 0
 
             # Thin chains?
             if thinChains:
-                ithin = int(0.5*np.min(sampler.get_autocorr_time(tol=0)))
+                ithin = int(0.5*np.min(self.sampler.get_autocorr_time(tol=0)))
             else:
                 ithin = 1
 
@@ -388,7 +357,7 @@ class ApproxPosterior(object):
                 start = time.time()
 
             # Approximate posterior distribution using a Gaussian Mixure model
-            GMM = gmmUtils.fitGMM(sampler.get_chain(discard=iburn, flat=True, thin=ithin),
+            GMM = gmmUtils.fitGMM(self.sampler.get_chain(discard=iburn, flat=True, thin=ithin),
                                   maxComp=maxComp,
                                   covType="full",
                                   useBic=True,
@@ -431,7 +400,7 @@ class ApproxPosterior(object):
 
             # Can't check for convergence on 1st (0th) iteration
             if nn < 1:
-                deltaDkl = 1.0e10
+                deltaDkl = np.inf
             else:
                 deltaDkl = np.fabs(self.Dkl[-1] - self.Dkl[-2])
 
@@ -446,7 +415,127 @@ class ApproxPosterior(object):
                 if verbose:
                     print("Converged! n_iters, Dkl, Delta Dkl: %d, %e, %e" % (nn,self.Dkl[-1],deltaDkl))
                 return
-            # end function
+    # end function
+
+
+    def findNextPoint(self, computeLnLike=True, bounds=None,
+                      maxLnLikeRestarts=5, seed=None, cache=True,
+                      *args, **kwargs):
+        """
+        Find new point, thetaT, by maximizing utility function. Note that we
+        call a minimizer because minimizing negative of utility function is
+        the same as maximizing it.
+
+        This function can be used in 2 ways:
+            1) Finding the new point, thetaT, that would maximally improve the
+               GP's predictive ability.  This point could be used to select
+               where to run a new forward model, for example.
+            2) Find a new thetaT and evaluate the forward model at this location
+               to iteratively improve the GP's predictive performance, a core
+               function of the BAPE and AGP algorithms.
+
+        If computeLnLike is True, all results of this function are appended to
+        the corresponding object elements, e.g. thetaT appended to self.theta.
+        thetaT is returned, as well as yT if computeLnLike is True.  Note that
+        returning yT requires running the forward model and updating the GP.
+
+        Parameters
+        ----------
+        computeLnLike : bool (optional)
+            Whether or not to run the forward model and compute yT, the sum of
+            the lnlikelihood and lnprior
+        bounds : tuple/iterable (optional)
+            Bounds for minimization scheme.  See scipy.optimize.minimize details
+            for more information.  Defaults to None.
+        maxLnLikeRestarts : int (optional)
+            Number of times to restart loglikelihood function (the one that
+            calls the forward model) if the lnlike fn returns infs/NaNs. Defaults
+            to 5.
+        seed : int (optional)
+            RNG seed.  Defaults to None.
+        cache : bool (optional)
+            Whether or not to cache forward model input-output pairs.  Defaults
+            to True since the forward model is expensive to evaluate. In
+            practice, users should cache forward model inputs, outputs,
+            ancillary parameters, etc in each likelihood function evaluation,
+            but saving theta and y here doesn't hurt.  Saves the results to
+            apFModelCache.npz in the current working directory.
+        args : iterable (optional)
+            Arguments for user-specified loglikelihood function that calls the
+            forward model. Defaults to None.
+        kwargs : dict (optional)
+            Keyword arguments for user-specified loglikelihood function that
+            calls the forward model.
+
+        Returns
+        -------
+        None
+            Returns nothing if computeLnLike is True, as everything is
+            saved in self.theta, self.y, and potentially cached if cache is True.
+            Otherwise, returns thetaT and yT.
+        thetaT : array
+            New design point selected by maximizing GP utility function.
+        yT : array
+            Value of loglikelihood + logprior at thetaT.
+        """
+
+        yT = np.nan
+        llIters = 0
+
+        # Find new theta that produces a valid loglikelihood
+        while not np.isfinite(yT):
+
+            thetaT = ut.minimizeObjective(self.utility, self.y, self.gp,
+                                          sampleFn=self.priorSample,
+                                          priorFn=self._lnprior,
+                                          bounds=bounds, **kwargs)
+
+            # Compute lnLikelihood at thetaT?
+            if computeLnLike:
+                # 2) Query forward model at new point, thetaT
+                # Evaluate forward model via loglikelihood function
+                loglikeT = self._lnlike(thetaT, *args, **kwargs)
+
+                # If loglike function returns loglike, blobs, ..., only use loglike
+                if hasattr(loglikeT, "__iter__"):
+                    yT = np.array([loglikeT[0] + self._lnprior(thetaT)])
+                else:
+                    yT = np.array([loglikeT + self._lnprior(thetaT)])
+
+                llIters += 1
+
+                # If loglikeT isn't finite after maxLnLikeRestarts tries,
+                # your likelihood function is not executing properly
+                if llIters >= maxLnLikeRestarts:
+                    errMsg = "ERROR: Non-finite likelihood for %d iterations." % maxLnLikeRestarts
+                    errMsg += "forward model probably returning NaNs."
+                    raise RuntimeError(errMsg)
+            # Don't compute lnlikelihood
+            else:
+                break
+
+        if computeLnLike:
+            # Valid theta, y found. Join theta, y arrays with new points.
+            self.theta = np.vstack([self.theta, np.array(thetaT)])
+            self.y = np.hstack([self.y, yT])
+
+            # 3) Re-optimize GP with new point, optimize
+
+            # Re-initialize, optimize GP since self.theta's shape changed
+            self.gp = gpUtils.setupGP(self.theta, self.y, self.gp)
+            self.gp = gpUtils.optimizeGP(self.gp, self.theta, self.y,
+                                         seed=seed)
+
+            # Save forward model input-output pairs since they take forever to
+            # calculate and we want them around in case something weird happens.
+            # Users should probably do this in their likelihood function
+            # anyways, but might as well do it here too.
+            if cache:
+                np.savez("apFModelCache.npz", theta=self.theta, y=self.y)
+        # Don't care about lnlikelihood, just return thetaT.
+        else:
+            return thetaT
+    # end function
 
 
     def findMLE(self, x0, method="l-bfgs-b", bounds=None, options=None,
@@ -507,7 +596,7 @@ class ApproxPosterior(object):
                     break
 
         # Now compute maximum likelihood value at MLE
-        yHat = self._gpll(thetaHat)
+        yHat = self._gpll(thetaHat)[0]
 
         return thetaHat, yHat
-        # end function
+    # end function

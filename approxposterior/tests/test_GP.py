@@ -20,8 +20,7 @@ def testUtilsGP():
     """
     Test the utility functions!  This probes the gp_utils.setup_gp function
     (which is rather straight-forward) and makes sure the utility functions
-    produce the right result (which is also straight-forward).  If something is
-    broke, you'll get an assert error
+    produce the right result (which is also straight-forward).  
 
     Parameters
     ----------
@@ -80,8 +79,6 @@ def testUtilsGP():
     # Compute the AGP utility function at some point
     thetaTest = np.array([-2.3573, 4.673])
     testUtil = ut.AGPUtility(thetaTest, y, gp)
-
-    print(testUtil)
 
     errMsg = "ERROR: AGP util fn bug.  Did you change gp_utils.setup_gp?"
     assert np.allclose(testUtil, 11.35206957), errMsg

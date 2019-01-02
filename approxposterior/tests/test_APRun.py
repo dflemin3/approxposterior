@@ -68,13 +68,12 @@ def test_run():
                                 algorithm=algorithm)
 
     # Run!
-    ap.run(m=m, nmax=nmax, Dmax=Dmax, kmax=kmax, bounds=bounds,
+    ap.run(m=m, nmax=nmax, Dmax=Dmax, kmax=kmax, bounds=bounds, cache=False,
            nKLSamples=100000, mcmcKwargs=mcmcKwargs, samplerKwargs=samplerKwargs,
            verbose=False, seed=seed)
 
     # Ensure medians of chains are consistent with the true values
-    reader = emcee.backends.HDFBackend(ap.backends[-1], read_only=True)
-    samples = reader.get_chain(discard=ap.iburns[-1], flat=True, thin=ap.ithins[-1])
+    samples = ap.sampler.get_chain(discard=ap.iburns[-1], flat=True, thin=ap.ithins[-1])
     x1Med, x2Med = np.median(samples, axis=0)
 
     diffX1 = np.fabs(0.04 - x1Med)
