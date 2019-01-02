@@ -101,8 +101,8 @@ class ApproxPosterior(object):
 
     def _gpll(self, theta, *args, **kwargs):
         """
-        Compute the approximate posterior conditional distibution at a given
-        point, theta (the likelihood + prior learned by the GP)
+        Compute the approximate posterior conditional distibution, the
+        likelihood + prior learned by the GP, at a given point, theta.
 
         Parameters
         ----------
@@ -140,7 +140,7 @@ class ApproxPosterior(object):
         if not np.isfinite(mu):
             return -np.inf, np.nan
         else:
-            return mu, lnprior
+            return mu + lnprior, lnprior
     # end function
 
 
@@ -539,7 +539,7 @@ class ApproxPosterior(object):
     # end function
 
 
-    def findMLE(self, x0, method="l-bfgs-b", bounds=None, options=None,
+    def findMLE(self, x0, method="nelder-mead", bounds=None, options=None,
                 *args, **kwargs):
         """
         Find the maximum likelihood solution according to the GP.
@@ -549,11 +549,9 @@ class ApproxPosterior(object):
         x0 : array
             Initial guess
         method: str (optional)
-            minimizer method.  Defaults to l-bfgs-b.
+            minimizer method.  Defaults to nelder-mead.
         bounds : iterable (optional)
-            bounds for optimizer.  One should probably use bounds to ensure
-            minimizer stays in valid regions of parameter space, e.g. those
-            allowed by the prior.
+            bounds for optimizer
         options : dict (optional)
             kwargs for the minimizer
 
