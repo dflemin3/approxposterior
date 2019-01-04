@@ -140,7 +140,7 @@ class ApproxPosterior(object):
         if not np.isfinite(mu):
             return -np.inf, np.nan
         else:
-            return mu + lnprior, lnprior
+            return mu, lnprior
     # end function
 
 
@@ -330,17 +330,27 @@ class ApproxPosterior(object):
             if verbose:
                 print("mcmc finished")
 
+            # If estimating burn in or thin scale, compute integrated
+            # autocorrelation length of the chains
+            if estBurnin or thinChains:
+                try:
+                    tau = self.sampler.get_autocorr_time(tol=0)
+                except ValueError:
+                    print("Failed to compute integrated autocorrelation length, tau.")
+                    print("Setting tau = 1...")
+                    tau = 1
+
             # Estimate burn-in?
             if estBurnin:
                 # Note we set tol=0 so it always provides an estimate, even if
                 # the estimate isn't good, in which case run longer chains!
-                iburn = int(2.0*np.max(self.sampler.get_autocorr_time(tol=0)))
+                iburn = int(2.0*np.max(tau))
             else:
                 iburn = 0
 
             # Thin chains?
             if thinChains:
-                ithin = int(0.5*np.min(self.sampler.get_autocorr_time(tol=0)))
+                ithin = int(0.5*np.min(tau))
             else:
                 ithin = 1
 
@@ -523,9 +533,14 @@ class ApproxPosterior(object):
             # 3) Re-optimize GP with new point, optimize
 
             # Re-initialize, optimize GP since self.theta's shape changed
-            self.gp = gpUtils.setupGP(self.theta, self.y, self.gp)
-            self.gp = gpUtils.optimizeGP(self.gp, self.theta, self.y,
-                                         seed=seed)
+            try:
+                self.gp = gpUtils.setupGP(self.theta, self.y, self.gp)
+                self.gp = gpUtils.optimizeGP(self.gp, self.theta, self.y,
+                                             seed=seed)
+            except ValueError:
+                print("theta:", self.theta)
+                print("y:", self.y)
+                raise ValueError("gp couldn't optimize!")
 
             # Save forward model input-output pairs since they take forever to
             # calculate and we want them around in case something weird happens.
