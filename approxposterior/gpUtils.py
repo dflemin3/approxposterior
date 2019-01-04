@@ -69,7 +69,7 @@ def _grad_nll(p, gp, y):
 # end function
 
 
-def optimizeGP(gp, theta, y, seed=None, n_restarts=5):
+def optimizeGP(gp, theta, y, seed=None, n_restarts=5, method=None, options=None):
     """
     TODO: implement n_restarts
 
@@ -93,6 +93,10 @@ def optimizeGP(gp, theta, y, seed=None, n_restarts=5):
         numpy RNG seed.  Defaults to None.
     n_restarts : int (optional)
         Number of times to restart the optimization.  Defaults to 5.
+    method : str (optional)
+        scipy.optimize.minimize method.  Defaults to None, which is nelder-mead.
+    options : dict (optional)
+        kwargs for the scipy.optimize.minimize function.  Defaults to None
 
     Returns
     -------
@@ -100,6 +104,10 @@ def optimizeGP(gp, theta, y, seed=None, n_restarts=5):
     """
 
     # Optimize GP by maximizing log-likelihood
+    if method is None:
+        method = "nelder-mead"
+    if options is None:
+        options = {"adaptive" : True}
 
     # Run the optimization routine n_restarts times
     res = []
@@ -107,7 +115,8 @@ def optimizeGP(gp, theta, y, seed=None, n_restarts=5):
     p0 = gp.get_parameter_vector()
     for _ in range(n_restarts):
         p0_n = np.array(p0) + 1.0e-4 * np.random.randn(len(p0))
-        results = minimize(_nll, p0_n, jac=_grad_nll, args=(gp, y), method="bfgs")
+        results = minimize(_nll, p0_n, jac=_grad_nll, args=(gp, y),
+                           method=method, options=options)
 
         # Cache this result
         res.append(results.x)
