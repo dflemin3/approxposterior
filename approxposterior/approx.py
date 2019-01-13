@@ -54,8 +54,9 @@ class ApproxPosterior(object):
         priorSample : function
             Method to randomly sample points over region allowed by prior
         algorithm : str (optional)
-            Which utility function to use.  Defaults to BAPE.  Options are BAPE
-            or AGP.  Case doesn't matter.
+            Which utility function to use.  Defaults to BAPE.  Options are BAPE,
+            AGP, or alternate.  Case doesn't matter. If alternate, runs AGP on
+            even numbers and BAPE on odd.
 
         Returns
         -------
@@ -64,7 +65,7 @@ class ApproxPosterior(object):
 
         # Need to supply the training set
         if theta is None or y is None:
-            raise ValueError("ERROR: must supply both theta and y")
+            raise ValueError("Must supply both theta and y")
 
         self.theta = np.array(theta).squeeze()
         self.y = np.array(y).squeeze()
@@ -72,15 +73,18 @@ class ApproxPosterior(object):
         self._lnprior = lnprior
         self._lnlike = lnlike
         self.priorSample = priorSample
-        self.algorithm = algorithm
+        self.algorithm = str(algorithm).lower()
 
         # Assign utility function
-        if self.algorithm.lower() == "bape":
+        if self.algorithm == "bape":
             self.utility = ut.BAPEUtility
-        elif self.algorithm.lower() == "agp":
+        elif self.algorithm == "agp":
+            self.utility = ut.AGPUtility
+        elif self.algorithm == "alternate":
+            # If alternate, AGP on even, BAPE on odd
             self.utility = ut.AGPUtility
         else:
-            errMsg = "ERROR: Invalid algorithm. Valid options: BAPE, AGP."
+            errMsg = "Unknown algorithm. Valid options: BAPE, AGP, or alternate."
             raise ValueError(errMsg)
 
         # Initial approximate posteriors are the prior
@@ -296,6 +300,15 @@ class ApproxPosterior(object):
             # Note that we call a minimizer because minimizing negative of
             # utility function is the same as maximizing it
             for ii in range(m):
+
+                # If alternating utility functions, switch here!
+                if self.algorithm == "alternate":
+                    # AGP on even, BAPE on odd
+                    if ii % 2 == 0:
+                        self.utility = ut.AGPUtility
+                    else:
+                        self.utility = ut.BAPEUtility
+
                 # computeLnLike=True means new points are saved in self.theta,
                 # and self.y
                 self.findNextPoint(computeLnLike=True,
@@ -438,7 +451,7 @@ class ApproxPosterior(object):
 
 
     def findNextPoint(self, computeLnLike=True, bounds=None, gpMethod=None,
-                      maxLnLikeRestarts=5, seed=None, cache=True, gpOptions=None,
+                      maxLnLikeRestarts=1, seed=None, cache=True, gpOptions=None,
                       *args, **kwargs):
         """
         Find new point, thetaT, by maximizing utility function. Note that we
