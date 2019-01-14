@@ -21,7 +21,7 @@ Dmax = 0.1                        # KL-Divergence convergence limit
 kmax = 5                          # Number of iterations for Dmax convergence to kick in
 nKLSamples = 10000                # Number of samples from posterior to use to calculate KL-Divergence
 bounds = ((-5,5), (-5,5))         # Prior bounds
-algorithm = "alternate"                # Use the Kandasamy et al. (2015) formalism
+algorithm = "BAPE"                # Use the Kandasamy et al. (2015) formalism
 
 # emcee MCMC parameters
 samplerKwargs = {"nwalkers" : 20}        # emcee.EnsembleSampler parameters
