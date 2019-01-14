@@ -354,12 +354,18 @@ class ApproxPosterior(object):
             # If estimating burn in or thin scale, compute integrated
             # autocorrelation length of the chains
             if estBurnin or thinChains:
-                try:
-                    tau = self.sampler.get_autocorr_time(tol=0)
-                except ValueError:
-                    print("Failed to compute integrated autocorrelation length, tau.")
-                    print("Setting tau = 1...")
-                    tau = 1
+                # tol = 0 so it always returns an answer
+                tau = self.sampler.get_autocorr_time(tol=0)
+
+                # Catch NaNs
+                if np.any(~np.isfinite(tau)):
+                    # Try removing NaNs
+                    tau = tau[np.isfinite(np.array(tau))]
+                    if len(tau) < 1:
+                        if verbose:
+                            print("Failed to compute integrated autocorrelation length, tau.")
+                            print("Setting tau = 1")
+                        tau = 1
 
             # Estimate burn-in?
             if estBurnin:
@@ -568,7 +574,7 @@ class ApproxPosterior(object):
             except ValueError:
                 print("theta:", self.theta)
                 print("y:", self.y)
-                raise ValueError("gp couldn't optimize!")
+                raise ValueError("GP couldn't optimize!")
 
             # Save forward model input-output pairs since they take forever to
             # calculate and we want them around in case something weird happens.

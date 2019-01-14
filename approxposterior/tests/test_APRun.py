@@ -13,7 +13,6 @@ from approxposterior import approx, likelihood as lh
 import numpy as np
 import george
 import emcee
-import os
 
 def test_run():
     """
@@ -23,7 +22,7 @@ def test_run():
     # Define algorithm parameters
     m0 = 200                          # Initial size of training set
     m = 20                            # Number of new points to find each iteration
-    nmax = 1                          # Maximum number of iterations
+    nmax = 2                          # Maximum number of iterations
     Dmax = 0.1                        # KL-Divergence convergence limit
     kmax = 5                          # Number of iterations for Dmax convergence to kick in
     bounds = ((-5,5), (-5,5))         # Prior bounds
@@ -85,9 +84,6 @@ def test_run():
     errMsg = "Medians of marginal posteriors are incosistent with true values."
     assert((diffX1 < 0.5) & (diffX2 < 0.5)), errMsg
 
-    # Remove backends so they don't take up space
-    for back in ap.backends:
-        os.remove(back)
 # end function
 
 if __name__ == "__main__":
