@@ -95,7 +95,7 @@ def optimizeGP(gp, theta, y, seed=None, nRestarts=1, method=None, options=None):
         Number of times to restart the optimization.  Defaults to 1. Increase
         this number if the GP isn't optimized well.
     method : str (optional)
-        scipy.optimize.minimize method.  Defaults to None, which is nelder-mead.
+        scipy.optimize.minimize method.  Defaults to bfgs if None.
     options : dict (optional)
         kwargs for the scipy.optimize.minimize function.  Defaults to None
 
@@ -106,9 +106,9 @@ def optimizeGP(gp, theta, y, seed=None, nRestarts=1, method=None, options=None):
 
     # Optimize GP by maximizing log-likelihood
     if method is None:
-        method = "nelder-mead"
+        method = "bfgs"
     if options is None:
-        options = {"adaptive" : True}
+        options = {"maxiter" : 100}
 
     # Run the optimization routine n_restarts times
     res = []

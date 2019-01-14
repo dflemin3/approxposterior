@@ -19,9 +19,9 @@ m = 20                            # Number of new points to find each iteration
 nmax = 2                          # Maximum number of iterations
 Dmax = 0.1                        # KL-Divergence convergence limit
 kmax = 5                          # Number of iterations for Dmax convergence to kick in
-nKLSamples = 100000               # Number of samples from posterior to use to calculate KL-Divergence
+nKLSamples = 10000                # Number of samples from posterior to use to calculate KL-Divergence
 bounds = ((-5,5), (-5,5))         # Prior bounds
-algorithm = "bape"                # Use the Kandasamy et al. (2015) formalism
+algorithm = "alternate"                # Use the Kandasamy et al. (2015) formalism
 
 # emcee MCMC parameters
 samplerKwargs = {"nwalkers" : 20}        # emcee.EnsembleSampler parameters
@@ -63,15 +63,14 @@ ap = approx.ApproxPosterior(theta=theta,
 
 # Run!
 ap.run(m=m, nmax=nmax, Dmax=Dmax, kmax=kmax, bounds=bounds,  estBurnin=True,
-       nKLSamples=nKLSamples, mcmcKwargs=mcmcKwargs,
+       nKLSamples=nKLSamples, mcmcKwargs=mcmcKwargs, cache=False,
        samplerKwargs=samplerKwargs, verbose=True)
 
 # Check out the final posterior distribution!
 import emcee, corner
 
 # Load in chain from last iteration
-reader = emcee.backends.HDFBackend(ap.backends[-1], read_only=True)
-samples = reader.get_chain(discard=ap.iburns[-1], flat=True, thin=ap.ithins[-1])
+samples = ap.sampler.get_chain(discard=ap.iburns[-1], flat=True, thin=ap.ithins[-1])
 
 # Corner plot!
 fig = corner.corner(samples, quantiles=[0.16, 0.5, 0.84], show_titles=True,

@@ -149,7 +149,7 @@ class ApproxPosterior(object):
 
 
     def run(self, m=10, nmax=2, Dmax=0.01, kmax=5, seed=None,
-            timing=False, bounds=None, nKLSamples=100000, verbose=True,
+            timing=False, bounds=None, nKLSamples=10000, verbose=True,
             args=None, maxComp=3, mcmcKwargs=None, samplerKwargs=None,
             estBurnin=False, thinChains=False, chainFile="apRun", cache=True,
             maxLnLikeRestarts=5, gmmKwargs=None, gpMethod=None, gpOptions=None,
