@@ -137,10 +137,11 @@ def optimizeGP(gp, theta, y, seed=None, nRestarts=1, method=None, options=None):
     return gp
 # end function
 
-def setupGP(theta, y, gp):
+def setupGP(theta, y, gp, solver="basic"):
     """
-    Initialize a george GP object.  Utility function for creating a new GP when
-    the data its conditioned on changes sizes, i.e. when a new point is added
+    Initialize a george GP object from and old george GP object.  This is a
+    utility function for creating a new GP when the data it is conditioned on
+    changes sizes, i.e. when a new point is added.
 
     Parameters
     ----------
@@ -150,6 +151,9 @@ def setupGP(theta, y, gp):
     gp : george.GP
         Gaussian Process that learns the likelihood conditioned on forward
         model input-output pairs (theta, y)
+    solver : str
+        george GP kernel solver.  Defaults to basic, the default george solver.
+        The other option is
 
     Returns
     -------
@@ -157,7 +161,8 @@ def setupGP(theta, y, gp):
     """
 
     # Create GP using same kernel, updated estimate of the mean, but new theta
-    new_gp = george.GP(kernel=gp.kernel, fit_mean=True, mean=np.nanmedian(y))
+    new_gp = george.GP(kernel=gp.kernel, fit_mean=True, mean=np.median(y))
+    new_gp.set_parameter_vector(gp.get_parameter_vector())
     new_gp.compute(theta)
 
     return new_gp

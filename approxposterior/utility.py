@@ -237,8 +237,7 @@ def minimizeObjective(fn, y, gp, sampleFn, priorFn, bounds=None, **kwargs):
         point that minimizes fn
     """
 
-    is_finite = False
-    while not is_finite:
+    while True:
         # Solve for theta that maximize fn and is allowed by prior
 
         # Choose theta0 by uniformly sampling over parameter space and reshape
@@ -250,7 +249,7 @@ def minimizeObjective(fn, y, gp, sampleFn, priorFn, bounds=None, **kwargs):
         # Mimimze fn, see if prior allows solution
         try:
             tmp = minimize(fn, theta0, args=args, bounds=bounds,
-                           method="l-bfgs-b", options={"ftol" : 1.0e-3})["x"]
+                           method="l-bfgs-b")["x"]
 
         # ValueError.  Try again.
         except ValueError:
@@ -262,7 +261,7 @@ def minimizeObjective(fn, y, gp, sampleFn, priorFn, bounds=None, **kwargs):
             # Is this point in parameter space allowed by the prior?
             if np.isfinite(priorFn(tmp, **kwargs)):
                 theta = tmp
-                is_finite = True
+                break
     # end while
 
     return theta

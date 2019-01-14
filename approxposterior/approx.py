@@ -551,8 +551,9 @@ class ApproxPosterior(object):
                 # If loglikeT isn't finite after maxLnLikeRestarts tries,
                 # your likelihood function is not executing properly
                 if llIters >= maxLnLikeRestarts:
-                    errMsg = "ERROR: Non-finite likelihood for %d iterations." % maxLnLikeRestarts
-                    errMsg += "forward model probably returning NaNs."
+                    errMsg = "Non-finite likelihood for %d iterations." % maxLnLikeRestarts
+                    errMsg += "Forward model probably returning NaNs."
+                    print("ThetaT, loglikeT, yT:", thetaT, loglikeT, yT)
                     raise RuntimeError(errMsg)
             # Don't compute lnlikelihood
             else:
