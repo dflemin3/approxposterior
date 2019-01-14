@@ -71,7 +71,6 @@ def _grad_nll(p, gp, y):
 
 def optimizeGP(gp, theta, y, seed=None, nRestarts=1, method=None, options=None):
     """
-    TODO: implement n_restarts
 
     Optimize hyperparameters of an arbitrary george Gaussian Process kenerl
     using either a straight-up maximizing the log-likelihood or k-fold cv in which
@@ -108,14 +107,14 @@ def optimizeGP(gp, theta, y, seed=None, nRestarts=1, method=None, options=None):
     if method is None:
         method = "bfgs"
     if options is None:
-        options = {"maxiter" : 100}
+        options = {}
 
     # Run the optimization routine n_restarts times
     res = []
     mll = []
     p0 = gp.get_parameter_vector()
     for _ in range(nRestarts):
-        p0_n = np.array(p0) + 1.0e-3 * np.random.randn(len(p0))
+        p0_n = np.array(p0) + 1.0e-4 * np.random.randn(len(p0))
         results = minimize(_nll, p0_n, jac=_grad_nll, args=(gp, y),
                            method=method, options=options)
 

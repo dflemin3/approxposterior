@@ -574,6 +574,8 @@ class ApproxPosterior(object):
             except ValueError:
                 print("theta:", self.theta)
                 print("y:", self.y)
+                print("gp parameters names:", self.gp.get_parameter_names())
+                print("gp parameters:", self.gp.get_parameter_vector())
                 raise ValueError("GP couldn't optimize!")
 
             # Save forward model input-output pairs since they take forever to

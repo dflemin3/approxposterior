@@ -44,6 +44,9 @@ def test_run():
 
     ### Initialize GP ###
 
+    # XXX: automate setting up GP with this procedure if user doesn't want to do anything
+    # and write a test for that automated procedure
+
     # Guess initial metric
     initialMetric = np.nanmedian(theta**2, axis=0)/10.0
 
