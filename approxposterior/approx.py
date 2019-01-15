@@ -458,7 +458,7 @@ class ApproxPosterior(object):
 
     def findNextPoint(self, computeLnLike=True, bounds=None, gpMethod=None,
                       maxLnLikeRestarts=1, seed=None, cache=True, gpOptions=None,
-                      *args, **kwargs):
+                      args=None, **kwargs):
         """
         Find new point, thetaT, by maximizing utility function. Note that we
         call a minimizer because minimizing negative of utility function is
@@ -522,6 +522,9 @@ class ApproxPosterior(object):
         yT : array
             Value of loglikelihood + logprior at thetaT.
         """
+
+        if args is None:
+            args = ()
 
         yT = np.nan
         llIters = 0
