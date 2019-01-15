@@ -69,7 +69,7 @@ def _grad_nll(p, gp, y):
 # end function
 
 
-def optimizeGP(gp, theta, y, seed=None, nRestarts=1, method=None, options=None):
+def optimizeGP(gp, theta, y, seed=None, nRestarts=3, method=None, options=None):
     """
 
     Optimize hyperparameters of an arbitrary george Gaussian Process kenerl
@@ -91,10 +91,10 @@ def optimizeGP(gp, theta, y, seed=None, nRestarts=1, method=None, options=None):
     seed : int (optional)
         numpy RNG seed.  Defaults to None.
     nRestarts : int (optional)
-        Number of times to restart the optimization.  Defaults to 1. Increase
+        Number of times to restart the optimization.  Defaults to 3. Increase
         this number if the GP isn't optimized well.
     method : str (optional)
-        scipy.optimize.minimize method.  Defaults to bfgs if None.
+        scipy.optimize.minimize method.  Defaults to newton-cg if None.
     options : dict (optional)
         kwargs for the scipy.optimize.minimize function.  Defaults to None
 
@@ -105,7 +105,7 @@ def optimizeGP(gp, theta, y, seed=None, nRestarts=1, method=None, options=None):
 
     # Optimize GP by maximizing log-likelihood
     if method is None:
-        method = "bfgs"
+        method = "newton-cg"
     if options is None:
         options = {}
 
@@ -114,7 +114,7 @@ def optimizeGP(gp, theta, y, seed=None, nRestarts=1, method=None, options=None):
     mll = []
     p0 = gp.get_parameter_vector()
     for _ in range(nRestarts):
-        p0_n = np.array(p0) + 1.0e-4 * np.random.randn(len(p0))
+        p0_n = np.array(p0) + 1.0e-3 * np.random.randn(len(p0))
         results = minimize(_nll, p0_n, jac=_grad_nll, args=(gp, y),
                            method=method, options=options)
 

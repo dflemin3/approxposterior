@@ -529,6 +529,15 @@ class ApproxPosterior(object):
         # Find new theta that produces a valid loglikelihood
         while not np.isfinite(yT):
 
+            # If loglikeT isn't finite after maxLnLikeRestarts tries,
+            # your likelihood function is not executing properly
+            if llIters >= maxLnLikeRestarts:
+                errMsg = "Non-finite likelihood for %d iterations." % maxLnLikeRestarts
+                errMsg += "Forward model probably returning NaNs."
+                print("Last thetaT, loglikeT, yT:", thetaT, loglikeT, yT)
+                raise RuntimeError(errMsg)
+
+            # Find new point
             thetaT = ut.minimizeObjective(self.utility, self.y, self.gp,
                                           sampleFn=self.priorSample,
                                           priorFn=self._lnprior,
@@ -546,18 +555,11 @@ class ApproxPosterior(object):
                 else:
                     yT = np.array([loglikeT + self._lnprior(thetaT)])
 
-                llIters += 1
-
-                # If loglikeT isn't finite after maxLnLikeRestarts tries,
-                # your likelihood function is not executing properly
-                if llIters >= maxLnLikeRestarts:
-                    errMsg = "Non-finite likelihood for %d iterations." % maxLnLikeRestarts
-                    errMsg += "Forward model probably returning NaNs."
-                    print("ThetaT, loglikeT, yT:", thetaT, loglikeT, yT)
-                    raise RuntimeError(errMsg)
             # Don't compute lnlikelihood
             else:
                 break
+
+            llIters += 1
 
         if computeLnLike:
             # Valid theta, y found. Join theta, y arrays with new points.

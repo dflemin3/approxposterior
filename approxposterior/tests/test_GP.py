@@ -20,7 +20,7 @@ def testUtilsGP():
     """
     Test the utility functions!  This probes the gp_utils.setup_gp function
     (which is rather straight-forward) and makes sure the utility functions
-    produce the right result (which is also straight-forward).  
+    produce the right result (which is also straight-forward).
 
     Parameters
     ----------
@@ -81,13 +81,13 @@ def testUtilsGP():
     testUtil = ut.AGPUtility(thetaTest, y, gp)
 
     errMsg = "ERROR: AGP util fn bug.  Did you change gp_utils.setup_gp?"
-    assert np.allclose(testUtil, 11.35206957), errMsg
+    assert np.allclose(testUtil, 11.35206957, rtol=1.0e-4), errMsg
 
     # Now do the same using the BAPE utility function
     testUtil = ut.BAPEUtility(thetaTest, y, gp)
 
     errMsg = "ERROR: BAPE util fn bug.  Did you change gp_utils.setup_gp?"
-    assert np.allclose(testUtil, 21.51239959), errMsg
+    assert np.allclose(testUtil, 21.51239959, rtol=1.0e-4), errMsg
 
     return None
 # end function
