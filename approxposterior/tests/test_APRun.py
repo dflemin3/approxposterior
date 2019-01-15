@@ -44,17 +44,14 @@ def test_run():
 
     ### Initialize GP ###
 
-    # XXX: automate setting up GP with this procedure if user doesn't want to do anything
-    # and write a test for that automated procedure
-
     # Guess initial metric
-    initialMetric = np.nanmedian(theta**2, axis=0)/10.0
+    initialMetric = np.mean(theta**2, axis=0)/theta.shape[-1]**3
 
     # Create kernel
     kernel = george.kernels.ExpSquaredKernel(initialMetric, ndim=2)
 
     # Guess initial mean function
-    mean = np.nanmedian(y)
+    mean = np.mean(y)
 
     # Create GP
     gp = george.GP(kernel=kernel, fit_mean=True, mean=mean)

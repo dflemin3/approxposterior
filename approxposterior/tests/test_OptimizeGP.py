@@ -60,7 +60,7 @@ def testGPOpt():
     # Set up a gp
 
     # Guess initial metric
-    initialMetric = np.log10(np.var(theta, axis=0))
+    initialMetric = np.mean(theta**2, axis=0)/theta.shape[-1]**3
 
     # Create kernel
     kernel = george.kernels.ExpSquaredKernel(initialMetric, ndim=2)

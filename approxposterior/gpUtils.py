@@ -119,8 +119,8 @@ def optimizeGP(gp, theta, y, seed=None, nRestarts=5, method=None, options=None,
 
         # Initialize guess if None is provided
         if p0 is None:
-            p0 = np.array(gp.get_parameter_vector())
-            p0_n = p0 + 1.0e-3 * np.random.randn(len(p0))
+            p0_n = np.hstack(([np.mean(y)], np.var(theta, axis=0)/theta.shape[-1]**3))
+            p0_n = p0_n + 1.0e-3 * np.random.randn(len(p0_n))
         else:
             p0 = np.array(p0)
             p0_n = p0 + 1.0e-3 * np.random.randn(len(p0))
