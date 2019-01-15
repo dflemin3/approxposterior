@@ -1,6 +1,6 @@
 """
 
-Test optimizing GP utility functions.
+Test the GP optimizer and utility functions.
 
 @author: David P. Fleming [University of Washington, Seattle], 2018
 @email: dflemin3 (at) uw (dot) edu
@@ -9,14 +9,12 @@ Test optimizing GP utility functions.
 
 import numpy as np
 import george
-from approxposterior import utility as ut, gpUtils
+from approxposterior import utility as ut, gpUtils as gpu
 
 
-def testUtilsGP():
+def testGPOpt():
     """
-    Test the utility functions!  This probes the gp_utils.setup_gp function
-    (which is rather straight-forward) and makes sure the utility functions
-    produce the right result (which is also straight-forward).
+    Test optimizing the GP hyperparameters.
 
     Parameters
     ----------
@@ -24,6 +22,9 @@ def testUtilsGP():
     Returns
     -------
     """
+
+    seed = 91
+    np.random.seed(seed)
 
     # Define 20 input points
     theta = np.array([[-3.19134011, -2.91421701],
@@ -58,7 +59,7 @@ def testUtilsGP():
     # Set up a gp
 
     # Guess initial metric
-    initialMetric = np.nanmedian(theta**2, axis=0)/10.0
+    initialMetric = np.log10(np.var(theta, axis=0))
 
     # Create kernel
     kernel = george.kernels.ExpSquaredKernel(initialMetric, ndim=2)
@@ -70,20 +71,16 @@ def testUtilsGP():
     gp = george.GP(kernel=kernel, fit_mean=True, mean=mean)
     gp.compute(theta)
 
-    gp = gpUtils.optimizeGP(gp, theta, y)
+    # Optimize gp
+    method = "bfgs"
+    options = dict()
+    p0 = np.hstack((np.mean(y), initialMetric))
 
-    # Compute the AGP utility function at some point
-    thetaTest = np.array([-2.3573, 4.673])
-    testUtil = ut.AGPUtility(thetaTest, y, gp)
+    gp = gpu.optimizeGP(gp, theta, y, seed=seed, nRestarts=1,
+                        method=method, options=options, p0=p0)
 
-    errMsg = "ERROR: AGP util fn bug.  Did you change gp_utils.setup_gp?"
-    assert np.allclose(testUtil, 11.35206957, rtol=1.0e-4), errMsg
-
-    # Now do the same using the BAPE utility function
-    testUtil = ut.BAPEUtility(thetaTest, y, gp)
-
-    errMsg = "ERROR: BAPE util fn bug.  Did you change gp_utils.setup_gp?"
-    assert np.allclose(testUtil, 21.51239959, rtol=1.0e-4), errMsg
-
-    return None
+    # Extract GP hyperparameters, compare to truth
+    hype = gp.get_parameter_vector()
+    errMsg = "ERROR: GP hyperparameters are not close to the true value!"
+    assert np.allclose(hype, [-135.91343934, -0.68256741, 2.1394469]), errMsg
 # end function

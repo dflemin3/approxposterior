@@ -10,8 +10,6 @@ __all__ = ["setupGP","optimizeGP"]
 
 import numpy as np
 import george
-from sklearn.model_selection import train_test_split
-from sklearn.model_selection import ShuffleSplit, ParameterGrid
 from scipy.optimize import minimize
 
 
@@ -69,7 +67,8 @@ def _grad_nll(p, gp, y):
 # end function
 
 
-def optimizeGP(gp, theta, y, seed=None, nRestarts=3, method=None, options=None):
+def optimizeGP(gp, theta, y, seed=None, nRestarts=5, method=None, options=None,
+               p0=None):
     """
 
     Optimize hyperparameters of an arbitrary george Gaussian Process kenerl
@@ -91,12 +90,16 @@ def optimizeGP(gp, theta, y, seed=None, nRestarts=3, method=None, options=None):
     seed : int (optional)
         numpy RNG seed.  Defaults to None.
     nRestarts : int (optional)
-        Number of times to restart the optimization.  Defaults to 3. Increase
+        Number of times to restart the optimization.  Defaults to 5. Increase
         this number if the GP isn't optimized well.
     method : str (optional)
-        scipy.optimize.minimize method.  Defaults to newton-cg if None.
+        scipy.optimize.minimize method.  Defaults to bfgs if None.
     options : dict (optional)
         kwargs for the scipy.optimize.minimize function.  Defaults to None
+    p0 : array (optional)
+        Initial guess for kernel hyperparameters.  If None, defaults to
+        p0 + 1.0e-3 * np.random.randn(len(p0)) where p0 is the current vector of
+        hyperparameters.
 
     Returns
     -------
@@ -105,16 +108,21 @@ def optimizeGP(gp, theta, y, seed=None, nRestarts=3, method=None, options=None):
 
     # Optimize GP by maximizing log-likelihood
     if method is None:
-        method = "newton-cg"
+        method = "bfgs"
     if options is None:
         options = {}
 
     # Run the optimization routine n_restarts times
     res = []
     mll = []
-    p0 = gp.get_parameter_vector()
     for _ in range(nRestarts):
-        p0_n = np.array(p0) + 1.0e-3 * np.random.randn(len(p0))
+        # Initialize guess if None is provided
+        if p0 is None:
+            p0 = np.array(gp.get_parameter_vector())
+            p0_n = p0 + 1.0e-3 * np.random.randn(len(p0))
+        else:
+            p0_n = np.array(p0)
+
         results = minimize(_nll, p0_n, jac=_grad_nll, args=(gp, y),
                            method=method, options=options)
 
@@ -137,7 +145,7 @@ def optimizeGP(gp, theta, y, seed=None, nRestarts=3, method=None, options=None):
     return gp
 # end function
 
-def setupGP(theta, y, gp, solver="basic"):
+def setupGP(theta, y, gp):
     """
     Initialize a george GP object from and old george GP object.  This is a
     utility function for creating a new GP when the data it is conditioned on
@@ -151,9 +159,6 @@ def setupGP(theta, y, gp, solver="basic"):
     gp : george.GP
         Gaussian Process that learns the likelihood conditioned on forward
         model input-output pairs (theta, y)
-    solver : str
-        george GP kernel solver.  Defaults to basic, the default george solver.
-        The other option is
 
     Returns
     -------
@@ -161,7 +166,7 @@ def setupGP(theta, y, gp, solver="basic"):
     """
 
     # Create GP using same kernel, updated estimate of the mean, but new theta
-    new_gp = george.GP(kernel=gp.kernel, fit_mean=True, mean=np.median(y))
+    new_gp = george.GP(kernel=gp.kernel, fit_mean=True, mean=np.mean(y))
     new_gp.set_parameter_vector(gp.get_parameter_vector())
     new_gp.compute(theta)
 
