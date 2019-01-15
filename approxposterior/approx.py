@@ -259,10 +259,6 @@ class ApproxPosterior(object):
         if seed is not None:
             np.random.seed(seed)
 
-        # Make args empty tuple if not supplied
-        if args is None:
-            args = ()
-
         # Create containers for timing?
         if timing:
             self.trainingTime = list()
@@ -316,7 +312,7 @@ class ApproxPosterior(object):
                                    maxLnLikeRestarts=maxLnLikeRestarts,
                                    seed=seed,
                                    cache=cache,
-                                   *args,
+                                   args=args,
                                    **kwargs)
 
             if timing:
