@@ -23,6 +23,7 @@ def testGPOpt():
     -------
     """
 
+    # For reproducibility
     seed = 91
     np.random.seed(seed)
 

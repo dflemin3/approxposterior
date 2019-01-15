@@ -116,12 +116,14 @@ def optimizeGP(gp, theta, y, seed=None, nRestarts=5, method=None, options=None,
     res = []
     mll = []
     for _ in range(nRestarts):
+
         # Initialize guess if None is provided
         if p0 is None:
             p0 = np.array(gp.get_parameter_vector())
             p0_n = p0 + 1.0e-3 * np.random.randn(len(p0))
         else:
-            p0_n = np.array(p0)
+            p0 = np.array(p0)
+            p0_n = p0 + 1.0e-3 * np.random.randn(len(p0))
 
         results = minimize(_nll, p0_n, jac=_grad_nll, args=(gp, y),
                            method=method, options=options)
