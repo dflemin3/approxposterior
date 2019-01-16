@@ -69,6 +69,12 @@ class ApproxPosterior(object):
 
         self.theta = np.array(theta).squeeze()
         self.y = np.array(y).squeeze()
+
+        # Make sure y, theta are valid floats
+        if np.any(~np.isfinite(self.theta)) or np.any(~np.isfinite(self.y)):
+            print("theta, y:", theta, y)
+            raise ValueError("Both theta and y must all be finite!")
+
         self.gp = gp
         self._lnprior = lnprior
         self._lnlike = lnlike

@@ -249,7 +249,7 @@ def minimizeObjective(fn, y, gp, sampleFn, priorFn, bounds=None, **kwargs):
         # Mimimze fn, see if prior allows solution
         try:
             tmp = minimize(fn, theta0, args=args, bounds=bounds,
-                           method="l-bfgs-b")["x"]
+                           method="l-bfgs-b", tol=1.0e-4)["x"]
 
         # ValueError.  Try again.
         except ValueError:
