@@ -108,9 +108,9 @@ def optimizeGP(gp, theta, y, seed=None, nRestarts=1, method=None, options=None,
 
     # Optimize GP by maximizing log-likelihood
     if method is None:
-        method = "powell"
+        method = "nelder-mead"
     if options is None:
-        options = {}
+        options = {"adaptive" : True}
 
     # Run the optimization routine n_restarts times
     res = []
