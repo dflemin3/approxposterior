@@ -67,7 +67,7 @@ def _grad_nll(p, gp, y):
 # end function
 
 
-def optimizeGP(gp, theta, y, seed=None, nRestarts=5, method=None, options=None,
+def optimizeGP(gp, theta, y, seed=None, nRestarts=1, method=None, options=None,
                p0=None):
     """
 
@@ -90,10 +90,10 @@ def optimizeGP(gp, theta, y, seed=None, nRestarts=5, method=None, options=None,
     seed : int (optional)
         numpy RNG seed.  Defaults to None.
     nRestarts : int (optional)
-        Number of times to restart the optimization.  Defaults to 5. Increase
+        Number of times to restart the optimization.  Defaults to 1. Increase
         this number if the GP isn't optimized well.
     method : str (optional)
-        scipy.optimize.minimize method.  Defaults to bfgs if None.
+        scipy.optimize.minimize method.  Defaults to powell if None.
     options : dict (optional)
         kwargs for the scipy.optimize.minimize function.  Defaults to None
     p0 : array (optional)
@@ -108,7 +108,7 @@ def optimizeGP(gp, theta, y, seed=None, nRestarts=5, method=None, options=None,
 
     # Optimize GP by maximizing log-likelihood
     if method is None:
-        method = "bfgs"
+        method = "powell"
     if options is None:
         options = {}
 
@@ -119,8 +119,7 @@ def optimizeGP(gp, theta, y, seed=None, nRestarts=5, method=None, options=None,
 
         # Initialize guess if None is provided
         if p0 is None:
-            p0_n = np.hstack(([np.mean(y)], np.var(theta, axis=0)/theta.shape[-1]**3))
-            p0_n = p0_n + 1.0e-3 * np.random.randn(len(p0_n))
+            p0_n = np.hstack((np.mean(y), np.exp(np.random.randn(theta.shape[-1]))))
         else:
             p0 = np.array(p0)
             p0_n = p0 + 1.0e-3 * np.random.randn(len(p0))
