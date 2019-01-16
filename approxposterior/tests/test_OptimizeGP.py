@@ -59,8 +59,8 @@ def testGPOpt():
 
     # Set up a gp
 
-    # Guess initial metric
-    initialMetric = np.mean(theta**2, axis=0)/theta.shape[-1]**3
+    # Guess initial metric following Kandasamy et al. (2015) for ExpSquaredKernel
+    initialMetric = np.array([5.0*len(theta)**(-1.0/theta.shape[-1]) for _ in range(theta.shape[-1])])
 
     # Create kernel
     kernel = george.kernels.ExpSquaredKernel(initialMetric, ndim=2)
@@ -72,9 +72,9 @@ def testGPOpt():
     gp = george.GP(kernel=kernel, fit_mean=True, mean=mean)
     gp.compute(theta)
 
-    # Optimize gp
-    method = "bfgs"
-    options = dict()
+    # Optimize gp using default opt parameters
+    method = "nelder-mead"
+    options = {"adaptive" : True}
     p0 = np.hstack((np.mean(y), initialMetric))
 
     gp = gpu.optimizeGP(gp, theta, y, seed=seed, nRestarts=1,
@@ -83,5 +83,9 @@ def testGPOpt():
     # Extract GP hyperparameters, compare to truth
     hype = gp.get_parameter_vector()
     errMsg = "ERROR: GP hyperparameters are not close to the true value!"
+    print(hype)
     assert np.allclose(hype, [-135.91343934, -0.68256741, 2.1394469]), errMsg
 # end function
+
+if __name__ == "__main__":
+    testGPOpt()

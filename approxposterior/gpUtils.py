@@ -119,7 +119,10 @@ def optimizeGP(gp, theta, y, seed=None, nRestarts=1, method=None, options=None,
 
         # Initialize guess if None is provided
         if p0 is None:
-            p0_n = np.hstack((np.mean(y), np.exp(np.random.randn(theta.shape[-1]))))
+            # Guess metric following Kandasamy et al. (2015)'s method for
+            # ExpSquaredKernel then slightly perturb it
+            p0_n = np.hstack(([np.mean(y)], [5.0*len(theta)**(-1.0/theta.shape[-1]) for _ in range(theta.shape[-1])]))
+            p0_n = p0_n + 1.0e-3 * np.random.randn(len(p0_n))
         else:
             p0 = np.array(p0)
             p0_n = p0 + 1.0e-3 * np.random.randn(len(p0))
