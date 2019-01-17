@@ -222,13 +222,14 @@ class ApproxPosterior(object):
             Filename for hdf5 file where mcmc chains are saved.  Defaults to
             apRun and will be saved as apRunii.h5 for ii in nmax.
         cache : bool (optional)
-            Whether or not to cache MCMC chains and forward model input-output
-            pairs.  Defaults to True since the both are expensive to evaluate.
-            In practice, users should cache forward model inputs, outputs,
-            ancillary parameters, etc in each likelihood function evaluation,
-            but saving theta and y here doesn't hurt.  Saves the forward model
-            results to apFModelCache.npz and the chains as apRunii.h5 for each
-            iteration ii in the current working directory.
+            Whether or not to cache MCMC chains, forward model input-output
+            pairs, and GP kernel parameters.  Defaults to True since they're
+            expensive to evaluate. In practice, users should cache forward model
+            inputs, outputs, ancillary parameters, etc in each likelihood
+            function evaluation, but saving theta and y here doesn't hurt.
+            Saves the forward model, results to apFModelCache.npz, the chains
+            as apRunii.h5 for each, iteration ii, and the GP parameters in
+            apGP.npz in the current working directory.
         maxLnLikeRestarts : int (optional)
             Number of times to restart loglikelihood function (the one that
             calls the forward model) if the lnlike fn returns infs/NaNs. Defaults
@@ -323,6 +324,12 @@ class ApproxPosterior(object):
 
             if timing:
                 self.trainingTime.append(time.time() - start)
+
+            # If cache, save GP hyperparameters
+            if cache:
+                np.savez("apGP.npz",
+                         gpParamNames=self.gp.get_parameter_names(),
+                         gpParamValues=self.gp.get_parameter_vector())
 
             # GP updated: run sampler to obtain new posterior conditioned on
             # {theta_n, log(L_t*prior)}. Use emcee to obtain posterior
@@ -560,7 +567,7 @@ class ApproxPosterior(object):
                 else:
                     yT = np.array([loglikeT + self._lnprior(thetaT)])
 
-            # Don't compute lnlikelihood
+            # Don't compute lnlikelihood, found point, so we're done
             else:
                 break
 
