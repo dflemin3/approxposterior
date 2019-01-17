@@ -6,7 +6,7 @@ Gaussian process utility functions.
 """
 
 # Tell module what it's allowed to import
-__all__ = ["setupGP","optimizeGP"]
+__all__ = ["optimizeGP"]
 
 import numpy as np
 import george
@@ -147,32 +147,4 @@ def optimizeGP(gp, theta, y, seed=None, nRestarts=1, method=None, options=None,
     gp.recompute()
 
     return gp
-# end function
-
-def setupGP(theta, y, gp):
-    """
-    Initialize a george GP object from and old george GP object.  This is a
-    utility function for creating a new GP when the data it is conditioned on
-    changes sizes, i.e. when a new point is added.
-
-    Parameters
-    ----------
-    theta : array
-    y : array
-        data to condition GP on
-    gp : george.GP
-        Gaussian Process that learns the likelihood conditioned on forward
-        model input-output pairs (theta, y)
-
-    Returns
-    -------
-    new_gp : george.GP
-    """
-
-    # Create GP using same kernel, updated estimate of the mean, but new theta
-    new_gp = george.GP(kernel=gp.kernel, fit_mean=True, mean=np.mean(y))
-    new_gp.set_parameter_vector(gp.get_parameter_vector())
-    new_gp.compute(theta)
-
-    return new_gp
 # end function

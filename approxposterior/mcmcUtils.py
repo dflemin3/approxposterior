@@ -47,9 +47,15 @@ def validateMCMCKwargs(samplerKwargs, mcmcKwargs, ap, verbose=False):
     if samplerKwargs is None:
         samplerKwargs = dict()
 
+        samplerKwargs["ndim"] = ap.theta.shape[-1]
         samplerKwargs["nwalkers"] = 20 * samplerKwargs["dim"]
         samplerKwargs["log_prob_fn"] = ap._gpll
     else:
+        # If user set ndim, ignore it and align it with theta's shape
+        samplerKwargs.pop("ndim", None)
+        samplerKwargs["ndim"] = ap.theta.shape[-1]
+
+        # Initialize other parameters if they're not provided
         try:
             nwalkers = samplerKwargs["nwalkers"]
         except KeyError:

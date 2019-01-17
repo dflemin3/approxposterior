@@ -20,8 +20,8 @@ from . import gmmUtils
 import numpy as np
 import time
 import emcee
+import george
 import os
-from scipy.optimize import minimize
 
 
 class ApproxPosterior(object):
@@ -228,7 +228,7 @@ class ApproxPosterior(object):
             inputs, outputs, ancillary parameters, etc in each likelihood
             function evaluation, but saving theta and y here doesn't hurt.
             Saves the forward model, results to apFModelCache.npz, the chains
-            as apRunii.h5 for each, iteration ii, and the GP parameters in
+            as chainFileii.h5 for each, iteration ii, and the GP parameters in
             apGP.npz in the current working directory.
         maxLnLikeRestarts : int (optional)
             Number of times to restart loglikelihood function (the one that
@@ -274,7 +274,6 @@ class ApproxPosterior(object):
             self.klTime = list()
 
         # Initialize, validate emcee.EnsembleSampler and run_mcmc parameters
-        samplerKwargs["ndim"] = self.theta.shape[-1]
         samplerKwargs, mcmcKwargs = mcmcUtils.validateMCMCKwargs(samplerKwargs,
                                                                  mcmcKwargs,
                                                                  self,
@@ -325,7 +324,7 @@ class ApproxPosterior(object):
             if timing:
                 self.trainingTime.append(time.time() - start)
 
-            # If cache, save GP hyperparameters
+            # If cache, save current GP hyperparameters
             if cache:
                 np.savez("apGP.npz",
                          gpParamNames=self.gp.get_parameter_names(),
@@ -582,7 +581,13 @@ class ApproxPosterior(object):
 
             # Re-initialize, optimize GP since self.theta's shape changed
             try:
-                self.gp = gpUtils.setupGP(self.theta, self.y, self.gp)
+                # Create GP using same kernel, updated estimate of the mean, but new theta
+                currentHype = self.gp.get_parameter_vector()
+                self.gp = george.GP(kernel=self.gp.kernel, fit_mean=True, mean=np.mean(self.y))
+                self.gp.set_parameter_vector(currentHype)
+                self.gp.compute(self.theta)
+
+                # Now optimize GP given new points
                 self.gp = gpUtils.optimizeGP(self.gp, self.theta, self.y,
                                              seed=seed, method=gpMethod,
                                              options=gpOptions)
@@ -602,4 +607,76 @@ class ApproxPosterior(object):
         # Don't care about lnlikelihood, just return thetaT.
         else:
             return thetaT
+    # end function
+
+    def runMCMC(chainFile, cache, samplerKwargs, mcmcKwargs):
+        """
+
+        """
+
+        # Initialize, validate emcee.EnsembleSampler and run_mcmc parameters
+        samplerKwargs, mcmcKwargs = mcmcUtils.validateMCMCKwargs(samplerKwargs,
+                                                                 mcmcKwargs,
+                                                                 self,
+                                                                 verbose)
+
+        # Create backend to save chains
+        if cache:
+            bname = chainFile + str(nn) + ".h5"
+            self.backends.append(bname)
+            backend = emcee.backends.HDFBackend(bname)
+            backend.reset(samplerKwargs["nwalkers"], samplerKwargs["ndim"])
+        # Only keep last sampler object in memory
+        else:
+            backend = None
+
+        # Create sampler using GP lnlike function as forward model surrogate
+        self.sampler = emcee.EnsembleSampler(**samplerKwargs,
+                                             backend=backend,
+                                             args=args,
+                                             kwargs=kwargs,
+                                             blobs_dtype=[("lnprior", float)])
+
+        # Run MCMC!
+        for _ in self.sampler.sample(**mcmcKwargs):
+            pass
+        if verbose:
+            print("mcmc finished")
+
+        # If estimating burn in or thin scale, compute integrated
+        # autocorrelation length of the chains
+        if estBurnin or thinChains:
+            # tol = 0 so it always returns an answer
+            tau = self.sampler.get_autocorr_time(tol=0)
+
+            # Catch NaNs
+            if np.any(~np.isfinite(tau)):
+                # Try removing NaNs
+                tau = tau[np.isfinite(np.array(tau))]
+                if len(tau) < 1:
+                    if verbose:
+                        print("Failed to compute integrated autocorrelation length, tau.")
+                        print("Setting tau = 1")
+                    tau = 1
+
+        # Estimate burn-in?
+        if estBurnin:
+            # Note we set tol=0 so it always provides an estimate, even if
+            # the estimate isn't good, in which case run longer chains!
+            iburn = int(2.0*np.max(tau))
+        else:
+            iburn = 0
+
+        # Thin chains?
+        if thinChains:
+            ithin = int(0.5*np.min(tau))
+        else:
+            ithin = 1
+
+        if verbose:
+            print("burn-in estimate: %d" % iburn)
+            print("thin estimate: %d" % ithin)
+        self.iburns.append(iburn)
+        self.ithins.append(ithin)
+
     # end function
