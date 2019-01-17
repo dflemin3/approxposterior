@@ -106,7 +106,7 @@ def optimizeGP(gp, theta, y, seed=None, nRestarts=1, method=None, options=None,
     optimized_gp : george.GP
     """
 
-    # Optimize GP by maximizing log-likelihood
+    # Set default parameters if None are provided
     if method is None:
         method = "nelder-mead"
     if options is None:
