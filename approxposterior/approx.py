@@ -273,14 +273,8 @@ class ApproxPosterior(object):
             self.gmmTime = list()
             self.klTime = list()
 
-        # Initialize, validate emcee.EnsembleSampler and run_mcmc parameters
-        samplerKwargs, mcmcKwargs = mcmcUtils.validateMCMCKwargs(samplerKwargs,
-                                                                 mcmcKwargs,
-                                                                 self,
-                                                                 verbose)
-
         # If scipy.minimize bounds are provided, make sure it has ndim elements
-        if bounds is not None and (len(bounds) != samplerKwargs["ndim"]):
+        if bounds is not None and (len(bounds) != self.theta.shape[-1]):
             err_msg = "ERROR: bounds provided but len(bounds) != ndim.\n"
             err_msg += "ndim = %d, len(bounds) = %d" % (samplerKwargs["ndim"], len(bounds))
             raise ValueError(err_msg)
@@ -336,62 +330,17 @@ class ApproxPosterior(object):
             if timing:
                 start = time.time()
 
-            # Create backend to save chains
-            if cache:
-                bname = chainFile + str(nn) + ".h5"
-                self.backends.append(bname)
-                backend = emcee.backends.HDFBackend(bname)
-                backend.reset(samplerKwargs["nwalkers"], samplerKwargs["ndim"])
-            # Only keep last sampler object in memory
-            else:
-                backend = None
+            self.sampler, iburn, ithin = self.runMCMC(samplerKwargs=samplerKwargs,
+                                                      mcmcKwargs=mcmcKwargs,
+                                                      chainFile=chainFile,
+                                                      cache=cache,
+                                                      estBurnin=estBurnin,
+                                                      thinChains=thinChains,
+                                                      verbose=verbose,
+                                                      args=args,
+                                                      kwargs=kwargs)
 
-            # Create sampler using GP lnlike function as forward model surrogate
-            self.sampler = emcee.EnsembleSampler(**samplerKwargs,
-                                                 backend=backend,
-                                                 args=args,
-                                                 kwargs=kwargs,
-                                                 blobs_dtype=[("lnprior", float)])
-
-            # Run MCMC!
-            for _ in self.sampler.sample(**mcmcKwargs):
-                pass
-            if verbose:
-                print("mcmc finished")
-
-            # If estimating burn in or thin scale, compute integrated
-            # autocorrelation length of the chains
-            if estBurnin or thinChains:
-                # tol = 0 so it always returns an answer
-                tau = self.sampler.get_autocorr_time(tol=0)
-
-                # Catch NaNs
-                if np.any(~np.isfinite(tau)):
-                    # Try removing NaNs
-                    tau = tau[np.isfinite(np.array(tau))]
-                    if len(tau) < 1:
-                        if verbose:
-                            print("Failed to compute integrated autocorrelation length, tau.")
-                            print("Setting tau = 1")
-                        tau = 1
-
-            # Estimate burn-in?
-            if estBurnin:
-                # Note we set tol=0 so it always provides an estimate, even if
-                # the estimate isn't good, in which case run longer chains!
-                iburn = int(2.0*np.max(tau))
-            else:
-                iburn = 0
-
-            # Thin chains?
-            if thinChains:
-                ithin = int(0.5*np.min(tau))
-            else:
-                ithin = 1
-
-            if verbose:
-                print("burn-in estimate: %d" % iburn)
-                print("thin estimate: %d" % ithin)
+            # Save burn-in, thin estimates
             self.iburns.append(iburn)
             self.ithins.append(ithin)
 
@@ -609,18 +558,78 @@ class ApproxPosterior(object):
             return thetaT
     # end function
 
-    def runMCMC(chainFile, cache, samplerKwargs, mcmcKwargs):
-        """
 
+    def runMCMC(self, samplerKwargs=None, mcmcKwargs=None, chainFile="apRun",
+                cache=True, estBurnin=False, thinChains=False, verbose=True,
+                args=None, **kwargs):
+        """
+        Given forward model input-output pairs, theta and y, and a trained GP,
+        run an MCMC using the GP to evaluate the logprobability required by
+        MCMC.
+
+        Parameters
+        ----------
+        samplerKwargs : dict (optional)
+            Parameters for emcee.EnsembleSampler object
+            If None, defaults to the following:
+                nwalkers : int (optional)
+                    Number of emcee walkers.  Defaults to 10 * dim
+        mcmcKwargs : dict (optional)
+            Parameters for emcee.EnsembleSampler.sample/.run_mcmc methods. If
+            None, defaults to the following required parameters:
+                iterations : int (optional)
+                    Number of MCMC steps.  Defaults to 10,000
+                initial_state : array/emcee.State (optional)
+                    Initial guess for MCMC walkers.  Defaults to None and
+                    creates guess from priors.
+        chainFile : str (optional)
+            Filename for hdf5 file where mcmc chains are saved.  Defaults to
+            apRun and will be saved as apRunii.h5 for ii in nmax.
+        cache : bool (optional)
+            Whether or not to cache MCMC chains, forward model input-output
+            pairs, and GP kernel parameters.  Defaults to True since they're
+            expensive to evaluate. In practice, users should cache forward model
+            inputs, outputs, ancillary parameters, etc in each likelihood
+            function evaluation, but saving theta and y here doesn't hurt.
+            Saves the forward model, results to apFModelCache.npz, the chains
+            as chainFileii.h5 for each, iteration ii, and the GP parameters in
+            apGP.npz in the current working directory.
+        estBurnin : bool (optional)
+            Estimate burn-in time using integrated autocorrelation time
+            heuristic.  Defaults to False as in general, we recommend users
+            inspect the chains and calculate the burnin after the fact to ensure
+            convergence.
+        thinChains : bool (optional)
+            Whether or not to thin chains before GMM fitting.  Useful if running
+            long chains.  Defaults to False.  If true, estimates a thin cadence
+            via int(0.5*np.min(tau)) where tau is the intergrated autocorrelation
+            time.
+        verbose : bool (optional)
+            Output all the diagnostics? Defaults to True.
+        args : iterable (optional)
+            Arguments for user-specified loglikelihood function that calls the
+            forward model. Defaults to None.
+        kwargs : dict (optional)
+            Keyword arguments for user-specified loglikelihood function that
+            calls the forward model.
+
+        Returns
+        -------
+        sampler : emcee.EnsembleSampler
+            emcee sampler object
+        iburn : int
+            burn-in index estimate.  If estBurnin == False, returns 0.
+        ithin : int
+            thin cadence estimate.  If thinChains == False, returns 1.
         """
 
         # Initialize, validate emcee.EnsembleSampler and run_mcmc parameters
-        samplerKwargs, mcmcKwargs = mcmcUtils.validateMCMCKwargs(samplerKwargs,
+        samplerKwargs, mcmcKwargs = mcmcUtils.validateMCMCKwargs(self,
+                                                                 samplerKwargs,
                                                                  mcmcKwargs,
-                                                                 self,
                                                                  verbose)
 
-        # Create backend to save chains
+        # Create backend to save chains?
         if cache:
             bname = chainFile + str(nn) + ".h5"
             self.backends.append(bname)
@@ -676,7 +685,7 @@ class ApproxPosterior(object):
         if verbose:
             print("burn-in estimate: %d" % iburn)
             print("thin estimate: %d" % ithin)
-        self.iburns.append(iburn)
-        self.ithins.append(ithin)
+
+        return self.sampler, iburn, ithin
 
     # end function

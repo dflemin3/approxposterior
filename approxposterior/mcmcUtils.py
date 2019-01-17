@@ -18,19 +18,20 @@ version = emcee.__version__
 assert int(version.split(".")[0]) > 2, "approxposterior is only compatible with emcee versions >= 3"
 
 
-def validateMCMCKwargs(samplerKwargs, mcmcKwargs, ap, verbose=False):
+def validateMCMCKwargs(ap, samplerKwargs, mcmcKwargs, verbose=False):
     """
     Validates emcee.EnsembleSampler parameters/kwargs.
 
     Parameters
     ----------
+    ap : approxposterior.ApproxPosterior
+            Initialized ApproxPosterior object
     samplerKwargs : dict
         dictionary containing parameters intended for emcee.EnsembleSampler
         object
     mcmcKwargs : dict
         dictionary containing parameters intended for
         emcee.EnsembleSampler.run_mcmc/.sample object
-    ap : approxposterior.ApproxPosterior
     verbose : bool (optional)
         verboisty level. Defaults to False (no output)
     Returns
