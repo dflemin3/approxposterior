@@ -276,7 +276,7 @@ class ApproxPosterior(object):
         # If scipy.minimize bounds are provided, make sure it has ndim elements
         if bounds is not None and (len(bounds) != self.theta.shape[-1]):
             err_msg = "ERROR: bounds provided but len(bounds) != ndim.\n"
-            err_msg += "ndim = %d, len(bounds) = %d" % (samplerKwargs["ndim"], len(bounds))
+            err_msg += "ndim = %d, len(bounds) = %d" % (self.theta.shape[-1], len(bounds))
             raise ValueError(err_msg)
 
         # Initial optimization of gaussian process
@@ -324,8 +324,8 @@ class ApproxPosterior(object):
                          gpParamNames=self.gp.get_parameter_names(),
                          gpParamValues=self.gp.get_parameter_vector())
 
-            # GP updated: run sampler to obtain new posterior conditioned on
-            # {theta_n, log(L_t*prior)}. Use emcee to obtain posterior
+            # GP updated: run MCMCsampler to obtain new posterior conditioned on
+            # {theta_n, log(L_t*prior)}. Use emcee to obtain posterior dist.
 
             if timing:
                 start = time.time()
@@ -389,6 +389,14 @@ class ApproxPosterior(object):
 
             if timing:
                 self.klTime.append(time.time() - start)
+
+            # Save timing information?
+            if cache:
+                if timing:
+                    np.savez("apTiming.npz", trainingTime=self.trainingTime,
+                                             mcmcTime=self.mcmcTime,
+                                             gmmTime=self.gmmTime,
+                                             klTime=self.klTime)
 
             # Convergence diagnostics: If KL divergence is less than threshold
             # for kmax consecutive iterations, we're finished
