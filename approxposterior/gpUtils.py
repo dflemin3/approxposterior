@@ -10,7 +10,7 @@ __all__ = ["optimizeGP"]
 
 import numpy as np
 import george
-from scipy.optimize import minimize
+from scipy.optimize import minimize, basinhopping
 
 
 def _nll(p, gp, y):
@@ -112,11 +112,8 @@ def optimizeGP(gp, theta, y, seed=None, nRestarts=1, method=None, options=None,
     if options is None:
         options = {"adaptive" : True}
 
-    # Run the optimization routine n_restarts times
-    res = []
-    mll = []
-    for _ in range(nRestarts):
-
+    # Optimize using basinhopping or minimize?
+    if str(method).lower() == "basinhopping":
         # Initialize guess if None is provided
         if p0 is None:
             # Guess metric following Kandasamy et al. (2015)'s method for
@@ -127,24 +124,47 @@ def optimizeGP(gp, theta, y, seed=None, nRestarts=1, method=None, options=None,
             p0 = np.array(p0)
             p0_n = p0 + 1.0e-3 * np.random.randn(len(p0))
 
-        results = minimize(_nll, p0_n, jac=_grad_nll, args=(gp, y),
-                           method=method, options=options)
+        minimizer_kwargs = {"method" : "newton-cg", "jac" : _grad_nll, "args" : (gp, y)}
+        results = basinhopping(_nll, p0_n, minimizer_kwargs=minimizer_kwargs,
+                               niter=100, seed=seed)
 
-        # Cache this result
-        res.append(results.x)
-
-        # Update the kernel
         gp.set_parameter_vector(results.x)
         gp.recompute()
+    else:
 
-        # Compute marginal log likelihood
-        mll.append(gp.log_likelihood(y, quiet=True))
+        # Run the optimization routine n_restarts times
+        res = []
+        mll = []
+        for _ in range(nRestarts):
 
-    # Pick result with largest log likelihood
-    ind = np.argmax(mll)
+            # Initialize guess if None is provided
+            if p0 is None:
+                # Guess metric following Kandasamy et al. (2015)'s method for
+                # ExpSquaredKernel then slightly perturb it
+                p0_n = np.hstack(([np.mean(y)], [5.0*len(theta)**(-1.0/theta.shape[-1]) for _ in range(theta.shape[-1])]))
+                p0_n = p0_n + 1.0e-3 * np.random.randn(len(p0_n))
+            else:
+                p0 = np.array(p0)
+                p0_n = p0 + 1.0e-3 * np.random.randn(len(p0))
 
-    gp.set_parameter_vector(res[ind])
-    gp.recompute()
+            results = minimize(_nll, p0_n, jac=_grad_nll, args=(gp, y),
+                               method=method, options=options)
+
+            # Cache this result
+            res.append(results.x)
+
+            # Update the kernel
+            gp.set_parameter_vector(results.x)
+            gp.recompute()
+
+            # Compute marginal log likelihood
+            mll.append(gp.log_likelihood(y, quiet=True))
+
+        # Pick result with largest log likelihood
+        ind = np.argmax(mll)
+
+        gp.set_parameter_vector(res[ind])
+        gp.recompute()
 
     return gp
 # end function

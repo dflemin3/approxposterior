@@ -12,6 +12,7 @@ Example script
 from approxposterior import approx, likelihood as lh
 import numpy as np
 import george
+from kicq import rup147
 
 # Define algorithm parameters
 m0 = 50                           # Initial size of training set
@@ -56,9 +57,9 @@ gp.compute(theta)
 ap = approx.ApproxPosterior(theta=theta,
                             y=y,
                             gp=gp,
-                            lnprior=lh.rosenbrockLnprior,
-                            lnlike=lh.rosenbrockLnlike,
-                            priorSample=lh.rosenbrockSample,
+                            lnprior=rup147.LnPriorRUP147,
+                            lnlike=kicmc.LnLike,
+                            priorSample=rup147.samplePriorRUP147,
                             algorithm=algorithm)
 
 # Run!

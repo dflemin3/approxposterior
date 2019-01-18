@@ -312,6 +312,8 @@ class ApproxPosterior(object):
                                    maxLnLikeRestarts=maxLnLikeRestarts,
                                    seed=seed,
                                    cache=cache,
+                                   gpMethod=gpMethod,
+                                   gpOptions=gpOptions,
                                    args=args,
                                    **kwargs)
 
@@ -673,7 +675,7 @@ class ApproxPosterior(object):
                 if len(tau) < 1:
                     if verbose:
                         print("Failed to compute integrated autocorrelation length, tau.")
-                        print("Setting tau = 1")
+                        print("Setting tau = 2")
                     tau = 1
 
         # Estimate burn-in?
@@ -686,7 +688,7 @@ class ApproxPosterior(object):
 
         # Thin chains?
         if thinChains:
-            ithin = int(0.5*np.min(tau))
+            ithin = np.max((int(0.5*np.min(tau)), 1))
         else:
             ithin = 1
 
