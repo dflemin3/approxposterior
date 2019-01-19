@@ -124,9 +124,9 @@ def optimizeGP(gp, theta, y, seed=None, nRestarts=1, method=None, options=None,
             p0 = np.array(p0)
             p0_n = p0 + 1.0e-3 * np.random.randn(len(p0))
 
-        minimizer_kwargs = {"method" : "newton-cg", "jac" : _grad_nll, "args" : (gp, y)}
+        minimizer_kwargs = {"method" : "bfgs", "jac" : _grad_nll, "args" : (gp, y)}
         results = basinhopping(_nll, p0_n, minimizer_kwargs=minimizer_kwargs,
-                               niter=100, seed=seed)
+                               niter=1000, seed=seed, interval=10, niter_success=25)
 
         gp.set_parameter_vector(results.x)
         gp.recompute()

@@ -13,13 +13,15 @@ import numpy as np
 import george
 import emcee, corner
 
-seed = 42
+seed = 15
 np.random.seed(seed)
 
 # Load in data
 data = np.load("apFModelCache.npz")
 theta = data["theta"]
 y = data["y"]
+
+y = y/1.0e30
 
 print(theta.shape)
 np.mean(y)
@@ -83,7 +85,7 @@ print("Best guess:", p0s[bestInd])
 # Run MCMC with best guess
 # Generate initial conditions for walkers in ball around MLE solution
 mle = np.array([1.08, 1.07, 7.28, 7.47, -0.17, -0.39, 7.27, 0.28, 2.49])
-x0 = mle + 1.0e-2*np.random.randn(200, 9)
+x0 = mle + 1.0e-1*np.random.randn(200, 9)
 
 # emcee MCMC parameters
 samplerKwargs = {"nwalkers" : 200}        # emcee.EnsembleSampler parameters
@@ -105,9 +107,6 @@ mean = np.mean(y)
 # Create GP and compute the kernel
 gp = george.GP(kernel=kernel, fit_mean=True, mean=mean)
 gp.compute(theta)
-
-# Optimize GP
-gp = gpu.optimizeGP(gp, theta, y, seed=seed)
 
 # Initialize object using the Wang & Li (2017) Rosenbrock function example
 ap = approx.ApproxPosterior(theta=theta,
