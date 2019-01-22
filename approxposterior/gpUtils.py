@@ -57,13 +57,9 @@ def _grad_nll(p, gp, y):
         gradient of the negative log-likelihood of y under gp
     """
 
-    gp.set_parameter_vector(p)
-
     # Negative gradient of log likelihood
     gp.set_parameter_vector(p)
     return -gp.grad_log_likelihood(y, quiet=True)
-
-    return ngr
 # end function
 
 
@@ -136,8 +132,7 @@ def optimizeGP(gp, theta, y, seed=None, nRestarts=1, method=None, options=None,
         kwargs for the scipy.optimize.minimize function.  Defaults to None
     p0 : array (optional)
         Initial guess for kernel hyperparameters.  If None, defaults to
-        p0 + 1.0e-3 * np.random.randn(len(p0)) where p0 is the current vector of
-        hyperparameters.
+        5.0 * len(theta)**(-1.0/theta.shape[-1]) for each dimension.
 
     Returns
     -------

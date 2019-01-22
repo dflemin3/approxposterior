@@ -169,7 +169,7 @@ class ApproxPosterior(object):
             args=None, maxComp=3, mcmcKwargs=None, samplerKwargs=None,
             estBurnin=False, thinChains=False, chainFile="apRun", cache=True,
             maxLnLikeRestarts=5, gmmKwargs=None, gpMethod=None, gpOptions=None,
-            **kwargs):
+            gpP0=None, **kwargs):
         """
         Core algorithm to estimate the posterior distribution via Gaussian
         Process regression to the joint distribution for the forward model
@@ -256,6 +256,9 @@ class ApproxPosterior(object):
         gpOptions : dict (optional)
             kwargs for the scipy.optimize.minimize function used to optimize GP
             hyperparameters.  Defaults to None.
+        gpP0 : array (optional)
+            Initial guess for kernel hyperparameters.  If None, defaults to
+            5.0 * len(theta)**(-1.0/theta.shape[-1]) for each dimension.
         kwargs : dict (optional)
             Keyword arguments for user-specified loglikelihood function that
             calls the forward model.
@@ -291,7 +294,8 @@ class ApproxPosterior(object):
 
         # Initial optimization of gaussian process
         self.gp = gpUtils.optimizeGP(self.gp, self.theta, self.y, seed=seed,
-                                     method=gpMethod, options=gpOptions)
+                                     method=gpMethod, options=gpOptions,
+                                     p0=gpP0)
 
         # Main loop
         kk = 0
@@ -435,7 +439,7 @@ class ApproxPosterior(object):
 
     def findNextPoint(self, computeLnLike=True, bounds=None, gpMethod=None,
                       maxLnLikeRestarts=1, seed=None, cache=True, gpOptions=None,
-                      args=None, **kwargs):
+                      gpP0=None, args=None, **kwargs):
         """
         Find new point, thetaT, by maximizing utility function. Note that we
         call a minimizer because minimizing negative of utility function is
@@ -481,6 +485,9 @@ class ApproxPosterior(object):
         gpOptions : dict (optional)
             kwargs for the scipy.optimize.minimize function used to optimize GP
             hyperparameters.  Defaults to None.
+        gpP0 : array (optional)
+            Initial guess for kernel hyperparameters.  If None, defaults to
+            5.0 * len(theta)**(-1.0/theta.shape[-1]) for each dimension.
         args : iterable (optional)
             Arguments for user-specified loglikelihood function that calls the
             forward model. Defaults to None.
@@ -559,7 +566,7 @@ class ApproxPosterior(object):
                 # Now optimize GP given new points
                 self.gp = gpUtils.optimizeGP(self.gp, self.theta, self.y,
                                              seed=seed, method=gpMethod,
-                                             options=gpOptions)
+                                             options=gpOptions, p0=gpP0)
             except ValueError:
                 print("theta:", self.theta)
                 print("y:", self.y)

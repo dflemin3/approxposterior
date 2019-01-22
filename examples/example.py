@@ -12,7 +12,6 @@ Example script
 from approxposterior import approx, likelihood as lh
 import numpy as np
 import george
-from kicq import rup147
 
 # Define algorithm parameters
 m0 = 50                           # Initial size of training set
@@ -36,30 +35,14 @@ y = np.zeros(len(theta))
 for ii in range(len(theta)):
     y[ii] = lh.rosenbrockLnlike(theta[ii]) + lh.rosenbrockLnprior(theta[ii])
 
-### Initialize GP ###
-
-# Guess initial metric, or scale length of the covariances in loglikelihood space
-initialMetric = np.nanmedian(theta**2, axis=0)/10.0
-
-# Create kernel: We'll model coverianges in loglikelihood space using a
-# Squared Expoential Kernel as we anticipate Gaussian-ish posterior
-# distributions in our 2-dimensional parameter space
-kernel = george.kernels.ExpSquaredKernel(initialMetric, ndim=2)
-
-# Guess initial mean function
-mean = np.nanmedian(y)
-
-# Create GP and compute the kernel
-gp = george.GP(kernel=kernel, fit_mean=True, mean=mean)
-gp.compute(theta)
-
 # Initialize object using the Wang & Li (2017) Rosenbrock function example
+# Note that by not supplying a GP, we use the default which is a uses an
+# ExpSquaredKernel
 ap = approx.ApproxPosterior(theta=theta,
                             y=y,
-                            gp=gp,
-                            lnprior=rup147.LnPriorRUP147,
-                            lnlike=kicmc.LnLike,
-                            priorSample=rup147.samplePriorRUP147,
+                            lnprior=lh.rosenbrockLnprior,
+                            lnlike=lh.rosenbrockLnlike,
+                            priorSample=lh.rosenbrockSample,
                             algorithm=algorithm)
 
 # Run!
