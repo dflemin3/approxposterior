@@ -41,7 +41,7 @@ def fitGP(theta, y, p0, seed):
     gp.compute(theta)
 
     print("Initial lnlike:", gp.log_likelihood(y))
-    gp = gpu.optimizeGP(gp, theta, y, seed=seed, nRestarts=1, p0=p0, method="tnc")
+    gp = gpu.optimizeGP(gp, theta, y, seed=seed, nRestarts=10, p0=p0, method="newton-cg")
     print("Final lnlike:", gp.log_likelihood(y))
     print("Final p:", gp.get_parameter_vector())
 
@@ -58,13 +58,11 @@ p0s = list()
 #         [np.mean(y), 1, 1, 1, 1, 1, 1, 1, 1, 1],
 #          [np.mean(y), 1.0e-1, 1.0e-1, 1.0e-1, 1.0e-1, 1.0e-1, 1.0e-1, 1.0e-1, 1.0e-1, 1.0e-1]]
 
-p0 = np.array([-6.02511539e+38,  2.39887946e+01, -9.09470325e+00,  5.18653178e+03,
-        7.06387048e+02,  4.55674983e+01,  1.56616086e+02,  2.33521885e+03,
-        4.56121990e+03,  4.29284543e+03])
+p0 = np.array([np.mean(y), 10, 10, 10, 10, 10, 10, 10, 10, 10])
 
 print(p0)
 p0s.append(p0)
-ll, p = fitGP(theta, y, p0, seed)
+ll, p = fitGP(theta, y, p0=None, seed=seed)
 
 print(ll, p)
 
@@ -89,8 +87,9 @@ kernel = george.kernels.ExpSquaredKernel(tmp, ndim=theta.shape[-1])
 mean = np.mean(y)
 
 # Create GP and compute the kernel
-gp = george.GP(kernel=kernel, fit_mean=True, mean=mean)
-gp.set_parameter_vector(p0)
+metric_bounds = ((-10, 10) for _ in range(theta.shape[-1]))
+gp = george.GP(kernel=kernel, fit_mean=True, mean=mean, metric_bounds=metric_bounds)
+gp.set_parameter_vector(p)
 gp.compute(theta)
 
 # Initialize object using the Wang & Li (2017) Rosenbrock function example

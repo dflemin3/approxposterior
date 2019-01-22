@@ -135,7 +135,7 @@ def optimizeGP(gp, theta, y, seed=None, nRestarts=1, method=None, options=None,
         kwargs for the scipy.optimize.minimize function.  Defaults to None
     p0 : array (optional)
         Initial guess for kernel hyperparameters.  If None, defaults to
-        5.0 * len(theta)**(-1.0/theta.shape[-1]) for each dimension.
+        ndim values randomly sampled from a uniform distribution over [-10, 10)
 
     Returns
     -------
@@ -144,63 +144,44 @@ def optimizeGP(gp, theta, y, seed=None, nRestarts=1, method=None, options=None,
 
     # Set default parameters if None are provided
     if method is None:
-        method = "nelder-mead"
+        method = "l-bfgs-b"
     if options is None:
-        options = {"adaptive" : True}
+        options = {}
 
-    # Optimize using basinhopping or minimize?
-    if str(method).lower() == "basinhopping":
+    # Run the optimization routine n_restarts times
+    res = []
+    mll = []
+    for _ in range(nRestarts):
+
         # Initialize guess if None is provided
         if p0 is None:
             # Guess metric following Kandasamy et al. (2015)'s method for
             # ExpSquaredKernel then slightly perturb it
-            p0_n = np.hstack(([np.mean(y)], [5.0*len(theta)**(-1.0/theta.shape[-1]) for _ in range(theta.shape[-1])]))
-            p0_n = p0_n + 1.0e-3 * np.random.randn(len(p0_n))
+            p0_n = np.hstack(([np.mean(y)], [np.random.uniform(low=-10, high=10) for _ in range(theta.shape[-1])]))
+            bounds = [(None, None)] + [(-10, 10) for _ in range(theta.shape[-1])]
         else:
             p0 = np.array(p0)
             p0_n = p0 + 1.0e-3 * np.random.randn(len(p0))
+            bounds = None
 
-        minimizer_kwargs = {"method" : "bfgs", "jac" : _grad_nll, "args" : (gp, y)}
-        results = basinhopping(_nll, p0_n, minimizer_kwargs=minimizer_kwargs,
-                               niter=1000, seed=seed, interval=10, niter_success=25)
+        results = minimize(_nll, p0_n, jac=_grad_nll, args=(gp, y),
+                           method=method, options=options, bounds=bounds)
 
+        # Cache this result
+        res.append(results.x)
+
+        # Update the kernel
         gp.set_parameter_vector(results.x)
         gp.recompute()
-    else:
 
-        # Run the optimization routine n_restarts times
-        res = []
-        mll = []
-        for _ in range(nRestarts):
+        # Compute marginal log likelihood
+        mll.append(gp.log_likelihood(y, quiet=True))
 
-            # Initialize guess if None is provided
-            if p0 is None:
-                # Guess metric following Kandasamy et al. (2015)'s method for
-                # ExpSquaredKernel then slightly perturb it
-                p0_n = np.hstack(([np.mean(y)], [5.0*len(theta)**(-1.0/theta.shape[-1]) for _ in range(theta.shape[-1])]))
-                p0_n = p0_n + 1.0e-3 * np.random.randn(len(p0_n))
-            else:
-                p0 = np.array(p0)
-                p0_n = p0 + 1.0e-3 * np.random.randn(len(p0))
+    # Pick result with largest log likelihood
+    ind = np.argmax(mll)
 
-            results = minimize(_nll, p0_n, jac=_grad_nll, args=(gp, y),
-                               method=method, options=options)
-
-            # Cache this result
-            res.append(results.x)
-
-            # Update the kernel
-            gp.set_parameter_vector(results.x)
-            gp.recompute()
-
-            # Compute marginal log likelihood
-            mll.append(gp.log_likelihood(y, quiet=True))
-
-        # Pick result with largest log likelihood
-        ind = np.argmax(mll)
-
-        gp.set_parameter_vector(res[ind])
-        gp.recompute()
+    gp.set_parameter_vector(res[ind])
+    gp.recompute()
 
     return gp
 # end function
