@@ -169,7 +169,7 @@ class ApproxPosterior(object):
             args=None, maxComp=3, mcmcKwargs=None, samplerKwargs=None,
             estBurnin=False, thinChains=False, chainFile="apRun", cache=True,
             maxLnLikeRestarts=5, gmmKwargs=None, gpMethod=None, gpOptions=None,
-            gpP0=None, **kwargs):
+            gpP0=None, optGPEveryN=1, **kwargs):
         """
         Core algorithm to estimate the posterior distribution via Gaussian
         Process regression to the joint distribution for the forward model
@@ -259,6 +259,11 @@ class ApproxPosterior(object):
         gpP0 : array (optional)
             Initial guess for kernel hyperparameters.  If None, defaults to
             5.0 * len(theta)**(-1.0/theta.shape[-1]) for each dimension.
+        optGPEveryN : int (optional)
+            How often to optimize the GP hyperparameters.  Defaults to
+            re-optimizing everytime a new design point is found, e.g. every time
+            a new (theta, y) pair is added to the training set.  Increase this
+            parameter if approxposterior is running slowly.
         kwargs : dict (optional)
             Keyword arguments for user-specified loglikelihood function that
             calls the forward model.
@@ -321,6 +326,14 @@ class ApproxPosterior(object):
 
                 # computeLnLike=True means new points are saved in self.theta,
                 # and self.y
+
+                # Reoptimize GP hyperparameters? Note: always optimize 1st time
+                if ii % int(optGPEveryN) == 0:
+                    optGP = True
+                else:
+                    optGP = False
+
+                # Find new (theta, y) pair
                 self.findNextPoint(computeLnLike=True,
                                    bounds=bounds,
                                    maxLnLikeRestarts=maxLnLikeRestarts,
@@ -328,6 +341,7 @@ class ApproxPosterior(object):
                                    cache=cache,
                                    gpMethod=gpMethod,
                                    gpOptions=gpOptions,
+                                   optGP=optGP,
                                    args=args,
                                    **kwargs)
 
@@ -439,7 +453,7 @@ class ApproxPosterior(object):
 
     def findNextPoint(self, computeLnLike=True, bounds=None, gpMethod=None,
                       maxLnLikeRestarts=1, seed=None, cache=True, gpOptions=None,
-                      gpP0=None, args=None, **kwargs):
+                      gpP0=None, optGP=True, args=None, **kwargs):
         """
         Find new point, thetaT, by maximizing utility function. Note that we
         call a minimizer because minimizing negative of utility function is
@@ -488,6 +502,9 @@ class ApproxPosterior(object):
         gpP0 : array (optional)
             Initial guess for kernel hyperparameters.  If None, defaults to
             5.0 * len(theta)**(-1.0/theta.shape[-1]) for each dimension.
+        optGP : bool (optional)
+            Whether or not to optimize the GP hyperparameters.  Defaults to
+            True.
         args : iterable (optional)
             Arguments for user-specified loglikelihood function that calls the
             forward model. Defaults to None.
@@ -563,10 +580,11 @@ class ApproxPosterior(object):
                 self.gp.set_parameter_vector(currentHype)
                 self.gp.compute(self.theta)
 
-                # Now optimize GP given new points
-                self.gp = gpUtils.optimizeGP(self.gp, self.theta, self.y,
-                                             seed=seed, method=gpMethod,
-                                             options=gpOptions, p0=gpP0)
+                # Now optimize GP given new points?
+                if optGP:
+                    self.gp = gpUtils.optimizeGP(self.gp, self.theta, self.y,
+                                                 seed=seed, method=gpMethod,
+                                                 options=gpOptions, p0=gpP0)
             except ValueError:
                 print("theta:", self.theta)
                 print("y:", self.y)
