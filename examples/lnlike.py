@@ -58,7 +58,7 @@ p0s = list()
 #         [np.mean(y), 1, 1, 1, 1, 1, 1, 1, 1, 1],
 #          [np.mean(y), 1.0e-1, 1.0e-1, 1.0e-1, 1.0e-1, 1.0e-1, 1.0e-1, 1.0e-1, 1.0e-1, 1.0e-1]]
 
-p0 = np.array([np.mean(y), 10, 10, 10, 10, 10, 10, 10, 10, 10])
+p0 = np.array([np.mean(y), 1, 1, 10, 10, 10, 10, 10, 10, 10])
 
 print(p0)
 p0s.append(p0)
@@ -69,7 +69,7 @@ print(ll, p)
 # Run MCMC with best guess
 # Generate initial conditions for walkers in ball around MLE solution
 mle = np.array([1.08, 1.07, 7.28, 7.47, -0.17, -0.39, 7.27, 0.28, 2.49])
-x0 = mle + 1.0e-1*np.random.randn(200, 9)
+x0 = mle + 1.0e-3*np.random.randn(200, 9)
 
 # emcee MCMC parameters
 samplerKwargs = {"nwalkers" : 200}        # emcee.EnsembleSampler parameters

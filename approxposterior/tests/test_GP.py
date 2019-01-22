@@ -56,34 +56,20 @@ def testUtilsGP():
         -8.98802494e+01,  -5.69583369e+01]).squeeze()
 
     # Set up a gp
-
-    # Guess initial metric
-    initialMetric = np.nanmedian(theta**2, axis=0)/10.0
-
-    # Create kernel
-    kernel = george.kernels.ExpSquaredKernel(initialMetric, ndim=2)
-
-    # Guess initial mean function
-    mean = np.mean(y)
-
-    # Create GP
-    gp = george.GP(kernel=kernel, fit_mean=True, mean=mean)
-    gp.compute(theta)
-
-    gp = gpUtils.optimizeGP(gp, theta, y)
+    gp = gpUtils.defaultGP(theta, y)
 
     # Compute the AGP utility function at some point
     thetaTest = np.array([-2.3573, 4.673])
     testUtil = ut.AGPUtility(thetaTest, y, gp)
 
     errMsg = "ERROR: AGP util fn bug.  Did you change gp_utils.setup_gp?"
-    assert np.allclose(testUtil, 11.35206957, rtol=1.0e-4), errMsg
+    assert np.allclose(testUtil, 36.17652652, rtol=1.0e-4), errMsg
 
     # Now do the same using the BAPE utility function
     testUtil = ut.BAPEUtility(thetaTest, y, gp)
 
     errMsg = "ERROR: BAPE util fn bug.  Did you change gp_utils.setup_gp?"
-    assert np.allclose(testUtil, 21.51239959, rtol=1.0e-4), errMsg
+    assert np.allclose(testUtil, 75.17909884, rtol=1.0e-4), errMsg
 
     return None
 # end function

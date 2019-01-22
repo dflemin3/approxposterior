@@ -58,24 +58,12 @@ def testGPOpt():
         -8.98802494e+01,  -5.69583369e+01]).squeeze()
 
     # Set up a gp
-
-    # Guess initial metric following Kandasamy et al. (2015) for ExpSquaredKernel
-    initialMetric = np.array([5.0*len(theta)**(-1.0/theta.shape[-1]) for _ in range(theta.shape[-1])])
-
-    # Create kernel
-    kernel = george.kernels.ExpSquaredKernel(initialMetric, ndim=2)
-
-    # Guess initial mean function
-    mean = np.mean(y)
-
-    # Create GP
-    gp = george.GP(kernel=kernel, fit_mean=True, mean=mean)
-    gp.compute(theta)
+    gp = gpu.defaultGP(theta, y)
 
     # Optimize gp using default opt parameters
     method = "nelder-mead"
     options = {"adaptive" : True}
-    p0 = np.hstack((np.mean(y), initialMetric))
+    p0 = gp.get_parameter_vector()
 
     gp = gpu.optimizeGP(gp, theta, y, seed=seed, nRestarts=1,
                         method=method, options=options, p0=p0)
