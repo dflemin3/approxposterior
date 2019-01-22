@@ -367,6 +367,7 @@ class ApproxPosterior(object):
                                                       estBurnin=estBurnin,
                                                       thinChains=thinChains,
                                                       verbose=verbose,
+                                                      nn=nn,
                                                       args=args,
                                                       kwargs=kwargs)
 
@@ -606,7 +607,7 @@ class ApproxPosterior(object):
 
     def runMCMC(self, samplerKwargs=None, mcmcKwargs=None, chainFile="apRun",
                 cache=True, estBurnin=False, thinChains=False, verbose=True,
-                args=None, **kwargs):
+                nn=0, args=None, **kwargs):
         """
         Given forward model input-output pairs, theta and y, and a trained GP,
         run an MCMC using the GP to evaluate the logprobability required by
@@ -651,6 +652,8 @@ class ApproxPosterior(object):
             time.
         verbose : bool (optional)
             Output all the diagnostics? Defaults to True.
+        nn : int (optional)
+            MCMC iteration number.  Defaults to 0.
         args : iterable (optional)
             Arguments for user-specified loglikelihood function that calls the
             forward model. Defaults to None.

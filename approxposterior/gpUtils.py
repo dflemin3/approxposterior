@@ -88,7 +88,10 @@ def defaultGP(theta, y):
     # Create kernel: We'll model coveriances in loglikelihood space using a
     # Squared Expoential Kernel as we anticipate Gaussian-ish posterior
     # distributions in our 2-dimensional parameter space
-    kernel = george.kernels.ExpSquaredKernel(initialMetric, ndim=theta.shape[-1])
+    metric_bounds = ((-100, 100) for _ in range(theta.shape[-1]))
+    kernel = george.kernels.ExpSquaredKernel(initialMetric,
+                                             ndim=theta.shape[-1],
+                                             metric_bounds=metric_bounds)
 
     # Guess initial mean function
     mean = np.mean(y)
