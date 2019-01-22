@@ -31,7 +31,7 @@ class ApproxPosterior(object):
     the AGP (Adaptive Gaussian Process) by Wang & Li (2017).
     """
 
-    def __init__(self, theta, y, gp, lnprior, lnlike, priorSample,
+    def __init__(self, theta, y, lnprior, lnlike, priorSample, gp=None,
                  algorithm="BAPE"):
         """
         Initializer.
@@ -42,9 +42,6 @@ class ApproxPosterior(object):
             Input features (n_samples x n_features).  Defaults to None.
         y : array-like
             Input result of forward model (n_samples,). Defaults to None.
-        gp : george.GP
-            Gaussian Process that learns the likelihood conditioned on forward
-            model input-output pairs (theta, y)
         lnprior : function
             Defines the log prior over the input features.
         lnlike : function
@@ -53,6 +50,12 @@ class ApproxPosterior(object):
             is used to evaluate the log likelihood.
         priorSample : function
             Method to randomly sample points over region allowed by prior
+        gp : george.GP (optional)
+            Gaussian Process that learns the likelihood conditioned on forward
+            model input-output pairs (theta, y). It's recommended that users
+            specify their own kernel, GP using george. If None is provided, then
+            approxposterior initialized a GP with a single ExpSquaredKernel as
+            these work well in practice.
         algorithm : str (optional)
             Which utility function to use.  Defaults to BAPE.  Options are BAPE,
             AGP, or alternate.  Case doesn't matter. If alternate, runs AGP on
@@ -75,7 +78,14 @@ class ApproxPosterior(object):
             print("theta, y:", theta, y)
             raise ValueError("Both theta and y must all be finite!")
 
-        self.gp = gp
+        # Initialize gaussian process
+        if gp is None:
+            print("WARNING: No GP specified. Initializing GP using ExpSquaredKernel.")
+            self.gp = gpUtils.defaultGP(self.theta, self.y)
+        else:
+            self.gp = gp
+
+        # Set required functions, algorithm
         self._lnprior = lnprior
         self._lnlike = lnlike
         self.priorSample = priorSample

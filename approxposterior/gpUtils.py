@@ -67,6 +67,44 @@ def _grad_nll(p, gp, y):
 # end function
 
 
+def defaultGP(theta, y):
+    """
+    Basic utility function that initializes a simple GP that works well in many
+    applications.
+
+    Parameters
+    ----------
+    theta : array
+        Design points
+    y : array
+        Data to condition GP on, e.g. the lnlike * lnprior at each design point,
+        theta.
+
+    Returns
+    -------
+    gp : george.GP
+        Gaussian process with initialized kernel and factorized covariance matrix.
+    """
+
+    # Guess initial metric, or scale length of the covariances in loglikelihood space
+    initialMetric = np.array([5.0*len(theta)**(-1.0/theta.shape[-1]) for _ in range(theta.shape[-1])])
+
+    # Create kernel: We'll model coveriances in loglikelihood space using a
+    # Squared Expoential Kernel as we anticipate Gaussian-ish posterior
+    # distributions in our 2-dimensional parameter space
+    kernel = george.kernels.ExpSquaredKernel(initialMetric, ndim=theta.shape[-1])
+
+    # Guess initial mean function
+    mean = np.mean(y)
+
+    # Create GP and compute the kernel, factor the covariance matrix
+    gp = george.GP(kernel=kernel, fit_mean=True, mean=mean)
+    gp.compute(theta)
+
+    return gp
+# end function
+
+
 def optimizeGP(gp, theta, y, seed=None, nRestarts=1, method=None, options=None,
                p0=None):
     """

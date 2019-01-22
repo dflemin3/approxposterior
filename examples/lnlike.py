@@ -21,11 +21,6 @@ data = np.load("apFModelCache.npz")
 theta = data["theta"]
 y = data["y"]
 
-y = y/1.0e30
-
-print(theta.shape)
-np.mean(y)
-
 def fitGP(theta, y, p0, seed):
     """
     Helper function to fit GP, compute lnlike
@@ -46,7 +41,7 @@ def fitGP(theta, y, p0, seed):
     gp.compute(theta)
 
     print("Initial lnlike:", gp.log_likelihood(y))
-    gp = gpu.optimizeGP(gp, theta, y, seed=seed, nRestarts=1, p0=p0, method="basinhopping")
+    gp = gpu.optimizeGP(gp, theta, y, seed=seed, nRestarts=1, p0=p0, method="nelder-mead")
     print("Final lnlike:", gp.log_likelihood(y))
     print("Final p:", gp.get_parameter_vector())
 
@@ -62,25 +57,14 @@ p0s = list()
 #         np.hstack(([np.mean(y)], np.mean(theta**2, axis=0)/theta.shape[-1]**3)),
 #         [np.mean(y), 1, 1, 1, 1, 1, 1, 1, 1, 1],
 #          [np.mean(y), 1.0e-1, 1.0e-1, 1.0e-1, 1.0e-1, 1.0e-1, 1.0e-1, 1.0e-1, 1.0e-1, 1.0e-1]]
-guesses = [np.array([np.mean(y), 1, 1, 1, 1, 1, 1, 1, 1, 1])]
 
+p0 = np.array([np.mean(y), 10, 10, 10, 10, 10, 10, 10, 10, 10])
 
-for p0 in guesses:
-    print(p0)
-    p0s.append(p0)
-    ll, p = fitGP(theta, y, p0, seed)
-    lnlikes.append(ll)
-    print()
+print(p0)
+p0s.append(p0)
+ll, p = fitGP(theta, y, p0, seed)
 
-lnlikes = np.array(lnlikes)
-p0s = np.array(p0s)
-
-# What's the best?
-print(lnlikes)
-
-bestInd = np.argmax(lnlikes)
-print("Best lnlike:", lnlikes[bestInd])
-print("Best guess:", p0s[bestInd])
+print(ll, p)
 
 # Run MCMC with best guess
 # Generate initial conditions for walkers in ball around MLE solution
@@ -93,19 +77,18 @@ mcmcKwargs = {"iterations" : int(3.0e4), "initial_state" : x0} # emcee.EnsembleS
 
 ### Initialize GP ###
 
-# Guess initial metric, or scale length of the covariances in loglikelihood space
-initialMetric = p0s[bestInd][1:]
-
 # Create kernel: We'll model coverianges in loglikelihood space using a
 # Squared Expoential Kernel as we anticipate Gaussian-ish posterior
 # distributions in our 2-dimensional parameter space
-kernel = george.kernels.ExpSquaredKernel(initialMetric, ndim=theta.shape[-1])
+tmp = [1.0e-1, 1.0e-1, 1.0e-1, 1.0e-1, 1.0e-1, 1.0e-1, 1.0e-1, 1.0e-1, 1.0e-1]
+kernel = george.kernels.ExpSquaredKernel(tmp, ndim=theta.shape[-1])
 
 # Guess initial mean function
 mean = np.mean(y)
 
 # Create GP and compute the kernel
 gp = george.GP(kernel=kernel, fit_mean=True, mean=mean)
+gp.set_parameter_vector(p)
 gp.compute(theta)
 
 # Initialize object using the Wang & Li (2017) Rosenbrock function example
@@ -125,8 +108,10 @@ sampler, iburn, ithin =  ap.runMCMC(samplerKwargs=samplerKwargs,
 # Check out the final posterior distribution!
 
 # Load in chain from last iteration
-iburn = 2500
-ithin = 100
+print(iburn, ithin)
+if iburn < 1000:
+    iburn = 2500
+    ithin = 500
 samples = sampler.get_chain(discard=iburn, flat=True, thin=ithin)
 
 # Corner plot!
