@@ -169,7 +169,7 @@ class ApproxPosterior(object):
             args=None, maxComp=3, mcmcKwargs=None, samplerKwargs=None,
             estBurnin=False, thinChains=False, chainFile="apRun", cache=True,
             maxLnLikeRestarts=5, gmmKwargs=None, gpMethod=None, gpOptions=None,
-            gpP0=None, optGPEveryN=1, **kwargs):
+            gpP0=None, optGPEveryN=1, nGPRestarts=5, **kwargs):
         """
         Core algorithm to estimate the posterior distribution via Gaussian
         Process regression to the joint distribution for the forward model
@@ -264,6 +264,9 @@ class ApproxPosterior(object):
             re-optimizing everytime a new design point is found, e.g. every time
             a new (theta, y) pair is added to the training set.  Increase this
             parameter if approxposterior is running slowly.
+        nGPRestarts : int (optional)
+            Number of times to restart GP hyperparameter optimization.  Defaults
+            to 3. Increase this number if the GP isn't optimized well.
         kwargs : dict (optional)
             Keyword arguments for user-specified loglikelihood function that
             calls the forward model.
@@ -300,7 +303,7 @@ class ApproxPosterior(object):
         # Initial optimization of gaussian process
         self.gp = gpUtils.optimizeGP(self.gp, self.theta, self.y, seed=seed,
                                      method=gpMethod, options=gpOptions,
-                                     p0=gpP0)
+                                     p0=gpP0, nRestarts=nGPRestarts)
 
         # Main loop
         kk = 0
@@ -342,6 +345,7 @@ class ApproxPosterior(object):
                                    gpMethod=gpMethod,
                                    gpOptions=gpOptions,
                                    optGP=optGP,
+                                   nGPRestarts=nGPRestarts,
                                    args=args,
                                    **kwargs)
 
@@ -454,7 +458,7 @@ class ApproxPosterior(object):
 
     def findNextPoint(self, computeLnLike=True, bounds=None, gpMethod=None,
                       maxLnLikeRestarts=1, seed=None, cache=True, gpOptions=None,
-                      gpP0=None, optGP=True, args=None, **kwargs):
+                      gpP0=None, optGP=True, args=None, nGPRestarts=3, **kwargs):
         """
         Find new point, thetaT, by maximizing utility function. Note that we
         call a minimizer because minimizing negative of utility function is
@@ -506,6 +510,9 @@ class ApproxPosterior(object):
         optGP : bool (optional)
             Whether or not to optimize the GP hyperparameters.  Defaults to
             True.
+        nGPRestarts : int (optional)
+            Number of times to restart GP hyperparameter optimization.  Defaults
+            to 3. Increase this number if the GP isn't optimized well.
         args : iterable (optional)
             Arguments for user-specified loglikelihood function that calls the
             forward model. Defaults to None.
@@ -585,7 +592,8 @@ class ApproxPosterior(object):
                 if optGP:
                     self.gp = gpUtils.optimizeGP(self.gp, self.theta, self.y,
                                                  seed=seed, method=gpMethod,
-                                                 options=gpOptions, p0=gpP0)
+                                                 options=gpOptions, p0=gpP0,
+                                                 nRestarts=nGPRestarts)
             except ValueError:
                 print("theta:", self.theta)
                 print("y:", self.y)
