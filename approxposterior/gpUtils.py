@@ -104,7 +104,7 @@ def defaultGP(theta, y):
 # end function
 
 
-def optimizeGP(gp, theta, y, seed=None, nRestarts=1, method=None, options=None,
+def optimizeGP(gp, theta, y, seed=None, nRestarts=3, method=None, options=None,
                p0=None):
     """
 
@@ -127,13 +127,13 @@ def optimizeGP(gp, theta, y, seed=None, nRestarts=1, method=None, options=None,
     seed : int (optional)
         numpy RNG seed.  Defaults to None.
     nRestarts : int (optional)
-        Number of times to restart the optimization.  Defaults to 1. Increase
+        Number of times to restart the optimization.  Defaults to 3. Increase
         this number if the GP isn't optimized well.
     method : str (optional)
-        scipy.optimize.minimize method.  Defaults to l-bfgs-b if None.
+        scipy.optimize.minimize method.  Defaults to nelder-mead if None.
     options : dict (optional)
-        kwargs for the scipy.optimize.minimize function.  Defaults to None, an
-        empty dictionary.
+        kwargs for the scipy.optimize.minimize function.  Defaults to None, or
+        {'adaptive' : True}
     p0 : array (optional)
         Initial guess for kernel hyperparameters.  If None, defaults to
         ndim values randomly sampled from a uniform distribution over [-10, 10)
@@ -145,9 +145,9 @@ def optimizeGP(gp, theta, y, seed=None, nRestarts=1, method=None, options=None,
 
     # Set default parameters if None are provided
     if method is None:
-        method = "l-bfgs-b"
+        method = "nelder-mead"
     if options is None:
-        options = {}
+        options = {"adaptive" : True}
 
     # Run the optimization routine n_restarts times
     res = []

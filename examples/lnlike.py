@@ -27,7 +27,7 @@ def fitGP(theta, y, p0, seed):
     """
 
     # Guess initial metric, or scale length of the covariances in loglikelihood space
-    initialMetric = np.mean(theta**2, axis=0)/theta.shape[-1]**3
+    initialMetric = [1, 1, 1, 1, 1, 1, 1, 1, 1]
 
     # Create kernel: We'll model coverianges in loglikelihood space using a
     # Squared Expoential Kernel as we anticipate Gaussian posterior distributions
@@ -37,11 +37,14 @@ def fitGP(theta, y, p0, seed):
     mean = np.mean(y)
 
     # Create GP and compute the kernel
-    gp = george.GP(kernel=kernel, fit_mean=True, mean=mean)
+    gp = george.GP(kernel=kernel, fit_mean=True, mean=mean, fit_white_noise=True, white_noise=np.log(np.var(y)))
     gp.compute(theta)
 
+    print(gp.get_parameter_names())
+    print(gp.get_parameter_vector())
+
     print("Initial lnlike:", gp.log_likelihood(y))
-    gp = gpu.optimizeGP(gp, theta, y, seed=seed, nRestarts=10, p0=p0, method="l-bfgs-b")
+    gp = gpu.optimizeGP(gp, theta, y, seed=seed, nRestarts=5, p0=gp.get_parameter_vector(), method="nelder-mead", options={"adaptive" : True})
     print("Final lnlike:", gp.log_likelihood(y))
     print("Final p:", gp.get_parameter_vector())
 
@@ -58,12 +61,7 @@ p0s = list()
 #         [np.mean(y), 1, 1, 1, 1, 1, 1, 1, 1, 1],
 #          [np.mean(y), 1.0e-1, 1.0e-1, 1.0e-1, 1.0e-1, 1.0e-1, 1.0e-1, 1.0e-1, 1.0e-1, 1.0e-1]]
 
-p0 = np.array([np.mean(y), 10, 10, 10, 10, 10, 10, 10, 10, 10])
-
-print(p0)
-p0s.append(p0)
 ll, p = fitGP(theta, y, p0=None, seed=seed)
-
 print(ll, p)
 
 # Run MCMC with best guess
@@ -77,18 +75,19 @@ mcmcKwargs = {"iterations" : int(3.0e4), "initial_state" : x0} # emcee.EnsembleS
 
 ### Initialize GP ###
 
+# Create GP and compute the kernel
+# Guess initial metric, or scale length of the covariances in loglikelihood space
+initialMetric = [1, 1, 1, 1, 1, 1, 1, 1, 1]
+
 # Create kernel: We'll model coverianges in loglikelihood space using a
-# Squared Expoential Kernel as we anticipate Gaussian-ish posterior
-# distributions in our 2-dimensional parameter space
-tmp = [1.0e-1, 1.0e-1, 1.0e-1, 1.0e-1, 1.0e-1, 1.0e-1, 1.0e-1, 1.0e-1, 1.0e-1]
-metric_bounds = ((-10, 10) for _ in range(theta.shape[-1]))
-kernel = george.kernels.ExpSquaredKernel(tmp, ndim=theta.shape[-1], metric_bounds=metric_bounds)
+# Squared Expoential Kernel as we anticipate Gaussian posterior distributions
+kernel = george.kernels.ExpSquaredKernel(initialMetric, ndim=theta.shape[-1])
 
 # Guess initial mean function
 mean = np.mean(y)
 
 # Create GP and compute the kernel
-gp = george.GP(kernel=kernel, fit_mean=True, mean=mean)
+gp = george.GP(kernel=kernel, fit_mean=True, mean=mean, fit_white_noise=True, white_noise=np.log(np.var))
 gp.set_parameter_vector(p)
 gp.compute(theta)
 
