@@ -41,7 +41,7 @@ def fitGP(theta, y, p0, seed):
     gp.compute(theta)
 
     print("Initial lnlike:", gp.log_likelihood(y))
-    gp = gpu.optimizeGP(gp, theta, y, seed=seed, nRestarts=10, p0=p0, method="newton-cg")
+    gp = gpu.optimizeGP(gp, theta, y, seed=seed, nRestarts=10, p0=p0, method="l-bfgs-b")
     print("Final lnlike:", gp.log_likelihood(y))
     print("Final p:", gp.get_parameter_vector())
 
@@ -81,14 +81,14 @@ mcmcKwargs = {"iterations" : int(3.0e4), "initial_state" : x0} # emcee.EnsembleS
 # Squared Expoential Kernel as we anticipate Gaussian-ish posterior
 # distributions in our 2-dimensional parameter space
 tmp = [1.0e-1, 1.0e-1, 1.0e-1, 1.0e-1, 1.0e-1, 1.0e-1, 1.0e-1, 1.0e-1, 1.0e-1]
-kernel = george.kernels.ExpSquaredKernel(tmp, ndim=theta.shape[-1])
+metric_bounds = ((-10, 10) for _ in range(theta.shape[-1]))
+kernel = george.kernels.ExpSquaredKernel(tmp, ndim=theta.shape[-1], metric_bounds=metric_bounds)
 
 # Guess initial mean function
 mean = np.mean(y)
 
 # Create GP and compute the kernel
-metric_bounds = ((-10, 10) for _ in range(theta.shape[-1]))
-gp = george.GP(kernel=kernel, fit_mean=True, mean=mean, metric_bounds=metric_bounds)
+gp = george.GP(kernel=kernel, fit_mean=True, mean=mean)
 gp.set_parameter_vector(p)
 gp.compute(theta)
 

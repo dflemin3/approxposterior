@@ -130,9 +130,10 @@ def optimizeGP(gp, theta, y, seed=None, nRestarts=1, method=None, options=None,
         Number of times to restart the optimization.  Defaults to 1. Increase
         this number if the GP isn't optimized well.
     method : str (optional)
-        scipy.optimize.minimize method.  Defaults to powell if None.
+        scipy.optimize.minimize method.  Defaults to l-bfgs-b if None.
     options : dict (optional)
-        kwargs for the scipy.optimize.minimize function.  Defaults to None
+        kwargs for the scipy.optimize.minimize function.  Defaults to None, an
+        empty dictionary.
     p0 : array (optional)
         Initial guess for kernel hyperparameters.  If None, defaults to
         ndim values randomly sampled from a uniform distribution over [-10, 10)
@@ -155,15 +156,14 @@ def optimizeGP(gp, theta, y, seed=None, nRestarts=1, method=None, options=None,
 
         # Initialize guess if None is provided
         if p0 is None:
-            # Guess metric following Kandasamy et al. (2015)'s method for
-            # ExpSquaredKernel then slightly perturb it
-            p0_n = np.hstack(([np.mean(y)], [np.random.uniform(low=-10, high=10) for _ in range(theta.shape[-1])]))
-            bounds = [(None, None)] + [(-10, 10) for _ in range(theta.shape[-1])]
+            p0_n = np.hstack(([np.mean(y)], [np.random.uniform(low=-100, high=100) for _ in range(theta.shape[-1])]))
+            bounds = [(None, None)] + [(-100, 100) for _ in range(theta.shape[-1])]
         else:
             p0 = np.array(p0)
             p0_n = p0 + 1.0e-3 * np.random.randn(len(p0))
             bounds = None
 
+        # Run the minimization
         results = minimize(_nll, p0_n, jac=_grad_nll, args=(gp, y),
                            method=method, options=options, bounds=bounds)
 
