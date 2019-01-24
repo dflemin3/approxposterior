@@ -130,10 +130,10 @@ def optimizeGP(gp, theta, y, seed=None, nRestarts=3, method=None, options=None,
         Number of times to restart the optimization.  Defaults to 3. Increase
         this number if the GP isn't optimized well.
     method : str (optional)
-        scipy.optimize.minimize method.  Defaults to nelder-mead if None.
+        scipy.optimize.minimize method.  Defaults to l-bfgs-b if None.
     options : dict (optional)
         kwargs for the scipy.optimize.minimize function.  Defaults to None, or
-        {'adaptive' : True}
+        an empty dictionary.
     p0 : array (optional)
         Initial guess for kernel hyperparameters.  If None, defaults to
         ndim values randomly sampled from a uniform distribution over [-10, 10)
@@ -145,9 +145,9 @@ def optimizeGP(gp, theta, y, seed=None, nRestarts=3, method=None, options=None,
 
     # Set default parameters if None are provided
     if method is None:
-        method = "nelder-mead"
+        method = "l-bfgs-b"
     if options is None:
-        options = {"adaptive" : True}
+        options = {}
 
     # Run the optimization routine n_restarts times
     res = []
