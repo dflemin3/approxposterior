@@ -27,11 +27,11 @@ def fitGP(theta, y, p0, seed):
     """
 
     # Guess initial metric, or scale length of the covariances in loglikelihood space
-    initialMetric = [1, 1, 1, 1, 1, 1, 1, 1, 1]
+    initialMetric = [1, 1, 1, 1, 1]
 
     # Create kernel: We'll model coverianges in loglikelihood space using a
     # Squared Expoential Kernel as we anticipate Gaussian posterior distributions
-    kernel = george.kernels.ExpSquaredKernel(initialMetric, ndim=theta.shape[-1])
+    kernel = np.log(np.var(y))*george.kernels.ExpSquaredKernel(initialMetric, ndim=theta.shape[-1])
 
     # Guess initial mean function
     mean = np.mean(y)
@@ -44,7 +44,7 @@ def fitGP(theta, y, p0, seed):
     print(gp.get_parameter_vector())
 
     print("Initial lnlike:", gp.log_likelihood(y))
-    gp = gpu.optimizeGP(gp, theta, y, seed=seed, nRestarts=5, p0=gp.get_parameter_vector(), method="nelder-mead", options={"adaptive" : True})
+    gp = gpu.optimizeGP(gp, theta, y, seed=seed, nRestarts=5, p0=gp.get_parameter_vector(), method="powell", options={})
     print("Final lnlike:", gp.log_likelihood(y))
     print("Final p:", gp.get_parameter_vector())
 
@@ -66,28 +66,26 @@ print(ll, p)
 
 # Run MCMC with best guess
 # Generate initial conditions for walkers in ball around MLE solution
-mle = np.array([1.08, 1.07, 7.28, 7.47, -0.17, -0.39, 7.27, 0.28, 2.49])
-x0 = mle + 1.0e-3*np.random.randn(200, 9)
 
 # emcee MCMC parameters
-samplerKwargs = {"nwalkers" : 200}        # emcee.EnsembleSampler parameters
-mcmcKwargs = {"iterations" : int(3.0e4), "initial_state" : x0} # emcee.EnsembleSampler.run_mcmc parameters
+samplerKwargs = {"nwalkers" : 100}        # emcee.EnsembleSampler parameters
+mcmcKwargs = {"iterations" : int(5.0e3)} # emcee.EnsembleSampler.run_mcmc parameters
 
 ### Initialize GP ###
 
 # Create GP and compute the kernel
 # Guess initial metric, or scale length of the covariances in loglikelihood space
-initialMetric = [1, 1, 1, 1, 1, 1, 1, 1, 1]
+initialMetric = [1, 1, 1, 1, 1]
 
 # Create kernel: We'll model coverianges in loglikelihood space using a
 # Squared Expoential Kernel as we anticipate Gaussian posterior distributions
-kernel = george.kernels.ExpSquaredKernel(initialMetric, ndim=theta.shape[-1])
+kernel = np.log(np.var(y))*george.kernels.ExpSquaredKernel(initialMetric, ndim=theta.shape[-1])
 
 # Guess initial mean function
 mean = np.mean(y)
 
 # Create GP and compute the kernel
-gp = george.GP(kernel=kernel, fit_mean=True, mean=mean, fit_white_noise=True, white_noise=np.log(np.var))
+gp = george.GP(kernel=kernel, fit_mean=True, mean=mean, fit_white_noise=True, white_noise=np.log(np.var(y)))
 gp.set_parameter_vector(p)
 gp.compute(theta)
 
