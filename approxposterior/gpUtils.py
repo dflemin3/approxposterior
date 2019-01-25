@@ -88,7 +88,7 @@ def defaultGP(theta, y):
     # Create kernel: We'll model coveriances in loglikelihood space using a
     # Squared Expoential Kernel as we anticipate Gaussian-ish posterior
     # distributions in our 2-dimensional parameter space
-    metric_bounds = ((-100, 100) for _ in range(theta.shape[-1]))
+    metric_bounds = ((-10, 10) for _ in range(theta.shape[-1]))
     kernel = george.kernels.ExpSquaredKernel(initialMetric,
                                              ndim=theta.shape[-1],
                                              metric_bounds=metric_bounds)
@@ -104,7 +104,7 @@ def defaultGP(theta, y):
 # end function
 
 
-def optimizeGP(gp, theta, y, seed=None, nRestarts=3, method=None, options=None,
+def optimizeGP(gp, theta, y, seed=None, nRestarts=5, method=None, options=None,
                p0=None):
     """
 
@@ -127,10 +127,10 @@ def optimizeGP(gp, theta, y, seed=None, nRestarts=3, method=None, options=None,
     seed : int (optional)
         numpy RNG seed.  Defaults to None.
     nRestarts : int (optional)
-        Number of times to restart the optimization.  Defaults to 3. Increase
+        Number of times to restart the optimization.  Defaults to 5. Increase
         this number if the GP isn't optimized well.
     method : str (optional)
-        scipy.optimize.minimize method.  Defaults to l-bfgs-b if None.
+        scipy.optimize.minimize method.  Defaults to powell if None.
     options : dict (optional)
         kwargs for the scipy.optimize.minimize function.  Defaults to None, or
         an empty dictionary.
@@ -145,7 +145,7 @@ def optimizeGP(gp, theta, y, seed=None, nRestarts=3, method=None, options=None,
 
     # Set default parameters if None are provided
     if method is None:
-        method = "l-bfgs-b"
+        method = "powell"
     if options is None:
         options = {}
 
@@ -156,8 +156,8 @@ def optimizeGP(gp, theta, y, seed=None, nRestarts=3, method=None, options=None,
 
         # Initialize guess if None is provided
         if p0 is None:
-            p0_n = np.hstack(([np.mean(y)], [np.random.uniform(low=-100, high=100) for _ in range(theta.shape[-1])]))
-            bounds = [(None, None)] + [(-100, 100) for _ in range(theta.shape[-1])]
+            p0_n = np.hstack(([np.mean(y)], [np.random.uniform(low=-10, high=10) for _ in range(theta.shape[-1])]))
+            bounds = None
         else:
             p0 = np.array(p0)
             p0_n = p0 + 1.0e-3 * np.random.randn(len(p0))
