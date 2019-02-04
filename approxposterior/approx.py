@@ -76,7 +76,7 @@ class ApproxPosterior(object):
         # Make sure y, theta are valid floats
         if np.any(~np.isfinite(self.theta)) or np.any(~np.isfinite(self.y)):
             print("theta, y:", theta, y)
-            raise ValueError("Both theta and y must all be finite!")
+            raise ValueError("All theta and y values must be finite!")
 
         # Initialize gaussian process
         if gp is None:
@@ -364,8 +364,8 @@ class ApproxPosterior(object):
                          gpParamNames=self.gp.get_parameter_names(),
                          gpParamValues=self.gp.get_parameter_vector())
 
-            # GP updated: run MCMCsampler to obtain new posterior conditioned on
-            # {theta_n, log(L_t*prior)}. Use emcee to obtain posterior dist.
+            # GP updated: run MCMC sampler to obtain new posterior conditioned
+            # on {theta_n, log(L_t*prior)}. Use emcee to obtain posterior dist.
 
             if timing:
                 start = time.time()
@@ -400,7 +400,7 @@ class ApproxPosterior(object):
                                   gmmKwargs=gmmKwargs)
 
             if verbose:
-                print("GMM fit complete")
+                print("GMM fit complete.")
 
             if timing:
                 self.gmmTime.append(time.time() - start)
@@ -458,7 +458,16 @@ class ApproxPosterior(object):
             if kk >= kmax:
                 if verbose:
                     print("Converged! n_iters, Dkl, Delta Dkl: %d, %e, %e" % (nn,self.Dkl[-1],deltaDkl))
+
+                    # Save KL divergence estimate
+                    if cache:
+                        ap.savez("apKL.npz", Dkl=self.Dkl)
                 return
+
+            # Save KL divergence estimates
+            if cache:
+                ap.savez("apKL.npz", Dkl=self.Dkl)
+
     # end function
 
 
