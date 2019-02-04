@@ -461,12 +461,12 @@ class ApproxPosterior(object):
 
                     # Save KL divergence estimate
                     if cache:
-                        ap.savez("apKL.npz", Dkl=self.Dkl)
+                        np.savez("apKL.npz", Dkl=self.Dkl)
                 return
 
             # Save KL divergence estimates
             if cache:
-                ap.savez("apKL.npz", Dkl=self.Dkl)
+                np.savez("apKL.npz", Dkl=self.Dkl)
 
     # end function
 
