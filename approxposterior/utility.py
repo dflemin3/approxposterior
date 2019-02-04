@@ -205,7 +205,8 @@ def BAPEUtility(theta, y, gp):
 # end function
 
 
-def minimizeObjective(fn, y, gp, sampleFn, priorFn, bounds=None, **kwargs):
+def minimizeObjective(fn, y, gp, sampleFn, priorFn, bounds=None,
+                      nRestarts=5, **kwargs):
     """
     Find point that minimizes fn for a gaussian process gp conditioned on y,
     the data and is allowed by the prior, priorFn.  PriorFn is required as it
@@ -230,6 +231,10 @@ def minimizeObjective(fn, y, gp, sampleFn, priorFn, bounds=None, **kwargs):
     bounds : tuple/iterable (optional)
         Bounds for minimization scheme.  See scipy.optimize.minimize details
         for more information.  Defaults to None.
+    nRestarts : int (optional)
+        Number of times to restart minimizing -utility function to select
+        next point to improve GP performance.  Defaults to 5.  Increase this
+        number of the point selection is not working well.
 
     Returns
     -------
@@ -237,32 +242,41 @@ def minimizeObjective(fn, y, gp, sampleFn, priorFn, bounds=None, **kwargs):
         point that minimizes fn
     """
 
-    while True:
-        # Solve for theta that maximize fn and is allowed by prior
+    # Required arguments for the utility function
+    args = (y, gp)
 
-        # Choose theta0 by uniformly sampling over parameter space and reshape
-        # theta0 for the gp
-        theta0 = np.array(sampleFn(1)).reshape(1,-1)
+    # Containers
+    ret = []
+    objective = []
 
-        args=(y, gp)
+    # Solve for theta that maximize fn and is allowed by prior
+    for _ in range(nRestarts):
+        while True:
+            # Choose theta0 by uniformly sampling over parameter space and reshape
+            # theta0 for the gp
+            theta0 = np.array(sampleFn(1)).reshape(1,-1)
 
-        # Mimimze fn, see if prior allows solution
-        try:
-            tmp = minimize(fn, theta0, args=args, bounds=bounds,
-                           method="nelder-mead")["x"]
+            # Mimimze fn, see if prior allows solution
+            try:
+                tmp = minimize(fn, theta0, args=args, bounds=bounds,
+                               method="nelder-mead",
+                               options={"adaptive" : True})["x"]
 
-        # ValueError.  Try again.
-        except ValueError:
-            tmp = np.array([np.inf for ii in range(theta0.shape[-1])]).reshape(theta0.shape)
+            # ValueError.  Try again.
+            except ValueError:
+                tmp = np.array([np.inf for ii in range(theta0.shape[-1])]).reshape(theta0.shape)
 
-        # Vet answer: must be finite, allowed by prior
-        # Are all values finite?
-        if np.all(np.isfinite(tmp)):
-            # Is this point in parameter space allowed by the prior?
-            if np.isfinite(priorFn(tmp, **kwargs)):
-                theta = tmp
-                break
-    # end while
+            # Vet answer: must be finite, allowed by prior
+            # Are all values finite?
+            if np.all(np.isfinite(tmp)):
+                # Is this point in parameter space allowed by the prior?
+                if np.isfinite(priorFn(tmp, **kwargs)):
+                    tmp
+                    break
+        # End while. Found a valid point, save it and the value of the objective
+        ret.append(tmp)
+        objective.append(fn(tmp, *args))
 
-    return theta
+    # Return minimum value of the objective
+    return np.array(ret)[np.argmin(objective)]
 # end function

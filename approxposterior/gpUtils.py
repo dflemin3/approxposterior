@@ -130,7 +130,7 @@ def optimizeGP(gp, theta, y, seed=None, nRestarts=5, method=None, options=None,
         Number of times to restart the optimization.  Defaults to 5. Increase
         this number if the GP isn't optimized well.
     method : str (optional)
-        scipy.optimize.minimize method.  Defaults to powell if None.
+        scipy.optimize.minimize method.  Defaults to nelder-mead if None.
     options : dict (optional)
         kwargs for the scipy.optimize.minimize function.  Defaults to None, or
         an empty dictionary.
@@ -145,9 +145,9 @@ def optimizeGP(gp, theta, y, seed=None, nRestarts=5, method=None, options=None,
 
     # Set default parameters if None are provided
     if method is None:
-        method = "powell"
+        method = "nelder-mead"
     if options is None:
-        options = {}
+        options = {"adaptive" : True}
 
     # Run the optimization routine n_restarts times
     res = []

@@ -169,7 +169,8 @@ class ApproxPosterior(object):
             args=None, maxComp=3, mcmcKwargs=None, samplerKwargs=None,
             estBurnin=False, thinChains=False, chainFile="apRun", cache=True,
             maxLnLikeRestarts=5, gmmKwargs=None, gpMethod=None, gpOptions=None,
-            gpP0=None, optGPEveryN=1, nGPRestarts=5, **kwargs):
+            gpP0=None, optGPEveryN=1, nGPRestarts=5, nMinObjRestarts=5,
+            **kwargs):
         """
         Core algorithm to estimate the posterior distribution via Gaussian
         Process regression to the joint distribution for the forward model
@@ -252,7 +253,7 @@ class ApproxPosterior(object):
             forward model. Defaults to None.
         gpMethod : str (optional)
             scipy.optimize.minimize method used when optimized GP hyperparameters.
-            Defaults to None, which is nelder-mead, and it usually works.
+            Defaults to None, which is powell, and it usually works.
         gpOptions : dict (optional)
             kwargs for the scipy.optimize.minimize function used to optimize GP
             hyperparameters.  Defaults to None.
@@ -266,7 +267,11 @@ class ApproxPosterior(object):
             parameter if approxposterior is running slowly.
         nGPRestarts : int (optional)
             Number of times to restart GP hyperparameter optimization.  Defaults
-            to 3. Increase this number if the GP isn't optimized well.
+            to 5. Increase this number if the GP isn't optimized well.
+        nMinObjRestarts : int (optional)
+            Number of times to restart minimizing -utility function to select
+            next point to improve GP performance.  Defaults to 5.  Increase this
+            number of the point selection is not working well.
         kwargs : dict (optional)
             Keyword arguments for user-specified loglikelihood function that
             calls the forward model.
@@ -346,6 +351,7 @@ class ApproxPosterior(object):
                                    gpOptions=gpOptions,
                                    optGP=optGP,
                                    nGPRestarts=nGPRestarts,
+                                   nMinObjRestarts=nMinObjRestarts,
                                    args=args,
                                    **kwargs)
 
@@ -458,7 +464,8 @@ class ApproxPosterior(object):
 
     def findNextPoint(self, computeLnLike=True, bounds=None, gpMethod=None,
                       maxLnLikeRestarts=1, seed=None, cache=True, gpOptions=None,
-                      gpP0=None, optGP=True, args=None, nGPRestarts=3, **kwargs):
+                      gpP0=None, optGP=True, args=None, nGPRestarts=5,
+                      nMinObjRestarts=5, **kwargs):
         """
         Find new point, thetaT, by maximizing utility function. Note that we
         call a minimizer because minimizing negative of utility function is
@@ -500,7 +507,7 @@ class ApproxPosterior(object):
             apFModelCache.npz in the current working directory.
         gpMethod : str (optional)
             scipy.optimize.minimize method used when optimized GP hyperparameters.
-            Defaults to None, which is nelder-mead, and it usually works.
+            Defaults to None, which is powell, and it usually works.
         gpOptions : dict (optional)
             kwargs for the scipy.optimize.minimize function used to optimize GP
             hyperparameters.  Defaults to None.
@@ -513,6 +520,10 @@ class ApproxPosterior(object):
         nGPRestarts : int (optional)
             Number of times to restart GP hyperparameter optimization.  Defaults
             to 3. Increase this number if the GP isn't optimized well.
+        nMinObjRestarts : int (optional)
+            Number of times to restart minimizing -utility function to select
+            next point to improve GP performance.  Defaults to 5.  Increase this
+            number of the point selection is not working well.
         args : iterable (optional)
             Arguments for user-specified loglikelihood function that calls the
             forward model. Defaults to None.
@@ -553,7 +564,8 @@ class ApproxPosterior(object):
             thetaT = ut.minimizeObjective(self.utility, self.y, self.gp,
                                           sampleFn=self.priorSample,
                                           priorFn=self._lnprior,
-                                          bounds=bounds, **kwargs)
+                                          bounds=bounds,
+                                          nRestarts=nMinObjRestarts, **kwargs)
 
             # Compute lnLikelihood at thetaT?
             if computeLnLike:

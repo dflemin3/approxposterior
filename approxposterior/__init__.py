@@ -6,7 +6,7 @@ approxposteior package init file.
 
 """
 
-__version__ = "0.11"
+__version__ = "0.2rc0"
 __author__ = "David Fleming (dflemin3@uw.edu)"
 __copyright__ = "Copyright 2018 David P. Fleming"
 
