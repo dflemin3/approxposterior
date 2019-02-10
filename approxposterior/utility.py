@@ -7,7 +7,7 @@ Utility functions
 
 # Tell module what it's allowed to import
 __all__ = ["logsubexp","AGPUtility","BAPEUtility","minimizeObjective",
-           "functionWrapper","klNumerical"]
+           "functionWrapper","functionWrapperArgsOnly","klNumerical"]
 
 import numpy as np
 from scipy.optimize import minimize
@@ -43,6 +43,32 @@ class functionWrapper(object):
         """
 
         return self.f(x, *self.args, **self.kwargs)
+    # end function
+# end class
+
+
+class functionWrapperArgsOnly(object):
+    """
+    Wrapper class for functions where input are the args.
+    """
+
+    def __init__(self, f, **kwargs):
+        """
+        Initialize!
+        """
+
+        # Need function, optional args and kwargs
+        self.f = f
+        self.kwargs = kwargs
+    # end function
+
+
+    def __call__(self, x):
+        """
+        Call the function on some input x.
+        """
+
+        return self.f(*x, **self.kwargs)
     # end function
 # end class
 

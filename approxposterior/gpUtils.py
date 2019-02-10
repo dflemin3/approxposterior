@@ -8,6 +8,8 @@ Gaussian process utility functions.
 # Tell module what it's allowed to import
 __all__ = ["optimizeGP"]
 
+from . import pool
+from . import utility as util
 import numpy as np
 import george
 from scipy.optimize import minimize, basinhopping
@@ -105,7 +107,7 @@ def defaultGP(theta, y):
 
 
 def optimizeGP(gp, theta, y, seed=None, nRestarts=5, method=None, options=None,
-               p0=None):
+               p0=None, nCores=1):
     """
 
     Optimize hyperparameters of an arbitrary george Gaussian Process kenerl
@@ -137,6 +139,8 @@ def optimizeGP(gp, theta, y, seed=None, nRestarts=5, method=None, options=None,
     p0 : array (optional)
         Initial guess for kernel hyperparameters.  If None, defaults to
         ndim values randomly sampled from a uniform distribution over [-10, 10)
+    nCores : int (optional)
+        If > 1, use multiprocessing to distribute optimization restarts
 
     Returns
     -------
@@ -149,37 +153,47 @@ def optimizeGP(gp, theta, y, seed=None, nRestarts=5, method=None, options=None,
     if options is None:
         options = {"adaptive" : True}
 
-    # Run the optimization routine n_restarts times
+    # Run the optimization routine n_restarts times, maybe using multiprocessing
     res = []
     mll = []
-    for _ in range(nRestarts):
+    bounds = None     # XXX smart init for bounds
 
-        # Initialize guess if None is provided
+    # Figure out how many cores to use with InterruptiblePool
+    if nCores > 1:
+        poolType = "MultiPool"
+    else:
+        poolType = "SerialPool"
+
+    # Use multiprocessing to distribution optimization calls
+    with pool.Pool(pool=poolType, processes=nCores) as optPool:
+
+        # Inputs for each process
         if p0 is None:
-            p0_n = np.hstack(([np.mean(y)], [np.random.uniform(low=-10, high=10) for _ in range(theta.shape[-1])]))
-            bounds = None
+            iterables = [(_nll, np.hstack(([np.mean(y)], [np.random.uniform(low=-10, high=10) for _ in range(theta.shape[-1])]))) for _ in range(nRestarts)]
         else:
-            p0 = np.array(p0)
-            p0_n = p0 + 1.0e-3 * np.random.randn(len(p0))
-            bounds = None
+            iterables = [(_nll, np.array(p0) + 1.0e-3 * np.random.randn(len(p0))) for _ in range(nRestarts)]
 
-        # Run the minimization
-        results = minimize(_nll, p0_n, jac=_grad_nll, args=(gp, y),
-                           method=method, options=options, bounds=bounds)
 
-        # Cache this result
-        res.append(results.x)
+        # keyword arguments for minimizer
+        mKwargs = {"jac" : _grad_nll,
+                   "args" : (gp, y),
+                   "method" : method,
+                   "options" : options,
+                   "bounds" : bounds}
 
-        # Update the kernel
-        gp.set_parameter_vector(results.x)
-        gp.recompute()
+        # Run the minimization on nCores
+        fn = util.functionWrapperArgsOnly(minimize, **mKwargs)
+        results = optPool.map(fn, iterables)
 
-        # Compute marginal log likelihood
-        mll.append(gp.log_likelihood(y, quiet=True))
+    # Extract solutions
+    for result in results:
+        res.append(result.x)
+        mll.append(result.fun)
 
     # Pick result with largest log likelihood
     ind = np.argmax(mll)
 
+    # Update gp
     gp.set_parameter_vector(res[ind])
     gp.recompute()
 
