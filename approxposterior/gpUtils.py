@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 """
+:py:mod:`gpUtils.py` - Gaussian Process Utilities
+-----------------------------------
 
-Gaussian process utility functions.
+Gaussian process utility functions, e.g. optimizing GP hyperparameters.
 
 """
 

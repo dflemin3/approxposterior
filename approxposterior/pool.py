@@ -12,7 +12,8 @@ An implementation of three different types of pools:
 
     - A serial pool, which uses the built-in :py:obj:`map` function
 
-    Original Authors: Rodrigo Luger & Dan Forman-Mackey
+    Based on * `<https://github.com/jreese/multiprocessing-keyboardinterrupt/>`_
+    and work by Peter K. G. Williams <peter@newton.cx>, Rodrigo Luger, and Dan Forman-Mackey.
 """
 
 import sys

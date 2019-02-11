@@ -1,6 +1,6 @@
 GP Utility Functions
 ====================
 
-.. automodule:: approxposterior.gp_utils
+.. automodule:: approxposterior.gpUtils
    :members:
    :undoc-members:

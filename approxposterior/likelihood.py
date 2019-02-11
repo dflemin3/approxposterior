@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 """
+:py:mod:`likelihood.py` - Example Likelihood Functions
+-----------------------------------
 
 This file contains routines for simples loglikelihoods and priors for test
 cases.

@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 """
+:py:mod:`approx.py` - ApproxPosterior
+-----------------------------------
 
-Bayesian Posterior estimation routines, written in pure python, leveraging
-Dan Forman-Mackey's Gaussian Process implementation, george, and his
+Bayesian Posterior estimation, written in pure python, leveraging
+Dan Forman-Mackey's Gaussian Process implementation, george, and DFM's
 Metropolis-Hastings MCMC implementation, emcee. We include hybrid
-implementations of both Wang & Li (2017) and Kandasamy et al. (2015).  If you
-use this, cite them!
+implementations of both Wang & Li (2017) and Kandasamy et al. (2015). 
 
 """
 

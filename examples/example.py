@@ -9,9 +9,8 @@ Example script
 
 """
 
-from approxposterior import approx, likelihood as lh
+from approxposterior import approx, gpUtils, likelihood as lh
 import numpy as np
-import george
 
 # Define algorithm parameters
 m0 = 50                           # Initial size of training set
@@ -35,11 +34,13 @@ y = np.zeros(len(theta))
 for ii in range(len(theta)):
     y[ii] = lh.rosenbrockLnlike(theta[ii]) + lh.rosenbrockLnprior(theta[ii])
 
+# Create the the default GP which uses an ExpSquaredKernel
+gp = gpUtils.defaultGP(theta, y)
+
 # Initialize object using the Wang & Li (2017) Rosenbrock function example
-# Note that by not supplying a GP, we use the default which is a uses an
-# ExpSquaredKernel
 ap = approx.ApproxPosterior(theta=theta,
                             y=y,
+                            gp=gp,
                             lnprior=lh.rosenbrockLnprior,
                             lnlike=lh.rosenbrockLnlike,
                             priorSample=lh.rosenbrockSample,
@@ -51,7 +52,7 @@ ap.run(m=m, nmax=nmax, Dmax=Dmax, kmax=kmax, bounds=bounds,  estBurnin=True,
        samplerKwargs=samplerKwargs, verbose=True)
 
 # Check out the final posterior distribution!
-import emcee, corner
+import corner
 
 # Load in chain from last iteration
 samples = ap.sampler.get_chain(discard=ap.iburns[-1], flat=True, thin=ap.ithins[-1])

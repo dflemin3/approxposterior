@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
 """
+:py:mod:`utility.py` - Utility Functions
+-----------------------------------
 
-Utility functions
+Utility functions ranging from minimizing GP objective functions to function
+wrappers.
 
 """
 

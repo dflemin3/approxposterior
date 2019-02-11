@@ -1,6 +1,6 @@
 GMM Utility Functions
 =====================
 
-.. automodule:: approxposterior.gmm_utils
+.. automodule:: approxposterior.gmmUtils
    :members:
    :undoc-members:

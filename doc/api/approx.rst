@@ -1,6 +1,6 @@
 ApproxPosterior Class
 =====================
 
-.. automodule:: approxposterior.bp
+.. automodule:: approxposterior.approx
    :members:
    :undoc-members:

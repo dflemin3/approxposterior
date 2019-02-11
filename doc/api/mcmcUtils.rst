@@ -1,6 +1,6 @@
 MCMC Utility Functions
 ======================
 
-.. automodule:: approxposterior.mcmc_utils
+.. automodule:: approxposterior.mcmcUtils
    :members:
    :undoc-members:
