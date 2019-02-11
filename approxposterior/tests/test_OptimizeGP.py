@@ -65,14 +65,27 @@ def testGPOpt():
     options = {"adaptive" : True}
     p0 = gp.get_parameter_vector()
 
-    gp = gpu.optimizeGP(gp, theta, y, seed=seed, nRestarts=1,
-                        method=method, options=options, p0=p0)
+    # Try serial computation
+    gp = gpu.optimizeGP(gp, theta, y, seed=seed, nRestarts=5,
+                        method=method, options=options, p0=p0,
+                        nCores=1)
 
     # Extract GP hyperparameters, compare to truth
-    hype = gp.get_parameter_vector()
+    hypeSin = gp.get_parameter_vector()
+
+    # Now with multiprocessing using as many cores as we can
+    gp = gpu.optimizeGP(gp, theta, y, seed=seed, nRestarts=5,
+                        method=method, options=options, p0=p0,
+                        nCores=-1)
+
+    # Extract GP hyperparameters, compare to truth
+    hypeMult = gp.get_parameter_vector()
+
     errMsg = "ERROR: GP hyperparameters are not close to the true value!"
-    print(hype)
-    assert np.allclose(hype, [-135.91343934, -0.68256741, 2.1394469]), errMsg
+    hypeTrue = [-135.91343934, -0.68256741, 2.1394469]
+    assert np.allclose(hypeSin, hypeMult), errMsg
+    assert np.allclose(hypeSin, hypeTrue), errMsg
+    assert np.allclose(hypeMult, hypeTrue), errMsg
 # end function
 
 if __name__ == "__main__":
