@@ -169,7 +169,7 @@ class ApproxPosterior(object):
             args=None, maxComp=3, mcmcKwargs=None, samplerKwargs=None,
             estBurnin=False, thinChains=False, chainFile="apRun", cache=True,
             maxLnLikeRestarts=5, gmmKwargs=None, gpMethod=None, gpOptions=None,
-            gpP0=None, optGPEveryN=1, nGPRestarts=5, nMinObjRestarts=5,
+            gpP0=None, optGPEveryN=1, nGPRestarts=5, nMinObjRestarts=5, nCores=1,
             **kwargs):
         """
         Core algorithm to estimate the posterior distribution via Gaussian
@@ -272,6 +272,8 @@ class ApproxPosterior(object):
             Number of times to restart minimizing -utility function to select
             next point to improve GP performance.  Defaults to 5.  Increase this
             number of the point selection is not working well.
+        nCores : int (optional)
+            If > 1, use multiprocessing to distribute optimization restarts
         kwargs : dict (optional)
             Keyword arguments for user-specified loglikelihood function that
             calls the forward model.
@@ -308,7 +310,8 @@ class ApproxPosterior(object):
         # Initial optimization of gaussian process
         self.gp = gpUtils.optimizeGP(self.gp, self.theta, self.y, seed=seed,
                                      method=gpMethod, options=gpOptions,
-                                     p0=gpP0, nRestarts=nGPRestarts)
+                                     p0=gpP0, nRestarts=nGPRestarts,
+                                     nCores=nCores)
 
         # Main loop
         kk = 0
@@ -474,7 +477,7 @@ class ApproxPosterior(object):
     def findNextPoint(self, computeLnLike=True, bounds=None, gpMethod=None,
                       maxLnLikeRestarts=1, seed=None, cache=True, gpOptions=None,
                       gpP0=None, optGP=True, args=None, nGPRestarts=5,
-                      nMinObjRestarts=5, **kwargs):
+                      nMinObjRestarts=5, nCores=1, **kwargs):
         """
         Find new point, thetaT, by maximizing utility function. Note that we
         call a minimizer because minimizing negative of utility function is
@@ -533,6 +536,8 @@ class ApproxPosterior(object):
             Number of times to restart minimizing -utility function to select
             next point to improve GP performance.  Defaults to 5.  Increase this
             number of the point selection is not working well.
+        nCores : int (optional)
+            If > 1, use multiprocessing to distribute optimization restarts
         args : iterable (optional)
             Arguments for user-specified loglikelihood function that calls the
             forward model. Defaults to None.
@@ -614,7 +619,8 @@ class ApproxPosterior(object):
                     self.gp = gpUtils.optimizeGP(self.gp, self.theta, self.y,
                                                  seed=seed, method=gpMethod,
                                                  options=gpOptions, p0=gpP0,
-                                                 nRestarts=nGPRestarts)
+                                                 nRestarts=nGPRestarts,
+                                                 nCores=nCores)
             except ValueError:
                 print("theta:", self.theta)
                 print("y:", self.y)

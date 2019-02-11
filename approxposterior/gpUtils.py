@@ -156,7 +156,6 @@ def optimizeGP(gp, theta, y, seed=None, nRestarts=5, method=None, options=None,
     # Run the optimization routine n_restarts times, maybe using multiprocessing
     res = []
     mll = []
-    bounds = None     # XXX smart init for bounds
 
     # Figure out how many cores to use with InterruptiblePool
     if nCores > 1:
@@ -179,7 +178,7 @@ def optimizeGP(gp, theta, y, seed=None, nRestarts=5, method=None, options=None,
                    "args" : (gp, y),
                    "method" : method,
                    "options" : options,
-                   "bounds" : bounds}
+                   "bounds" : None}
 
         # Run the minimization on nCores
         fn = util.functionWrapperArgsOnly(minimize, **mKwargs)
