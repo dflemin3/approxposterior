@@ -1,29 +1,13 @@
 Tutorial
 ========
 
-Check out the example notebooks to see how the BAPE algorithm works, how the code runtime scales
-for different forward model evaluation times, how we compute the Kullback–Leibler (KL) divergence,
-how we can use :py:obj:`approxposterior`
-and how we compute the true posterior distribution for the Rosenbrock function example from Wang & Li (2017).
-
-.. toctree::
-   :maxdepth: 1
-   :caption: Jupyter Notebook Examples:
-
-   Example <notebooks/example.ipynb>
-   Fitting a Line <notebooks/fittingALine.ipynb>
-   Scaling and Accuracy <notebooks/ScalingAccuracy.ipynb>
-   KL Divergence Estimation <notebooks/KLDivergenceEstimation.ipynb>
-   Posterior Fitting with Gaussian Mixture Models <notebooks/posteriorFittingWithGMM.ipynb>
-   Rosenbrock Function Example <notebooks/TrueRosenbrockPosterior.ipynb>
-
 Below is a quick example of how to use :py:obj:`approxposterior` to compute the posterior
 distribution of the Rosenbrock Function example from Wang & Li (2017) using the
-BAPE algorithm. To keep track of the MCMC progress, set verbose = True in the appoxposterior.run method. This setting
-outputs X/M where M is the total number of MCMC iterations to be evaluated, 5,000 in this example, and x is the current
-iteration number.  Note that setting verbose = True also outputs additional diagnostic information, such as when
+BAPE algorithm. Note that setting verbose = True also outputs additional diagnostic information, such as when
 the MCMC finishes, what the estimated burn-in is, and other quantities that are useful for tracking the progress of
 your code.  In this example, we set verbose = False for simplicity.
+
+Don't forget to check out the links for example Jupyter Notebooks at the bottom of the page!
 
 1) First, the user must set model parameters.
 
@@ -66,13 +50,13 @@ your code.  In this example, we set verbose = False for simplicity.
 .. code-block:: python
 
   # Initialize object using the Wang & Li (2017) Rosenbrock function example
-  ap = approx.ApproxPosterior(theta=theta,
-                              y=y,
-                              gp=gp,
-                              lnprior=lh.rosenbrockLnprior,
-                              lnlike=lh.rosenbrockLnlike,
-                              priorSample=lh.rosenbrockSample,
-                              algorithm=algorithm)
+  ap = approx.ApproxPosterior(theta=theta,                   # Initial model parameters for inputs
+                            y=y,                             # Logprobability of each input
+                            gp=gp,                           # Initialize Gaussian Process
+                            lnprior=lh.rosenbrockLnprior,    # logprior function
+                            lnlike=lh.rosenbrockLnlike,      # loglikelihood function
+                            priorSample=lh.rosenbrockSample, # Prior sample function
+                            algorithm=algorithm)             # Which algorithm to use: BAPE, AGP, or ALTERNATE
 
 4) Run!
 
@@ -103,3 +87,18 @@ The final posterior distribution will look something like the following:
 .. image:: _figures/final_posterior.png
   :width: 400
   :alt: Final posterior distribution for approxposterior run of the Wang & Li (2017) example.
+
+Check out the example notebooks to see example use cases, how the code runtime scales
+for different forward model evaluation times, how we compute the Kullback–Leibler (KL) divergence,
+and more.
+
+  .. toctree::
+     :maxdepth: 1
+     :caption: Jupyter Notebook Examples:
+
+     Example <notebooks/example.ipynb>
+     Fitting a Line <notebooks/fittingALine.ipynb>
+     Scaling and Accuracy <notebooks/ScalingAccuracy.ipynb>
+     KL Divergence Estimation <notebooks/KLDivergenceEstimation.ipynb>
+     Posterior Fitting with Gaussian Mixture Models <notebooks/posteriorFittingWithGMM.ipynb>
+     Rosenbrock Function Example <notebooks/TrueRosenbrockPosterior.ipynb>
