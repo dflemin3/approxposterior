@@ -82,8 +82,9 @@ def testGPOpt():
     hypeMult = gp.get_parameter_vector()
 
     errMsg = "ERROR: GP hyperparameters are not close to the true value!"
+    errMult = "ERROR: Single and multi GP hyperparameters are not close!"
     hypeTrue = [-135.91343934, -0.68256741, 2.1394469]
-    assert np.allclose(hypeSin, hypeMult), errMsg
+    assert np.allclose(hypeSin, hypeMult), errMult
     assert np.allclose(hypeSin, hypeTrue), errMsg
     assert np.allclose(hypeMult, hypeTrue), errMsg
 # end function

@@ -184,12 +184,18 @@ def optimizeGP(gp, theta, y, seed=None, nRestarts=5, method=None, options=None,
         fn = util.functionWrapperArgsOnly(minimize, **mKwargs)
         results = optPool.map(fn, iterables)
 
-    # Extract solutions
+    # Extract solutions and recompute marginal log likelihood for solutions
     for result in results:
         res.append(result.x)
-        mll.append(result.fun)
 
-    # Pick result with largest log likelihood
+        # Update the kernel
+        gp.set_parameter_vector(result.x)
+        gp.recompute()
+
+        # Compute marginal log likelihood
+        mll.append(gp.log_likelihood(y, quiet=True))
+
+    # Pick result with largest marginal log likelihood
     ind = np.argmax(mll)
 
     # Update gp
