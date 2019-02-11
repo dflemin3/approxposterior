@@ -579,7 +579,8 @@ class ApproxPosterior(object):
                                           sampleFn=self.priorSample,
                                           priorFn=self._lnprior,
                                           bounds=bounds,
-                                          nRestarts=nMinObjRestarts, **kwargs)
+                                          nRestarts=nMinObjRestarts,
+                                          nCores=nCores)
 
             # Compute lnLikelihood at thetaT?
             if computeLnLike:
