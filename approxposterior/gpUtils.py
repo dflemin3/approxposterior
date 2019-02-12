@@ -13,6 +13,7 @@ __all__ = ["optimizeGP"]
 from . import pool
 from . import utility as util
 import numpy as np
+import os
 import george
 from scipy.optimize import minimize, basinhopping
 
@@ -142,7 +143,8 @@ def optimizeGP(gp, theta, y, seed=None, nRestarts=5, method=None, options=None,
         Initial guess for kernel hyperparameters.  If None, defaults to
         ndim values randomly sampled from a uniform distribution over [-10, 10)
     nCores : int (optional)
-        If > 1, use multiprocessing to distribute optimization restarts
+        If > 1, use multiprocessing to distribute optimization restarts. If
+        < 0, use all usable cores
 
     Returns
     -------
@@ -161,6 +163,10 @@ def optimizeGP(gp, theta, y, seed=None, nRestarts=5, method=None, options=None,
 
     # Figure out how many cores to use with InterruptiblePool
     if nCores > 1:
+        poolType = "MultiPool"
+    # Use all usable cores
+    elif nCores < 0:
+        nCores = len(os.sched_getaffinity(0))
         poolType = "MultiPool"
     else:
         poolType = "SerialPool"
