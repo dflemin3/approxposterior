@@ -58,3 +58,6 @@ def testGMMFit():
 
     return None
 # end function
+
+if __name__ == "__main__":
+    testGMMFit()

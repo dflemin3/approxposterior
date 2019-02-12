@@ -46,3 +46,6 @@ def test_pool():
         # Check if the parallelization worked
         assert np.allclose(res, [_test_function(w) for w in walkers])
 # end function
+
+if __name__ == "__main__":
+    test_pool()

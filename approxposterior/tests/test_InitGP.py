@@ -12,11 +12,9 @@ import george
 from approxposterior import utility as ut, gpUtils
 
 
-def testUtilsGP():
+def testInitGP():
     """
-    Test the utility functions!  This probes the gp_utils.setup_gp function
-    (which is rather straight-forward) and makes sure the utility functions
-    produce the right result (which is also straight-forward).
+    Test default GP initialization.
 
     Parameters
     ----------
@@ -58,18 +56,12 @@ def testUtilsGP():
     # Set up a gp
     gp = gpUtils.defaultGP(theta, y)
 
-    # Compute the AGP utility function at some point
-    thetaTest = np.array([-2.3573, 4.673])
-    testUtil = ut.AGPUtility(thetaTest, y, gp)
-
-    errMsg = "ERROR: AGP util fn bug.  Did you change gp_utils.setup_gp?"
-    assert np.allclose(testUtil, 36.17652652, rtol=1.0e-4), errMsg
-
-    # Now do the same using the BAPE utility function
-    testUtil = ut.BAPEUtility(thetaTest, y, gp)
-
-    errMsg = "ERROR: BAPE util fn bug.  Did you change gp_utils.setup_gp?"
-    assert np.allclose(testUtil, 75.17909884, rtol=1.0e-4), errMsg
+    errMsg = "ERROR: Default initialization with incorrect parameters!"
+    true = [-1.32770573e+02, 1.11571776e-01, 1.11571776e-01]
+    assert np.allclose(true, gp.get_parameter_vector()), errMsg
 
     return None
 # end function
+
+if __name__ == "__main__":
+    testInitGP()

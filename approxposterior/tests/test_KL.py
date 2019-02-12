@@ -56,3 +56,6 @@ def testKLApproximation():
 
     return None
 # end function
+
+if __name__ == "__main__":
+    testKLApproximation()
