@@ -50,13 +50,13 @@ Don't forget to check out the links for example Jupyter Notebooks at the bottom 
 .. code-block:: python
 
   # Initialize object using the Wang & Li (2017) Rosenbrock function example
-  ap = approx.ApproxPosterior(theta=theta,                   # Initial model parameters for inputs
-                            y=y,                             # Logprobability of each input
-                            gp=gp,                           # Initialize Gaussian Process
-                            lnprior=lh.rosenbrockLnprior,    # logprior function
-                            lnlike=lh.rosenbrockLnlike,      # loglikelihood function
-                            priorSample=lh.rosenbrockSample, # Prior sample function
-                            algorithm=algorithm)             # Which algorithm to use: BAPE, AGP, or ALTERNATE
+  ap = approx.ApproxPosterior(theta=theta,                     # Initial model parameters for inputs
+                              y=y,                             # Logprobability of each input
+                              gp=gp,                           # Initialize Gaussian Process
+                              lnprior=lh.rosenbrockLnprior,    # logprior function
+                              lnlike=lh.rosenbrockLnlike,      # loglikelihood function
+                              priorSample=lh.rosenbrockSample, # Prior sample function
+                              algorithm=algorithm)             # Which algorithm to use: BAPE, AGP, or ALTERNATE
 
 4) Run!
 
@@ -64,7 +64,7 @@ Don't forget to check out the links for example Jupyter Notebooks at the bottom 
 
   ap.run(m=m, nmax=nmax, Dmax=Dmax, kmax=kmax, bounds=bounds,  estBurnin=True,
          nKLSamples=nKLSamples, mcmcKwargs=mcmcKwargs, cache=False,
-         samplerKwargs=samplerKwargs, verbose=True)
+         samplerKwargs=samplerKwargs, verbose=False)
 
 5) Examine the final posterior distributions!
 

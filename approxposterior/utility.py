@@ -237,8 +237,7 @@ def BAPEUtility(theta, y, gp):
 # end function
 
 
-def _minimizeObjective(theta0, fn, y, gp, sampleFn, priorFn, bounds=None,
-                       nRestarts=5):
+def _minimizeObjective(theta0, fn, y, gp, sampleFn, priorFn, bounds=None):
     """
     Minimize objective wrapped function for multiprocessing. Same inputs/outputs
     as minimizeObjective.
@@ -275,8 +274,8 @@ def _minimizeObjective(theta0, fn, y, gp, sampleFn, priorFn, bounds=None,
 # end function
 
 
-def minimizeObjective(fn, y, gp, sampleFn, priorFn, bounds=None, nRestarts=5,
-                      nCores=1):
+def minimizeObjective(fn, y, gp, sampleFn, priorFn, bounds=None,
+                      nMinObjRestarts=5, nCores=1):
     """
     Find point that minimizes fn for a gaussian process gp conditioned on y,
     the data, and is allowed by the prior, priorFn.  PriorFn is required as it
@@ -298,7 +297,7 @@ def minimizeObjective(fn, y, gp, sampleFn, priorFn, bounds=None, nRestarts=5,
     bounds : tuple/iterable (optional)
         Bounds for minimization scheme.  See scipy.optimize.minimize details
         for more information.  Defaults to None.
-    nRestarts : int (optional)
+    nMinObjRestarts : int (optional)
         Number of times to restart minimizing -utility function to select
         next point to improve GP performance.  Defaults to 5.  Increase this
         number of the point selection is not working well.
@@ -337,10 +336,10 @@ def minimizeObjective(fn, y, gp, sampleFn, priorFn, bounds=None, nRestarts=5,
     with pool.Pool(pool=poolType, processes=nCores) as optPool:
 
         # Inputs for each process
-        iterables = [np.array(sampleFn(1)).reshape(1,-1) for _ in range(nRestarts)]
+        iterables = [np.array(sampleFn(1)).reshape(1,-1) for _ in range(nMinObjRestarts)]
 
         # keyword arguments for minimizer
-        mKwargs = {"bounds" : bounds, "nRestarts" : nRestarts}
+        mKwargs = {"bounds" : bounds}
 
         # Args for minimizer
         mArgs = (fn, y, gp, sampleFn, priorFn)

@@ -314,7 +314,7 @@ class ApproxPosterior(object):
         # Initial optimization of gaussian process
         self.gp = gpUtils.optimizeGP(self.gp, self.theta, self.y, seed=seed,
                                      method=gpMethod, options=gpOptions,
-                                     p0=gpP0, nRestarts=nGPRestarts,
+                                     p0=gpP0, nGPRestarts=nGPRestarts,
                                      nCores=nCores)
 
         # Main loop
@@ -585,7 +585,7 @@ class ApproxPosterior(object):
                                           sampleFn=self.priorSample,
                                           priorFn=self._lnprior,
                                           bounds=bounds,
-                                          nRestarts=nMinObjRestarts,
+                                          nMinObjRestarts=nMinObjRestarts,
                                           nCores=nCores)
 
             # Compute lnLikelihood at thetaT?
@@ -626,7 +626,7 @@ class ApproxPosterior(object):
                     self.gp = gpUtils.optimizeGP(self.gp, self.theta, self.y,
                                                  seed=seed, method=gpMethod,
                                                  options=gpOptions, p0=gpP0,
-                                                 nRestarts=nGPRestarts,
+                                                 nGPRestarts=nGPRestarts,
                                                  nCores=nCores)
             except ValueError:
                 print("theta:", self.theta)

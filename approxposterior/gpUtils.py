@@ -111,7 +111,7 @@ def defaultGP(theta, y):
 # end function
 
 
-def optimizeGP(gp, theta, y, seed=None, nRestarts=5, method=None, options=None,
+def optimizeGP(gp, theta, y, seed=None, nGPRestarts=5, method=None, options=None,
                p0=None, nCores=1):
     """
     Optimize hyperparameters of an arbitrary george Gaussian Process kernel
@@ -125,7 +125,7 @@ def optimizeGP(gp, theta, y, seed=None, nRestarts=5, method=None, options=None,
         data to condition GP on
     seed : int (optional)
         numpy RNG seed.  Defaults to None.
-    nRestarts : int (optional)
+    nGPRestarts : int (optional)
         Number of times to restart the optimization.  Defaults to 5. Increase
         this number if the GP isn't optimized well.
     method : str (optional)
@@ -173,9 +173,9 @@ def optimizeGP(gp, theta, y, seed=None, nRestarts=5, method=None, options=None,
 
         # Inputs for each process
         if p0 is None:
-            iterables = [(_nll, np.hstack(([np.mean(y)], [np.random.uniform(low=-10, high=10) for _ in range(theta.shape[-1])]))) for _ in range(nRestarts)]
+            iterables = [(_nll, np.hstack(([np.mean(y)], [np.random.uniform(low=-10, high=10) for _ in range(theta.shape[-1])]))) for _ in range(nGPRestarts)]
         else:
-            iterables = [(_nll, np.array(p0) + 1.0e-3 * np.random.randn(len(p0))) for _ in range(nRestarts)]
+            iterables = [(_nll, np.array(p0) + 1.0e-3 * np.random.randn(len(p0))) for _ in range(nGPRestarts)]
 
         # keyword arguments for minimizer
         mKwargs = {"jac" : _grad_nll,
