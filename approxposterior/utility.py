@@ -300,7 +300,8 @@ def minimizeObjective(fn, y, gp, sampleFn, priorFn, bounds=None, nRestarts=5,
         next point to improve GP performance.  Defaults to 5.  Increase this
         number of the point selection is not working well.
     nCores : int (optional)
-        If > 1, use multiprocessing to distribute optimization restarts
+        If > 1, use multiprocessing to distribute optimization restarts. If
+        < 0, use all usable cores
 
     Returns
     -------
@@ -318,6 +319,10 @@ def minimizeObjective(fn, y, gp, sampleFn, priorFn, bounds=None, nRestarts=5,
     # Solve for theta that maximize fn and is allowed by prior
     # Figure out how many cores to use with InterruptiblePool
     if nCores > 1:
+        poolType = "MultiPool"
+    # Use all usable cores
+    elif nCores < 0:
+        nCores = len(os.sched_getaffinity(0))
         poolType = "MultiPool"
     else:
         poolType = "SerialPool"

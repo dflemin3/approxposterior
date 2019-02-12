@@ -6,7 +6,7 @@
 Bayesian Posterior estimation, written in pure python, leveraging
 Dan Forman-Mackey's Gaussian Process implementation, george, and DFM's
 Metropolis-Hastings MCMC implementation, emcee. We include hybrid
-implementations of both Wang & Li (2017) and Kandasamy et al. (2015). 
+implementations of both Wang & Li (2017) and Kandasamy et al. (2015).
 
 """
 
@@ -274,7 +274,8 @@ class ApproxPosterior(object):
             next point to improve GP performance.  Defaults to 5.  Increase this
             number of the point selection is not working well.
         nCores : int (optional)
-            If > 1, use multiprocessing to distribute optimization restarts
+            If > 1, use multiprocessing to distribute optimization restarts. If
+            < 0, use all usable cores
         kwargs : dict (optional)
             Keyword arguments for user-specified loglikelihood function that
             calls the forward model.
