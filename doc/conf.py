@@ -20,13 +20,13 @@
 # -- Project information -----------------------------------------------------
 
 project = 'approxposterior'
-copyright = '2018, David P. Fleming'
+copyright = '2019, David P. Fleming'
 author = 'David P. Fleming'
 
 # The short X.Y version
-version = ''
+version = '0.2'
 # The full version, including alpha/beta/rc tags
-release = '0.1.post1'
+release = '0.2rc0'
 
 
 # -- General configuration ---------------------------------------------------
@@ -38,6 +38,8 @@ release = '0.1.post1'
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
+#     'matplotlib.sphinxext.only_directives',
+
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.autosummary',
@@ -45,7 +47,6 @@ extensions = [
     'sphinx.ext.coverage',
     'sphinx.ext.viewcode',
     'sphinx.ext.githubpages',
-    'matplotlib.sphinxext.only_directives',
     'matplotlib.sphinxext.plot_directive',
     'IPython.sphinxext.ipython_directive',
     'IPython.sphinxext.ipython_console_highlighting',

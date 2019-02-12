@@ -9,38 +9,56 @@ Example script
 
 """
 
-from __future__ import (print_function, division, absolute_import,
-                        unicode_literals)
-
-from approxposterior import bp, likelihood as lh
+from approxposterior import approx, gpUtils, likelihood as lh
+import numpy as np
 
 # Define algorithm parameters
-m0 = 200                          # Initial size of training set
+m0 = 50                           # Initial size of training set
 m = 20                            # Number of new points to find each iteration
-nmax = 2                          # Maximum number of iterations
-M = int(5.0e3)                    # Number of MCMC steps to estimate approximate posterior
+nmax = 10                         # Maximum number of iterations
 Dmax = 0.1                        # KL-Divergence convergence limit
 kmax = 5                          # Number of iterations for Dmax convergence to kick in
-which_kernel = "ExpSquaredKernel" # Which Gaussian Process kernel to use
+nKLSamples = 10000                # Number of samples from posterior to use to calculate KL-Divergence
 bounds = ((-5,5), (-5,5))         # Prior bounds
-algorithm = "bape"                # Use the Kandasamy et al. (2015) formalism
+algorithm = "BAPE"                # Use the Kandasamy et al. (2015) formalism
+
+# emcee MCMC parameters
+samplerKwargs = {"nwalkers" : 20}        # emcee.EnsembleSampler parameters
+mcmcKwargs = {"iterations" : int(2.0e4)} # emcee.EnsembleSampler.run_mcmc parameters
+
+# Randomly sample initial conditions from the prior
+theta = np.array(lh.rosenbrockSample(m0))
+
+# Evaluate forward model log likelihood + lnprior for each theta
+y = np.zeros(len(theta))
+for ii in range(len(theta)):
+    y[ii] = lh.rosenbrockLnlike(theta[ii]) + lh.rosenbrockLnprior(theta[ii])
+
+# Create the the default GP which uses an ExpSquaredKernel
+gp = gpUtils.defaultGP(theta, y)
 
 # Initialize object using the Wang & Li (2017) Rosenbrock function example
-ap = bp.ApproxPosterior(lnprior=lh.rosenbrock_lnprior,
-                        lnlike=lh.rosenbrock_lnlike,
-                        prior_sample=lh.rosenbrock_sample,
-                        algorithm=algorithm)
+ap = approx.ApproxPosterior(theta=theta,
+                            y=y,
+                            gp=gp,
+                            lnprior=lh.rosenbrockLnprior,
+                            lnlike=lh.rosenbrockLnlike,
+                            priorSample=lh.rosenbrockSample,
+                            algorithm=algorithm)
 
 # Run!
-ap.run(m0=m0, m=m, M=M, nmax=nmax, Dmax=Dmax, kmax=kmax,
-        sampler=None, bounds=bounds, which_kernel=which_kernel,
-        n_kl_samples=100000, verbose=False)
+ap.run(m=m, nmax=nmax, Dmax=Dmax, kmax=kmax, bounds=bounds,  estBurnin=True,
+       nKLSamples=nKLSamples, mcmcKwargs=mcmcKwargs, cache=False,
+       samplerKwargs=samplerKwargs, verbose=True)
 
 # Check out the final posterior distribution!
 import corner
 
-fig = corner.corner(ap.samplers[-1].flatchain[ap.iburns[-1]:],
-                            quantiles=[0.16, 0.5, 0.84], show_titles=True,
-                            scale_hist=True, plot_contours=True)
+# Load in chain from last iteration
+samples = ap.sampler.get_chain(discard=ap.iburns[-1], flat=True, thin=ap.ithins[-1])
 
-fig.savefig("final_posterior.png", bbox_inches="tight") # Uncomment to save
+# Corner plot!
+fig = corner.corner(samples, quantiles=[0.16, 0.5, 0.84], show_titles=True,
+                    scale_hist=True, plot_contours=True)
+
+fig.savefig("finalPosterior.png", bbox_inches="tight") # Uncomment to save

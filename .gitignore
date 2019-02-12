@@ -10,3 +10,6 @@ dist/*
 *.png
 *.pdf
 *.cache
+*.h5
+*.npz
+examples/Notebooks/dev/

@@ -1,17 +1,18 @@
 # -*- coding: utf-8 -*-
 """
+:py:mod:`utility.py` - Utility Functions
+-----------------------------------
 
-Utility functions
+Utility functions ranging from minimizing GP objective functions to function
+wrappers.
 
 """
 
-from __future__ import (print_function, division, absolute_import,
-                        unicode_literals)
-
 # Tell module what it's allowed to import
-__all__ = ["logsubexp","AGP_utility","BAPE_utility","minimize_objective",
-           "function_wrapper","kl_numerical"]
+__all__ = ["logsubexp","AGPUtility","BAPEUtility","minimizeObjective",
+           "functionWrapper","functionWrapperArgsOnly","klNumerical"]
 
+from . import pool
 import numpy as np
 from scipy.optimize import minimize
 
@@ -23,7 +24,7 @@ from scipy.optimize import minimize
 ################################################################################
 
 
-class function_wrapper(object):
+class functionWrapper(object):
     """
     Wrapper class for functions.
     """
@@ -50,6 +51,32 @@ class function_wrapper(object):
 # end class
 
 
+class functionWrapperArgsOnly(object):
+    """
+    Wrapper class for functions where input are the args.
+    """
+
+    def __init__(self, f, **kwargs):
+        """
+        Initialize!
+        """
+
+        # Need function, optional args and kwargs
+        self.f = f
+        self.kwargs = kwargs
+    # end function
+
+
+    def __call__(self, x):
+        """
+        Call the function on some input x.
+        """
+
+        return self.f(*x, **self.kwargs)
+    # end function
+# end class
+
+
 ################################################################################
 #
 # Define math functions
@@ -57,7 +84,7 @@ class function_wrapper(object):
 ################################################################################
 
 
-def kl_numerical(x, p, q):
+def klNumerical(x, p, q):
     """
     Estimate the KL-Divergence between pdfs p and q via Monte Carlo intergration
     using x, samples from p.
@@ -92,8 +119,8 @@ def kl_numerical(x, p, q):
     try:
         res = np.sum(np.log(p(x)/q(x)))/len(x)
     except ValueError:
-        err_msg = "ERROR: inf/NaN encountered.  q(x) = 0 likely occured."
-        raise ValueError(err_msg)
+        errMsg = "ERROR: inf/NaN encountered.  q(x) = 0 likely occured."
+        raise ValueError(errMsg)
 
     return res
 # end function
@@ -129,7 +156,7 @@ def logsubexp(x1, x2):
 ################################################################################
 
 
-def AGP_utility(theta, y, gp):
+def AGPUtility(theta, y, gp):
     """
     AGP (Adaptive Gaussian Process) utility function, the entropy of the
     posterior distribution. This is what you maximize to find the next x under
@@ -168,7 +195,7 @@ def AGP_utility(theta, y, gp):
 # end function
 
 
-def BAPE_utility(theta, y, gp):
+def BAPEUtility(theta, y, gp):
     """
     BAPE (Bayesian Active Posterior Estimation) utility function.  This is what
     you maximize to find the next theta under the BAPE formalism.  Note here we
@@ -208,10 +235,50 @@ def BAPE_utility(theta, y, gp):
 # end function
 
 
-def minimize_objective(fn, y, gp, sample_fn, prior_fn, bounds=None, **kw):
+def _minimizeObjective(theta0, fn, y, gp, sampleFn, priorFn, bounds=None,
+                       nRestarts=5):
+    """
+    Minimize objective wrapped function for multiprocessing. Same inputs/outputs
+    as minimizeObjective
+    """
+
+    # Required arguments for the utility function
+    args = (y, gp)
+
+    # Solve for theta that maximize fn and is allowed by prior
+    while True:
+
+        # Mimimze fn, see if prior allows solution
+        try:
+            tmp = minimize(fn, np.array(theta0).reshape(1,-1), args=args,
+                           bounds=bounds, method="nelder-mead",
+                           options={"adaptive" : True})["x"]
+
+        # ValueError.  Try again.
+        except ValueError:
+            tmp = np.array([np.inf for ii in range(theta0.shape[-1])]).reshape(theta0.shape)
+
+        # Vet answer: must be finite, allowed by prior
+        # Are all values finite?
+        if np.all(np.isfinite(tmp)):
+            # Is this point in parameter space allowed by the prior?
+            if np.isfinite(priorFn(tmp)):
+                return tmp
+
+        # Optimization failed, try a new theta0
+        # Choose theta0 by uniformly sampling over parameter space and reshape
+        # theta0 for the gp
+        theta0 = sampleFn(1)
+# end function
+
+
+def minimizeObjective(fn, y, gp, sampleFn, priorFn, bounds=None, nRestarts=5,
+                      nCores=1):
     """
     Find point that minimizes fn for a gaussian process gp conditioned on y,
-    the data.
+    the data and is allowed by the prior, priorFn.  PriorFn is required as it
+    helps to select against points with non-finite likelihoods, e.g. NaNs or
+    infs.  This is required as the GP can only train on finite values.
 
     Parameters
     ----------
@@ -221,16 +288,19 @@ def minimize_objective(fn, y, gp, sample_fn, prior_fn, bounds=None, **kw):
     y : array
         y values to condition the gp prediction on.
     gp : george GP object
-    sample_fn : function
+    sampleFn : function
         Function to sample initial conditions from.
-    prior_fn : function
+    priorFn : function
         Function to apply prior to.
-    kw : dict (optional)
-        Any additional keyword arguments scipy.optimize.minimize could use,
-        e.g., method.
     bounds : tuple/iterable (optional)
         Bounds for minimization scheme.  See scipy.optimize.minimize details
         for more information.  Defaults to None.
+    nRestarts : int (optional)
+        Number of times to restart minimizing -utility function to select
+        next point to improve GP performance.  Defaults to 5.  Increase this
+        number of the point selection is not working well.
+    nCores : int (optional)
+        If > 1, use multiprocessing to distribute optimization restarts
 
     Returns
     -------
@@ -238,30 +308,41 @@ def minimize_objective(fn, y, gp, sample_fn, prior_fn, bounds=None, **kw):
         point that minimizes fn
     """
 
-    is_finite = False
-    while not is_finite:
-        # Solve for theta that maximize fn and is allowed by prior
+    # Required arguments for the utility function
+    args = (y, gp)
 
-        # Choose theta0 by uniformly sampling over parameter space
-        theta0 = sample_fn(1).reshape(1,-1)
+    # Containers
+    res = []
+    objective = []
 
-        args=(y, gp)
+    # Solve for theta that maximize fn and is allowed by prior
+    # Figure out how many cores to use with InterruptiblePool
+    if nCores > 1:
+        poolType = "MultiPool"
+    else:
+        poolType = "SerialPool"
 
-        # Mimimze fn, see if prior allows solution
-        try:
-            tmp = minimize(fn, theta0, args=args, bounds=bounds,
-                           method="l-bfgs-b", options={"ftol" : 1.0e-3},
-                           **kw)["x"]
+    # Use multiprocessing to distribution optimization calls
+    with pool.Pool(pool=poolType, processes=nCores) as optPool:
 
-        # ValueError.  Try again.
-        except ValueError:
-            tmp = np.array([np.inf for ii in range(theta0.shape[-1])]).reshape(theta0.shape)
+        # Inputs for each process
+        iterables = [np.array(sampleFn(1)).reshape(1,-1) for _ in range(nRestarts)]
 
-        # If the answer isn't infinite, we're good
-        if not np.any(np.isinf(tmp)):
-            theta = tmp
-            is_finite = True
-    # end while
+        # keyword arguments for minimizer
+        mKwargs = {"bounds" : bounds, "nRestarts" : nRestarts}
 
-    return np.array(theta).reshape(1,-1)
+        # Args for minimizer
+        mArgs = (fn, y, gp, sampleFn, priorFn)
+
+        # Run the minimization on nCores
+        optFn = functionWrapper(_minimizeObjective, *mArgs, **mKwargs)
+        results = optPool.map(optFn, iterables)
+
+    # Extract solutions
+    for result in results:
+        res.append(result)
+        objective.append(fn(result, *args))
+
+    # Return minimum value of the objective
+    return np.array(res)[np.argmin(objective)]
 # end function
