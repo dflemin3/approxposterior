@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>approxposterior.likelihood &mdash; approxposterior 0.1.post1 documentation</title>
+  <title>approxposterior.likelihood &mdash; approxposterior 0.2rc0 documentation</title>
   
 
   
@@ -30,12 +30,14 @@
   
 
   
+    <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
+  
 
   
         <link rel="index" title="Index"
               href="../../genindex.html"/>
         <link rel="search" title="Search" href="../../search.html"/>
-    <link rel="top" title="approxposterior 0.1.post1 documentation" href="../../index.html"/>
+    <link rel="top" title="approxposterior 0.2rc0 documentation" href="../../index.html"/>
         <link rel="up" title="Module code" href="../index.html"/> 
 
   
@@ -64,6 +66,10 @@
           
             
             
+              <div class="version">
+                0.2
+              </div>
+            
           
 
           
@@ -87,7 +93,6 @@
             
               <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../overview.html">Overview</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../tutorial.html">Tutorial</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../api.html">API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../install.html">Installation</a></li>
@@ -159,153 +164,19 @@
   <h1>Source code for approxposterior.likelihood</h1><div class="highlight"><pre>
 <span></span><span class="c1"># -*- coding: utf-8 -*-</span>
 <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">:py:mod:`likelihood.py` - Example Likelihood Functions</span>
+<span class="sd">-----------------------------------</span>
 
 <span class="sd">This file contains routines for simples loglikelihoods and priors for test</span>
 <span class="sd">cases.</span>
 
 <span class="sd">&quot;&quot;&quot;</span>
 
-<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="p">(</span><span class="n">print_function</span><span class="p">,</span> <span class="n">division</span><span class="p">,</span> <span class="n">absolute_import</span><span class="p">,</span>
-                        <span class="n">unicode_literals</span><span class="p">)</span>
-
 <span class="c1"># Tell module what it&#39;s allowed to import</span>
-<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;bimodal_normal_sample&quot;</span><span class="p">,</span><span class="s2">&quot;bimodal_normal_lnlike&quot;</span><span class="p">,</span>
-           <span class="s2">&quot;bimodal_normal_lnprior&quot;</span><span class="p">,</span><span class="s2">&quot;bimodal_normal_lnprob&quot;</span><span class="p">,</span><span class="s2">&quot;rosenbrock_lnlike&quot;</span><span class="p">,</span>
-           <span class="s2">&quot;rosenbrock_lnprior&quot;</span><span class="p">,</span><span class="s2">&quot;rosenbrock_sample&quot;</span><span class="p">,</span><span class="s2">&quot;rosenbrock_lnprob&quot;</span><span class="p">]</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;rosenbrockLnlike&quot;</span><span class="p">,</span> <span class="s2">&quot;rosenbrockLnprior&quot;</span><span class="p">,</span><span class="s2">&quot;rosenbrockSample&quot;</span><span class="p">,</span>
+           <span class="s2">&quot;rosenbrockLnprob&quot;</span><span class="p">]</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-
-
-<span class="c1">################################################################################</span>
-<span class="c1">#</span>
-<span class="c1"># Functions for bimodal posterior</span>
-<span class="c1">#</span>
-<span class="c1">################################################################################</span>
-
-
-<div class="viewcode-block" id="bimodal_normal_sample"><a class="viewcode-back" href="../../api/likelihood.html#approxposterior.likelihood.bimodal_normal_sample">[docs]</a><span class="k">def</span> <span class="nf">bimodal_normal_sample</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Sample N points from the prior pi(x) is a uniform distribution over</span>
-<span class="sd">    [-10, 10] x [-10, 10]</span>
-
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    n : int</span>
-<span class="sd">        Number of samples</span>
-
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    sample : floats</span>
-<span class="sd">        n x 2 array of floats samples from the prior</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-</div>
-    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">low</span><span class="o">=-</span><span class="mi">10</span><span class="p">,</span> <span class="n">high</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="n">n</span><span class="p">,</span><span class="mi">2</span><span class="p">))</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span>
-<span class="c1"># end function</span>
-
-
-
-<div class="viewcode-block" id="bimodal_normal_lnlike"><a class="viewcode-back" href="../../api/likelihood.html#approxposterior.likelihood.bimodal_normal_lnlike">[docs]</a><span class="k">def</span> <span class="nf">bimodal_normal_lnlike</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="n">mus</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">icovs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Bimodal Gaussian log-likelihood function.</span>
-
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    theta : array</span>
-<span class="sd">    mus : arrays (optional)</span>
-<span class="sd">        mean vectors of the gaussians.  Defaults to None.</span>
-<span class="sd">    icovs : arrays (optional)</span>
-<span class="sd">        inverse of the covariance matrices</span>
-
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    l : float</span>
-<span class="sd">        log prior</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="c1"># Did the user specify the inverse of the covariance matrices?</span>
-    <span class="k">if</span> <span class="n">icovs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">cov1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">],[</span><span class="o">-</span><span class="mf">2.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">]])</span>
-        <span class="n">cov2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">]])</span>
-
-        <span class="n">icov1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">cov1</span><span class="p">)</span>
-        <span class="n">icov2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">cov2</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">icov1</span> <span class="o">=</span> <span class="n">icovs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="n">icov2</span> <span class="o">=</span> <span class="n">icovs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-
-    <span class="c1"># Did the user specify the means?</span>
-    <span class="k">if</span> <span class="n">mus</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">mu1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mf">6.0</span><span class="p">,</span><span class="o">-</span><span class="mf">6.0</span><span class="p">])</span>
-        <span class="n">mu2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">6.0</span><span class="p">,</span><span class="mf">6.0</span><span class="p">])</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">mu1</span> <span class="o">=</span> <span class="n">mus</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="n">mu2</span> <span class="o">=</span> <span class="n">mus</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-
-    <span class="n">diff1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span> <span class="o">-</span> <span class="n">mu1</span>
-    <span class="n">diff2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span> <span class="o">-</span> <span class="n">mu2</span>
-
-    <span class="k">if</span> <span class="n">diff1</span><span class="o">.</span><span class="n">ndim</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
-        <span class="c1"># Max function forces bimodality</span>
-        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">([</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">diff1</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">icov2</span><span class="p">,</span><span class="n">diff1</span><span class="o">.</span><span class="n">T</span><span class="p">))</span><span class="o">/</span><span class="mf">2.0</span><span class="p">,</span>
-                       <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">diff2</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">icov2</span><span class="p">,</span><span class="n">diff2</span><span class="o">.</span><span class="n">T</span><span class="p">))</span><span class="o">/</span><span class="mf">2.0</span><span class="p">])</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">assert</span> <span class="p">(</span><span class="n">diff1</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="n">diff2</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
-
-        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">([</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">diff1</span><span class="p">[</span><span class="n">ii</span><span class="p">],</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">icov2</span><span class="p">,</span><span class="n">diff1</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span><span class="o">.</span><span class="n">T</span><span class="p">))</span><span class="o">/</span><span class="mf">2.0</span><span class="p">,</span>
-                       <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">diff2</span><span class="p">[</span><span class="n">ii</span><span class="p">],</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">icov2</span><span class="p">,</span><span class="n">diff2</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span><span class="o">.</span><span class="n">T</span><span class="p">))</span><span class="o">/</span><span class="mf">2.0</span><span class="p">])</span></div>
-                       <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">diff1</span><span class="p">))])</span>
-
-
-<span class="c1"># end function</span>
-
-
-<div class="viewcode-block" id="bimodal_normal_lnprior"><a class="viewcode-back" href="../../api/likelihood.html#approxposterior.likelihood.bimodal_normal_lnprior">[docs]</a><span class="k">def</span> <span class="nf">bimodal_normal_lnprior</span><span class="p">(</span><span class="n">theta</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Flat log prior over [-10,10]^2 for the bimodal normal case</span>
-
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    theta : array</span>
-
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    l : float</span>
-<span class="sd">        log prior</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">10</span><span class="p">):</span>
-        <span class="k">return</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span>
-    <span class="k">else</span><span class="p">:</span></div>
-        <span class="k">return</span> <span class="mf">0.0</span>
-<span class="c1"># end function</span>
-
-
-<div class="viewcode-block" id="bimodal_normal_lnprob"><a class="viewcode-back" href="../../api/likelihood.html#approxposterior.likelihood.bimodal_normal_lnprob">[docs]</a><span class="k">def</span> <span class="nf">bimodal_normal_lnprob</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="n">mus</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">icovs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Compute the log probability (log posterior) as likelihood * prior</span>
-
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    theta : array</span>
-<span class="sd">    mus : arrays (optional)</span>
-<span class="sd">        mean vectors of the gaussians.  Defaults to None.</span>
-<span class="sd">    icovs : arrays (optional)</span>
-<span class="sd">        inverse of the covariance matrices</span>
-
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    l : float</span>
-<span class="sd">        log probability</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="c1"># Compute prior</span>
-    <span class="n">lp</span> <span class="o">=</span> <span class="n">bimodal_normal_lnprior</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
-
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">lp</span><span class="p">):</span>
-        <span class="k">return</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span>
-</div>
-    <span class="k">return</span> <span class="n">lp</span> <span class="o">+</span> <span class="n">bimodal_normal_lnlike</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="n">mus</span><span class="o">=</span><span class="n">mus</span><span class="p">,</span> <span class="n">icovs</span><span class="o">=</span><span class="n">icovs</span><span class="p">)</span>
-<span class="c1">#end function</span>
 
 
 <span class="c1">################################################################################</span>
@@ -315,7 +186,7 @@
 <span class="c1">################################################################################</span>
 
 
-<div class="viewcode-block" id="rosenbrock_lnlike"><a class="viewcode-back" href="../../api/likelihood.html#approxposterior.likelihood.rosenbrock_lnlike">[docs]</a><span class="k">def</span> <span class="nf">rosenbrock_lnlike</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+<div class="viewcode-block" id="rosenbrockLnlike"><a class="viewcode-back" href="../../api/likelihood.html#approxposterior.likelihood.rosenbrockLnlike">[docs]</a><span class="k">def</span> <span class="nf">rosenbrockLnlike</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    2D Rosenbrock function as a log likelihood following Wang &amp; Li (2017)</span>
 
@@ -336,12 +207,12 @@
     <span class="k">else</span><span class="p">:</span>
         <span class="n">x1</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="n">x2</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-</div>
-    <span class="k">return</span> <span class="o">-</span><span class="mf">0.01</span><span class="o">*</span><span class="p">(</span><span class="n">x1</span> <span class="o">-</span> <span class="mf">1.0</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">-</span> <span class="p">(</span><span class="n">x1</span><span class="o">*</span><span class="n">x1</span> <span class="o">-</span> <span class="n">x2</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span>
+
+    <span class="k">return</span> <span class="o">-</span><span class="mf">0.01</span><span class="o">*</span><span class="p">(</span><span class="n">x1</span> <span class="o">-</span> <span class="mf">1.0</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">-</span> <span class="p">(</span><span class="n">x1</span><span class="o">*</span><span class="n">x1</span> <span class="o">-</span> <span class="n">x2</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span></div>
 <span class="c1"># end function</span>
 
 
-<div class="viewcode-block" id="rosenbrock_lnprior"><a class="viewcode-back" href="../../api/likelihood.html#approxposterior.likelihood.rosenbrock_lnprior">[docs]</a><span class="k">def</span> <span class="nf">rosenbrock_lnprior</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+<div class="viewcode-block" id="rosenbrockLnprior"><a class="viewcode-back" href="../../api/likelihood.html#approxposterior.likelihood.rosenbrockLnprior">[docs]</a><span class="k">def</span> <span class="nf">rosenbrockLnprior</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Uniform log prior for the 2D Rosenbrock likelihood following Wang &amp; Li (2017)</span>
 <span class="sd">    where the prior pi(x) is a uniform distribution over [-5, 5] x [-5, 5]</span>
@@ -358,12 +229,12 @@
 
     <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">5</span><span class="p">):</span>
         <span class="k">return</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span>
-    <span class="k">else</span><span class="p">:</span></div>
-        <span class="k">return</span> <span class="mf">0.0</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mf">0.0</span></div>
 <span class="c1"># end function</span>
 
 
-<div class="viewcode-block" id="rosenbrock_sample"><a class="viewcode-back" href="../../api/likelihood.html#approxposterior.likelihood.rosenbrock_sample">[docs]</a><span class="k">def</span> <span class="nf">rosenbrock_sample</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+<div class="viewcode-block" id="rosenbrockSample"><a class="viewcode-back" href="../../api/likelihood.html#approxposterior.likelihood.rosenbrockSample">[docs]</a><span class="k">def</span> <span class="nf">rosenbrockSample</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Sample N points from the prior pi(x) is a uniform distribution over</span>
 <span class="sd">    [-5, 5] x [-5, 5]</span>
@@ -378,12 +249,12 @@
 <span class="sd">    sample : floats</span>
 <span class="sd">        n x 2 array of floats samples from the prior</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-</div>
-    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">low</span><span class="o">=-</span><span class="mi">5</span><span class="p">,</span> <span class="n">high</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="n">n</span><span class="p">,</span><span class="mi">2</span><span class="p">))</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">low</span><span class="o">=-</span><span class="mi">5</span><span class="p">,</span> <span class="n">high</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="n">n</span><span class="p">,</span><span class="mi">2</span><span class="p">))</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span></div>
 <span class="c1"># end function</span>
 
 
-<div class="viewcode-block" id="rosenbrock_lnprob"><a class="viewcode-back" href="../../api/likelihood.html#approxposterior.likelihood.rosenbrock_lnprob">[docs]</a><span class="k">def</span> <span class="nf">rosenbrock_lnprob</span><span class="p">(</span><span class="n">theta</span><span class="p">):</span>
+<div class="viewcode-block" id="rosenbrockLnprob"><a class="viewcode-back" href="../../api/likelihood.html#approxposterior.likelihood.rosenbrockLnprob">[docs]</a><span class="k">def</span> <span class="nf">rosenbrockLnprob</span><span class="p">(</span><span class="n">theta</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Compute the log probability (log posterior) as likelihood * prior</span>
 
@@ -398,12 +269,12 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="c1"># Compute prior</span>
-    <span class="n">lp</span> <span class="o">=</span> <span class="n">rosenbrock_lnprior</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
+    <span class="n">lp</span> <span class="o">=</span> <span class="n">rosenbrockLnprior</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">lp</span><span class="p">):</span>
         <span class="k">return</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span>
-</div>
-    <span class="k">return</span> <span class="n">lp</span> <span class="o">+</span> <span class="n">rosenbrock_lnlike</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">lp</span> <span class="o">+</span> <span class="n">rosenbrockLnlike</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span></div>
 <span class="c1">#end function</span>
 </pre></div>
 
@@ -419,7 +290,7 @@
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2018, David P. Fleming.
+        &copy; Copyright 2019, David P. Fleming.
 
     </p>
   </div>
@@ -441,7 +312,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../',
-            VERSION:'0.1.post1',
+            VERSION:'0.2rc0',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
@@ -451,7 +322,8 @@
       <script type="text/javascript" src="../../_static/jquery.js"></script>
       <script type="text/javascript" src="../../_static/underscore.js"></script>
       <script type="text/javascript" src="../../_static/doctools.js"></script>
-      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script type="text/javascript" src="../../_static/language_data.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
   
 

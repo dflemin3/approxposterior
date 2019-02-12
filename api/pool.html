@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Pool Multiprocessing Functions &mdash; approxposterior 0.1.post1 documentation</title>
+  <title>Pool Multiprocessing Functions &mdash; approxposterior 0.2rc0 documentation</title>
   
 
   
@@ -30,12 +30,14 @@
   
 
   
+    <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
+  
 
   
         <link rel="index" title="Index"
               href="../genindex.html"/>
         <link rel="search" title="Search" href="../search.html"/>
-    <link rel="top" title="approxposterior 0.1.post1 documentation" href="../index.html"/>
+    <link rel="top" title="approxposterior 0.2rc0 documentation" href="../index.html"/>
         <link rel="up" title="API" href="../api.html"/> 
 
   
@@ -64,6 +66,10 @@
           
             
             
+              <div class="version">
+                0.2
+              </div>
+            
           
 
           
@@ -87,13 +93,12 @@
             
               <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="../overview.html">Overview</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../tutorial.html">Tutorial</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../api.html">API</a><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="bp.html">bp.py</a></li>
-<li class="toctree-l2"><a class="reference internal" href="gmm_utils.html">gmm_utils.py</a></li>
-<li class="toctree-l2"><a class="reference internal" href="gp_utils.html">gp_utils.py</a></li>
-<li class="toctree-l2"><a class="reference internal" href="mcmc_utils.html">mcmc_utils.py</a></li>
+<li class="toctree-l2"><a class="reference internal" href="approx.html">approx.py</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gmmUtils.html">gmmUtils.py</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gpUtils.html">gpUtils.py</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mcmcUtils.html">mcmcUtils.py</a></li>
 <li class="toctree-l2"><a class="reference internal" href="likelihood.html">likelihood.py</a></li>
 <li class="toctree-l2"><a class="reference internal" href="utility.html">utility.py</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">pool.py</a><ul>
@@ -218,7 +223,8 @@ back and forth to the workers and communicates once per task.</li>
 <li>A multiprocessing for local parallelization, borrowed from <code class="xref py py-mod docutils literal notranslate"><span class="pre">emcee</span></code></li>
 <li>A serial pool, which uses the built-in <code class="xref py py-obj docutils literal notranslate"><span class="pre">map</span></code> function</li>
 </ul>
-<p>Original Authors: Rodrigo Luger &amp; Dan Forman-Mackey</p>
+<p>Based on * <a class="reference external" href="https://github.com/jreese/multiprocessing-keyboardinterrupt/">https://github.com/jreese/multiprocessing-keyboardinterrupt/</a>
+and work by Peter K. G. Williams &lt;<a class="reference external" href="mailto:peter&#37;&#52;&#48;newton&#46;cx">peter<span>&#64;</span>newton<span>&#46;</span>cx</a>&gt;, Rodrigo Luger, and Dan Forman-Mackey.</p>
 </div></blockquote>
 <dl class="class">
 <dt id="approxposterior.pool.MPIPool">
@@ -498,7 +504,7 @@ If <code class="docutils literal notranslate"><span class="pre">pool</span> <spa
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2018, David P. Fleming.
+        &copy; Copyright 2019, David P. Fleming.
 
     </p>
   </div>
@@ -520,7 +526,7 @@ If <code class="docutils literal notranslate"><span class="pre">pool</span> <spa
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../',
-            VERSION:'0.1.post1',
+            VERSION:'0.2rc0',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
@@ -530,7 +536,8 @@ If <code class="docutils literal notranslate"><span class="pre">pool</span> <spa
       <script type="text/javascript" src="../_static/jquery.js"></script>
       <script type="text/javascript" src="../_static/underscore.js"></script>
       <script type="text/javascript" src="../_static/doctools.js"></script>
-      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script type="text/javascript" src="../_static/language_data.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
   
 

@@ -1,0 +1,735 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>ApproxPosterior Class &mdash; approxposterior 0.2rc0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+
+  
+    <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
+  
+
+  
+        <link rel="index" title="Index"
+              href="../genindex.html"/>
+        <link rel="search" title="Search" href="../search.html"/>
+    <link rel="top" title="approxposterior 0.2rc0 documentation" href="../index.html"/>
+        <link rel="up" title="API" href="../api.html"/>
+        <link rel="prev" title="API" href="../api.html"/> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> approxposterior
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.2
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../tutorial.html">Tutorial</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../api.html">API</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">approx.py</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#approx-py-approxposterior"><code class="docutils literal notranslate"><span class="pre">approx.py</span></code> - ApproxPosterior</a><ul class="simple">
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="gmmUtils.html">gmmUtils.py</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gpUtils.html">gpUtils.py</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mcmcUtils.html">mcmcUtils.py</a></li>
+<li class="toctree-l2"><a class="reference internal" href="likelihood.html">likelihood.py</a></li>
+<li class="toctree-l2"><a class="reference internal" href="utility.html">utility.py</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pool.html">pool.py</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/dflemin3/approxposterior">Github</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/dflemin3/approxposterior/issues">Submit an Issue</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">approxposterior</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../api.html">API</a> &raquo;</li>
+        
+      <li>ApproxPosterior Class</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/api/approx.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast,
+.nboutput.nblast {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast + .nbinput {
+    margin-top: -19px;
+}
+
+/* nice headers on first paragraph of info/warning boxes */
+.admonition .first {
+    margin: -12px;
+    padding: 6px 12px;
+    margin-bottom: 12px;
+    color: #fff;
+    line-height: 1;
+    display: block;
+}
+.admonition.warning .first {
+    background: #f0b37e;
+}
+.admonition.note .first {
+    background: #6ab0de;
+}
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+</style>
+<div class="section" id="module-approxposterior.approx">
+<span id="approxposterior-class"></span><h1>ApproxPosterior Class<a class="headerlink" href="#module-approxposterior.approx" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="approx-py-approxposterior">
+<h2><code class="xref py py-mod docutils literal notranslate"><span class="pre">approx.py</span></code> - ApproxPosterior<a class="headerlink" href="#approx-py-approxposterior" title="Permalink to this headline">¶</a></h2>
+<p>Bayesian Posterior estimation, written in pure python, leveraging
+Dan Forman-Mackey’s Gaussian Process implementation, george, and DFM’s
+Metropolis-Hastings MCMC implementation, emcee. We include hybrid
+implementations of both Wang &amp; Li (2017) and Kandasamy et al. (2015).</p>
+<dl class="class">
+<dt id="approxposterior.approx.ApproxPosterior">
+<em class="property">class </em><code class="descclassname">approxposterior.approx.</code><code class="descname">ApproxPosterior</code><span class="sig-paren">(</span><em>theta</em>, <em>y</em>, <em>lnprior</em>, <em>lnlike</em>, <em>priorSample</em>, <em>gp=None</em>, <em>algorithm='BAPE'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/approx.html#ApproxPosterior"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.approx.ApproxPosterior" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class to approximate the posterior distributions using either the
+Bayesian Active Posterior Estimation (BAPE) by Kandasamy et al. (2015) or
+the AGP (Adaptive Gaussian Process) by Wang &amp; Li (2017).</p>
+<p class="rubric">Methods</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#approxposterior.approx.ApproxPosterior.findNextPoint" title="approxposterior.approx.ApproxPosterior.findNextPoint"><code class="xref py py-obj docutils literal notranslate"><span class="pre">findNextPoint</span></code></a>([computeLnLike,&nbsp;bounds,&nbsp;…])</td>
+<td>Find new point, thetaT, by maximizing utility function.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#approxposterior.approx.ApproxPosterior.run" title="approxposterior.approx.ApproxPosterior.run"><code class="xref py py-obj docutils literal notranslate"><span class="pre">run</span></code></a>([m,&nbsp;nmax,&nbsp;Dmax,&nbsp;kmax,&nbsp;seed,&nbsp;timing,&nbsp;…])</td>
+<td>Core algorithm to estimate the posterior distribution via Gaussian Process regression to the joint distribution for the forward model input/output pairs</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#approxposterior.approx.ApproxPosterior.runMCMC" title="approxposterior.approx.ApproxPosterior.runMCMC"><code class="xref py py-obj docutils literal notranslate"><span class="pre">runMCMC</span></code></a>([samplerKwargs,&nbsp;mcmcKwargs,&nbsp;…])</td>
+<td>Given forward model input-output pairs, theta and y, and a trained GP, run an MCMC using the GP to evaluate the logprobability required by MCMC.</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="approxposterior.approx.ApproxPosterior.findNextPoint">
+<code class="descname">findNextPoint</code><span class="sig-paren">(</span><em>computeLnLike=True</em>, <em>bounds=None</em>, <em>gpMethod=None</em>, <em>maxLnLikeRestarts=1</em>, <em>seed=None</em>, <em>cache=True</em>, <em>gpOptions=None</em>, <em>gpP0=None</em>, <em>optGP=True</em>, <em>args=None</em>, <em>nGPRestarts=5</em>, <em>nMinObjRestarts=5</em>, <em>nCores=1</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/approx.html#ApproxPosterior.findNextPoint"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.approx.ApproxPosterior.findNextPoint" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find new point, thetaT, by maximizing utility function. Note that we
+call a minimizer because minimizing negative of utility function is
+the same as maximizing it.</p>
+<dl class="docutils">
+<dt>This function can be used in 2 ways:</dt>
+<dd><ol class="first last arabic simple">
+<li>Finding the new point, thetaT, that would maximally improve the
+GP’s predictive ability.  This point could be used to select
+where to run a new forward model, for example.</li>
+<li>Find a new thetaT and evaluate the forward model at this location
+to iteratively improve the GP’s predictive performance, a core
+function of the BAPE and AGP algorithms.</li>
+</ol>
+</dd>
+</dl>
+<p>If computeLnLike is True, all results of this function are appended to
+the corresponding object elements, e.g. thetaT appended to self.theta.
+thetaT is returned, as well as yT if computeLnLike is True.  Note that
+returning yT requires running the forward model and updating the GP.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>computeLnLike</strong> : bool (optional)</p>
+<blockquote>
+<div><p>Whether or not to run the forward model and compute yT, the sum of
+the lnlikelihood and lnprior</p>
+</div></blockquote>
+<p><strong>bounds</strong> : tuple/iterable (optional)</p>
+<blockquote>
+<div><p>Bounds for minimization scheme.  See scipy.optimize.minimize details
+for more information.  Defaults to None.</p>
+</div></blockquote>
+<p><strong>maxLnLikeRestarts</strong> : int (optional)</p>
+<blockquote>
+<div><p>Number of times to restart loglikelihood function (the one that
+calls the forward model) if the lnlike fn returns infs/NaNs. Defaults
+to 5.</p>
+</div></blockquote>
+<p><strong>seed</strong> : int (optional)</p>
+<blockquote>
+<div><p>RNG seed.  Defaults to None.</p>
+</div></blockquote>
+<p><strong>cache</strong> : bool (optional)</p>
+<blockquote>
+<div><p>Whether or not to cache forward model input-output pairs.  Defaults
+to True since the forward model is expensive to evaluate. In
+practice, users should cache forward model inputs, outputs,
+ancillary parameters, etc in each likelihood function evaluation,
+but saving theta and y here doesn’t hurt.  Saves the results to
+apFModelCache.npz in the current working directory.</p>
+</div></blockquote>
+<p><strong>gpMethod</strong> : str (optional)</p>
+<blockquote>
+<div><p>scipy.optimize.minimize method used when optimized GP hyperparameters.
+Defaults to None, which is powell, and it usually works.</p>
+</div></blockquote>
+<p><strong>gpOptions</strong> : dict (optional)</p>
+<blockquote>
+<div><p>kwargs for the scipy.optimize.minimize function used to optimize GP
+hyperparameters.  Defaults to None.</p>
+</div></blockquote>
+<p><strong>gpP0</strong> : array (optional)</p>
+<blockquote>
+<div><p>Initial guess for kernel hyperparameters.  If None, defaults to
+5.0 * len(theta)**(-1.0/theta.shape[-1]) for each dimension.</p>
+</div></blockquote>
+<p><strong>optGP</strong> : bool (optional)</p>
+<blockquote>
+<div><p>Whether or not to optimize the GP hyperparameters.  Defaults to
+True.</p>
+</div></blockquote>
+<p><strong>nGPRestarts</strong> : int (optional)</p>
+<blockquote>
+<div><p>Number of times to restart GP hyperparameter optimization.  Defaults
+to 3. Increase this number if the GP isn’t optimized well.</p>
+</div></blockquote>
+<p><strong>nMinObjRestarts</strong> : int (optional)</p>
+<blockquote>
+<div><p>Number of times to restart minimizing -utility function to select
+next point to improve GP performance.  Defaults to 5.  Increase this
+number of the point selection is not working well.</p>
+</div></blockquote>
+<p><strong>nCores</strong> : int (optional)</p>
+<blockquote>
+<div><p>If &gt; 1, use multiprocessing to distribute optimization restarts</p>
+</div></blockquote>
+<p><strong>args</strong> : iterable (optional)</p>
+<blockquote>
+<div><p>Arguments for user-specified loglikelihood function that calls the
+forward model. Defaults to None.</p>
+</div></blockquote>
+<p><strong>kwargs</strong> : dict (optional)</p>
+<blockquote>
+<div><p>Keyword arguments for user-specified loglikelihood function that
+calls the forward model.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">None</p>
+<blockquote>
+<div><p>Returns nothing if computeLnLike is True, as everything is
+saved in self.theta, self.y, and potentially cached if cache is True.
+Otherwise, returns thetaT and yT.</p>
+</div></blockquote>
+<p><strong>thetaT</strong> : array</p>
+<blockquote>
+<div><p>New design point selected by maximizing GP utility function.</p>
+</div></blockquote>
+<p><strong>yT</strong> : array</p>
+<blockquote class="last">
+<div><p>Value of loglikelihood + logprior at thetaT.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="approxposterior.approx.ApproxPosterior.run">
+<code class="descname">run</code><span class="sig-paren">(</span><em>m=10</em>, <em>nmax=2</em>, <em>Dmax=0.01</em>, <em>kmax=5</em>, <em>seed=None</em>, <em>timing=False</em>, <em>bounds=None</em>, <em>nKLSamples=10000</em>, <em>verbose=True</em>, <em>args=None</em>, <em>maxComp=3</em>, <em>mcmcKwargs=None</em>, <em>samplerKwargs=None</em>, <em>estBurnin=False</em>, <em>thinChains=False</em>, <em>chainFile='apRun'</em>, <em>cache=True</em>, <em>maxLnLikeRestarts=5</em>, <em>gmmKwargs=None</em>, <em>gpMethod=None</em>, <em>gpOptions=None</em>, <em>gpP0=None</em>, <em>optGPEveryN=1</em>, <em>nGPRestarts=5</em>, <em>nMinObjRestarts=5</em>, <em>nCores=1</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/approx.html#ApproxPosterior.run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.approx.ApproxPosterior.run" title="Permalink to this definition">¶</a></dt>
+<dd><p>Core algorithm to estimate the posterior distribution via Gaussian
+Process regression to the joint distribution for the forward model
+input/output pairs</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>m</strong> : int (optional)</p>
+<blockquote>
+<div><p>Number of new input features to find each iteration.  Defaults to 10.</p>
+</div></blockquote>
+<p><strong>nmax</strong> : int (optional)</p>
+<blockquote>
+<div><p>Maximum number of iterations.  Defaults to 2 for testing.</p>
+</div></blockquote>
+<p><strong>Dmax</strong> : float (optional)</p>
+<blockquote>
+<div><p>Maximum change in KL divergence for convergence checking.  Defaults to 0.1.</p>
+</div></blockquote>
+<p><strong>kmax</strong> : int (optional)</p>
+<blockquote>
+<div><p>Maximum number of iterators such that if the change in KL divergence is
+less than Dmax for kmax iterators, the algorithm is considered
+converged and terminates.  Defaults to 5.</p>
+</div></blockquote>
+<p><strong>seed</strong> : int (optional)</p>
+<blockquote>
+<div><p>RNG seed.  Defaults to None.</p>
+</div></blockquote>
+<p><strong>timing</strong> : bool (optional)</p>
+<blockquote>
+<div><p>Whether or not to time the code for profiling/speed tests.
+Defaults to False.</p>
+</div></blockquote>
+<p><strong>bounds</strong> : tuple/iterable (optional)</p>
+<blockquote>
+<div><p>Bounds for minimization scheme.  See scipy.optimize.minimize details
+for more information.  Defaults to None.</p>
+</div></blockquote>
+<p><strong>nKLSamples</strong> : int (optionals)</p>
+<blockquote>
+<div><p>Number of samples to draw for Monte Carlo approximation to KL
+divergence between current and previous estimate of the posterior.
+Defaults to 10000.  Error on estimation decreases as approximately
+1/sqrt(nKLSamples).</p>
+</div></blockquote>
+<p><strong>verbose</strong> : bool (optional)</p>
+<blockquote>
+<div><p>Output all the diagnostics? Defaults to True.</p>
+</div></blockquote>
+<p><strong>maxComp</strong> : int (optional)</p>
+<blockquote>
+<div><p>Maximum number of mixture model components to fit for when fitting a
+GMM model to approximate the posterior distribution.  Defaults to 3.</p>
+</div></blockquote>
+<p><strong>samplerKwargs</strong> : dict (optional)</p>
+<blockquote>
+<div><p>Parameters for emcee.EnsembleSampler object
+If None, defaults to the following:</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>nwalkers <span class="classifier-delimiter">:</span> <span class="classifier">int (optional)</span></dt>
+<dd><p class="first last">Number of emcee walkers.  Defaults to 10 * dim</p>
+</dd>
+</dl>
+</div></blockquote>
+</div></blockquote>
+<p><strong>mcmcKwargs</strong> : dict (optional)</p>
+<blockquote>
+<div><p>Parameters for emcee.EnsembleSampler.sample/.run_mcmc methods. If
+None, defaults to the following required parameters:</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>iterations <span class="classifier-delimiter">:</span> <span class="classifier">int (optional)</span></dt>
+<dd><p class="first last">Number of MCMC steps.  Defaults to 10,000</p>
+</dd>
+<dt>initial_state <span class="classifier-delimiter">:</span> <span class="classifier">array/emcee.State (optional)</span></dt>
+<dd><p class="first last">Initial guess for MCMC walkers.  Defaults to None and
+creates guess from priors.</p>
+</dd>
+</dl>
+</div></blockquote>
+</div></blockquote>
+<p><strong>estBurnin</strong> : bool (optional)</p>
+<blockquote>
+<div><p>Estimate burn-in time using integrated autocorrelation time
+heuristic.  Defaults to False as in general, we recommend users
+inspect the chains and calculate the burnin after the fact to ensure
+convergence.</p>
+</div></blockquote>
+<p><strong>thinChains</strong> : bool (optional)</p>
+<blockquote>
+<div><p>Whether or not to thin chains before GMM fitting.  Useful if running
+long chains.  Defaults to False.  If true, estimates a thin cadence
+via int(0.5*np.min(tau)) where tau is the intergrated autocorrelation
+time.</p>
+</div></blockquote>
+<p><strong>chainFile</strong> : str (optional)</p>
+<blockquote>
+<div><p>Filename for hdf5 file where mcmc chains are saved.  Defaults to
+apRun and will be saved as apRunii.h5 for ii in nmax.</p>
+</div></blockquote>
+<p><strong>cache</strong> : bool (optional)</p>
+<blockquote>
+<div><p>Whether or not to cache MCMC chains, forward model input-output
+pairs, and GP kernel parameters.  Defaults to True since they’re
+expensive to evaluate. In practice, users should cache forward model
+inputs, outputs, ancillary parameters, etc in each likelihood
+function evaluation, but saving theta and y here doesn’t hurt.
+Saves the forward model, results to apFModelCache.npz, the chains
+as chainFileii.h5 for each, iteration ii, and the GP parameters in
+apGP.npz in the current working directory.</p>
+</div></blockquote>
+<p><strong>maxLnLikeRestarts</strong> : int (optional)</p>
+<blockquote>
+<div><p>Number of times to restart loglikelihood function (the one that
+calls the forward model) if the lnlike fn returns infs/NaNs. Defaults
+to 5.</p>
+</div></blockquote>
+<p><strong>gmmKwargs</strong> : dict (optional)</p>
+<blockquote>
+<div><p>keyword arguments for sklearn.mixture.GaussianMixture. Defaults to
+None</p>
+</div></blockquote>
+<p><strong>args</strong> : iterable (optional)</p>
+<blockquote>
+<div><p>Arguments for user-specified loglikelihood function that calls the
+forward model. Defaults to None.</p>
+</div></blockquote>
+<p><strong>gpMethod</strong> : str (optional)</p>
+<blockquote>
+<div><p>scipy.optimize.minimize method used when optimized GP hyperparameters.
+Defaults to None, which is powell, and it usually works.</p>
+</div></blockquote>
+<p><strong>gpOptions</strong> : dict (optional)</p>
+<blockquote>
+<div><p>kwargs for the scipy.optimize.minimize function used to optimize GP
+hyperparameters.  Defaults to None.</p>
+</div></blockquote>
+<p><strong>gpP0</strong> : array (optional)</p>
+<blockquote>
+<div><p>Initial guess for kernel hyperparameters.  If None, defaults to
+5.0 * len(theta)**(-1.0/theta.shape[-1]) for each dimension.</p>
+</div></blockquote>
+<p><strong>optGPEveryN</strong> : int (optional)</p>
+<blockquote>
+<div><p>How often to optimize the GP hyperparameters.  Defaults to
+re-optimizing everytime a new design point is found, e.g. every time
+a new (theta, y) pair is added to the training set.  Increase this
+parameter if approxposterior is running slowly.</p>
+</div></blockquote>
+<p><strong>nGPRestarts</strong> : int (optional)</p>
+<blockquote>
+<div><p>Number of times to restart GP hyperparameter optimization.  Defaults
+to 5. Increase this number if the GP isn’t optimized well.</p>
+</div></blockquote>
+<p><strong>nMinObjRestarts</strong> : int (optional)</p>
+<blockquote>
+<div><p>Number of times to restart minimizing -utility function to select
+next point to improve GP performance.  Defaults to 5.  Increase this
+number of the point selection is not working well.</p>
+</div></blockquote>
+<p><strong>nCores</strong> : int (optional)</p>
+<blockquote>
+<div><p>If &gt; 1, use multiprocessing to distribute optimization restarts</p>
+</div></blockquote>
+<p><strong>kwargs</strong> : dict (optional)</p>
+<blockquote>
+<div><p>Keyword arguments for user-specified loglikelihood function that
+calls the forward model.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">None</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="approxposterior.approx.ApproxPosterior.runMCMC">
+<code class="descname">runMCMC</code><span class="sig-paren">(</span><em>samplerKwargs=None</em>, <em>mcmcKwargs=None</em>, <em>chainFile='apRun'</em>, <em>cache=True</em>, <em>estBurnin=False</em>, <em>thinChains=False</em>, <em>verbose=True</em>, <em>nn=0</em>, <em>args=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/approx.html#ApproxPosterior.runMCMC"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.approx.ApproxPosterior.runMCMC" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given forward model input-output pairs, theta and y, and a trained GP,
+run an MCMC using the GP to evaluate the logprobability required by
+MCMC.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>samplerKwargs</strong> : dict (optional)</p>
+<blockquote>
+<div><p>Parameters for emcee.EnsembleSampler object
+If None, defaults to the following:</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>nwalkers <span class="classifier-delimiter">:</span> <span class="classifier">int (optional)</span></dt>
+<dd><p class="first last">Number of emcee walkers.  Defaults to 10 * dim</p>
+</dd>
+</dl>
+</div></blockquote>
+</div></blockquote>
+<p><strong>mcmcKwargs</strong> : dict (optional)</p>
+<blockquote>
+<div><p>Parameters for emcee.EnsembleSampler.sample/.run_mcmc methods. If
+None, defaults to the following required parameters:</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>iterations <span class="classifier-delimiter">:</span> <span class="classifier">int (optional)</span></dt>
+<dd><p class="first last">Number of MCMC steps.  Defaults to 10,000</p>
+</dd>
+<dt>initial_state <span class="classifier-delimiter">:</span> <span class="classifier">array/emcee.State (optional)</span></dt>
+<dd><p class="first last">Initial guess for MCMC walkers.  Defaults to None and
+creates guess from priors.</p>
+</dd>
+</dl>
+</div></blockquote>
+</div></blockquote>
+<p><strong>chainFile</strong> : str (optional)</p>
+<blockquote>
+<div><p>Filename for hdf5 file where mcmc chains are saved.  Defaults to
+apRun and will be saved as apRunii.h5 for ii in nmax.</p>
+</div></blockquote>
+<p><strong>cache</strong> : bool (optional)</p>
+<blockquote>
+<div><p>Whether or not to cache MCMC chains, forward model input-output
+pairs, and GP kernel parameters.  Defaults to True since they’re
+expensive to evaluate. In practice, users should cache forward model
+inputs, outputs, ancillary parameters, etc in each likelihood
+function evaluation, but saving theta and y here doesn’t hurt.
+Saves the forward model, results to apFModelCache.npz, the chains
+as chainFileii.h5 for each, iteration ii, and the GP parameters in
+apGP.npz in the current working directory.</p>
+</div></blockquote>
+<p><strong>estBurnin</strong> : bool (optional)</p>
+<blockquote>
+<div><p>Estimate burn-in time using integrated autocorrelation time
+heuristic.  Defaults to False as in general, we recommend users
+inspect the chains and calculate the burnin after the fact to ensure
+convergence.</p>
+</div></blockquote>
+<p><strong>thinChains</strong> : bool (optional)</p>
+<blockquote>
+<div><p>Whether or not to thin chains before GMM fitting.  Useful if running
+long chains.  Defaults to False.  If true, estimates a thin cadence
+via int(0.5*np.min(tau)) where tau is the intergrated autocorrelation
+time.</p>
+</div></blockquote>
+<p><strong>verbose</strong> : bool (optional)</p>
+<blockquote>
+<div><p>Output all the diagnostics? Defaults to True.</p>
+</div></blockquote>
+<p><strong>nn</strong> : int (optional)</p>
+<blockquote>
+<div><p>MCMC iteration number.  Defaults to 0.</p>
+</div></blockquote>
+<p><strong>args</strong> : iterable (optional)</p>
+<blockquote>
+<div><p>Arguments for user-specified loglikelihood function that calls the
+forward model. Defaults to None.</p>
+</div></blockquote>
+<p><strong>kwargs</strong> : dict (optional)</p>
+<blockquote>
+<div><p>Keyword arguments for user-specified loglikelihood function that
+calls the forward model.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>sampler</strong> : emcee.EnsembleSampler</p>
+<blockquote>
+<div><p>emcee sampler object</p>
+</div></blockquote>
+<p><strong>iburn</strong> : int</p>
+<blockquote>
+<div><p>burn-in index estimate.  If estBurnin == False, returns 0.</p>
+</div></blockquote>
+<p><strong>ithin</strong> : int</p>
+<blockquote class="last">
+<div><p>thin cadence estimate.  If thinChains == False, returns 1.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+      
+        <a href="../api.html" class="btn btn-neutral" title="API" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, David P. Fleming.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'0.2rc0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+      <script type="text/javascript" src="../_static/language_data.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

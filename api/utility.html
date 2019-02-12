@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Utility Functions &mdash; approxposterior 0.1.post1 documentation</title>
+  <title>Utility Functions &mdash; approxposterior 0.2rc0 documentation</title>
   
 
   
@@ -30,12 +30,14 @@
   
 
   
+    <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
+  
 
   
         <link rel="index" title="Index"
               href="../genindex.html"/>
         <link rel="search" title="Search" href="../search.html"/>
-    <link rel="top" title="approxposterior 0.1.post1 documentation" href="../index.html"/>
+    <link rel="top" title="approxposterior 0.2rc0 documentation" href="../index.html"/>
         <link rel="up" title="API" href="../api.html"/>
         <link rel="prev" title="Likelihood Functions" href="likelihood.html"/> 
 
@@ -65,6 +67,10 @@
           
             
             
+              <div class="version">
+                0.2
+              </div>
+            
           
 
           
@@ -88,15 +94,17 @@
             
               <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="../overview.html">Overview</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../tutorial.html">Tutorial</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../api.html">API</a><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="bp.html">bp.py</a></li>
-<li class="toctree-l2"><a class="reference internal" href="gmm_utils.html">gmm_utils.py</a></li>
-<li class="toctree-l2"><a class="reference internal" href="gp_utils.html">gp_utils.py</a></li>
-<li class="toctree-l2"><a class="reference internal" href="mcmc_utils.html">mcmc_utils.py</a></li>
+<li class="toctree-l2"><a class="reference internal" href="approx.html">approx.py</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gmmUtils.html">gmmUtils.py</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gpUtils.html">gpUtils.py</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mcmcUtils.html">mcmcUtils.py</a></li>
 <li class="toctree-l2"><a class="reference internal" href="likelihood.html">likelihood.py</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="#">utility.py</a><ul class="simple">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">utility.py</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#utility-py-utility-functions"><code class="docutils literal notranslate"><span class="pre">utility.py</span></code> - Utility Functions</a><ul class="simple">
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="pool.html">pool.py</a></li>
@@ -206,7 +214,10 @@
 </style>
 <div class="section" id="module-approxposterior.utility">
 <span id="utility-functions"></span><h1>Utility Functions<a class="headerlink" href="#module-approxposterior.utility" title="Permalink to this headline">¶</a></h1>
-<p>Utility functions</p>
+<div class="section" id="utility-py-utility-functions">
+<h2><code class="xref py py-mod docutils literal notranslate"><span class="pre">utility.py</span></code> - Utility Functions<a class="headerlink" href="#utility-py-utility-functions" title="Permalink to this headline">¶</a></h2>
+<p>Utility functions ranging from minimizing GP objective functions to function
+wrappers.</p>
 <dl class="function">
 <dt id="approxposterior.utility.logsubexp">
 <code class="descclassname">approxposterior.utility.</code><code class="descname">logsubexp</code><span class="sig-paren">(</span><em>x1</em>, <em>x2</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/utility.html#logsubexp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.utility.logsubexp" title="Permalink to this definition">¶</a></dt>
@@ -228,8 +239,8 @@
 </dd></dl>
 
 <dl class="function">
-<dt id="approxposterior.utility.AGP_utility">
-<code class="descclassname">approxposterior.utility.</code><code class="descname">AGP_utility</code><span class="sig-paren">(</span><em>theta</em>, <em>y</em>, <em>gp</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/utility.html#AGP_utility"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.utility.AGP_utility" title="Permalink to this definition">¶</a></dt>
+<dt id="approxposterior.utility.AGPUtility">
+<code class="descclassname">approxposterior.utility.</code><code class="descname">AGPUtility</code><span class="sig-paren">(</span><em>theta</em>, <em>y</em>, <em>gp</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/utility.html#AGPUtility"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.utility.AGPUtility" title="Permalink to this definition">¶</a></dt>
 <dd><p>AGP (Adaptive Gaussian Process) utility function, the entropy of the
 posterior distribution. This is what you maximize to find the next x under
 the AGP formalism. Note here we use the negative of the utility function so
@@ -261,8 +272,8 @@ minimizing this is the same as maximizing the actual utility function.</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="approxposterior.utility.BAPE_utility">
-<code class="descclassname">approxposterior.utility.</code><code class="descname">BAPE_utility</code><span class="sig-paren">(</span><em>theta</em>, <em>y</em>, <em>gp</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/utility.html#BAPE_utility"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.utility.BAPE_utility" title="Permalink to this definition">¶</a></dt>
+<dt id="approxposterior.utility.BAPEUtility">
+<code class="descclassname">approxposterior.utility.</code><code class="descname">BAPEUtility</code><span class="sig-paren">(</span><em>theta</em>, <em>y</em>, <em>gp</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/utility.html#BAPEUtility"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.utility.BAPEUtility" title="Permalink to this definition">¶</a></dt>
 <dd><p>BAPE (Bayesian Active Posterior Estimation) utility function.  This is what
 you maximize to find the next theta under the BAPE formalism.  Note here we
 use the negative of the utility function so minimizing this is the same as
@@ -295,10 +306,12 @@ function as the log is monotonic so the minima are equivalent.</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="approxposterior.utility.minimize_objective">
-<code class="descclassname">approxposterior.utility.</code><code class="descname">minimize_objective</code><span class="sig-paren">(</span><em>fn</em>, <em>y</em>, <em>gp</em>, <em>sample_fn</em>, <em>prior_fn</em>, <em>bounds=None</em>, <em>**kw</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/utility.html#minimize_objective"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.utility.minimize_objective" title="Permalink to this definition">¶</a></dt>
+<dt id="approxposterior.utility.minimizeObjective">
+<code class="descclassname">approxposterior.utility.</code><code class="descname">minimizeObjective</code><span class="sig-paren">(</span><em>fn</em>, <em>y</em>, <em>gp</em>, <em>sampleFn</em>, <em>priorFn</em>, <em>bounds=None</em>, <em>nRestarts=5</em>, <em>nCores=1</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/utility.html#minimizeObjective"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.utility.minimizeObjective" title="Permalink to this definition">¶</a></dt>
 <dd><p>Find point that minimizes fn for a gaussian process gp conditioned on y,
-the data.</p>
+the data and is allowed by the prior, priorFn.  PriorFn is required as it
+helps to select against points with non-finite likelihoods, e.g. NaNs or
+infs.  This is required as the GP can only train on finite values.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -313,23 +326,28 @@ like fn_name(x, y, gp).  See <a href="#id1"><span class="problematic" id="id2">*
 <div><p>y values to condition the gp prediction on.</p>
 </div></blockquote>
 <p><strong>gp</strong> : george GP object</p>
-<p><strong>sample_fn</strong> : function</p>
+<p><strong>sampleFn</strong> : function</p>
 <blockquote>
 <div><p>Function to sample initial conditions from.</p>
 </div></blockquote>
-<p><strong>prior_fn</strong> : function</p>
+<p><strong>priorFn</strong> : function</p>
 <blockquote>
 <div><p>Function to apply prior to.</p>
-</div></blockquote>
-<p><strong>kw</strong> : dict (optional)</p>
-<blockquote>
-<div><p>Any additional keyword arguments scipy.optimize.minimize could use,
-e.g., method.</p>
 </div></blockquote>
 <p><strong>bounds</strong> : tuple/iterable (optional)</p>
 <blockquote>
 <div><p>Bounds for minimization scheme.  See scipy.optimize.minimize details
 for more information.  Defaults to None.</p>
+</div></blockquote>
+<p><strong>nRestarts</strong> : int (optional)</p>
+<blockquote>
+<div><p>Number of times to restart minimizing -utility function to select
+next point to improve GP performance.  Defaults to 5.  Increase this
+number of the point selection is not working well.</p>
+</div></blockquote>
+<p><strong>nCores</strong> : int (optional)</p>
+<blockquote>
+<div><p>If &gt; 1, use multiprocessing to distribute optimization restarts</p>
 </div></blockquote>
 </td>
 </tr>
@@ -344,8 +362,8 @@ for more information.  Defaults to None.</p>
 </dd></dl>
 
 <dl class="class">
-<dt id="approxposterior.utility.function_wrapper">
-<em class="property">class </em><code class="descclassname">approxposterior.utility.</code><code class="descname">function_wrapper</code><span class="sig-paren">(</span><em>f</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/utility.html#function_wrapper"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.utility.function_wrapper" title="Permalink to this definition">¶</a></dt>
+<dt id="approxposterior.utility.functionWrapper">
+<em class="property">class </em><code class="descclassname">approxposterior.utility.</code><code class="descname">functionWrapper</code><span class="sig-paren">(</span><em>f</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/utility.html#functionWrapper"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.utility.functionWrapper" title="Permalink to this definition">¶</a></dt>
 <dd><p>Wrapper class for functions.</p>
 <p class="rubric">Methods</p>
 <table border="1" class="longtable docutils">
@@ -361,9 +379,27 @@ for more information.  Defaults to None.</p>
 </table>
 </dd></dl>
 
+<dl class="class">
+<dt id="approxposterior.utility.functionWrapperArgsOnly">
+<em class="property">class </em><code class="descclassname">approxposterior.utility.</code><code class="descname">functionWrapperArgsOnly</code><span class="sig-paren">(</span><em>f</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/utility.html#functionWrapperArgsOnly"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.utility.functionWrapperArgsOnly" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wrapper class for functions where input are the args.</p>
+<p class="rubric">Methods</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><code class="xref py py-obj docutils literal notranslate"><span class="pre">__call__</span></code>(x)</td>
+<td>Call the function on some input x.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
 <dl class="function">
-<dt id="approxposterior.utility.kl_numerical">
-<code class="descclassname">approxposterior.utility.</code><code class="descname">kl_numerical</code><span class="sig-paren">(</span><em>x</em>, <em>p</em>, <em>q</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/utility.html#kl_numerical"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.utility.kl_numerical" title="Permalink to this definition">¶</a></dt>
+<dt id="approxposterior.utility.klNumerical">
+<code class="descclassname">approxposterior.utility.</code><code class="descname">klNumerical</code><span class="sig-paren">(</span><em>x</em>, <em>p</em>, <em>q</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/utility.html#klNumerical"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.utility.klNumerical" title="Permalink to this definition">¶</a></dt>
 <dd><p>Estimate the KL-Divergence between pdfs p and q via Monte Carlo intergration
 using x, samples from p.</p>
 <p>KL ~ 1/n * sum_{i=1,n}(log (p(x_i)/q(x_i)))</p>
@@ -404,6 +440,7 @@ method is shown to have the lowest error, on average (see Hershey and Olsen).</p
 </dd></dl>
 
 </div>
+</div>
 
 
            </div>
@@ -425,7 +462,7 @@ method is shown to have the lowest error, on average (see Hershey and Olsen).</p
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2018, David P. Fleming.
+        &copy; Copyright 2019, David P. Fleming.
 
     </p>
   </div>
@@ -447,7 +484,7 @@ method is shown to have the lowest error, on average (see Hershey and Olsen).</p
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../',
-            VERSION:'0.1.post1',
+            VERSION:'0.2rc0',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
@@ -457,7 +494,8 @@ method is shown to have the lowest error, on average (see Hershey and Olsen).</p
       <script type="text/javascript" src="../_static/jquery.js"></script>
       <script type="text/javascript" src="../_static/underscore.js"></script>
       <script type="text/javascript" src="../_static/doctools.js"></script>
-      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script type="text/javascript" src="../_static/language_data.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
   
 

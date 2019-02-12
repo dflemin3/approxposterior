@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Tutorial &mdash; approxposterior 0.1.post1 documentation</title>
+  <title>Tutorial &mdash; approxposterior 0.2rc0 documentation</title>
   
 
   
@@ -30,14 +30,16 @@
   
 
   
+    <link rel="stylesheet" href="_static/graphviz.css" type="text/css" />
+  
 
   
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="approxposterior 0.1.post1 documentation" href="index.html"/>
-        <link rel="next" title="BAPE Algorithm Example" href="notebooks/BAPE_Example.html"/>
-        <link rel="prev" title="Overview" href="overview.html"/> 
+    <link rel="top" title="approxposterior 0.2rc0 documentation" href="index.html"/>
+        <link rel="next" title="BAPE Algorithm Example" href="notebooks/example.html"/>
+        <link rel="prev" title="approxposterior" href="index.html"/> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
@@ -65,6 +67,10 @@
           
             
             
+              <div class="version">
+                0.2
+              </div>
+            
           
 
           
@@ -88,13 +94,13 @@
             
               <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="overview.html">Overview</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Tutorial</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="notebooks/BAPE_Example.html">BAPE Example</a></li>
-<li class="toctree-l2"><a class="reference internal" href="notebooks/Scaling_Accuracy.html">Scaling</a></li>
-<li class="toctree-l2"><a class="reference internal" href="notebooks/KL_Divergence_Estimation.html">KL Divergence Example</a></li>
-<li class="toctree-l2"><a class="reference internal" href="notebooks/Forecast_Example.html">Forecast Example</a></li>
-<li class="toctree-l2"><a class="reference internal" href="notebooks/True_Rosenbrock_Posterior.html">Rosenbrock Example</a></li>
+<li class="toctree-l2"><a class="reference internal" href="notebooks/example.html">Example</a></li>
+<li class="toctree-l2"><a class="reference internal" href="notebooks/fittingALine.html">Fitting a Line</a></li>
+<li class="toctree-l2"><a class="reference internal" href="notebooks/ScalingAccuracy.html">Scaling and Accuracy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="notebooks/KLDivergenceEstimation.html">KL Divergence Estimation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="notebooks/posteriorFittingWithGMM.html">Posterior Fitting with Gaussian Mixture Models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="notebooks/TrueRosenbrockPosterior.html">Rosenbrock Function Example</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="api.html">API</a></li>
@@ -200,78 +206,103 @@
 </style>
 <div class="section" id="tutorial">
 <h1>Tutorial<a class="headerlink" href="#tutorial" title="Permalink to this headline">¶</a></h1>
-<p>Check out the example notebooks to see how the BAPE algorithm works, how the code runtime scales
-for different forward model evaluation times, how we compute the Kullback–Leibler (KL) divergence,
-how we can use <code class="xref py py-obj docutils literal notranslate"><span class="pre">approxposterior</span></code>
-and how we compute the true posterior distribution for the Rosenbrock function example from Wang &amp; Li (2017).</p>
-<div class="toctree-wrapper compound">
-<p class="caption"><span class="caption-text">Jupyter Notebook Examples:</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="notebooks/BAPE_Example.html">BAPE Example</a></li>
-<li class="toctree-l1"><a class="reference internal" href="notebooks/Scaling_Accuracy.html">Scaling</a></li>
-<li class="toctree-l1"><a class="reference internal" href="notebooks/KL_Divergence_Estimation.html">KL Divergence Example</a></li>
-<li class="toctree-l1"><a class="reference internal" href="notebooks/Forecast_Example.html">Forecast Example</a></li>
-<li class="toctree-l1"><a class="reference internal" href="notebooks/True_Rosenbrock_Posterior.html">Rosenbrock Example</a></li>
-</ul>
-</div>
 <p>Below is a quick example of how to use <code class="xref py py-obj docutils literal notranslate"><span class="pre">approxposterior</span></code> to compute the posterior
 distribution of the Rosenbrock Function example from Wang &amp; Li (2017) using the
-BAPE algorithm. To keep track of the MCMC progress, set verbose = True in the ap.run method. This setting
-outputs X/M where M is the total number of MCMC iterations to be evaluated, 5,000 in this example, and x is the current
-iteration number.  Note that setting verbose = True also outputs additional diagnostic information, such as when
+BAPE algorithm. Note that setting verbose = True also outputs additional diagnostic information, such as when
 the MCMC finishes, what the estimated burn-in is, and other quantities that are useful for tracking the progress of
 your code.  In this example, we set verbose = False for simplicity.</p>
+<p>Don’t forget to check out the links for example Jupyter Notebooks at the bottom of the page!</p>
 <ol class="arabic simple">
 <li>First, the user must set model parameters.</li>
 </ol>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">approxposterior</span> <span class="kn">import</span> <span class="n">bp</span><span class="p">,</span> <span class="n">likelihood</span> <span class="k">as</span> <span class="n">lh</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">approxposterior</span> <span class="kn">import</span> <span class="n">approx</span><span class="p">,</span> <span class="n">likelihood</span> <span class="k">as</span> <span class="n">lh</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
 
 <span class="c1"># Define algorithm parameters</span>
-<span class="n">m0</span> <span class="o">=</span> <span class="mi">200</span>                          <span class="c1"># Initial size of training set</span>
+<span class="n">m0</span> <span class="o">=</span> <span class="mi">50</span>                           <span class="c1"># Initial size of training set</span>
 <span class="n">m</span> <span class="o">=</span> <span class="mi">20</span>                            <span class="c1"># Number of new points to find each iteration</span>
-<span class="n">nmax</span> <span class="o">=</span> <span class="mi">2</span>                          <span class="c1"># Maximum number of iterations</span>
-<span class="n">M</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="mf">5.0e3</span><span class="p">)</span>                    <span class="c1"># Number of MCMC steps to estimate approximate posterior</span>
+<span class="n">nmax</span> <span class="o">=</span> <span class="mi">10</span>                         <span class="c1"># Maximum number of iterations</span>
 <span class="n">Dmax</span> <span class="o">=</span> <span class="mf">0.1</span>                        <span class="c1"># KL-Divergence convergence limit</span>
 <span class="n">kmax</span> <span class="o">=</span> <span class="mi">5</span>                          <span class="c1"># Number of iterations for Dmax convergence to kick in</span>
-<span class="n">which_kernel</span> <span class="o">=</span> <span class="s2">&quot;ExpSquaredKernel&quot;</span> <span class="c1"># Which Gaussian Process kernel to use</span>
+<span class="n">nKLSamples</span> <span class="o">=</span> <span class="mi">10000</span>                <span class="c1"># Number of samples from posterior to use to calculate KL-Divergence</span>
 <span class="n">bounds</span> <span class="o">=</span> <span class="p">((</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">),</span> <span class="p">(</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">))</span>         <span class="c1"># Prior bounds</span>
-<span class="n">algorithm</span> <span class="o">=</span> <span class="s2">&quot;bape&quot;</span>                <span class="c1"># Use the Kandasamy et al. (2015) formalism</span>
+<span class="n">algorithm</span> <span class="o">=</span> <span class="s2">&quot;BAPE&quot;</span>                <span class="c1"># Use the Kandasamy et al. (2015) formalism</span>
+
+<span class="c1"># emcee MCMC parameters</span>
+<span class="n">samplerKwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;nwalkers&quot;</span> <span class="p">:</span> <span class="mi">20</span><span class="p">}</span>        <span class="c1"># emcee.EnsembleSampler parameters</span>
+<span class="n">mcmcKwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;iterations&quot;</span> <span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="mf">2.0e4</span><span class="p">)}</span> <span class="c1"># emcee.EnsembleSampler.run_mcmc parameters</span>
 </pre></div>
 </div>
 <ol class="arabic simple" start="2">
-<li>Initialize the <code class="xref py py-obj docutils literal notranslate"><span class="pre">approxposterior</span></code> object.</li>
+<li>Create an initial training set and gaussian process</li>
 </ol>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Initialize object using the Wang &amp; Li (2017) Rosenbrock function example</span>
-<span class="n">ap</span> <span class="o">=</span> <span class="n">bp</span><span class="o">.</span><span class="n">ApproxPosterior</span><span class="p">(</span><span class="n">lnprior</span><span class="o">=</span><span class="n">lh</span><span class="o">.</span><span class="n">rosenbrock_lnprior</span><span class="p">,</span>
-                        <span class="n">lnlike</span><span class="o">=</span><span class="n">lh</span><span class="o">.</span><span class="n">rosenbrock_lnlike</span><span class="p">,</span>
-                        <span class="n">prior_sample</span><span class="o">=</span><span class="n">lh</span><span class="o">.</span><span class="n">rosenbrock_sample</span><span class="p">,</span>
-                        <span class="n">algorithm</span><span class="o">=</span><span class="n">algorithm</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Randomly sample initial conditions from the prior</span>
+<span class="n">theta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">lh</span><span class="o">.</span><span class="n">rosenbrockSample</span><span class="p">(</span><span class="n">m0</span><span class="p">))</span>
+
+<span class="c1"># Evaluate forward model log likelihood + lnprior for each theta</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">theta</span><span class="p">))</span>
+<span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">theta</span><span class="p">)):</span>
+    <span class="n">y</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span> <span class="o">=</span> <span class="n">lh</span><span class="o">.</span><span class="n">rosenbrockLnlike</span><span class="p">(</span><span class="n">theta</span><span class="p">[</span><span class="n">ii</span><span class="p">])</span> <span class="o">+</span> <span class="n">lh</span><span class="o">.</span><span class="n">rosenbrockLnprior</span><span class="p">(</span><span class="n">theta</span><span class="p">[</span><span class="n">ii</span><span class="p">])</span>
+
+<span class="c1"># Create the the default GP which uses an ExpSquaredKernel</span>
+<span class="n">gp</span> <span class="o">=</span> <span class="n">gpUtils</span><span class="o">.</span><span class="n">defaultGP</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
 </pre></div>
 </div>
 <ol class="arabic simple" start="3">
-<li>Run!</li>
+<li>Initialize the <code class="xref py py-obj docutils literal notranslate"><span class="pre">approxposterior</span></code> object.</li>
 </ol>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Run!</span>
-<span class="n">ap</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">m0</span><span class="o">=</span><span class="n">m0</span><span class="p">,</span> <span class="n">m</span><span class="o">=</span><span class="n">m</span><span class="p">,</span> <span class="n">M</span><span class="o">=</span><span class="n">M</span><span class="p">,</span> <span class="n">nmax</span><span class="o">=</span><span class="n">nmax</span><span class="p">,</span> <span class="n">Dmax</span><span class="o">=</span><span class="n">Dmax</span><span class="p">,</span> <span class="n">kmax</span><span class="o">=</span><span class="n">kmax</span><span class="p">,</span>
-        <span class="n">sampler</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">bounds</span><span class="o">=</span><span class="n">bounds</span><span class="p">,</span> <span class="n">which_kernel</span><span class="o">=</span><span class="n">which_kernel</span><span class="p">,</span>
-        <span class="n">n_kl_samples</span><span class="o">=</span><span class="mi">100000</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Initialize object using the Wang &amp; Li (2017) Rosenbrock function example</span>
+<span class="n">ap</span> <span class="o">=</span> <span class="n">approx</span><span class="o">.</span><span class="n">ApproxPosterior</span><span class="p">(</span><span class="n">theta</span><span class="o">=</span><span class="n">theta</span><span class="p">,</span>                   <span class="c1"># Initial model parameters for inputs</span>
+                          <span class="n">y</span><span class="o">=</span><span class="n">y</span><span class="p">,</span>                             <span class="c1"># Logprobability of each input</span>
+                          <span class="n">gp</span><span class="o">=</span><span class="n">gp</span><span class="p">,</span>                           <span class="c1"># Initialize Gaussian Process</span>
+                          <span class="n">lnprior</span><span class="o">=</span><span class="n">lh</span><span class="o">.</span><span class="n">rosenbrockLnprior</span><span class="p">,</span>    <span class="c1"># logprior function</span>
+                          <span class="n">lnlike</span><span class="o">=</span><span class="n">lh</span><span class="o">.</span><span class="n">rosenbrockLnlike</span><span class="p">,</span>      <span class="c1"># loglikelihood function</span>
+                          <span class="n">priorSample</span><span class="o">=</span><span class="n">lh</span><span class="o">.</span><span class="n">rosenbrockSample</span><span class="p">,</span> <span class="c1"># Prior sample function</span>
+                          <span class="n">algorithm</span><span class="o">=</span><span class="n">algorithm</span><span class="p">)</span>             <span class="c1"># Which algorithm to use: BAPE, AGP, or ALTERNATE</span>
 </pre></div>
 </div>
 <ol class="arabic simple" start="4">
+<li>Run!</li>
+</ol>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">ap</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">m</span><span class="o">=</span><span class="n">m</span><span class="p">,</span> <span class="n">nmax</span><span class="o">=</span><span class="n">nmax</span><span class="p">,</span> <span class="n">Dmax</span><span class="o">=</span><span class="n">Dmax</span><span class="p">,</span> <span class="n">kmax</span><span class="o">=</span><span class="n">kmax</span><span class="p">,</span> <span class="n">bounds</span><span class="o">=</span><span class="n">bounds</span><span class="p">,</span>  <span class="n">estBurnin</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+       <span class="n">nKLSamples</span><span class="o">=</span><span class="n">nKLSamples</span><span class="p">,</span> <span class="n">mcmcKwargs</span><span class="o">=</span><span class="n">mcmcKwargs</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+       <span class="n">samplerKwargs</span><span class="o">=</span><span class="n">samplerKwargs</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<ol class="arabic simple" start="5">
 <li>Examine the final posterior distributions!</li>
 </ol>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Import corner to examine posterior distributions</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Check out the final posterior distribution!</span>
 <span class="kn">import</span> <span class="nn">corner</span>
 
-<span class="n">fig</span> <span class="o">=</span> <span class="n">corner</span><span class="o">.</span><span class="n">corner</span><span class="p">(</span><span class="n">ap</span><span class="o">.</span><span class="n">samplers</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">flatchain</span><span class="p">[</span><span class="n">ap</span><span class="o">.</span><span class="n">iburns</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]:],</span>
-                    <span class="n">quantiles</span><span class="o">=</span><span class="p">[</span><span class="mf">0.16</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.84</span><span class="p">],</span> <span class="n">show_titles</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">scale_hist</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
-                    <span class="n">plot_contours</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="c1"># Load in chain from last iteration</span>
+<span class="n">samples</span> <span class="o">=</span> <span class="n">ap</span><span class="o">.</span><span class="n">sampler</span><span class="o">.</span><span class="n">get_chain</span><span class="p">(</span><span class="n">discard</span><span class="o">=</span><span class="n">ap</span><span class="o">.</span><span class="n">iburns</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">flat</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">thin</span><span class="o">=</span><span class="n">ap</span><span class="o">.</span><span class="n">ithins</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
 
-<span class="c1">#fig.savefig(&quot;final_dist.png&quot;, bbox_inches=&quot;tight&quot;) # Uncomment to save</span>
+<span class="c1"># Corner plot!</span>
+<span class="n">fig</span> <span class="o">=</span> <span class="n">corner</span><span class="o">.</span><span class="n">corner</span><span class="p">(</span><span class="n">samples</span><span class="p">,</span> <span class="n">quantiles</span><span class="o">=</span><span class="p">[</span><span class="mf">0.16</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.84</span><span class="p">],</span> <span class="n">show_titles</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+                    <span class="n">scale_hist</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">plot_contours</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+<span class="c1">#fig.savefig(&quot;finalPosterior.png&quot;, bbox_inches=&quot;tight&quot;) # Uncomment to save</span>
 </pre></div>
 </div>
 <p>The final posterior distribution will look something like the following:</p>
 <a class="reference internal image-reference" href="_images/final_posterior.png"><img alt="Final posterior distribution for approxposterior run of the Wang &amp; Li (2017) example." src="_images/final_posterior.png" style="width: 400px;" /></a>
+<p>Check out the example notebooks to see example use cases, how the code runtime scales
+for different forward model evaluation times, how we compute the Kullback–Leibler (KL) divergence,
+and more.</p>
+<blockquote>
+<div><div class="toctree-wrapper compound">
+<p class="caption"><span class="caption-text">Jupyter Notebook Examples:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="notebooks/example.html">Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="notebooks/fittingALine.html">Fitting a Line</a></li>
+<li class="toctree-l1"><a class="reference internal" href="notebooks/ScalingAccuracy.html">Scaling and Accuracy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="notebooks/KLDivergenceEstimation.html">KL Divergence Estimation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="notebooks/posteriorFittingWithGMM.html">Posterior Fitting with Gaussian Mixture Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="notebooks/TrueRosenbrockPosterior.html">Rosenbrock Function Example</a></li>
+</ul>
+</div>
+</div></blockquote>
 </div>
 
 
@@ -284,10 +315,10 @@ your code.  In this example, we set verbose = False for simplicity.</p>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="notebooks/BAPE_Example.html" class="btn btn-neutral float-right" title="BAPE Algorithm Example" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="notebooks/example.html" class="btn btn-neutral float-right" title="BAPE Algorithm Example" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="overview.html" class="btn btn-neutral" title="Overview" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="index.html" class="btn btn-neutral" title="approxposterior" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
@@ -296,7 +327,7 @@ your code.  In this example, we set verbose = False for simplicity.</p>
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2018, David P. Fleming.
+        &copy; Copyright 2019, David P. Fleming.
 
     </p>
   </div>
@@ -318,7 +349,7 @@ your code.  In this example, we set verbose = False for simplicity.</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'0.1.post1',
+            VERSION:'0.2rc0',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
@@ -328,7 +359,8 @@ your code.  In this example, we set verbose = False for simplicity.</p>
       <script type="text/javascript" src="_static/jquery.js"></script>
       <script type="text/javascript" src="_static/underscore.js"></script>
       <script type="text/javascript" src="_static/doctools.js"></script>
-      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script type="text/javascript" src="_static/language_data.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
   
 

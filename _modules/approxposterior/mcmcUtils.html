@@ -1,0 +1,342 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>approxposterior.mcmcUtils &mdash; approxposterior 0.2rc0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+    <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../genindex.html"/>
+        <link rel="search" title="Search" href="../../search.html"/>
+    <link rel="top" title="approxposterior 0.2rc0 documentation" href="../../index.html"/>
+        <link rel="up" title="Module code" href="../index.html"/> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> approxposterior
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.2
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorial.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html">API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/dflemin3/approxposterior">Github</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/dflemin3/approxposterior/issues">Submit an Issue</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">approxposterior</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>approxposterior.mcmcUtils</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for approxposterior.mcmcUtils</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">:py:mod:`mcmcUtils.py` - Markov Chain Monte Carlo Utility Functions</span>
+<span class="sd">-----------------------------------</span>
+
+<span class="sd">MCMC utility functions for validating emcee MCMC runs within approxposterior.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="c1"># Tell module what it&#39;s allowed to import</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;validateMCMCKwargs&quot;</span><span class="p">]</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">emcee</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">from</span> <span class="nn">scipy.interpolate</span> <span class="k">import</span> <span class="n">UnivariateSpline</span>
+
+<span class="kn">import</span> <span class="nn">emcee</span>
+<span class="n">version</span> <span class="o">=</span> <span class="n">emcee</span><span class="o">.</span><span class="n">__version__</span>
+<span class="k">assert</span> <span class="nb">int</span><span class="p">(</span><span class="n">version</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">,</span> <span class="s2">&quot;approxposterior is only compatible with emcee versions &gt;= 3&quot;</span>
+
+
+<div class="viewcode-block" id="validateMCMCKwargs"><a class="viewcode-back" href="../../api/mcmcUtils.html#approxposterior.mcmcUtils.validateMCMCKwargs">[docs]</a><span class="k">def</span> <span class="nf">validateMCMCKwargs</span><span class="p">(</span><span class="n">ap</span><span class="p">,</span> <span class="n">samplerKwargs</span><span class="p">,</span> <span class="n">mcmcKwargs</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Validates emcee.EnsembleSampler parameters/kwargs.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    ap : approxposterior.ApproxPosterior</span>
+<span class="sd">            Initialized ApproxPosterior object</span>
+<span class="sd">    samplerKwargs : dict</span>
+<span class="sd">        dictionary containing parameters intended for emcee.EnsembleSampler</span>
+<span class="sd">        object</span>
+<span class="sd">    mcmcKwargs : dict</span>
+<span class="sd">        dictionary containing parameters intended for</span>
+<span class="sd">        emcee.EnsembleSampler.run_mcmc/.sample object</span>
+<span class="sd">    verbose : bool (optional)</span>
+<span class="sd">        verboisty level. Defaults to False (no output)</span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    samplerKwargs : dict</span>
+<span class="sd">        Sanitized dictionary containing parameters intended for</span>
+<span class="sd">        emcee.EnsembleSampler object</span>
+<span class="sd">    mcmcKwargs : dict</span>
+<span class="sd">        Sanitized dictionary containing parameters intended for</span>
+<span class="sd">        emcee.EnsembleSampler.run_mcmc/.sample object</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># First validate kwargs for emcee.EnsembleSampler object</span>
+    <span class="k">if</span> <span class="n">samplerKwargs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">samplerKwargs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+
+        <span class="n">samplerKwargs</span><span class="p">[</span><span class="s2">&quot;ndim&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ap</span><span class="o">.</span><span class="n">theta</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">samplerKwargs</span><span class="p">[</span><span class="s2">&quot;nwalkers&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">20</span> <span class="o">*</span> <span class="n">samplerKwargs</span><span class="p">[</span><span class="s2">&quot;dim&quot;</span><span class="p">]</span>
+        <span class="n">samplerKwargs</span><span class="p">[</span><span class="s2">&quot;log_prob_fn&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ap</span><span class="o">.</span><span class="n">_gpll</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># If user set ndim, ignore it and align it with theta&#39;s shape</span>
+        <span class="n">samplerKwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;ndim&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">samplerKwargs</span><span class="p">[</span><span class="s2">&quot;ndim&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ap</span><span class="o">.</span><span class="n">theta</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="c1"># Initialize other parameters if they&#39;re not provided</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">nwalkers</span> <span class="o">=</span> <span class="n">samplerKwargs</span><span class="p">[</span><span class="s2">&quot;nwalkers&quot;</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;WARNING: samplerKwargs provided but nwalkers not in samplerKwargs&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Defaulting to nwalkers = 20 per dimension.&quot;</span><span class="p">)</span>
+            <span class="n">samplerKwargs</span><span class="p">[</span><span class="s2">&quot;nwalkers&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">20</span> <span class="o">*</span> <span class="n">samplerKwargs</span><span class="p">[</span><span class="s2">&quot;ndim&quot;</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="s2">&quot;backend&quot;</span> <span class="ow">in</span> <span class="n">samplerKwargs</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;WARNING: backend in samplerKwargs. approxposterior creates its own!&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;with filename = apRun.h5. Disregarding user-supplied backend.&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Handle case when user supplies own loglikelihood function</span>
+        <span class="k">if</span> <span class="s2">&quot;log_prob_fn&quot;</span> <span class="ow">in</span> <span class="n">samplerKwargs</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;WARNING: log_prob_fn in samplerKwargs. approxposterior only uses the GP surrogate model for the lnlikelihood!&quot;</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Disregarding log_prob_fn...&quot;</span><span class="p">)</span>
+
+            <span class="c1"># Remove any other log_prob_fn</span>
+            <span class="n">samplerKwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;log_prob_fn&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+        <span class="c1"># Prevent users from providing their own backend</span>
+        <span class="n">samplerKwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;backend&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+        <span class="c1"># Properly initialize log_prob_fn to be GP loglikelihood estimate</span>
+        <span class="n">samplerKwargs</span><span class="p">[</span><span class="s2">&quot;log_prob_fn&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ap</span><span class="o">.</span><span class="n">_gpll</span>
+
+    <span class="c1"># Validate mcmcKwargs dict used in sampling posterior distribution</span>
+    <span class="c1"># e.g. emcee.EnsembleSampler.run_mcmc method</span>
+    <span class="k">if</span> <span class="n">mcmcKwargs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">mcmcKwargs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="n">mcmcKwargs</span><span class="p">[</span><span class="s2">&quot;iterations&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">10000</span>
+        <span class="n">mcmcKwargs</span><span class="p">[</span><span class="s2">&quot;initial_state&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ap</span><span class="o">.</span><span class="n">priorSample</span><span class="p">(</span><span class="n">samplerKwargs</span><span class="p">[</span><span class="s2">&quot;nwalkers&quot;</span><span class="p">])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">nsteps</span> <span class="o">=</span> <span class="n">mcmcKwargs</span><span class="p">[</span><span class="s2">&quot;iterations&quot;</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="n">mcmcKwargs</span><span class="p">[</span><span class="s2">&quot;iterations&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">10000</span>
+            <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;WARNING: mcmcKwargs provided, but iterations not in mcmcKwargs.&quot;</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Defaulting to iterations = 10000.&quot;</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">p0</span> <span class="o">=</span> <span class="n">mcmcKwargs</span><span class="p">[</span><span class="s2">&quot;initial_state&quot;</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="n">mcmcKwargs</span><span class="p">[</span><span class="s2">&quot;initial_state&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ap</span><span class="o">.</span><span class="n">priorSample</span><span class="p">(</span><span class="n">samplerKwargs</span><span class="p">[</span><span class="s2">&quot;nwalkers&quot;</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;WARNING: mcmcKwargs provided, but initial_state not in mcmcKwargs.&quot;</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Defaulting to nwalkers samples from priorSample.&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">samplerKwargs</span><span class="p">,</span> <span class="n">mcmcKwargs</span></div>
+<span class="c1"># end function</span>
+</pre></div>
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, David P. Fleming.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'0.2rc0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="../../_static/language_data.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

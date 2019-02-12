@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>API &mdash; approxposterior 0.1.post1 documentation</title>
+  <title>API &mdash; approxposterior 0.2rc0 documentation</title>
   
 
   
@@ -30,14 +30,16 @@
   
 
   
+    <link rel="stylesheet" href="_static/graphviz.css" type="text/css" />
+  
 
   
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="approxposterior 0.1.post1 documentation" href="index.html"/>
-        <link rel="next" title="ApproxPosterior Class" href="api/bp.html"/>
-        <link rel="prev" title="True Rosenbrock Posterior Calculation Using Emcee" href="notebooks/True_Rosenbrock_Posterior.html"/> 
+    <link rel="top" title="approxposterior 0.2rc0 documentation" href="index.html"/>
+        <link rel="next" title="ApproxPosterior Class" href="api/approx.html"/>
+        <link rel="prev" title="True Rosenbrock Posterior Calculation Using Emcee" href="notebooks/TrueRosenbrockPosterior.html"/> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
@@ -65,6 +67,10 @@
           
             
             
+              <div class="version">
+                0.2
+              </div>
+            
           
 
           
@@ -88,13 +94,12 @@
             
               <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="overview.html">Overview</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">API</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="api/bp.html">bp.py</a></li>
-<li class="toctree-l2"><a class="reference internal" href="api/gmm_utils.html">gmm_utils.py</a></li>
-<li class="toctree-l2"><a class="reference internal" href="api/gp_utils.html">gp_utils.py</a></li>
-<li class="toctree-l2"><a class="reference internal" href="api/mcmc_utils.html">mcmc_utils.py</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/approx.html">approx.py</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/gmmUtils.html">gmmUtils.py</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/gpUtils.html">gpUtils.py</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/mcmcUtils.html">mcmcUtils.py</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/likelihood.html">likelihood.py</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/utility.html">utility.py</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/pool.html">pool.py</a></li>
@@ -206,10 +211,10 @@
 <div><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">approxposterior</span></code> Python API documentation.</p>
 <div class="toctree-wrapper compound">
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="api/bp.html">bp.py</a></li>
-<li class="toctree-l1"><a class="reference internal" href="api/gmm_utils.html">gmm_utils.py</a></li>
-<li class="toctree-l1"><a class="reference internal" href="api/gp_utils.html">gp_utils.py</a></li>
-<li class="toctree-l1"><a class="reference internal" href="api/mcmc_utils.html">mcmc_utils.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/approx.html">approx.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/gmmUtils.html">gmmUtils.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/gpUtils.html">gpUtils.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/mcmcUtils.html">mcmcUtils.py</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api/likelihood.html">likelihood.py</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api/utility.html">utility.py</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api/pool.html">pool.py</a></li>
@@ -228,10 +233,10 @@
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="api/bp.html" class="btn btn-neutral float-right" title="ApproxPosterior Class" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="api/approx.html" class="btn btn-neutral float-right" title="ApproxPosterior Class" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="notebooks/True_Rosenbrock_Posterior.html" class="btn btn-neutral" title="True Rosenbrock Posterior Calculation Using Emcee" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="notebooks/TrueRosenbrockPosterior.html" class="btn btn-neutral" title="True Rosenbrock Posterior Calculation Using Emcee" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
@@ -240,7 +245,7 @@
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2018, David P. Fleming.
+        &copy; Copyright 2019, David P. Fleming.
 
     </p>
   </div>
@@ -262,7 +267,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'0.1.post1',
+            VERSION:'0.2rc0',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
@@ -272,7 +277,8 @@
       <script type="text/javascript" src="_static/jquery.js"></script>
       <script type="text/javascript" src="_static/underscore.js"></script>
       <script type="text/javascript" src="_static/doctools.js"></script>
-      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script type="text/javascript" src="_static/language_data.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
   
 

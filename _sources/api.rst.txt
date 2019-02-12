@@ -6,10 +6,10 @@ API
  .. toctree::
     :maxdepth: 1
 
-    bp.py <api/bp>
-    gmm_utils.py <api/gmm_utils>
-    gp_utils.py <api/gp_utils>
-    mcmc_utils.py <api/mcmc_utils>
+    approx.py <api/approx>
+    gmmUtils.py <api/gmmUtils>
+    gpUtils.py <api/gpUtils>
+    mcmcUtils.py <api/mcmcUtils>
     likelihood.py <api/likelihood>
     utility.py <api/utility>
     pool.py <api/pool>

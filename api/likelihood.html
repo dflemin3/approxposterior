@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Likelihood Functions &mdash; approxposterior 0.1.post1 documentation</title>
+  <title>Likelihood Functions &mdash; approxposterior 0.2rc0 documentation</title>
   
 
   
@@ -30,15 +30,17 @@
   
 
   
+    <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
+  
 
   
         <link rel="index" title="Index"
               href="../genindex.html"/>
         <link rel="search" title="Search" href="../search.html"/>
-    <link rel="top" title="approxposterior 0.1.post1 documentation" href="../index.html"/>
+    <link rel="top" title="approxposterior 0.2rc0 documentation" href="../index.html"/>
         <link rel="up" title="API" href="../api.html"/>
         <link rel="next" title="Utility Functions" href="utility.html"/>
-        <link rel="prev" title="MCMC Utility Functions" href="mcmc_utils.html"/> 
+        <link rel="prev" title="MCMC Utility Functions" href="mcmcUtils.html"/> 
 
   
   <script src="../_static/js/modernizr.min.js"></script>
@@ -66,6 +68,10 @@
           
             
             
+              <div class="version">
+                0.2
+              </div>
+            
           
 
           
@@ -89,14 +95,16 @@
             
               <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="../overview.html">Overview</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../tutorial.html">Tutorial</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../api.html">API</a><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="bp.html">bp.py</a></li>
-<li class="toctree-l2"><a class="reference internal" href="gmm_utils.html">gmm_utils.py</a></li>
-<li class="toctree-l2"><a class="reference internal" href="gp_utils.html">gp_utils.py</a></li>
-<li class="toctree-l2"><a class="reference internal" href="mcmc_utils.html">mcmc_utils.py</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="#">likelihood.py</a></li>
+<li class="toctree-l2"><a class="reference internal" href="approx.html">approx.py</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gmmUtils.html">gmmUtils.py</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gpUtils.html">gpUtils.py</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mcmcUtils.html">mcmcUtils.py</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">likelihood.py</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#likelihood-py-example-likelihood-functions"><code class="docutils literal notranslate"><span class="pre">likelihood.py</span></code> - Example Likelihood Functions</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="utility.html">utility.py</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pool.html">pool.py</a></li>
 </ul>
@@ -205,115 +213,13 @@
 </style>
 <div class="section" id="module-approxposterior.likelihood">
 <span id="likelihood-functions"></span><h1>Likelihood Functions<a class="headerlink" href="#module-approxposterior.likelihood" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="likelihood-py-example-likelihood-functions">
+<h2><code class="xref py py-mod docutils literal notranslate"><span class="pre">likelihood.py</span></code> - Example Likelihood Functions<a class="headerlink" href="#likelihood-py-example-likelihood-functions" title="Permalink to this headline">¶</a></h2>
 <p>This file contains routines for simples loglikelihoods and priors for test
 cases.</p>
 <dl class="function">
-<dt id="approxposterior.likelihood.bimodal_normal_sample">
-<code class="descclassname">approxposterior.likelihood.</code><code class="descname">bimodal_normal_sample</code><span class="sig-paren">(</span><em>n</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/likelihood.html#bimodal_normal_sample"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.likelihood.bimodal_normal_sample" title="Permalink to this definition">¶</a></dt>
-<dd><p>Sample N points from the prior pi(x) is a uniform distribution over
-[-10, 10] x [-10, 10]</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>n</strong> : int</p>
-<blockquote>
-<div><p>Number of samples</p>
-</div></blockquote>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>sample</strong> : floats</p>
-<blockquote class="last">
-<div><p>n x 2 array of floats samples from the prior</p>
-</div></blockquote>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="approxposterior.likelihood.bimodal_normal_lnlike">
-<code class="descclassname">approxposterior.likelihood.</code><code class="descname">bimodal_normal_lnlike</code><span class="sig-paren">(</span><em>theta</em>, <em>mus=None</em>, <em>icovs=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/likelihood.html#bimodal_normal_lnlike"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.likelihood.bimodal_normal_lnlike" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bimodal Gaussian log-likelihood function.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>theta</strong> : array</p>
-<p><strong>mus</strong> : arrays (optional)</p>
-<blockquote>
-<div><p>mean vectors of the gaussians.  Defaults to None.</p>
-</div></blockquote>
-<p><strong>icovs</strong> : arrays (optional)</p>
-<blockquote>
-<div><p>inverse of the covariance matrices</p>
-</div></blockquote>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>l</strong> : float</p>
-<blockquote class="last">
-<div><p>log prior</p>
-</div></blockquote>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="approxposterior.likelihood.bimodal_normal_lnprior">
-<code class="descclassname">approxposterior.likelihood.</code><code class="descname">bimodal_normal_lnprior</code><span class="sig-paren">(</span><em>theta</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/likelihood.html#bimodal_normal_lnprior"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.likelihood.bimodal_normal_lnprior" title="Permalink to this definition">¶</a></dt>
-<dd><p>Flat log prior over [-10,10]^2 for the bimodal normal case</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>theta</strong> : array</p>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>l</strong> : float</p>
-<blockquote class="last">
-<div><p>log prior</p>
-</div></blockquote>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="approxposterior.likelihood.bimodal_normal_lnprob">
-<code class="descclassname">approxposterior.likelihood.</code><code class="descname">bimodal_normal_lnprob</code><span class="sig-paren">(</span><em>theta</em>, <em>mus=None</em>, <em>icovs=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/likelihood.html#bimodal_normal_lnprob"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.likelihood.bimodal_normal_lnprob" title="Permalink to this definition">¶</a></dt>
-<dd><p>Compute the log probability (log posterior) as likelihood * prior</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>theta</strong> : array</p>
-<p><strong>mus</strong> : arrays (optional)</p>
-<blockquote>
-<div><p>mean vectors of the gaussians.  Defaults to None.</p>
-</div></blockquote>
-<p><strong>icovs</strong> : arrays (optional)</p>
-<blockquote>
-<div><p>inverse of the covariance matrices</p>
-</div></blockquote>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>l</strong> : float</p>
-<blockquote class="last">
-<div><p>log probability</p>
-</div></blockquote>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="approxposterior.likelihood.rosenbrock_lnlike">
-<code class="descclassname">approxposterior.likelihood.</code><code class="descname">rosenbrock_lnlike</code><span class="sig-paren">(</span><em>x</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/likelihood.html#rosenbrock_lnlike"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.likelihood.rosenbrock_lnlike" title="Permalink to this definition">¶</a></dt>
+<dt id="approxposterior.likelihood.rosenbrockLnlike">
+<code class="descclassname">approxposterior.likelihood.</code><code class="descname">rosenbrockLnlike</code><span class="sig-paren">(</span><em>x</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/likelihood.html#rosenbrockLnlike"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.likelihood.rosenbrockLnlike" title="Permalink to this definition">¶</a></dt>
 <dd><p>2D Rosenbrock function as a log likelihood following Wang &amp; Li (2017)</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -333,8 +239,8 @@ cases.</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="approxposterior.likelihood.rosenbrock_lnprior">
-<code class="descclassname">approxposterior.likelihood.</code><code class="descname">rosenbrock_lnprior</code><span class="sig-paren">(</span><em>x</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/likelihood.html#rosenbrock_lnprior"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.likelihood.rosenbrock_lnprior" title="Permalink to this definition">¶</a></dt>
+<dt id="approxposterior.likelihood.rosenbrockLnprior">
+<code class="descclassname">approxposterior.likelihood.</code><code class="descname">rosenbrockLnprior</code><span class="sig-paren">(</span><em>x</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/likelihood.html#rosenbrockLnprior"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.likelihood.rosenbrockLnprior" title="Permalink to this definition">¶</a></dt>
 <dd><p>Uniform log prior for the 2D Rosenbrock likelihood following Wang &amp; Li (2017)
 where the prior pi(x) is a uniform distribution over [-5, 5] x [-5, 5]</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -355,8 +261,8 @@ where the prior pi(x) is a uniform distribution over [-5, 5] x [-5, 5]</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="approxposterior.likelihood.rosenbrock_sample">
-<code class="descclassname">approxposterior.likelihood.</code><code class="descname">rosenbrock_sample</code><span class="sig-paren">(</span><em>n</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/likelihood.html#rosenbrock_sample"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.likelihood.rosenbrock_sample" title="Permalink to this definition">¶</a></dt>
+<dt id="approxposterior.likelihood.rosenbrockSample">
+<code class="descclassname">approxposterior.likelihood.</code><code class="descname">rosenbrockSample</code><span class="sig-paren">(</span><em>n=1</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/likelihood.html#rosenbrockSample"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.likelihood.rosenbrockSample" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sample N points from the prior pi(x) is a uniform distribution over
 [-5, 5] x [-5, 5]</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -380,8 +286,8 @@ where the prior pi(x) is a uniform distribution over [-5, 5] x [-5, 5]</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="approxposterior.likelihood.rosenbrock_lnprob">
-<code class="descclassname">approxposterior.likelihood.</code><code class="descname">rosenbrock_lnprob</code><span class="sig-paren">(</span><em>theta</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/likelihood.html#rosenbrock_lnprob"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.likelihood.rosenbrock_lnprob" title="Permalink to this definition">¶</a></dt>
+<dt id="approxposterior.likelihood.rosenbrockLnprob">
+<code class="descclassname">approxposterior.likelihood.</code><code class="descname">rosenbrockLnprob</code><span class="sig-paren">(</span><em>theta</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/likelihood.html#rosenbrockLnprob"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.likelihood.rosenbrockLnprob" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute the log probability (log posterior) as likelihood * prior</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -401,6 +307,7 @@ where the prior pi(x) is a uniform distribution over [-5, 5] x [-5, 5]</p>
 </dd></dl>
 
 </div>
+</div>
 
 
            </div>
@@ -415,7 +322,7 @@ where the prior pi(x) is a uniform distribution over [-5, 5] x [-5, 5]</p>
         <a href="utility.html" class="btn btn-neutral float-right" title="Utility Functions" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="mcmc_utils.html" class="btn btn-neutral" title="MCMC Utility Functions" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="mcmcUtils.html" class="btn btn-neutral" title="MCMC Utility Functions" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
@@ -424,7 +331,7 @@ where the prior pi(x) is a uniform distribution over [-5, 5] x [-5, 5]</p>
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2018, David P. Fleming.
+        &copy; Copyright 2019, David P. Fleming.
 
     </p>
   </div>
@@ -446,7 +353,7 @@ where the prior pi(x) is a uniform distribution over [-5, 5] x [-5, 5]</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../',
-            VERSION:'0.1.post1',
+            VERSION:'0.2rc0',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
@@ -456,7 +363,8 @@ where the prior pi(x) is a uniform distribution over [-5, 5] x [-5, 5]</p>
       <script type="text/javascript" src="../_static/jquery.js"></script>
       <script type="text/javascript" src="../_static/underscore.js"></script>
       <script type="text/javascript" src="../_static/doctools.js"></script>
-      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script type="text/javascript" src="../_static/language_data.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
   
 

@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>approxposterior.pool &mdash; approxposterior 0.1.post1 documentation</title>
+  <title>approxposterior.pool &mdash; approxposterior 0.2rc0 documentation</title>
   
 
   
@@ -30,12 +30,14 @@
   
 
   
+    <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
+  
 
   
         <link rel="index" title="Index"
               href="../../genindex.html"/>
         <link rel="search" title="Search" href="../../search.html"/>
-    <link rel="top" title="approxposterior 0.1.post1 documentation" href="../../index.html"/>
+    <link rel="top" title="approxposterior 0.2rc0 documentation" href="../../index.html"/>
         <link rel="up" title="Module code" href="../index.html"/> 
 
   
@@ -64,6 +66,10 @@
           
             
             
+              <div class="version">
+                0.2
+              </div>
+            
           
 
           
@@ -87,7 +93,6 @@
             
               <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../overview.html">Overview</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../tutorial.html">Tutorial</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../api.html">API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../install.html">Installation</a></li>
@@ -171,11 +176,10 @@
 
 <span class="sd">    - A serial pool, which uses the built-in :py:obj:`map` function</span>
 
-<span class="sd">    Original Authors: Rodrigo Luger &amp; Dan Forman-Mackey</span>
+<span class="sd">    Based on * `&lt;https://github.com/jreese/multiprocessing-keyboardinterrupt/&gt;`_</span>
+<span class="sd">    and work by Peter K. G. Williams &lt;peter@newton.cx&gt;, Rodrigo Luger, and Dan Forman-Mackey.</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
-<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="p">(</span><span class="n">division</span><span class="p">,</span> <span class="n">print_function</span><span class="p">,</span> <span class="n">absolute_import</span><span class="p">,</span>
-                        <span class="n">unicode_literals</span><span class="p">)</span>
 <span class="kn">import</span> <span class="nn">sys</span>
 <span class="k">try</span><span class="p">:</span>
     <span class="kn">from</span> <span class="nn">mpi4py</span> <span class="k">import</span> <span class="n">MPI</span>
@@ -336,8 +340,8 @@
 
         <span class="k">if</span> <span class="n">MPI</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">MPI</span><span class="o">.</span><span class="n">COMM_WORLD</span><span class="o">.</span><span class="n">size</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
-                <span class="k">return</span> <span class="kc">True</span></div>
-        <span class="k">return</span> <span class="kc">False</span>
+                <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
 
 <div class="viewcode-block" id="MPIPool.wait"><a class="viewcode-back" href="../../api/pool.html#approxposterior.pool.MPIPool.wait">[docs]</a>    <span class="k">def</span> <span class="nf">wait</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -386,8 +390,8 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">comm</span><span class="o">.</span><span class="n">isend</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">dest</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">tag</span><span class="o">=</span><span class="n">status</span><span class="o">.</span><span class="n">tag</span><span class="p">)</span>
 
         <span class="c1"># Kill the process?</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">exit_on_end</span><span class="p">:</span></div>
-            <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">exit_on_end</span><span class="p">:</span>
+            <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">()</span></div>
 
 <div class="viewcode-block" id="MPIPool.map"><a class="viewcode-back" href="../../api/pool.html#approxposterior.pool.MPIPool.map">[docs]</a>    <span class="k">def</span> <span class="nf">map</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">function</span><span class="p">,</span> <span class="n">tasks</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -496,14 +500,14 @@
                     <span class="c1"># Send out the tasks asynchronously.</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">comm</span><span class="o">.</span><span class="n">isend</span><span class="p">(</span><span class="n">task</span><span class="p">,</span> <span class="n">dest</span><span class="o">=</span><span class="n">worker</span><span class="p">,</span> <span class="n">tag</span><span class="o">=</span><span class="n">i</span><span class="p">)</span>
                     <span class="n">ntasks_dispatched</span> <span class="o">+=</span> <span class="mi">1</span>
-</div>
-            <span class="k">return</span> <span class="n">results</span>
+
+            <span class="k">return</span> <span class="n">results</span></div>
 
 <div class="viewcode-block" id="MPIPool.bcast"><a class="viewcode-back" href="../../api/pool.html#approxposterior.pool.MPIPool.bcast">[docs]</a>    <span class="k">def</span> <span class="nf">bcast</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Equivalent to mpi4py :func:`bcast` collective operation.</span>
-<span class="sd">        &quot;&quot;&quot;</span></div>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">comm</span><span class="o">.</span><span class="n">bcast</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">comm</span><span class="o">.</span><span class="n">bcast</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="MPIPool.close"><a class="viewcode-back" href="../../api/pool.html#approxposterior.pool.MPIPool.close">[docs]</a>    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -512,8 +516,8 @@
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_master</span><span class="p">():</span>
-            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">):</span></div></div>
-                <span class="bp">self</span><span class="o">.</span><span class="n">comm</span><span class="o">.</span><span class="n">isend</span><span class="p">(</span><span class="n">_close_pool_message</span><span class="p">(),</span> <span class="n">dest</span><span class="o">=</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">comm</span><span class="o">.</span><span class="n">isend</span><span class="p">(</span><span class="n">_close_pool_message</span><span class="p">(),</span> <span class="n">dest</span><span class="o">=</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span></div></div>
 
 <div class="viewcode-block" id="SerialPool"><a class="viewcode-back" href="../../api/pool.html#approxposterior.pool.SerialPool">[docs]</a><span class="k">class</span> <span class="nc">SerialPool</span><span class="p">(</span><span class="n">GenericPool</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -530,20 +534,20 @@
     <span class="k">def</span> <span class="nf">enabled</span><span class="p">():</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-</div>
-        <span class="k">return</span> <span class="kc">True</span>
+
+        <span class="k">return</span> <span class="kc">True</span></div>
 
 <div class="viewcode-block" id="SerialPool.wait"><a class="viewcode-back" href="../../api/pool.html#approxposterior.pool.SerialPool.wait">[docs]</a>    <span class="k">def</span> <span class="nf">wait</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-</div>
-        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;``SerialPool`` told to wait!&#39;</span><span class="p">)</span>
+
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;``SerialPool`` told to wait!&#39;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="SerialPool.map"><a class="viewcode-back" href="../../api/pool.html#approxposterior.pool.SerialPool.map">[docs]</a>    <span class="k">def</span> <span class="nf">map</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">function</span><span class="p">,</span> <span class="n">iterable</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-</div></div>
-        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="n">function</span><span class="p">,</span> <span class="n">iterable</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="n">function</span><span class="p">,</span> <span class="n">iterable</span><span class="p">))</span></div></div>
 
 <div class="viewcode-block" id="MultiPool"><a class="viewcode-back" href="../../api/pool.html#approxposterior.pool.MultiPool">[docs]</a><span class="k">class</span> <span class="nc">MultiPool</span><span class="p">(</span><span class="n">multiprocessing</span><span class="o">.</span><span class="n">pool</span><span class="o">.</span><span class="n">Pool</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -582,8 +586,8 @@
     <span class="k">def</span> <span class="nf">enabled</span><span class="p">():</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-</div>
-        <span class="k">return</span> <span class="kc">True</span>
+
+        <span class="k">return</span> <span class="kc">True</span></div>
 
 <div class="viewcode-block" id="MultiPool.map"><a class="viewcode-back" href="../../api/pool.html#approxposterior.pool.MultiPool.map">[docs]</a>    <span class="k">def</span> <span class="nf">map</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">,</span> <span class="n">iterable</span><span class="p">,</span> <span class="n">chunksize</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -607,8 +611,8 @@
                 <span class="k">pass</span>
             <span class="k">except</span> <span class="ne">KeyboardInterrupt</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">terminate</span><span class="p">()</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">join</span><span class="p">()</span></div>
-                <span class="k">raise</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
+                <span class="k">raise</span></div>
 
     <span class="k">def</span> <span class="nf">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -619,8 +623,8 @@
     <span class="k">def</span> <span class="nf">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-</div>
-        <span class="k">return</span> <span class="bp">self</span>
+
+        <span class="k">return</span> <span class="bp">self</span></div>
 
 <div class="viewcode-block" id="Pool"><a class="viewcode-back" href="../../api/pool.html#approxposterior.pool.Pool">[docs]</a><span class="k">def</span> <span class="nf">Pool</span><span class="p">(</span><span class="n">pool</span> <span class="o">=</span> <span class="s1">&#39;SerialPool&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -641,8 +645,8 @@
             <span class="k">return</span> <span class="n">MultiPool</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">SerialPool</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span></div>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Invalid pool ``</span><span class="si">%s</span><span class="s1">``.&#39;</span> <span class="o">%</span> <span class="n">pool</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Invalid pool ``</span><span class="si">%s</span><span class="s1">``.&#39;</span> <span class="o">%</span> <span class="n">pool</span><span class="p">)</span></div>
 <span class="c1"># end function</span>
 </pre></div>
 
@@ -658,7 +662,7 @@
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2018, David P. Fleming.
+        &copy; Copyright 2019, David P. Fleming.
 
     </p>
   </div>
@@ -680,7 +684,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../',
-            VERSION:'0.1.post1',
+            VERSION:'0.2rc0',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
@@ -690,7 +694,8 @@
       <script type="text/javascript" src="../../_static/jquery.js"></script>
       <script type="text/javascript" src="../../_static/underscore.js"></script>
       <script type="text/javascript" src="../../_static/doctools.js"></script>
-      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script type="text/javascript" src="../../_static/language_data.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
   
 

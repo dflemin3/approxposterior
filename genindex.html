@@ -9,7 +9,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Index &mdash; approxposterior 0.1.post1 documentation</title>
+  <title>Index &mdash; approxposterior 0.2rc0 documentation</title>
   
 
   
@@ -31,12 +31,14 @@
   
 
   
+    <link rel="stylesheet" href="_static/graphviz.css" type="text/css" />
+  
 
   
         <link rel="index" title="Index"
               href="#"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="approxposterior 0.1.post1 documentation" href="index.html"/> 
+    <link rel="top" title="approxposterior 0.2rc0 documentation" href="index.html"/> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
@@ -64,6 +66,10 @@
           
             
             
+              <div class="version">
+                0.2
+              </div>
+            
           
 
           
@@ -87,7 +93,6 @@
             
               <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="overview.html">Overview</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api.html">API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
@@ -170,33 +175,32 @@
  | <a href="#P"><strong>P</strong></a>
  | <a href="#R"><strong>R</strong></a>
  | <a href="#S"><strong>S</strong></a>
+ | <a href="#V"><strong>V</strong></a>
  | <a href="#W"><strong>W</strong></a>
  
 </div>
 <h2 id="A">A</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api/utility.html#approxposterior.utility.AGP_utility">AGP_utility() (in module approxposterior.utility)</a>
+      <li><a href="api/utility.html#approxposterior.utility.AGPUtility">AGPUtility() (in module approxposterior.utility)</a>
 </li>
-      <li><a href="api/bp.html#approxposterior.bp.ApproxPosterior">ApproxPosterior (class in approxposterior.bp)</a>
+      <li><a href="api/approx.html#approxposterior.approx.ApproxPosterior">ApproxPosterior (class in approxposterior.approx)</a>
 </li>
-      <li><a href="api/bp.html#module-approxposterior.bp">approxposterior.bp (module)</a>
+      <li><a href="api/approx.html#module-approxposterior.approx">approxposterior.approx (module)</a>
 </li>
-      <li><a href="api/gmm_utils.html#module-approxposterior.gmm_utils">approxposterior.gmm_utils (module)</a>
-</li>
-      <li><a href="api/gp_utils.html#module-approxposterior.gp_utils">approxposterior.gp_utils (module)</a>
+      <li><a href="api/gmmUtils.html#module-approxposterior.gmmUtils">approxposterior.gmmUtils (module)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/gpUtils.html#module-approxposterior.gpUtils">approxposterior.gpUtils (module)</a>
+</li>
       <li><a href="api/likelihood.html#module-approxposterior.likelihood">approxposterior.likelihood (module)</a>
 </li>
-      <li><a href="api/mcmc_utils.html#module-approxposterior.mcmc_utils">approxposterior.mcmc_utils (module)</a>
+      <li><a href="api/mcmcUtils.html#module-approxposterior.mcmcUtils">approxposterior.mcmcUtils (module)</a>
 </li>
       <li><a href="api/pool.html#module-approxposterior.pool">approxposterior.pool (module)</a>
 </li>
       <li><a href="api/utility.html#module-approxposterior.utility">approxposterior.utility (module)</a>
-</li>
-      <li><a href="api/mcmc_utils.html#approxposterior.mcmc_utils.autocorr">autocorr() (in module approxposterior.mcmc_utils)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -204,19 +208,11 @@
 <h2 id="B">B</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api/utility.html#approxposterior.utility.BAPE_utility">BAPE_utility() (in module approxposterior.utility)</a>
-</li>
-      <li><a href="api/pool.html#approxposterior.pool.MPIPool.bcast">bcast() (approxposterior.pool.MPIPool method)</a>
-</li>
-      <li><a href="api/likelihood.html#approxposterior.likelihood.bimodal_normal_lnlike">bimodal_normal_lnlike() (in module approxposterior.likelihood)</a>
+      <li><a href="api/utility.html#approxposterior.utility.BAPEUtility">BAPEUtility() (in module approxposterior.utility)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api/likelihood.html#approxposterior.likelihood.bimodal_normal_lnprior">bimodal_normal_lnprior() (in module approxposterior.likelihood)</a>
-</li>
-      <li><a href="api/likelihood.html#approxposterior.likelihood.bimodal_normal_lnprob">bimodal_normal_lnprob() (in module approxposterior.likelihood)</a>
-</li>
-      <li><a href="api/likelihood.html#approxposterior.likelihood.bimodal_normal_sample">bimodal_normal_sample() (in module approxposterior.likelihood)</a>
+      <li><a href="api/pool.html#approxposterior.pool.MPIPool.bcast">bcast() (approxposterior.pool.MPIPool method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -241,22 +237,20 @@
 </li>
       </ul></li>
   </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api/mcmc_utils.html#approxposterior.mcmc_utils.estimate_burnin">estimate_burnin() (in module approxposterior.mcmc_utils)</a>
-</li>
-  </ul></td>
 </tr></table>
 
 <h2 id="F">F</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api/gmm_utils.html#approxposterior.gmm_utils.fit_gmm">fit_gmm() (in module approxposterior.gmm_utils)</a>
+      <li><a href="api/approx.html#approxposterior.approx.ApproxPosterior.findNextPoint">findNextPoint() (approxposterior.approx.ApproxPosterior method)</a>
+</li>
+      <li><a href="api/gmmUtils.html#approxposterior.gmmUtils.fitGMM">fitGMM() (in module approxposterior.gmmUtils)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api/bp.html#approxposterior.bp.ApproxPosterior.forecast">forecast() (approxposterior.bp.ApproxPosterior method)</a>
+      <li><a href="api/utility.html#approxposterior.utility.functionWrapper">functionWrapper (class in approxposterior.utility)</a>
 </li>
-      <li><a href="api/utility.html#approxposterior.utility.function_wrapper">function_wrapper (class in approxposterior.utility)</a>
+      <li><a href="api/utility.html#approxposterior.utility.functionWrapperArgsOnly">functionWrapperArgsOnly (class in approxposterior.utility)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -264,7 +258,7 @@
 <h2 id="K">K</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api/utility.html#approxposterior.utility.kl_numerical">kl_numerical() (in module approxposterior.utility)</a>
+      <li><a href="api/utility.html#approxposterior.utility.klNumerical">klNumerical() (in module approxposterior.utility)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -290,7 +284,7 @@
       </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api/utility.html#approxposterior.utility.minimize_objective">minimize_objective() (in module approxposterior.utility)</a>
+      <li><a href="api/utility.html#approxposterior.utility.minimizeObjective">minimizeObjective() (in module approxposterior.utility)</a>
 </li>
       <li><a href="api/pool.html#approxposterior.pool.MPIPool">MPIPool (class in approxposterior.pool)</a>
 </li>
@@ -302,7 +296,7 @@
 <h2 id="O">O</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api/gp_utils.html#approxposterior.gp_utils.optimize_gp">optimize_gp() (in module approxposterior.gp_utils)</a>
+      <li><a href="api/gpUtils.html#approxposterior.gpUtils.optimizeGP">optimizeGP() (in module approxposterior.gpUtils)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -318,17 +312,19 @@
 <h2 id="R">R</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api/likelihood.html#approxposterior.likelihood.rosenbrock_lnlike">rosenbrock_lnlike() (in module approxposterior.likelihood)</a>
+      <li><a href="api/likelihood.html#approxposterior.likelihood.rosenbrockLnlike">rosenbrockLnlike() (in module approxposterior.likelihood)</a>
 </li>
-      <li><a href="api/likelihood.html#approxposterior.likelihood.rosenbrock_lnprior">rosenbrock_lnprior() (in module approxposterior.likelihood)</a>
+      <li><a href="api/likelihood.html#approxposterior.likelihood.rosenbrockLnprior">rosenbrockLnprior() (in module approxposterior.likelihood)</a>
+</li>
+      <li><a href="api/likelihood.html#approxposterior.likelihood.rosenbrockLnprob">rosenbrockLnprob() (in module approxposterior.likelihood)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api/likelihood.html#approxposterior.likelihood.rosenbrock_lnprob">rosenbrock_lnprob() (in module approxposterior.likelihood)</a>
+      <li><a href="api/likelihood.html#approxposterior.likelihood.rosenbrockSample">rosenbrockSample() (in module approxposterior.likelihood)</a>
 </li>
-      <li><a href="api/likelihood.html#approxposterior.likelihood.rosenbrock_sample">rosenbrock_sample() (in module approxposterior.likelihood)</a>
+      <li><a href="api/approx.html#approxposterior.approx.ApproxPosterior.run">run() (approxposterior.approx.ApproxPosterior method)</a>
 </li>
-      <li><a href="api/bp.html#approxposterior.bp.ApproxPosterior.run">run() (approxposterior.bp.ApproxPosterior method)</a>
+      <li><a href="api/approx.html#approxposterior.approx.ApproxPosterior.runMCMC">runMCMC() (approxposterior.approx.ApproxPosterior method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -339,8 +335,12 @@
       <li><a href="api/pool.html#approxposterior.pool.SerialPool">SerialPool (class in approxposterior.pool)</a>
 </li>
   </ul></td>
+</tr></table>
+
+<h2 id="V">V</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api/gp_utils.html#approxposterior.gp_utils.setup_gp">setup_gp() (in module approxposterior.gp_utils)</a>
+      <li><a href="api/mcmcUtils.html#approxposterior.mcmcUtils.validateMCMCKwargs">validateMCMCKwargs() (in module approxposterior.mcmcUtils)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -375,7 +375,7 @@
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2018, David P. Fleming.
+        &copy; Copyright 2019, David P. Fleming.
 
     </p>
   </div>
@@ -397,7 +397,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'0.1.post1',
+            VERSION:'0.2rc0',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
@@ -407,7 +407,8 @@
       <script type="text/javascript" src="_static/jquery.js"></script>
       <script type="text/javascript" src="_static/underscore.js"></script>
       <script type="text/javascript" src="_static/doctools.js"></script>
-      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script type="text/javascript" src="_static/language_data.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
   
 
