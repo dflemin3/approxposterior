@@ -165,13 +165,13 @@ class ApproxPosterior(object):
     # end function
 
 
-    def run(self, m=10, nmax=2, Dmax=0.01, kmax=5, seed=None,
+    def run(self, m=10, nmax=2, Dmax=0.1, kmax=5, seed=None,
             timing=False, bounds=None, nKLSamples=10000, verbose=True,
-            args=None, maxComp=3, mcmcKwargs=None, samplerKwargs=None,
-            estBurnin=False, thinChains=False, chainFile="apRun", cache=True,
-            maxLnLikeRestarts=5, gmmKwargs=None, gpMethod=None, gpOptions=None,
-            gpP0=None, optGPEveryN=1, nGPRestarts=5, nMinObjRestarts=5, nCores=1,
-            **kwargs):
+            maxComp=3, mcmcKwargs=None, samplerKwargs=None, estBurnin=False,
+            thinChains=False, chainFile="apRun", cache=True,
+            maxLnLikeRestarts=3, gmmKwargs=None, gpMethod=None, gpOptions=None,
+            gpP0=None, optGPEveryN=1, nGPRestarts=5, nMinObjRestarts=5,
+            nCores=1, args=None, **kwargs):
         """
         Core algorithm to estimate the posterior distribution via Gaussian
         Process regression to the joint distribution for the forward model
@@ -182,7 +182,7 @@ class ApproxPosterior(object):
         m : int (optional)
             Number of new input features to find each iteration.  Defaults to 10.
         nmax : int (optional)
-            Maximum number of iterations.  Defaults to 2 for testing.
+            Maximum number of iterations.  Defaults to 2.
         Dmax : float (optional)
             Maximum change in KL divergence for convergence checking.  Defaults to 0.1.
         kmax : int (optional)
@@ -201,7 +201,7 @@ class ApproxPosterior(object):
             Number of samples to draw for Monte Carlo approximation to KL
             divergence between current and previous estimate of the posterior.
             Defaults to 10000.  Error on estimation decreases as approximately
-            1/sqrt(nKLSamples).
+            1/sqrt(nKLSamples). Increase this for higher dimensional problems.
         verbose : bool (optional)
             Output all the diagnostics? Defaults to True.
         maxComp : int (optional)
@@ -222,17 +222,18 @@ class ApproxPosterior(object):
                     creates guess from priors.
         estBurnin : bool (optional)
             Estimate burn-in time using integrated autocorrelation time
-            heuristic.  Defaults to False as in general, we recommend users
-            inspect the chains and calculate the burnin after the fact to ensure
-            convergence.
+            heuristic.  Defaults to True. In general, we recommend users
+            inspect the chains (note that approxposterior always at least saves
+            the last sampler object, or all chains if cache = True) and
+            calculate the burnin after the fact to ensure convergence.
         thinChains : bool (optional)
             Whether or not to thin chains before GMM fitting.  Useful if running
-            long chains.  Defaults to False.  If true, estimates a thin cadence
+            long chains.  Defaults to True.  If true, estimates a thin cadence
             via int(0.5*np.min(tau)) where tau is the intergrated autocorrelation
             time.
         chainFile : str (optional)
             Filename for hdf5 file where mcmc chains are saved.  Defaults to
-            apRun and will be saved as apRunii.h5 for ii in nmax.
+            apRun and will be saved as apRunii.h5 for ii in range(nmax).
         cache : bool (optional)
             Whether or not to cache MCMC chains, forward model input-output
             pairs, and GP kernel parameters.  Defaults to True since they're
@@ -240,27 +241,25 @@ class ApproxPosterior(object):
             inputs, outputs, ancillary parameters, etc in each likelihood
             function evaluation, but saving theta and y here doesn't hurt.
             Saves the forward model, results to apFModelCache.npz, the chains
-            as chainFileii.h5 for each, iteration ii, and the GP parameters in
-            apGP.npz in the current working directory.
+            as chainFileii.h5 for each iteration, ii, and the current GP
+            parameters in apGP.npz in the current working directory.
         maxLnLikeRestarts : int (optional)
             Number of times to restart loglikelihood function (the one that
             calls the forward model) if the lnlike fn returns infs/NaNs. Defaults
-            to 5.
+            to 3.
         gmmKwargs : dict (optional)
             keyword arguments for sklearn.mixture.GaussianMixture. Defaults to
             None
-        args : iterable (optional)
-            Arguments for user-specified loglikelihood function that calls the
-            forward model. Defaults to None.
         gpMethod : str (optional)
             scipy.optimize.minimize method used when optimized GP hyperparameters.
-            Defaults to None, which is powell, and it usually works.
+            Defaults to None, which is nelder-mead, and it usually works.
         gpOptions : dict (optional)
             kwargs for the scipy.optimize.minimize function used to optimize GP
             hyperparameters.  Defaults to None.
         gpP0 : array (optional)
             Initial guess for kernel hyperparameters.  If None, defaults to
-            5.0 * len(theta)**(-1.0/theta.shape[-1]) for each dimension.
+            np.random.uniform(low=-10, high=10) for each dimension, np.mean(y)
+            for the mean function.
         optGPEveryN : int (optional)
             How often to optimize the GP hyperparameters.  Defaults to
             re-optimizing everytime a new design point is found, e.g. every time
@@ -275,7 +274,10 @@ class ApproxPosterior(object):
             number of the point selection is not working well.
         nCores : int (optional)
             If > 1, use multiprocessing to distribute optimization restarts. If
-            < 0, use all usable cores
+            < 0, e.g. -1, use all usable cores
+        args : iterable (optional)
+            Arguments for user-specified loglikelihood function that calls the
+            forward model. Defaults to None.
         kwargs : dict (optional)
             Keyword arguments for user-specified loglikelihood function that
             calls the forward model.
@@ -312,7 +314,7 @@ class ApproxPosterior(object):
         # Initial optimization of gaussian process
         self.gp = gpUtils.optimizeGP(self.gp, self.theta, self.y, seed=seed,
                                      method=gpMethod, options=gpOptions,
-                                     p0=gpP0, nRestarts=nGPRestarts,
+                                     p0=gpP0, nGPRestarts=nGPRestarts,
                                      nCores=nCores)
 
         # Main loop
@@ -337,9 +339,6 @@ class ApproxPosterior(object):
                     else:
                         self.utility = ut.BAPEUtility
 
-                # computeLnLike=True means new points are saved in self.theta,
-                # and self.y
-
                 # Reoptimize GP hyperparameters? Note: always optimize 1st time
                 if ii % int(optGPEveryN) == 0:
                     optGP = True
@@ -347,6 +346,8 @@ class ApproxPosterior(object):
                     optGP = False
 
                 # Find new (theta, y) pair
+                # ComputeLnLike = True means new points are saved in self.theta,
+                # and self.y
                 self.findNextPoint(computeLnLike=True,
                                    bounds=bounds,
                                    maxLnLikeRestarts=maxLnLikeRestarts,
@@ -375,14 +376,14 @@ class ApproxPosterior(object):
             if timing:
                 start = time.time()
 
+            runName = str(chainFile) + str(nn)
             self.sampler, iburn, ithin = self.runMCMC(samplerKwargs=samplerKwargs,
                                                       mcmcKwargs=mcmcKwargs,
-                                                      chainFile=chainFile,
+                                                      chainFile=runName,
                                                       cache=cache,
                                                       estBurnin=estBurnin,
                                                       thinChains=thinChains,
                                                       verbose=verbose,
-                                                      nn=nn,
                                                       args=args,
                                                       kwargs=kwargs)
 
@@ -477,7 +478,7 @@ class ApproxPosterior(object):
 
 
     def findNextPoint(self, computeLnLike=True, bounds=None, gpMethod=None,
-                      maxLnLikeRestarts=1, seed=None, cache=True, gpOptions=None,
+                      maxLnLikeRestarts=3, seed=None, cache=True, gpOptions=None,
                       gpP0=None, optGP=True, args=None, nGPRestarts=5,
                       nMinObjRestarts=5, nCores=1, **kwargs):
         """
@@ -502,14 +503,15 @@ class ApproxPosterior(object):
         ----------
         computeLnLike : bool (optional)
             Whether or not to run the forward model and compute yT, the sum of
-            the lnlikelihood and lnprior
+            the lnlikelihood and lnprior. Defaults to True.
         bounds : tuple/iterable (optional)
             Bounds for minimization scheme.  See scipy.optimize.minimize details
-            for more information.  Defaults to None.
+            for more information.  Defaults to None, but it's typically good to
+            provide them to ensure a valid solution.
         maxLnLikeRestarts : int (optional)
             Number of times to restart loglikelihood function (the one that
             calls the forward model) if the lnlike fn returns infs/NaNs. Defaults
-            to 5.
+            to 3.
         seed : int (optional)
             RNG seed.  Defaults to None.
         cache : bool (optional)
@@ -527,19 +529,21 @@ class ApproxPosterior(object):
             hyperparameters.  Defaults to None.
         gpP0 : array (optional)
             Initial guess for kernel hyperparameters.  If None, defaults to
-            5.0 * len(theta)**(-1.0/theta.shape[-1]) for each dimension.
+            np.random.uniform(low=-10, high=10) for each dimension, np.mean(y)
+            for the mean function.
         optGP : bool (optional)
             Whether or not to optimize the GP hyperparameters.  Defaults to
             True.
         nGPRestarts : int (optional)
             Number of times to restart GP hyperparameter optimization.  Defaults
-            to 3. Increase this number if the GP isn't optimized well.
+            to 5. Increase this number if the GP isn't optimized well.
         nMinObjRestarts : int (optional)
             Number of times to restart minimizing -utility function to select
             next point to improve GP performance.  Defaults to 5.  Increase this
             number of the point selection is not working well.
         nCores : int (optional)
-            If > 1, use multiprocessing to distribute optimization restarts
+            If > 1, use multiprocessing to distribute optimization restarts. If
+            < 0, e.g. -1, use all usable cores
         args : iterable (optional)
             Arguments for user-specified loglikelihood function that calls the
             forward model. Defaults to None.
@@ -581,7 +585,7 @@ class ApproxPosterior(object):
                                           sampleFn=self.priorSample,
                                           priorFn=self._lnprior,
                                           bounds=bounds,
-                                          nRestarts=nMinObjRestarts,
+                                          nMinObjRestarts=nMinObjRestarts,
                                           nCores=nCores)
 
             # Compute lnLikelihood at thetaT?
@@ -622,7 +626,7 @@ class ApproxPosterior(object):
                     self.gp = gpUtils.optimizeGP(self.gp, self.theta, self.y,
                                                  seed=seed, method=gpMethod,
                                                  options=gpOptions, p0=gpP0,
-                                                 nRestarts=nGPRestarts,
+                                                 nGPRestarts=nGPRestarts,
                                                  nCores=nCores)
             except ValueError:
                 print("theta:", self.theta)
@@ -644,8 +648,8 @@ class ApproxPosterior(object):
 
 
     def runMCMC(self, samplerKwargs=None, mcmcKwargs=None, chainFile="apRun",
-                cache=True, estBurnin=False, thinChains=False, verbose=True,
-                nn=0, args=None, **kwargs):
+                cache=True, estBurnin=True, thinChains=True, verbose=False,
+                args=None, **kwargs):
         """
         Given forward model input-output pairs, theta and y, and a trained GP,
         run an MCMC using the GP to evaluate the logprobability required by
@@ -680,18 +684,16 @@ class ApproxPosterior(object):
             apGP.npz in the current working directory.
         estBurnin : bool (optional)
             Estimate burn-in time using integrated autocorrelation time
-            heuristic.  Defaults to False as in general, we recommend users
+            heuristic.  Defaults to True. In general, we recommend users
             inspect the chains and calculate the burnin after the fact to ensure
             convergence.
         thinChains : bool (optional)
             Whether or not to thin chains before GMM fitting.  Useful if running
-            long chains.  Defaults to False.  If true, estimates a thin cadence
+            long chains.  Defaults to True.  If true, estimates a thin cadence
             via int(0.5*np.min(tau)) where tau is the intergrated autocorrelation
             time.
         verbose : bool (optional)
-            Output all the diagnostics? Defaults to True.
-        nn : int (optional)
-            MCMC iteration number.  Defaults to 0.
+            Output all the diagnostics? Defaults to False.
         args : iterable (optional)
             Arguments for user-specified loglikelihood function that calls the
             forward model. Defaults to None.
@@ -717,7 +719,7 @@ class ApproxPosterior(object):
 
         # Create backend to save chains?
         if cache:
-            bname = chainFile + str(nn) + ".h5"
+            bname = str(chainFile) + ".h5"
             self.backends.append(bname)
             backend = emcee.backends.HDFBackend(bname)
             backend.reset(samplerKwargs["nwalkers"], samplerKwargs["ndim"])
@@ -751,7 +753,7 @@ class ApproxPosterior(object):
                 if len(tau) < 1:
                     if verbose:
                         print("Failed to compute integrated autocorrelation length, tau.")
-                        print("Setting tau = 2")
+                        print("Setting tau = 1")
                     tau = 1
 
         # Estimate burn-in?

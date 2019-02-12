@@ -34,8 +34,8 @@ def fitGMM(samples, maxComp=3, covType="full", useBic=True, gmmKwargs=None):
         http://scikit-learn.org/stable/modules/generated/sklearn.mixture.GaussianMixture.html
         for more info
     useBic : bool (optional)
-        Minimize the BIC to pick the number of GMM components or use cross
-        validation?  Defaults to True (aka, use the BIC)
+        Minimize the BIC to pick the number of GMM components or use 5-fold
+        cross validation?  Defaults to True (aka, use the BIC)
     gmmKwargs : dict (optional)
         keyword arguments for sklearn.mixture.GaussianMixture. Defaults to
         None

@@ -1,6 +1,6 @@
 """
 
-Test the GP optimizer and utility functions.
+Test optimizing GP utility functions.
 
 @author: David P. Fleming [University of Washington, Seattle], 2018
 @email: dflemin3 (at) uw (dot) edu
@@ -9,12 +9,14 @@ Test the GP optimizer and utility functions.
 
 import numpy as np
 import george
-from approxposterior import utility as ut, gpUtils as gpu
+from approxposterior import utility as ut, gpUtils
 
 
-def testGPOpt():
+def testUtilsGP():
     """
-    Test optimizing the GP hyperparameters.
+    Test the utility functions!  This probes the gp_utils.setup_gp function
+    (which is rather straight-forward) and makes sure the utility functions
+    produce the right result (which is also straight-forward).
 
     Parameters
     ----------
@@ -22,10 +24,6 @@ def testGPOpt():
     Returns
     -------
     """
-
-    # For reproducibility
-    seed = 91
-    np.random.seed(seed)
 
     # Define 20 input points
     theta = np.array([[-3.19134011, -2.91421701],
@@ -58,36 +56,23 @@ def testGPOpt():
         -8.98802494e+01,  -5.69583369e+01]).squeeze()
 
     # Set up a gp
-    gp = gpu.defaultGP(theta, y)
+    gp = gpUtils.defaultGP(theta, y)
 
-    # Optimize gp using default opt parameters
-    method = "nelder-mead"
-    options = {"adaptive" : True}
-    p0 = gp.get_parameter_vector()
+    # Compute the AGP utility function at some point
+    thetaTest = np.array([-2.3573, 4.673])
+    testUtil = ut.AGPUtility(thetaTest, y, gp)
 
-    # Try serial computation
-    gp = gpu.optimizeGP(gp, theta, y, seed=seed, nGPRestarts=5,
-                        method=method, options=options, p0=p0,
-                        nCores=1)
+    errMsg = "ERROR: AGP util fn bug.  Did you change gp_utils.setup_gp?"
+    assert np.allclose(testUtil, 36.17652652, rtol=1.0e-4), errMsg
 
-    # Extract GP hyperparameters, compare to truth
-    hypeSin = gp.get_parameter_vector()
+    # Now do the same using the BAPE utility function
+    testUtil = ut.BAPEUtility(thetaTest, y, gp)
 
-    # Now with multiprocessing using as many cores as we can
-    gp = gpu.optimizeGP(gp, theta, y, seed=seed, nGPRestarts=5,
-                        method=method, options=options, p0=p0,
-                        nCores=-1)
+    errMsg = "ERROR: BAPE util fn bug.  Did you change gp_utils.setup_gp?"
+    assert np.allclose(testUtil, 75.17909884, rtol=1.0e-4), errMsg
 
-    # Extract GP hyperparameters, compare to truth
-    hypeMult = gp.get_parameter_vector()
-
-    errMsg = "ERROR: GP hyperparameters are not close to the true value!"
-    errMult = "ERROR: Single and multi GP hyperparameters are not close!"
-    hypeTrue = [-135.91343934, -0.68256741, 2.1394469]
-    assert np.allclose(hypeSin, hypeMult), errMult
-    assert np.allclose(hypeSin, hypeTrue), errMsg
-    assert np.allclose(hypeMult, hypeTrue), errMsg
+    return None
 # end function
 
 if __name__ == "__main__":
-    testGPOpt()
+    testUtilsGP()
