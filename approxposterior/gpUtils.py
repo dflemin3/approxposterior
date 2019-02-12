@@ -13,9 +13,9 @@ __all__ = ["optimizeGP"]
 from . import pool
 from . import utility as util
 import numpy as np
-import os
+import multiprocessing
 import george
-from scipy.optimize import minimize, basinhopping
+from scipy.optimize import minimize
 
 
 def _nll(p, gp, y):
@@ -71,7 +71,7 @@ def _grad_nll(p, gp, y):
 def defaultGP(theta, y):
     """
     Basic utility function that initializes a simple GP that works well in many
-    applications.
+    applications, but is not guaranteed to work in general.
 
     Parameters
     ----------
@@ -88,12 +88,14 @@ def defaultGP(theta, y):
     """
 
     # Guess initial metric, or scale length of the covariances in loglikelihood space
+    # using suggestion from Kandasamy et al. (2015)
     initialMetric = np.array([5.0*len(theta)**(-1.0/theta.shape[-1]) for _ in range(theta.shape[-1])])
 
     # Create kernel: We'll model coveriances in loglikelihood space using a
     # Squared Expoential Kernel as we anticipate Gaussian-ish posterior
     # distributions in our 2-dimensional parameter space
-    metric_bounds = ((-10, 10) for _ in range(theta.shape[-1]))
+    # but wide bounds on the metric just in case
+    metric_bounds = ((-100, 100) for _ in range(theta.shape[-1]))
     kernel = george.kernels.ExpSquaredKernel(initialMetric,
                                              ndim=theta.shape[-1],
                                              metric_bounds=metric_bounds)
@@ -101,7 +103,7 @@ def defaultGP(theta, y):
     # Guess initial mean function
     mean = np.mean(y)
 
-    # Create GP and compute the kernel, factor the covariance matrix
+    # Create GP and compute the kernel, aka factor the covariance matrix
     gp = george.GP(kernel=kernel, fit_mean=True, mean=mean)
     gp.compute(theta)
 
@@ -112,16 +114,8 @@ def defaultGP(theta, y):
 def optimizeGP(gp, theta, y, seed=None, nRestarts=5, method=None, options=None,
                p0=None, nCores=1):
     """
-
-    Optimize hyperparameters of an arbitrary george Gaussian Process kenerl
-    using either a straight-up maximizing the log-likelihood or k-fold cv in which
-    the log-likelihood is maximized for each fold and the best one is chosen.
-
-    Note that the cross-validation used here is sort of cross valiation.
-    Instead of training on training set and evaluating the model on the test
-    set, we do both on the training set.  That is a cardinal sin of ML, but we
-    do that because matrix shape sizes and evaluating the log-likelihood of the
-    data requires it.
+    Optimize hyperparameters of an arbitrary george Gaussian Process kernel
+    by maximizing the marginalized log-likelihood.
 
     Parameters
     ----------
@@ -166,8 +160,11 @@ def optimizeGP(gp, theta, y, seed=None, nRestarts=5, method=None, options=None,
         poolType = "MultiPool"
     # Use all usable cores
     elif nCores < 0:
-        nCores = len(os.sched_getaffinity(0))
-        poolType = "MultiPool"
+        nCores = max(multiprocessing.cpu_count()-1, 1)
+        if nCores > 1:
+            poolType = "MultiPool"
+        else:
+            poolType = "SerialPool"
     else:
         poolType = "SerialPool"
 
@@ -180,7 +177,6 @@ def optimizeGP(gp, theta, y, seed=None, nRestarts=5, method=None, options=None,
         else:
             iterables = [(_nll, np.array(p0) + 1.0e-3 * np.random.randn(len(p0))) for _ in range(nRestarts)]
 
-
         # keyword arguments for minimizer
         mKwargs = {"jac" : _grad_nll,
                    "args" : (gp, y),
@@ -188,7 +184,7 @@ def optimizeGP(gp, theta, y, seed=None, nRestarts=5, method=None, options=None,
                    "options" : options,
                    "bounds" : None}
 
-        # Run the minimization on nCores
+        # Run the minimization on nCores, wrapping minimize function
         fn = util.functionWrapperArgsOnly(minimize, **mKwargs)
         results = optPool.map(fn, iterables)
 
@@ -200,7 +196,7 @@ def optimizeGP(gp, theta, y, seed=None, nRestarts=5, method=None, options=None,
         gp.set_parameter_vector(result.x)
         gp.recompute()
 
-        # Compute marginal log likelihood
+        # Compute marginal log likelihood for this set of kernel hyperparameters
         mll.append(gp.log_likelihood(y, quiet=True))
 
     # Pick result with largest marginal log likelihood

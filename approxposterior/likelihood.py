@@ -3,9 +3,8 @@
 :py:mod:`likelihood.py` - Example Likelihood Functions
 -----------------------------------
 
-This file contains routines for simples loglikelihoods and priors for test
-cases.
-
+This file contains routines for simple loglikelihood and prior functions for
+test cases, like the Wang & Li (2017) Rosenbrock function example.
 """
 
 # Tell module what it's allowed to import

@@ -4,7 +4,6 @@
 -----------------------------------
 
 MCMC utility functions for validating emcee MCMC runs within approxposterior.
-
 """
 
 # Tell module what it's allowed to import
@@ -12,8 +11,6 @@ __all__ = ["validateMCMCKwargs"]
 
 import numpy as np
 import emcee
-import warnings
-from scipy.interpolate import UnivariateSpline
 
 import emcee
 version = emcee.__version__
@@ -36,6 +33,7 @@ def validateMCMCKwargs(ap, samplerKwargs, mcmcKwargs, verbose=False):
         emcee.EnsembleSampler.run_mcmc/.sample object
     verbose : bool (optional)
         verboisty level. Defaults to False (no output)
+
     Returns
     -------
     samplerKwargs : dict
@@ -54,7 +52,7 @@ def validateMCMCKwargs(ap, samplerKwargs, mcmcKwargs, verbose=False):
         samplerKwargs["nwalkers"] = 20 * samplerKwargs["dim"]
         samplerKwargs["log_prob_fn"] = ap._gpll
     else:
-        # If user set ndim, ignore it and align it with theta's shape
+        # If user set ndim, ignore it and align it with theta's dimensionality
         samplerKwargs.pop("ndim", None)
         samplerKwargs["ndim"] = ap.theta.shape[-1]
 

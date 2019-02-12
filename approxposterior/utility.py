@@ -14,6 +14,7 @@ __all__ = ["logsubexp","AGPUtility","BAPEUtility","minimizeObjective",
 
 from . import pool
 import numpy as np
+import multiprocessing
 from scipy.optimize import minimize
 
 
@@ -91,16 +92,17 @@ def klNumerical(x, p, q):
 
     KL ~ 1/n * sum_{i=1,n}(log (p(x_i)/q(x_i)))
 
-    For our purposes, q is the current estimate of the pdf
-    while p is the previous estimate.  This method is the
-    only feasible method for large dimensions.
+    For our purposes, q is the current estimate of the pdf while p is the
+    previous estimate.  This method is the only feasible method for large
+    dimensions.
 
     See Hershey and Olsen, "Approximating the Kullback Leibler
     Divergence Between Gaussian Mixture Models" for more info
 
     Note that this method can result in D_kl < 0 but it's the only method with
-    convergence properties as the number of samples (len(x)) grows.  Also, this
-    method is shown to have the lowest error, on average (see Hershey and Olsen).
+    guaranteed convergence properties as the number of samples (len(x)) grows.
+    Also, this method is shown to have the lowest error, on average
+    (see Hershey and Olsen).
 
     Parameters
     ----------
@@ -239,13 +241,14 @@ def _minimizeObjective(theta0, fn, y, gp, sampleFn, priorFn, bounds=None,
                        nRestarts=5):
     """
     Minimize objective wrapped function for multiprocessing. Same inputs/outputs
-    as minimizeObjective
+    as minimizeObjective.
     """
 
     # Required arguments for the utility function
     args = (y, gp)
 
     # Solve for theta that maximize fn and is allowed by prior
+    ii = 0
     while True:
 
         # Mimimze fn, see if prior allows solution
@@ -276,7 +279,7 @@ def minimizeObjective(fn, y, gp, sampleFn, priorFn, bounds=None, nRestarts=5,
                       nCores=1):
     """
     Find point that minimizes fn for a gaussian process gp conditioned on y,
-    the data and is allowed by the prior, priorFn.  PriorFn is required as it
+    the data, and is allowed by the prior, priorFn.  PriorFn is required as it
     helps to select against points with non-finite likelihoods, e.g. NaNs or
     infs.  This is required as the GP can only train on finite values.
 
@@ -322,8 +325,11 @@ def minimizeObjective(fn, y, gp, sampleFn, priorFn, bounds=None, nRestarts=5,
         poolType = "MultiPool"
     # Use all usable cores
     elif nCores < 0:
-        nCores = len(os.sched_getaffinity(0))
-        poolType = "MultiPool"
+        nCores = max(multiprocessing.cpu_count()-1, 1)
+        if nCores > 1:
+            poolType = "MultiPool"
+        else:
+            poolType = "SerialPool"
     else:
         poolType = "SerialPool"
 
