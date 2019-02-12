@@ -111,7 +111,7 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../install.html">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../performance.html">Performance</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../performance.html">Improving Performance</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://github.com/dflemin3/approxposterior">Github</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://github.com/dflemin3/approxposterior/issues">Submit an Issue</a></li>
 </ul>
@@ -308,7 +308,7 @@ function as the log is monotonic so the minima are equivalent.</p>
 
 <dl class="function">
 <dt id="approxposterior.utility.minimizeObjective">
-<code class="descclassname">approxposterior.utility.</code><code class="descname">minimizeObjective</code><span class="sig-paren">(</span><em>fn</em>, <em>y</em>, <em>gp</em>, <em>sampleFn</em>, <em>priorFn</em>, <em>bounds=None</em>, <em>nRestarts=5</em>, <em>nCores=1</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/utility.html#minimizeObjective"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.utility.minimizeObjective" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">approxposterior.utility.</code><code class="descname">minimizeObjective</code><span class="sig-paren">(</span><em>fn</em>, <em>y</em>, <em>gp</em>, <em>sampleFn</em>, <em>priorFn</em>, <em>bounds=None</em>, <em>nMinObjRestarts=5</em>, <em>nCores=1</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/utility.html#minimizeObjective"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.utility.minimizeObjective" title="Permalink to this definition">¶</a></dt>
 <dd><p>Find point that minimizes fn for a gaussian process gp conditioned on y,
 the data, and is allowed by the prior, priorFn.  PriorFn is required as it
 helps to select against points with non-finite likelihoods, e.g. NaNs or
@@ -340,7 +340,7 @@ like fn_name(x, y, gp).  See <a href="#id1"><span class="problematic" id="id2">*
 <div><p>Bounds for minimization scheme.  See scipy.optimize.minimize details
 for more information.  Defaults to None.</p>
 </div></blockquote>
-<p><strong>nRestarts</strong> : int (optional)</p>
+<p><strong>nMinObjRestarts</strong> : int (optional)</p>
 <blockquote>
 <div><p>Number of times to restart minimizing -utility function to select
 next point to improve GP performance.  Defaults to 5.  Increase this

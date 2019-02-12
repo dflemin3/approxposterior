@@ -96,7 +96,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../tutorial.html">Tutorial</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../api.html">API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../install.html">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../performance.html">Performance</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../performance.html">Improving Performance</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://github.com/dflemin3/approxposterior">Github</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://github.com/dflemin3/approxposterior/issues">Submit an Issue</a></li>
 </ul>
@@ -402,8 +402,7 @@
 <span class="c1"># end function</span>
 
 
-<span class="k">def</span> <span class="nf">_minimizeObjective</span><span class="p">(</span><span class="n">theta0</span><span class="p">,</span> <span class="n">fn</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">gp</span><span class="p">,</span> <span class="n">sampleFn</span><span class="p">,</span> <span class="n">priorFn</span><span class="p">,</span> <span class="n">bounds</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                       <span class="n">nRestarts</span><span class="o">=</span><span class="mi">5</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">_minimizeObjective</span><span class="p">(</span><span class="n">theta0</span><span class="p">,</span> <span class="n">fn</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">gp</span><span class="p">,</span> <span class="n">sampleFn</span><span class="p">,</span> <span class="n">priorFn</span><span class="p">,</span> <span class="n">bounds</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Minimize objective wrapped function for multiprocessing. Same inputs/outputs</span>
 <span class="sd">    as minimizeObjective.</span>
@@ -440,8 +439,8 @@
 <span class="c1"># end function</span>
 
 
-<div class="viewcode-block" id="minimizeObjective"><a class="viewcode-back" href="../../api/utility.html#approxposterior.utility.minimizeObjective">[docs]</a><span class="k">def</span> <span class="nf">minimizeObjective</span><span class="p">(</span><span class="n">fn</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">gp</span><span class="p">,</span> <span class="n">sampleFn</span><span class="p">,</span> <span class="n">priorFn</span><span class="p">,</span> <span class="n">bounds</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">nRestarts</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
-                      <span class="n">nCores</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+<div class="viewcode-block" id="minimizeObjective"><a class="viewcode-back" href="../../api/utility.html#approxposterior.utility.minimizeObjective">[docs]</a><span class="k">def</span> <span class="nf">minimizeObjective</span><span class="p">(</span><span class="n">fn</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">gp</span><span class="p">,</span> <span class="n">sampleFn</span><span class="p">,</span> <span class="n">priorFn</span><span class="p">,</span> <span class="n">bounds</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                      <span class="n">nMinObjRestarts</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">nCores</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Find point that minimizes fn for a gaussian process gp conditioned on y,</span>
 <span class="sd">    the data, and is allowed by the prior, priorFn.  PriorFn is required as it</span>
@@ -463,7 +462,7 @@
 <span class="sd">    bounds : tuple/iterable (optional)</span>
 <span class="sd">        Bounds for minimization scheme.  See scipy.optimize.minimize details</span>
 <span class="sd">        for more information.  Defaults to None.</span>
-<span class="sd">    nRestarts : int (optional)</span>
+<span class="sd">    nMinObjRestarts : int (optional)</span>
 <span class="sd">        Number of times to restart minimizing -utility function to select</span>
 <span class="sd">        next point to improve GP performance.  Defaults to 5.  Increase this</span>
 <span class="sd">        number of the point selection is not working well.</span>
@@ -502,10 +501,10 @@
     <span class="k">with</span> <span class="n">pool</span><span class="o">.</span><span class="n">Pool</span><span class="p">(</span><span class="n">pool</span><span class="o">=</span><span class="n">poolType</span><span class="p">,</span> <span class="n">processes</span><span class="o">=</span><span class="n">nCores</span><span class="p">)</span> <span class="k">as</span> <span class="n">optPool</span><span class="p">:</span>
 
         <span class="c1"># Inputs for each process</span>
-        <span class="n">iterables</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">sampleFn</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nRestarts</span><span class="p">)]</span>
+        <span class="n">iterables</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">sampleFn</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nMinObjRestarts</span><span class="p">)]</span>
 
         <span class="c1"># keyword arguments for minimizer</span>
-        <span class="n">mKwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;bounds&quot;</span> <span class="p">:</span> <span class="n">bounds</span><span class="p">,</span> <span class="s2">&quot;nRestarts&quot;</span> <span class="p">:</span> <span class="n">nRestarts</span><span class="p">}</span>
+        <span class="n">mKwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;bounds&quot;</span> <span class="p">:</span> <span class="n">bounds</span><span class="p">}</span>
 
         <span class="c1"># Args for minimizer</span>
         <span class="n">mArgs</span> <span class="o">=</span> <span class="p">(</span><span class="n">fn</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">gp</span><span class="p">,</span> <span class="n">sampleFn</span><span class="p">,</span> <span class="n">priorFn</span><span class="p">)</span>

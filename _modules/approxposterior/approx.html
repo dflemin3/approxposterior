@@ -96,7 +96,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../tutorial.html">Tutorial</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../api.html">API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../install.html">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../performance.html">Performance</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../performance.html">Improving Performance</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://github.com/dflemin3/approxposterior">Github</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://github.com/dflemin3/approxposterior/issues">Submit an Issue</a></li>
 </ul>
@@ -479,7 +479,7 @@
         <span class="c1"># Initial optimization of gaussian process</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">gp</span> <span class="o">=</span> <span class="n">gpUtils</span><span class="o">.</span><span class="n">optimizeGP</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gp</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">theta</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">,</span>
                                      <span class="n">method</span><span class="o">=</span><span class="n">gpMethod</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="n">gpOptions</span><span class="p">,</span>
-                                     <span class="n">p0</span><span class="o">=</span><span class="n">gpP0</span><span class="p">,</span> <span class="n">nRestarts</span><span class="o">=</span><span class="n">nGPRestarts</span><span class="p">,</span>
+                                     <span class="n">p0</span><span class="o">=</span><span class="n">gpP0</span><span class="p">,</span> <span class="n">nGPRestarts</span><span class="o">=</span><span class="n">nGPRestarts</span><span class="p">,</span>
                                      <span class="n">nCores</span><span class="o">=</span><span class="n">nCores</span><span class="p">)</span>
 
         <span class="c1"># Main loop</span>
@@ -750,7 +750,7 @@
                                           <span class="n">sampleFn</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">priorSample</span><span class="p">,</span>
                                           <span class="n">priorFn</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_lnprior</span><span class="p">,</span>
                                           <span class="n">bounds</span><span class="o">=</span><span class="n">bounds</span><span class="p">,</span>
-                                          <span class="n">nRestarts</span><span class="o">=</span><span class="n">nMinObjRestarts</span><span class="p">,</span>
+                                          <span class="n">nMinObjRestarts</span><span class="o">=</span><span class="n">nMinObjRestarts</span><span class="p">,</span>
                                           <span class="n">nCores</span><span class="o">=</span><span class="n">nCores</span><span class="p">)</span>
 
             <span class="c1"># Compute lnLikelihood at thetaT?</span>
@@ -791,7 +791,7 @@
                     <span class="bp">self</span><span class="o">.</span><span class="n">gp</span> <span class="o">=</span> <span class="n">gpUtils</span><span class="o">.</span><span class="n">optimizeGP</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gp</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">theta</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">,</span>
                                                  <span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="n">gpMethod</span><span class="p">,</span>
                                                  <span class="n">options</span><span class="o">=</span><span class="n">gpOptions</span><span class="p">,</span> <span class="n">p0</span><span class="o">=</span><span class="n">gpP0</span><span class="p">,</span>
-                                                 <span class="n">nRestarts</span><span class="o">=</span><span class="n">nGPRestarts</span><span class="p">,</span>
+                                                 <span class="n">nGPRestarts</span><span class="o">=</span><span class="n">nGPRestarts</span><span class="p">,</span>
                                                  <span class="n">nCores</span><span class="o">=</span><span class="n">nCores</span><span class="p">)</span>
             <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
                 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;theta:&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">theta</span><span class="p">)</span>

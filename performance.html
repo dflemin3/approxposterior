@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Performance &mdash; approxposterior 0.2rc0 documentation</title>
+  <title>Improving Performance &mdash; approxposterior 0.2rc0 documentation</title>
   
 
   
@@ -96,7 +96,7 @@
 <li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api.html">API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Performance</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Improving Performance</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://github.com/dflemin3/approxposterior">Github</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://github.com/dflemin3/approxposterior/issues">Submit an Issue</a></li>
 </ul>
@@ -143,7 +143,7 @@
     
       <li><a href="index.html">Docs</a> &raquo;</li>
         
-      <li>Performance</li>
+      <li>Improving Performance</li>
     
     
       <li class="wy-breadcrumbs-aside">
@@ -196,10 +196,55 @@
     margin-right: 4px;  /* make room for the exclamation icon */
 }
 </style>
-<div class="section" id="performance">
-<h1>Performance<a class="headerlink" href="#performance" title="Permalink to this headline">¶</a></h1>
-<p>The performance <code class="xref py py-obj docutils literal notranslate"><span class="pre">approxposterior</span></code> can tweaked in several ways.</p>
-<p>Under construction!</p>
+<div class="section" id="improving-performance">
+<h1>Improving Performance<a class="headerlink" href="#improving-performance" title="Permalink to this headline">¶</a></h1>
+<p>Not counting likelihood function evaluations, most of the computational time is
+spent optimizing the GP hyperparameters and selecting new points in
+parameter space to run the model that will best improve the GP’s predictive performance.  Both of
+these tasks are critical to the accuracy of <code class="xref py py-obj docutils literal notranslate"><span class="pre">approxposterior</span></code> because
+the GP must be able to learn an accurate representation of the model logprobability (loglikelihood + logprior)
+throughout parameter space, particularly in high-likelihood regions, if it is
+to predict an accurate approximate posterior distribution.</p>
+<p>Both of these tasks involve minimizing a function: the marginal loglikelihood
+when optimizing the GP hyperparameters and the BAPE or AGP utility function
+when selecting new points. In low-dimensional problems, e.g. 2D problems like the
+Rosenbrock function example, both optimizations are relatively easy.  In higher-dimensional
+problems, the objective functions, e.g. the GP marginal loglikelihood and the
+utility functions, both typically have multiple extrema, making optimization more
+difficult.  In practice, we have found that restarting the minimization procedure
+with initial guesses randomly distributed throughout parameter space results in good
+performance, however, higher-dimensional problems often requires more restarts.</p>
+<p>If <code class="xref py py-obj docutils literal notranslate"><span class="pre">approxposterior</span></code> is running too slowly, or worse, is not able to derive
+good posterior probability distributions, the algorithm can be tweaked in several ways.</p>
+<p>Note, if you’re interested in how <code class="xref py py-obj docutils literal notranslate"><span class="pre">approxposterior</span></code> scales with forward
+model evaluation time and how accurate it is, check out the Scaling and Accuracy
+example notebook on the Tutorial page.</p>
+<p><strong>Optimizing GP Hyperparameters</strong></p>
+<p>By default, <code class="xref py py-obj docutils literal notranslate"><span class="pre">approxposterior</span></code> optimizes the GP hyperparameters by
+maximizing the marginal loglikelihood following the example in the <a class="reference external" href="https://george.readthedocs.io/en/latest/tutorials/hyper/">george</a>
+documentation using the approxposterior.gpUtils.optimizeGP function.</p>
+<p>This function has a keyword argument, nGPRestarts, that defaults to 5 but can be decreased if
+<code class="xref py py-obj docutils literal notranslate"><span class="pre">approxposterior</span></code> is running to slowly or increased if <code class="xref py py-obj docutils literal notranslate"><span class="pre">approxposterior</span></code>’s
+accuracy is lacking. Set nGPRestarts to pick the number of times the GP
+hyperparameter optimization should be restarted.</p>
+<p>Furthermore, <code class="xref py py-obj docutils literal notranslate"><span class="pre">approxposterior</span></code> reoptimizes the GP hyperparameters each time
+a new point is selected and added to the training set.  In practice, this is likely
+overkill for some applications, so the user can set optGPEveryN in the run method
+to instead only reoptimize the GP every N new points. In practice, I find that
+optGPEveryN = 25 usually works, but the performance can vary.</p>
+<p><strong>Optimizing selecting new points in parameter space</strong></p>
+<p>Similar to the GP hyperparameter optimization, finding where next in parameter space
+to run the model to improve the GP’s performance requires maximizing the BAPE or
+AGP utility function, or minimizing its negative as we do in <code class="xref py py-obj docutils literal notranslate"><span class="pre">approxposterior</span></code>.
+In practice, we find that high-dimensional applications require restarting this optimization
+several times, with initial guesses drawn from the prior, to achieve good performance.
+As before, the keyword argument nMinObjRestarts controls the number of optimization
+restarts, with the default value being 5.</p>
+<p><strong>Parallelizing approxposterior</strong></p>
+<p>The above optimizations do not have to occur sequentially, but can be done in
+parallel using multiprocessing.  The nCores keyword argument controls how many
+cores are used to distribute this optimization, with the default being 1.  To use
+all available cores, set nCores = -1.</p>
 </div>
 
 
