@@ -96,6 +96,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../tutorial.html">Tutorial</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../api.html">API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../performance.html">Performance</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://github.com/dflemin3/approxposterior">Github</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://github.com/dflemin3/approxposterior/issues">Submit an Issue</a></li>
 </ul>
@@ -168,7 +169,6 @@
 <span class="sd">-----------------------------------</span>
 
 <span class="sd">MCMC utility functions for validating emcee MCMC runs within approxposterior.</span>
-
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="c1"># Tell module what it&#39;s allowed to import</span>
@@ -176,8 +176,6 @@
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">emcee</span>
-<span class="kn">import</span> <span class="nn">warnings</span>
-<span class="kn">from</span> <span class="nn">scipy.interpolate</span> <span class="k">import</span> <span class="n">UnivariateSpline</span>
 
 <span class="kn">import</span> <span class="nn">emcee</span>
 <span class="n">version</span> <span class="o">=</span> <span class="n">emcee</span><span class="o">.</span><span class="n">__version__</span>
@@ -200,6 +198,7 @@
 <span class="sd">        emcee.EnsembleSampler.run_mcmc/.sample object</span>
 <span class="sd">    verbose : bool (optional)</span>
 <span class="sd">        verboisty level. Defaults to False (no output)</span>
+
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    samplerKwargs : dict</span>
@@ -218,7 +217,7 @@
         <span class="n">samplerKwargs</span><span class="p">[</span><span class="s2">&quot;nwalkers&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">20</span> <span class="o">*</span> <span class="n">samplerKwargs</span><span class="p">[</span><span class="s2">&quot;dim&quot;</span><span class="p">]</span>
         <span class="n">samplerKwargs</span><span class="p">[</span><span class="s2">&quot;log_prob_fn&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ap</span><span class="o">.</span><span class="n">_gpll</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="c1"># If user set ndim, ignore it and align it with theta&#39;s shape</span>
+        <span class="c1"># If user set ndim, ignore it and align it with theta&#39;s dimensionality</span>
         <span class="n">samplerKwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;ndim&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
         <span class="n">samplerKwargs</span><span class="p">[</span><span class="s2">&quot;ndim&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ap</span><span class="o">.</span><span class="n">theta</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
 

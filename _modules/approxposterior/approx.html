@@ -96,6 +96,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../tutorial.html">Tutorial</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../api.html">API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../performance.html">Performance</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://github.com/dflemin3/approxposterior">Github</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://github.com/dflemin3/approxposterior/issues">Submit an Issue</a></li>
 </ul>
@@ -170,7 +171,7 @@
 <span class="sd">Bayesian Posterior estimation, written in pure python, leveraging</span>
 <span class="sd">Dan Forman-Mackey&#39;s Gaussian Process implementation, george, and DFM&#39;s</span>
 <span class="sd">Metropolis-Hastings MCMC implementation, emcee. We include hybrid</span>
-<span class="sd">implementations of both Wang &amp; Li (2017) and Kandasamy et al. (2015). </span>
+<span class="sd">implementations of both Wang &amp; Li (2017) and Kandasamy et al. (2015).</span>
 
 <span class="sd">&quot;&quot;&quot;</span>
 
@@ -329,13 +330,13 @@
     <span class="c1"># end function</span>
 
 
-<div class="viewcode-block" id="ApproxPosterior.run"><a class="viewcode-back" href="../../api/approx.html#approxposterior.approx.ApproxPosterior.run">[docs]</a>    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">m</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">nmax</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">Dmax</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span> <span class="n">kmax</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+<div class="viewcode-block" id="ApproxPosterior.run"><a class="viewcode-back" href="../../api/approx.html#approxposterior.approx.ApproxPosterior.run">[docs]</a>    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">m</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">nmax</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">Dmax</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">kmax</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
             <span class="n">timing</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">bounds</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">nKLSamples</span><span class="o">=</span><span class="mi">10000</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-            <span class="n">args</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">maxComp</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">mcmcKwargs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">samplerKwargs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-            <span class="n">estBurnin</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">thinChains</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">chainFile</span><span class="o">=</span><span class="s2">&quot;apRun&quot;</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-            <span class="n">maxLnLikeRestarts</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">gmmKwargs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">gpMethod</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">gpOptions</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-            <span class="n">gpP0</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">optGPEveryN</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">nGPRestarts</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">nMinObjRestarts</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">nCores</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-            <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+            <span class="n">maxComp</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">mcmcKwargs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">samplerKwargs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">estBurnin</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">thinChains</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">chainFile</span><span class="o">=</span><span class="s2">&quot;apRun&quot;</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">maxLnLikeRestarts</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">gmmKwargs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">gpMethod</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">gpOptions</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">gpP0</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">optGPEveryN</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">nGPRestarts</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">nMinObjRestarts</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+            <span class="n">nCores</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Core algorithm to estimate the posterior distribution via Gaussian</span>
 <span class="sd">        Process regression to the joint distribution for the forward model</span>
@@ -346,7 +347,7 @@
 <span class="sd">        m : int (optional)</span>
 <span class="sd">            Number of new input features to find each iteration.  Defaults to 10.</span>
 <span class="sd">        nmax : int (optional)</span>
-<span class="sd">            Maximum number of iterations.  Defaults to 2 for testing.</span>
+<span class="sd">            Maximum number of iterations.  Defaults to 2.</span>
 <span class="sd">        Dmax : float (optional)</span>
 <span class="sd">            Maximum change in KL divergence for convergence checking.  Defaults to 0.1.</span>
 <span class="sd">        kmax : int (optional)</span>
@@ -365,7 +366,7 @@
 <span class="sd">            Number of samples to draw for Monte Carlo approximation to KL</span>
 <span class="sd">            divergence between current and previous estimate of the posterior.</span>
 <span class="sd">            Defaults to 10000.  Error on estimation decreases as approximately</span>
-<span class="sd">            1/sqrt(nKLSamples).</span>
+<span class="sd">            1/sqrt(nKLSamples). Increase this for higher dimensional problems.</span>
 <span class="sd">        verbose : bool (optional)</span>
 <span class="sd">            Output all the diagnostics? Defaults to True.</span>
 <span class="sd">        maxComp : int (optional)</span>
@@ -386,17 +387,18 @@
 <span class="sd">                    creates guess from priors.</span>
 <span class="sd">        estBurnin : bool (optional)</span>
 <span class="sd">            Estimate burn-in time using integrated autocorrelation time</span>
-<span class="sd">            heuristic.  Defaults to False as in general, we recommend users</span>
-<span class="sd">            inspect the chains and calculate the burnin after the fact to ensure</span>
-<span class="sd">            convergence.</span>
+<span class="sd">            heuristic.  Defaults to True. In general, we recommend users</span>
+<span class="sd">            inspect the chains (note that approxposterior always at least saves</span>
+<span class="sd">            the last sampler object, or all chains if cache = True) and</span>
+<span class="sd">            calculate the burnin after the fact to ensure convergence.</span>
 <span class="sd">        thinChains : bool (optional)</span>
 <span class="sd">            Whether or not to thin chains before GMM fitting.  Useful if running</span>
-<span class="sd">            long chains.  Defaults to False.  If true, estimates a thin cadence</span>
+<span class="sd">            long chains.  Defaults to True.  If true, estimates a thin cadence</span>
 <span class="sd">            via int(0.5*np.min(tau)) where tau is the intergrated autocorrelation</span>
 <span class="sd">            time.</span>
 <span class="sd">        chainFile : str (optional)</span>
 <span class="sd">            Filename for hdf5 file where mcmc chains are saved.  Defaults to</span>
-<span class="sd">            apRun and will be saved as apRunii.h5 for ii in nmax.</span>
+<span class="sd">            apRun and will be saved as apRunii.h5 for ii in range(nmax).</span>
 <span class="sd">        cache : bool (optional)</span>
 <span class="sd">            Whether or not to cache MCMC chains, forward model input-output</span>
 <span class="sd">            pairs, and GP kernel parameters.  Defaults to True since they&#39;re</span>
@@ -404,27 +406,25 @@
 <span class="sd">            inputs, outputs, ancillary parameters, etc in each likelihood</span>
 <span class="sd">            function evaluation, but saving theta and y here doesn&#39;t hurt.</span>
 <span class="sd">            Saves the forward model, results to apFModelCache.npz, the chains</span>
-<span class="sd">            as chainFileii.h5 for each, iteration ii, and the GP parameters in</span>
-<span class="sd">            apGP.npz in the current working directory.</span>
+<span class="sd">            as chainFileii.h5 for each iteration, ii, and the current GP</span>
+<span class="sd">            parameters in apGP.npz in the current working directory.</span>
 <span class="sd">        maxLnLikeRestarts : int (optional)</span>
 <span class="sd">            Number of times to restart loglikelihood function (the one that</span>
 <span class="sd">            calls the forward model) if the lnlike fn returns infs/NaNs. Defaults</span>
-<span class="sd">            to 5.</span>
+<span class="sd">            to 3.</span>
 <span class="sd">        gmmKwargs : dict (optional)</span>
 <span class="sd">            keyword arguments for sklearn.mixture.GaussianMixture. Defaults to</span>
 <span class="sd">            None</span>
-<span class="sd">        args : iterable (optional)</span>
-<span class="sd">            Arguments for user-specified loglikelihood function that calls the</span>
-<span class="sd">            forward model. Defaults to None.</span>
 <span class="sd">        gpMethod : str (optional)</span>
 <span class="sd">            scipy.optimize.minimize method used when optimized GP hyperparameters.</span>
-<span class="sd">            Defaults to None, which is powell, and it usually works.</span>
+<span class="sd">            Defaults to None, which is nelder-mead, and it usually works.</span>
 <span class="sd">        gpOptions : dict (optional)</span>
 <span class="sd">            kwargs for the scipy.optimize.minimize function used to optimize GP</span>
 <span class="sd">            hyperparameters.  Defaults to None.</span>
 <span class="sd">        gpP0 : array (optional)</span>
 <span class="sd">            Initial guess for kernel hyperparameters.  If None, defaults to</span>
-<span class="sd">            5.0 * len(theta)**(-1.0/theta.shape[-1]) for each dimension.</span>
+<span class="sd">            np.random.uniform(low=-10, high=10) for each dimension, np.mean(y)</span>
+<span class="sd">            for the mean function.</span>
 <span class="sd">        optGPEveryN : int (optional)</span>
 <span class="sd">            How often to optimize the GP hyperparameters.  Defaults to</span>
 <span class="sd">            re-optimizing everytime a new design point is found, e.g. every time</span>
@@ -438,7 +438,11 @@
 <span class="sd">            next point to improve GP performance.  Defaults to 5.  Increase this</span>
 <span class="sd">            number of the point selection is not working well.</span>
 <span class="sd">        nCores : int (optional)</span>
-<span class="sd">            If &gt; 1, use multiprocessing to distribute optimization restarts</span>
+<span class="sd">            If &gt; 1, use multiprocessing to distribute optimization restarts. If</span>
+<span class="sd">            &lt; 0, e.g. -1, use all usable cores</span>
+<span class="sd">        args : iterable (optional)</span>
+<span class="sd">            Arguments for user-specified loglikelihood function that calls the</span>
+<span class="sd">            forward model. Defaults to None.</span>
 <span class="sd">        kwargs : dict (optional)</span>
 <span class="sd">            Keyword arguments for user-specified loglikelihood function that</span>
 <span class="sd">            calls the forward model.</span>
@@ -500,9 +504,6 @@
                     <span class="k">else</span><span class="p">:</span>
                         <span class="bp">self</span><span class="o">.</span><span class="n">utility</span> <span class="o">=</span> <span class="n">ut</span><span class="o">.</span><span class="n">BAPEUtility</span>
 
-                <span class="c1"># computeLnLike=True means new points are saved in self.theta,</span>
-                <span class="c1"># and self.y</span>
-
                 <span class="c1"># Reoptimize GP hyperparameters? Note: always optimize 1st time</span>
                 <span class="k">if</span> <span class="n">ii</span> <span class="o">%</span> <span class="nb">int</span><span class="p">(</span><span class="n">optGPEveryN</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
                     <span class="n">optGP</span> <span class="o">=</span> <span class="kc">True</span>
@@ -510,6 +511,8 @@
                     <span class="n">optGP</span> <span class="o">=</span> <span class="kc">False</span>
 
                 <span class="c1"># Find new (theta, y) pair</span>
+                <span class="c1"># ComputeLnLike = True means new points are saved in self.theta,</span>
+                <span class="c1"># and self.y</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">findNextPoint</span><span class="p">(</span><span class="n">computeLnLike</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                                    <span class="n">bounds</span><span class="o">=</span><span class="n">bounds</span><span class="p">,</span>
                                    <span class="n">maxLnLikeRestarts</span><span class="o">=</span><span class="n">maxLnLikeRestarts</span><span class="p">,</span>
@@ -538,14 +541,14 @@
             <span class="k">if</span> <span class="n">timing</span><span class="p">:</span>
                 <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
 
+            <span class="n">runName</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">chainFile</span><span class="p">)</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">nn</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">sampler</span><span class="p">,</span> <span class="n">iburn</span><span class="p">,</span> <span class="n">ithin</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">runMCMC</span><span class="p">(</span><span class="n">samplerKwargs</span><span class="o">=</span><span class="n">samplerKwargs</span><span class="p">,</span>
                                                       <span class="n">mcmcKwargs</span><span class="o">=</span><span class="n">mcmcKwargs</span><span class="p">,</span>
-                                                      <span class="n">chainFile</span><span class="o">=</span><span class="n">chainFile</span><span class="p">,</span>
+                                                      <span class="n">chainFile</span><span class="o">=</span><span class="n">runName</span><span class="p">,</span>
                                                       <span class="n">cache</span><span class="o">=</span><span class="n">cache</span><span class="p">,</span>
                                                       <span class="n">estBurnin</span><span class="o">=</span><span class="n">estBurnin</span><span class="p">,</span>
                                                       <span class="n">thinChains</span><span class="o">=</span><span class="n">thinChains</span><span class="p">,</span>
                                                       <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">,</span>
-                                                      <span class="n">nn</span><span class="o">=</span><span class="n">nn</span><span class="p">,</span>
                                                       <span class="n">args</span><span class="o">=</span><span class="n">args</span><span class="p">,</span>
                                                       <span class="n">kwargs</span><span class="o">=</span><span class="n">kwargs</span><span class="p">)</span>
 
@@ -640,7 +643,7 @@
 
 
 <div class="viewcode-block" id="ApproxPosterior.findNextPoint"><a class="viewcode-back" href="../../api/approx.html#approxposterior.approx.ApproxPosterior.findNextPoint">[docs]</a>    <span class="k">def</span> <span class="nf">findNextPoint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">computeLnLike</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">bounds</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">gpMethod</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                      <span class="n">maxLnLikeRestarts</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">gpOptions</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                      <span class="n">maxLnLikeRestarts</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">gpOptions</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                       <span class="n">gpP0</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">optGP</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">nGPRestarts</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
                       <span class="n">nMinObjRestarts</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">nCores</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -665,14 +668,15 @@
 <span class="sd">        ----------</span>
 <span class="sd">        computeLnLike : bool (optional)</span>
 <span class="sd">            Whether or not to run the forward model and compute yT, the sum of</span>
-<span class="sd">            the lnlikelihood and lnprior</span>
+<span class="sd">            the lnlikelihood and lnprior. Defaults to True.</span>
 <span class="sd">        bounds : tuple/iterable (optional)</span>
 <span class="sd">            Bounds for minimization scheme.  See scipy.optimize.minimize details</span>
-<span class="sd">            for more information.  Defaults to None.</span>
+<span class="sd">            for more information.  Defaults to None, but it&#39;s typically good to</span>
+<span class="sd">            provide them to ensure a valid solution.</span>
 <span class="sd">        maxLnLikeRestarts : int (optional)</span>
 <span class="sd">            Number of times to restart loglikelihood function (the one that</span>
 <span class="sd">            calls the forward model) if the lnlike fn returns infs/NaNs. Defaults</span>
-<span class="sd">            to 5.</span>
+<span class="sd">            to 3.</span>
 <span class="sd">        seed : int (optional)</span>
 <span class="sd">            RNG seed.  Defaults to None.</span>
 <span class="sd">        cache : bool (optional)</span>
@@ -690,19 +694,21 @@
 <span class="sd">            hyperparameters.  Defaults to None.</span>
 <span class="sd">        gpP0 : array (optional)</span>
 <span class="sd">            Initial guess for kernel hyperparameters.  If None, defaults to</span>
-<span class="sd">            5.0 * len(theta)**(-1.0/theta.shape[-1]) for each dimension.</span>
+<span class="sd">            np.random.uniform(low=-10, high=10) for each dimension, np.mean(y)</span>
+<span class="sd">            for the mean function.</span>
 <span class="sd">        optGP : bool (optional)</span>
 <span class="sd">            Whether or not to optimize the GP hyperparameters.  Defaults to</span>
 <span class="sd">            True.</span>
 <span class="sd">        nGPRestarts : int (optional)</span>
 <span class="sd">            Number of times to restart GP hyperparameter optimization.  Defaults</span>
-<span class="sd">            to 3. Increase this number if the GP isn&#39;t optimized well.</span>
+<span class="sd">            to 5. Increase this number if the GP isn&#39;t optimized well.</span>
 <span class="sd">        nMinObjRestarts : int (optional)</span>
 <span class="sd">            Number of times to restart minimizing -utility function to select</span>
 <span class="sd">            next point to improve GP performance.  Defaults to 5.  Increase this</span>
 <span class="sd">            number of the point selection is not working well.</span>
 <span class="sd">        nCores : int (optional)</span>
-<span class="sd">            If &gt; 1, use multiprocessing to distribute optimization restarts</span>
+<span class="sd">            If &gt; 1, use multiprocessing to distribute optimization restarts. If</span>
+<span class="sd">            &lt; 0, e.g. -1, use all usable cores</span>
 <span class="sd">        args : iterable (optional)</span>
 <span class="sd">            Arguments for user-specified loglikelihood function that calls the</span>
 <span class="sd">            forward model. Defaults to None.</span>
@@ -807,8 +813,8 @@
 
 
 <div class="viewcode-block" id="ApproxPosterior.runMCMC"><a class="viewcode-back" href="../../api/approx.html#approxposterior.approx.ApproxPosterior.runMCMC">[docs]</a>    <span class="k">def</span> <span class="nf">runMCMC</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">samplerKwargs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mcmcKwargs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">chainFile</span><span class="o">=</span><span class="s2">&quot;apRun&quot;</span><span class="p">,</span>
-                <span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">estBurnin</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">thinChains</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-                <span class="n">nn</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+                <span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">estBurnin</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">thinChains</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                <span class="n">args</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Given forward model input-output pairs, theta and y, and a trained GP,</span>
 <span class="sd">        run an MCMC using the GP to evaluate the logprobability required by</span>
@@ -843,18 +849,16 @@
 <span class="sd">            apGP.npz in the current working directory.</span>
 <span class="sd">        estBurnin : bool (optional)</span>
 <span class="sd">            Estimate burn-in time using integrated autocorrelation time</span>
-<span class="sd">            heuristic.  Defaults to False as in general, we recommend users</span>
+<span class="sd">            heuristic.  Defaults to True. In general, we recommend users</span>
 <span class="sd">            inspect the chains and calculate the burnin after the fact to ensure</span>
 <span class="sd">            convergence.</span>
 <span class="sd">        thinChains : bool (optional)</span>
 <span class="sd">            Whether or not to thin chains before GMM fitting.  Useful if running</span>
-<span class="sd">            long chains.  Defaults to False.  If true, estimates a thin cadence</span>
+<span class="sd">            long chains.  Defaults to True.  If true, estimates a thin cadence</span>
 <span class="sd">            via int(0.5*np.min(tau)) where tau is the intergrated autocorrelation</span>
 <span class="sd">            time.</span>
 <span class="sd">        verbose : bool (optional)</span>
-<span class="sd">            Output all the diagnostics? Defaults to True.</span>
-<span class="sd">        nn : int (optional)</span>
-<span class="sd">            MCMC iteration number.  Defaults to 0.</span>
+<span class="sd">            Output all the diagnostics? Defaults to False.</span>
 <span class="sd">        args : iterable (optional)</span>
 <span class="sd">            Arguments for user-specified loglikelihood function that calls the</span>
 <span class="sd">            forward model. Defaults to None.</span>
@@ -880,7 +884,7 @@
 
         <span class="c1"># Create backend to save chains?</span>
         <span class="k">if</span> <span class="n">cache</span><span class="p">:</span>
-            <span class="n">bname</span> <span class="o">=</span> <span class="n">chainFile</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">nn</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;.h5&quot;</span>
+            <span class="n">bname</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">chainFile</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;.h5&quot;</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">backends</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">bname</span><span class="p">)</span>
             <span class="n">backend</span> <span class="o">=</span> <span class="n">emcee</span><span class="o">.</span><span class="n">backends</span><span class="o">.</span><span class="n">HDFBackend</span><span class="p">(</span><span class="n">bname</span><span class="p">)</span>
             <span class="n">backend</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="n">samplerKwargs</span><span class="p">[</span><span class="s2">&quot;nwalkers&quot;</span><span class="p">],</span> <span class="n">samplerKwargs</span><span class="p">[</span><span class="s2">&quot;ndim&quot;</span><span class="p">])</span>
@@ -914,7 +918,7 @@
                 <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">tau</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
                     <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
                         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Failed to compute integrated autocorrelation length, tau.&quot;</span><span class="p">)</span>
-                        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Setting tau = 2&quot;</span><span class="p">)</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Setting tau = 1&quot;</span><span class="p">)</span>
                     <span class="n">tau</span> <span class="o">=</span> <span class="mi">1</span>
 
         <span class="c1"># Estimate burn-in?</span>

@@ -110,6 +110,7 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../performance.html">Performance</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://github.com/dflemin3/approxposterior">Github</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://github.com/dflemin3/approxposterior/issues">Submit an Issue</a></li>
 </ul>
@@ -219,14 +220,8 @@
 <dl class="function">
 <dt id="approxposterior.gpUtils.optimizeGP">
 <code class="descclassname">approxposterior.gpUtils.</code><code class="descname">optimizeGP</code><span class="sig-paren">(</span><em>gp</em>, <em>theta</em>, <em>y</em>, <em>seed=None</em>, <em>nRestarts=5</em>, <em>method=None</em>, <em>options=None</em>, <em>p0=None</em>, <em>nCores=1</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/gpUtils.html#optimizeGP"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.gpUtils.optimizeGP" title="Permalink to this definition">¶</a></dt>
-<dd><p>Optimize hyperparameters of an arbitrary george Gaussian Process kenerl
-using either a straight-up maximizing the log-likelihood or k-fold cv in which
-the log-likelihood is maximized for each fold and the best one is chosen.</p>
-<p>Note that the cross-validation used here is sort of cross valiation.
-Instead of training on training set and evaluating the model on the test
-set, we do both on the training set.  That is a cardinal sin of ML, but we
-do that because matrix shape sizes and evaluating the log-likelihood of the
-data requires it.</p>
+<dd><p>Optimize hyperparameters of an arbitrary george Gaussian Process kernel
+by maximizing the marginalized log-likelihood.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -262,7 +257,8 @@ ndim values randomly sampled from a uniform distribution over [-10, 10)</p>
 </div></blockquote>
 <p><strong>nCores</strong> : int (optional)</p>
 <blockquote>
-<div><p>If &gt; 1, use multiprocessing to distribute optimization restarts</p>
+<div><p>If &gt; 1, use multiprocessing to distribute optimization restarts. If
+&lt; 0, use all usable cores</p>
 </div></blockquote>
 </td>
 </tr>

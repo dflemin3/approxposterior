@@ -111,6 +111,7 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../performance.html">Performance</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://github.com/dflemin3/approxposterior">Github</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://github.com/dflemin3/approxposterior/issues">Submit an Issue</a></li>
 </ul>
@@ -309,7 +310,7 @@ function as the log is monotonic so the minima are equivalent.</p>
 <dt id="approxposterior.utility.minimizeObjective">
 <code class="descclassname">approxposterior.utility.</code><code class="descname">minimizeObjective</code><span class="sig-paren">(</span><em>fn</em>, <em>y</em>, <em>gp</em>, <em>sampleFn</em>, <em>priorFn</em>, <em>bounds=None</em>, <em>nRestarts=5</em>, <em>nCores=1</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/utility.html#minimizeObjective"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.utility.minimizeObjective" title="Permalink to this definition">¶</a></dt>
 <dd><p>Find point that minimizes fn for a gaussian process gp conditioned on y,
-the data and is allowed by the prior, priorFn.  PriorFn is required as it
+the data, and is allowed by the prior, priorFn.  PriorFn is required as it
 helps to select against points with non-finite likelihoods, e.g. NaNs or
 infs.  This is required as the GP can only train on finite values.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -347,7 +348,8 @@ number of the point selection is not working well.</p>
 </div></blockquote>
 <p><strong>nCores</strong> : int (optional)</p>
 <blockquote>
-<div><p>If &gt; 1, use multiprocessing to distribute optimization restarts</p>
+<div><p>If &gt; 1, use multiprocessing to distribute optimization restarts. If
+&lt; 0, use all usable cores</p>
 </div></blockquote>
 </td>
 </tr>
@@ -403,14 +405,15 @@ number of the point selection is not working well.</p>
 <dd><p>Estimate the KL-Divergence between pdfs p and q via Monte Carlo intergration
 using x, samples from p.</p>
 <p>KL ~ 1/n * sum_{i=1,n}(log (p(x_i)/q(x_i)))</p>
-<p>For our purposes, q is the current estimate of the pdf
-while p is the previous estimate.  This method is the
-only feasible method for large dimensions.</p>
+<p>For our purposes, q is the current estimate of the pdf while p is the
+previous estimate.  This method is the only feasible method for large
+dimensions.</p>
 <p>See Hershey and Olsen, “Approximating the Kullback Leibler
 Divergence Between Gaussian Mixture Models” for more info</p>
 <p>Note that this method can result in D_kl &lt; 0 but it’s the only method with
-convergence properties as the number of samples (len(x)) grows.  Also, this
-method is shown to have the lowest error, on average (see Hershey and Olsen).</p>
+guaranteed convergence properties as the number of samples (len(x)) grows.
+Also, this method is shown to have the lowest error, on average
+(see Hershey and Olsen).</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />

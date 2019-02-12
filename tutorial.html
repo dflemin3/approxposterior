@@ -105,6 +105,7 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="api.html">API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="performance.html">Performance</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://github.com/dflemin3/approxposterior">Github</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://github.com/dflemin3/approxposterior/issues">Submit an Issue</a></li>
 </ul>
@@ -252,13 +253,13 @@ your code.  In this example, we set verbose = False for simplicity.</p>
 <li>Initialize the <code class="xref py py-obj docutils literal notranslate"><span class="pre">approxposterior</span></code> object.</li>
 </ol>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Initialize object using the Wang &amp; Li (2017) Rosenbrock function example</span>
-<span class="n">ap</span> <span class="o">=</span> <span class="n">approx</span><span class="o">.</span><span class="n">ApproxPosterior</span><span class="p">(</span><span class="n">theta</span><span class="o">=</span><span class="n">theta</span><span class="p">,</span>                   <span class="c1"># Initial model parameters for inputs</span>
-                          <span class="n">y</span><span class="o">=</span><span class="n">y</span><span class="p">,</span>                             <span class="c1"># Logprobability of each input</span>
-                          <span class="n">gp</span><span class="o">=</span><span class="n">gp</span><span class="p">,</span>                           <span class="c1"># Initialize Gaussian Process</span>
-                          <span class="n">lnprior</span><span class="o">=</span><span class="n">lh</span><span class="o">.</span><span class="n">rosenbrockLnprior</span><span class="p">,</span>    <span class="c1"># logprior function</span>
-                          <span class="n">lnlike</span><span class="o">=</span><span class="n">lh</span><span class="o">.</span><span class="n">rosenbrockLnlike</span><span class="p">,</span>      <span class="c1"># loglikelihood function</span>
-                          <span class="n">priorSample</span><span class="o">=</span><span class="n">lh</span><span class="o">.</span><span class="n">rosenbrockSample</span><span class="p">,</span> <span class="c1"># Prior sample function</span>
-                          <span class="n">algorithm</span><span class="o">=</span><span class="n">algorithm</span><span class="p">)</span>             <span class="c1"># Which algorithm to use: BAPE, AGP, or ALTERNATE</span>
+<span class="n">ap</span> <span class="o">=</span> <span class="n">approx</span><span class="o">.</span><span class="n">ApproxPosterior</span><span class="p">(</span><span class="n">theta</span><span class="o">=</span><span class="n">theta</span><span class="p">,</span>                     <span class="c1"># Initial model parameters for inputs</span>
+                            <span class="n">y</span><span class="o">=</span><span class="n">y</span><span class="p">,</span>                             <span class="c1"># Logprobability of each input</span>
+                            <span class="n">gp</span><span class="o">=</span><span class="n">gp</span><span class="p">,</span>                           <span class="c1"># Initialize Gaussian Process</span>
+                            <span class="n">lnprior</span><span class="o">=</span><span class="n">lh</span><span class="o">.</span><span class="n">rosenbrockLnprior</span><span class="p">,</span>    <span class="c1"># logprior function</span>
+                            <span class="n">lnlike</span><span class="o">=</span><span class="n">lh</span><span class="o">.</span><span class="n">rosenbrockLnlike</span><span class="p">,</span>      <span class="c1"># loglikelihood function</span>
+                            <span class="n">priorSample</span><span class="o">=</span><span class="n">lh</span><span class="o">.</span><span class="n">rosenbrockSample</span><span class="p">,</span> <span class="c1"># Prior sample function</span>
+                            <span class="n">algorithm</span><span class="o">=</span><span class="n">algorithm</span><span class="p">)</span>             <span class="c1"># Which algorithm to use: BAPE, AGP, or ALTERNATE</span>
 </pre></div>
 </div>
 <ol class="arabic simple" start="4">
@@ -266,7 +267,7 @@ your code.  In this example, we set verbose = False for simplicity.</p>
 </ol>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">ap</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">m</span><span class="o">=</span><span class="n">m</span><span class="p">,</span> <span class="n">nmax</span><span class="o">=</span><span class="n">nmax</span><span class="p">,</span> <span class="n">Dmax</span><span class="o">=</span><span class="n">Dmax</span><span class="p">,</span> <span class="n">kmax</span><span class="o">=</span><span class="n">kmax</span><span class="p">,</span> <span class="n">bounds</span><span class="o">=</span><span class="n">bounds</span><span class="p">,</span>  <span class="n">estBurnin</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
        <span class="n">nKLSamples</span><span class="o">=</span><span class="n">nKLSamples</span><span class="p">,</span> <span class="n">mcmcKwargs</span><span class="o">=</span><span class="n">mcmcKwargs</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
-       <span class="n">samplerKwargs</span><span class="o">=</span><span class="n">samplerKwargs</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+       <span class="n">samplerKwargs</span><span class="o">=</span><span class="n">samplerKwargs</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
 </pre></div>
 </div>
 <ol class="arabic simple" start="5">

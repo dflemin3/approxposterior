@@ -3,6 +3,8 @@ Installation
 
 :py:obj:`approxposterior` can be installed several ways.
 
+**Using conda**
+
 The preferred installation method is using :py:obj:`conda`:
 
 .. code-block:: bash
@@ -10,6 +12,8 @@ The preferred installation method is using :py:obj:`conda`:
   conda install -c conda-forge approxposterior
 
 This will install approxposterior and all dependencies.
+
+**Using pip**
 
 Using :py:obj:`pip`:
 
@@ -34,7 +38,9 @@ To upgrade:
 
    pip install -U --no-deps approxposterior
 
-From source:
+**From source**
+
+This method is preferred for those who want the "bleeding edge" version.
 
 First install george
 

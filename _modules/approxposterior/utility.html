@@ -96,6 +96,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../tutorial.html">Tutorial</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../api.html">API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../performance.html">Performance</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://github.com/dflemin3/approxposterior">Github</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://github.com/dflemin3/approxposterior/issues">Submit an Issue</a></li>
 </ul>
@@ -178,6 +179,7 @@
 
 <span class="kn">from</span> <span class="nn">.</span> <span class="k">import</span> <span class="n">pool</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">multiprocessing</span>
 <span class="kn">from</span> <span class="nn">scipy.optimize</span> <span class="k">import</span> <span class="n">minimize</span>
 
 
@@ -255,16 +257,17 @@
 
 <span class="sd">    KL ~ 1/n * sum_{i=1,n}(log (p(x_i)/q(x_i)))</span>
 
-<span class="sd">    For our purposes, q is the current estimate of the pdf</span>
-<span class="sd">    while p is the previous estimate.  This method is the</span>
-<span class="sd">    only feasible method for large dimensions.</span>
+<span class="sd">    For our purposes, q is the current estimate of the pdf while p is the</span>
+<span class="sd">    previous estimate.  This method is the only feasible method for large</span>
+<span class="sd">    dimensions.</span>
 
 <span class="sd">    See Hershey and Olsen, &quot;Approximating the Kullback Leibler</span>
 <span class="sd">    Divergence Between Gaussian Mixture Models&quot; for more info</span>
 
 <span class="sd">    Note that this method can result in D_kl &lt; 0 but it&#39;s the only method with</span>
-<span class="sd">    convergence properties as the number of samples (len(x)) grows.  Also, this</span>
-<span class="sd">    method is shown to have the lowest error, on average (see Hershey and Olsen).</span>
+<span class="sd">    guaranteed convergence properties as the number of samples (len(x)) grows.</span>
+<span class="sd">    Also, this method is shown to have the lowest error, on average</span>
+<span class="sd">    (see Hershey and Olsen).</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -403,13 +406,14 @@
                        <span class="n">nRestarts</span><span class="o">=</span><span class="mi">5</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Minimize objective wrapped function for multiprocessing. Same inputs/outputs</span>
-<span class="sd">    as minimizeObjective</span>
+<span class="sd">    as minimizeObjective.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="c1"># Required arguments for the utility function</span>
     <span class="n">args</span> <span class="o">=</span> <span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">gp</span><span class="p">)</span>
 
     <span class="c1"># Solve for theta that maximize fn and is allowed by prior</span>
+    <span class="n">ii</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
 
         <span class="c1"># Mimimze fn, see if prior allows solution</span>
@@ -440,7 +444,7 @@
                       <span class="n">nCores</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Find point that minimizes fn for a gaussian process gp conditioned on y,</span>
-<span class="sd">    the data and is allowed by the prior, priorFn.  PriorFn is required as it</span>
+<span class="sd">    the data, and is allowed by the prior, priorFn.  PriorFn is required as it</span>
 <span class="sd">    helps to select against points with non-finite likelihoods, e.g. NaNs or</span>
 <span class="sd">    infs.  This is required as the GP can only train on finite values.</span>
 
@@ -464,7 +468,8 @@
 <span class="sd">        next point to improve GP performance.  Defaults to 5.  Increase this</span>
 <span class="sd">        number of the point selection is not working well.</span>
 <span class="sd">    nCores : int (optional)</span>
-<span class="sd">        If &gt; 1, use multiprocessing to distribute optimization restarts</span>
+<span class="sd">        If &gt; 1, use multiprocessing to distribute optimization restarts. If</span>
+<span class="sd">        &lt; 0, use all usable cores</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -483,6 +488,13 @@
     <span class="c1"># Figure out how many cores to use with InterruptiblePool</span>
     <span class="k">if</span> <span class="n">nCores</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
         <span class="n">poolType</span> <span class="o">=</span> <span class="s2">&quot;MultiPool&quot;</span>
+    <span class="c1"># Use all usable cores</span>
+    <span class="k">elif</span> <span class="n">nCores</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">nCores</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">multiprocessing</span><span class="o">.</span><span class="n">cpu_count</span><span class="p">()</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">nCores</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">poolType</span> <span class="o">=</span> <span class="s2">&quot;MultiPool&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">poolType</span> <span class="o">=</span> <span class="s2">&quot;SerialPool&quot;</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">poolType</span> <span class="o">=</span> <span class="s2">&quot;SerialPool&quot;</span>
 

@@ -1,0 +1,6 @@
+Performance
+============
+
+The performance :py:obj:`approxposterior` can tweaked in several ways.
+
+Under construction!

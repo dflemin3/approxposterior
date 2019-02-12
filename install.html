@@ -37,7 +37,8 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="approxposterior 0.2rc0 documentation" href="index.html"/> 
+    <link rel="top" title="approxposterior 0.2rc0 documentation" href="index.html"/>
+        <link rel="next" title="Performance" href="performance.html"/> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
@@ -95,6 +96,7 @@
 <li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api.html">API</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="performance.html">Performance</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://github.com/dflemin3/approxposterior">Github</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://github.com/dflemin3/approxposterior/issues">Submit an Issue</a></li>
 </ul>
@@ -197,11 +199,13 @@
 <div class="section" id="installation">
 <h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
 <p><code class="xref py py-obj docutils literal notranslate"><span class="pre">approxposterior</span></code> can be installed several ways.</p>
+<p><strong>Using conda</strong></p>
 <p>The preferred installation method is using <code class="xref py py-obj docutils literal notranslate"><span class="pre">conda</span></code>:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda install -c conda-forge approxposterior
 </pre></div>
 </div>
 <p>This will install approxposterior and all dependencies.</p>
+<p><strong>Using pip</strong></p>
 <p>Using <code class="xref py py-obj docutils literal notranslate"><span class="pre">pip</span></code>:</p>
 <p>First install george</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda install -c conda-forge george
@@ -217,7 +221,8 @@ installing approxposterior to ensure george is setup properly.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip install -U --no-deps approxposterior
 </pre></div>
 </div>
-<p>From source:</p>
+<p><strong>From source</strong></p>
+<p>This method is preferred for those who want the “bleeding edge” version.</p>
 <p>First install george</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda install -c conda-forge george
 </pre></div>
@@ -237,6 +242,13 @@ python setup.py install
            </div>
           </div>
           <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="performance.html" class="btn btn-neutral float-right" title="Performance" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+    </div>
   
 
   <hr/>
