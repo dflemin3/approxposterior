@@ -1,5 +1,10 @@
+0.2.post1
+=========
+
+Same as 0.2, but with typo fixes.
+
 0.2
-======
+===
 
 Stable version 0.2 release
 

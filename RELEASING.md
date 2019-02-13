@@ -1,4 +1,4 @@
-1. Update version in approxposterior/__init__.py to, e.g. 0.2
+1. Update version in approxposterior/__init__.py to, e.g. 0.3
 
 2. Update version in doc/conf.py
 
@@ -7,13 +7,13 @@
 4. Commit change and push to master
 
        git add . -u
-       git commit -m "MAINT: bump version to 0.2"
+       git commit -m "MAINT: bump version to 0.3"
        git push origin master
 
 5. Tag the release:
 
-       git tag -a v0.2 -m "version 0.2 release"
-       git push origin v0.2
+       git tag -a v0.3 -m "version 0.3 release"
+       git push origin v0.3
 
 6. Create the release distribution
 

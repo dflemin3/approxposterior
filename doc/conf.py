@@ -26,7 +26,7 @@ author = 'David P. Fleming'
 # The short X.Y version
 version = '0.2'
 # The full version, including alpha/beta/rc tags
-release = '0.2'
+release = '0.2.post1'
 
 
 # -- General configuration ---------------------------------------------------
