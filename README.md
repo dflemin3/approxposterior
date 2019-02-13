@@ -33,13 +33,7 @@ detailed API documentation, numerous examples.
 Installation
 ============
 
-The preferred method for installing approxposterior and all dependencies is using conda via the following:
-
-```bash
-conda install -c conda-forge approxposterior
-```
-
-One can also use pip to install approxposterior via
+Using pip:
 
 ```bash
 pip install approxposterior
