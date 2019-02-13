@@ -1,3 +1,10 @@
+0.2
+======
+
+Stable version 0.2 release
+
+* Contains all chains in 0.2rc0, but now validated and stable.
+
 0.2rc0
 ======
 
