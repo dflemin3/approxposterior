@@ -48,7 +48,10 @@ To install george, run
 
 From source:
 
+First clone the repository then
+
 ```bash
+cd approxposterior
 python setup.py install
 ```
 
