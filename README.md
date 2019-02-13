@@ -46,7 +46,7 @@ To install george, run
     conda install -c conda-forge george
 ```
 
-After installing george, one can then pip install approxposterior or clone the repository and run
+From source:
 
 ```bash
 python setup.py install
