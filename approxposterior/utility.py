@@ -247,7 +247,6 @@ def _minimizeObjective(theta0, fn, y, gp, sampleFn, priorFn, bounds=None):
     args = (y, gp)
 
     # Solve for theta that maximize fn and is allowed by prior
-    ii = 0
     while True:
 
         # Mimimze fn, see if prior allows solution
@@ -324,7 +323,7 @@ def minimizeObjective(fn, y, gp, sampleFn, priorFn, bounds=None,
         poolType = "MultiPool"
     # Use all usable cores
     elif nCores < 0:
-        nCores = max(multiprocessing.cpu_count()-1, 1)
+        nCores = multiprocessing.cpu_count() or 1
         if nCores > 1:
             poolType = "MultiPool"
         else:

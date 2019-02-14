@@ -160,7 +160,7 @@ def optimizeGP(gp, theta, y, seed=None, nGPRestarts=5, method=None, options=None
         poolType = "MultiPool"
     # Use all usable cores
     elif nCores < 0:
-        nCores = max(multiprocessing.cpu_count()-1, 1)
+        nCores = multiprocessing.cpu_count() or 1
         if nCores > 1:
             poolType = "MultiPool"
         else:
