@@ -26,7 +26,7 @@ def fitGMM(samples, maxComp=3, covType="full", useBic=True, gmmKwargs=None):
     Parameters
     ----------
     samples : numpy array
-        sampler.flatchain MCMC chain array of dimensions (nwalkers x nsteps)
+        sampler.flatchain MCMC chain array of dimensions (nwalkers x nsteps, ndim)
     maxComp : int (optional)
         Maximum number of mixture model components to fit for.  Defaults to 3.
     covType : str (optional)

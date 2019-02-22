@@ -158,7 +158,7 @@ def logsubexp(x1, x2):
 ################################################################################
 
 
-def AGPUtility(theta, y, gp):
+def AGPUtility(theta, y, gp, priorFn):
     """
     AGP (Adaptive Gaussian Process) utility function, the entropy of the
     posterior distribution. This is what you maximize to find the next x under
@@ -174,12 +174,19 @@ def AGPUtility(theta, y, gp):
     y : array
         y values to condition the gp prediction on.
     gp : george GP object
+    priorFn : function
+        Function that computes lnPrior probability for a given theta.
 
     Returns
     -------
     u : float
         utility of theta under the gp
     """
+
+    # If guess isn't allowed by prior, we don't care what the value of the
+    # utility function is
+    if not np.isfinite(priorFn(theta)):
+        return -np.inf
 
     # Only works if the GP object has been computed, otherwise you messed up
     if gp.computed:
@@ -197,7 +204,7 @@ def AGPUtility(theta, y, gp):
 # end function
 
 
-def BAPEUtility(theta, y, gp):
+def BAPEUtility(theta, y, gp, priorFn):
     """
     BAPE (Bayesian Active Posterior Estimation) utility function.  This is what
     you maximize to find the next theta under the BAPE formalism.  Note here we
@@ -214,12 +221,19 @@ def BAPEUtility(theta, y, gp):
     y : array
         y values to condition the gp prediction on.
     gp : george GP object
+    priorFn : function
+        Function that computes lnPrior probability for a given theta.
 
     Returns
     -------
     u : float
         utility of theta under the gp
     """
+
+    # If guess isn't allowed by prior, we don't care what the value of the
+    # utility function is
+    if not np.isfinite(priorFn(theta)):
+        return -np.inf
 
     # Only works if the GP object has been computed, otherwise you messed up
     if gp.computed:
@@ -244,7 +258,7 @@ def _minimizeObjective(theta0, fn, y, gp, sampleFn, priorFn, bounds=None):
     """
 
     # Required arguments for the utility function
-    args = (y, gp)
+    args = (y, gp, priorFn)
 
     # Solve for theta that maximize fn and is allowed by prior
     while True:
@@ -292,7 +306,7 @@ def minimizeObjective(fn, y, gp, sampleFn, priorFn, bounds=None,
     sampleFn : function
         Function to sample initial conditions from.
     priorFn : function
-        Function to apply prior to.
+        Function that computes lnPrior probability for a given theta.
     bounds : tuple/iterable (optional)
         Bounds for minimization scheme.  See scipy.optimize.minimize details
         for more information.  Defaults to None.
@@ -311,7 +325,7 @@ def minimizeObjective(fn, y, gp, sampleFn, priorFn, bounds=None,
     """
 
     # Required arguments for the utility function
-    args = (y, gp)
+    args = (y, gp, priorFn)
 
     # Containers
     res = []
