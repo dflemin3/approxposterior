@@ -186,7 +186,7 @@ def AGPUtility(theta, y, gp, priorFn):
     # If guess isn't allowed by prior, we don't care what the value of the
     # utility function is
     if not np.isfinite(priorFn(theta)):
-        return -np.inf
+        return np.inf
 
     # Only works if the GP object has been computed, otherwise you messed up
     if gp.computed:
@@ -233,7 +233,7 @@ def BAPEUtility(theta, y, gp, priorFn):
     # If guess isn't allowed by prior, we don't care what the value of the
     # utility function is
     if not np.isfinite(priorFn(theta)):
-        return -np.inf
+        return np.inf
 
     # Only works if the GP object has been computed, otherwise you messed up
     if gp.computed:
