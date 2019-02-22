@@ -359,6 +359,7 @@ class ApproxPosterior(object):
                                    optGP=optGP,
                                    nGPRestarts=nGPRestarts,
                                    nMinObjRestarts=nMinObjRestarts,
+                                   runName=runName,
                                    args=args,
                                    **kwargs)
 
@@ -482,7 +483,7 @@ class ApproxPosterior(object):
     def findNextPoint(self, computeLnLike=True, bounds=None, gpMethod=None,
                       maxLnLikeRestarts=3, seed=None, cache=True, gpOptions=None,
                       gpP0=None, optGP=True, args=None, nGPRestarts=5,
-                      nMinObjRestarts=5, nCores=1, **kwargs):
+                      nMinObjRestarts=5, nCores=1, runName="apRun", **kwargs):
         """
         Find new point, thetaT, by maximizing utility function. Note that we
         call a minimizer because minimizing negative of utility function is
@@ -546,6 +547,9 @@ class ApproxPosterior(object):
         nCores : int (optional)
             If > 1, use multiprocessing to distribute optimization restarts. If
             < 0, e.g. -1, use all usable cores
+        runName : str (optional)
+            Filename for hdf5 file where mcmc chains are saved.  Defaults to
+            apRun and will be saved as apRunii.h5 for ii in range(nmax).
         args : iterable (optional)
             Arguments for user-specified loglikelihood function that calls the
             forward model. Defaults to None.
