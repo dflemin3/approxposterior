@@ -378,10 +378,9 @@ class ApproxPosterior(object):
             if timing:
                 start = time.time()
 
-            runName = str(runName) + str(nn)
             self.sampler, iburn, ithin = self.runMCMC(samplerKwargs=samplerKwargs,
                                                       mcmcKwargs=mcmcKwargs,
-                                                      runName=runName,
+                                                      runName=str(runName) + str(nn),
                                                       cache=cache,
                                                       estBurnin=estBurnin,
                                                       thinChains=thinChains,
