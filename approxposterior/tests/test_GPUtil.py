@@ -9,14 +9,15 @@ Test optimizing GP utility functions.
 
 import numpy as np
 import george
-from approxposterior import utility as ut, gpUtils
+from approxposterior import utility as ut, gpUtils, likelihood as lh
 
 
 def testUtilsGP():
     """
     Test the utility functions!  This probes the gp_utils.setup_gp function
     (which is rather straight-forward) and makes sure the utility functions
-    produce the right result (which is also straight-forward).
+    produce the right result (which is also straight-forward). Based on the
+    Wang+2017 Rosenbrock function example.
 
     Parameters
     ----------
@@ -60,13 +61,13 @@ def testUtilsGP():
 
     # Compute the AGP utility function at some point
     thetaTest = np.array([-2.3573, 4.673])
-    testUtil = ut.AGPUtility(thetaTest, y, gp)
+    testUtil = ut.AGPUtility(thetaTest, y, gp, lh.rosenbrockLnprior)
 
     errMsg = "ERROR: AGP util fn bug.  Did you change gp_utils.setup_gp?"
     assert np.allclose(testUtil, 36.17652652, rtol=1.0e-4), errMsg
 
     # Now do the same using the BAPE utility function
-    testUtil = ut.BAPEUtility(thetaTest, y, gp)
+    testUtil = ut.BAPEUtility(thetaTest, y, gp, lh.rosenbrockLnprior)
 
     errMsg = "ERROR: BAPE util fn bug.  Did you change gp_utils.setup_gp?"
     assert np.allclose(testUtil, 75.17909884, rtol=1.0e-4), errMsg

@@ -168,7 +168,7 @@ class ApproxPosterior(object):
     def run(self, m=10, nmax=2, Dmax=0.1, kmax=5, seed=None,
             timing=False, bounds=None, nKLSamples=10000, verbose=True,
             maxComp=3, mcmcKwargs=None, samplerKwargs=None, estBurnin=False,
-            thinChains=False, chainFile="apRun", cache=True,
+            thinChains=False, runName="apRun", cache=True,
             maxLnLikeRestarts=3, gmmKwargs=None, gpMethod=None, gpOptions=None,
             gpP0=None, optGPEveryN=1, nGPRestarts=5, nMinObjRestarts=5,
             nCores=1, args=None, **kwargs):
@@ -231,7 +231,7 @@ class ApproxPosterior(object):
             long chains.  Defaults to True.  If true, estimates a thin cadence
             via int(0.5*np.min(tau)) where tau is the intergrated autocorrelation
             time.
-        chainFile : str (optional)
+        runName : str (optional)
             Filename for hdf5 file where mcmc chains are saved.  Defaults to
             apRun and will be saved as apRunii.h5 for ii in range(nmax).
         cache : bool (optional)
@@ -240,9 +240,9 @@ class ApproxPosterior(object):
             expensive to evaluate. In practice, users should cache forward model
             inputs, outputs, ancillary parameters, etc in each likelihood
             function evaluation, but saving theta and y here doesn't hurt.
-            Saves the forward model, results to apFModelCache.npz, the chains
-            as chainFileii.h5 for each iteration, ii, and the current GP
-            parameters in apGP.npz in the current working directory.
+            Saves the forward model, results to runNameAPFModelCache.npz,
+            the chains as runNameii.h5 for each, iteration ii, and the GP
+            parameters in runNameAPGP.npz in the current working directory, etc.
         maxLnLikeRestarts : int (optional)
             Number of times to restart loglikelihood function (the one that
             calls the forward model) if the lnlike fn returns infs/NaNs. Defaults
@@ -292,7 +292,8 @@ class ApproxPosterior(object):
         # Users should probably do this in their likelihood function
         # anyways, but might as well do it here too.
         if cache:
-            np.savez("apFModelCache.npz", theta=self.theta, y=self.y)
+            np.savez(str(runName) + "APFModelCache.npz",
+                     theta=self.theta, y=self.y)
 
         # Set RNG seed?
         if seed is not None:
@@ -358,6 +359,7 @@ class ApproxPosterior(object):
                                    optGP=optGP,
                                    nGPRestarts=nGPRestarts,
                                    nMinObjRestarts=nMinObjRestarts,
+                                   runName=runName,
                                    args=args,
                                    **kwargs)
 
@@ -366,7 +368,7 @@ class ApproxPosterior(object):
 
             # If cache, save current GP hyperparameters
             if cache:
-                np.savez("apGP.npz",
+                np.savez(str(runName) + "APGP.npz",
                          gpParamNames=self.gp.get_parameter_names(),
                          gpParamValues=self.gp.get_parameter_vector())
 
@@ -376,10 +378,9 @@ class ApproxPosterior(object):
             if timing:
                 start = time.time()
 
-            runName = str(chainFile) + str(nn)
             self.sampler, iburn, ithin = self.runMCMC(samplerKwargs=samplerKwargs,
                                                       mcmcKwargs=mcmcKwargs,
-                                                      chainFile=runName,
+                                                      runName=str(runName) + str(nn),
                                                       cache=cache,
                                                       estBurnin=estBurnin,
                                                       thinChains=thinChains,
@@ -440,10 +441,11 @@ class ApproxPosterior(object):
             # Save timing information?
             if cache:
                 if timing:
-                    np.savez("apTiming.npz", trainingTime=self.trainingTime,
-                                             mcmcTime=self.mcmcTime,
-                                             gmmTime=self.gmmTime,
-                                             klTime=self.klTime)
+                    np.savez(str(runName) + "APTiming.npz",
+                             trainingTime=self.trainingTime,
+                             mcmcTime=self.mcmcTime,
+                             gmmTime=self.gmmTime,
+                             klTime=self.klTime)
 
             # Convergence diagnostics: If KL divergence is less than threshold
             # for kmax consecutive iterations, we're finished
@@ -467,12 +469,12 @@ class ApproxPosterior(object):
 
                     # Save KL divergence estimate
                     if cache:
-                        np.savez("apKL.npz", Dkl=self.Dkl)
+                        np.savez(str(runName)+ "APKL.npz", Dkl=self.Dkl)
                 return
 
             # Save KL divergence estimates
             if cache:
-                np.savez("apKL.npz", Dkl=self.Dkl)
+                np.savez(str(runName) + "APKL.npz", Dkl=self.Dkl)
 
     # end function
 
@@ -480,7 +482,7 @@ class ApproxPosterior(object):
     def findNextPoint(self, computeLnLike=True, bounds=None, gpMethod=None,
                       maxLnLikeRestarts=3, seed=None, cache=True, gpOptions=None,
                       gpP0=None, optGP=True, args=None, nGPRestarts=5,
-                      nMinObjRestarts=5, nCores=1, **kwargs):
+                      nMinObjRestarts=5, nCores=1, runName="apRun", **kwargs):
         """
         Find new point, thetaT, by maximizing utility function. Note that we
         call a minimizer because minimizing negative of utility function is
@@ -544,6 +546,9 @@ class ApproxPosterior(object):
         nCores : int (optional)
             If > 1, use multiprocessing to distribute optimization restarts. If
             < 0, e.g. -1, use all usable cores
+        runName : str (optional)
+            Filename for hdf5 file where mcmc chains are saved.  Defaults to
+            apRun and will be saved as apRunii.h5 for ii in range(nmax).
         args : iterable (optional)
             Arguments for user-specified loglikelihood function that calls the
             forward model. Defaults to None.
@@ -640,14 +645,15 @@ class ApproxPosterior(object):
             # Users should probably do this in their likelihood function
             # anyways, but might as well do it here too.
             if cache:
-                np.savez("apFModelCache.npz", theta=self.theta, y=self.y)
+                np.savez(str(runName)+"APFModelCache.npz", theta=self.theta,
+                         y=self.y)
         # Don't care about lnlikelihood, just return thetaT.
         else:
             return thetaT
     # end function
 
 
-    def runMCMC(self, samplerKwargs=None, mcmcKwargs=None, chainFile="apRun",
+    def runMCMC(self, samplerKwargs=None, mcmcKwargs=None, runName="apRun",
                 cache=True, estBurnin=True, thinChains=True, verbose=False,
                 args=None, **kwargs):
         """
@@ -670,18 +676,19 @@ class ApproxPosterior(object):
                 initial_state : array/emcee.State (optional)
                     Initial guess for MCMC walkers.  Defaults to None and
                     creates guess from priors.
-        chainFile : str (optional)
-            Filename for hdf5 file where mcmc chains are saved.  Defaults to
-            apRun and will be saved as apRunii.h5 for ii in nmax.
+        runName : str (optional)
+            Filename prefix for all cached files, e.g. for hdf5 file where mcmc
+            chains are saved.  Defaults to runNameii.h5. where ii is the
+            current iteration number.
         cache : bool (optional)
             Whether or not to cache MCMC chains, forward model input-output
             pairs, and GP kernel parameters.  Defaults to True since they're
             expensive to evaluate. In practice, users should cache forward model
             inputs, outputs, ancillary parameters, etc in each likelihood
             function evaluation, but saving theta and y here doesn't hurt.
-            Saves the forward model, results to apFModelCache.npz, the chains
-            as chainFileii.h5 for each, iteration ii, and the GP parameters in
-            apGP.npz in the current working directory.
+            Saves the forward model, results to runNameAPFModelCache.npz,
+            the chains as runNameii.h5 for each, iteration ii, and the GP
+            parameters in runNameAPGP.npz in the current working directory, etc.
         estBurnin : bool (optional)
             Estimate burn-in time using integrated autocorrelation time
             heuristic.  Defaults to True. In general, we recommend users
@@ -719,7 +726,7 @@ class ApproxPosterior(object):
 
         # Create backend to save chains?
         if cache:
-            bname = str(chainFile) + ".h5"
+            bname = str(runName) + ".h5"
             self.backends.append(bname)
             backend = emcee.backends.HDFBackend(bname)
             backend.reset(samplerKwargs["nwalkers"], samplerKwargs["ndim"])
