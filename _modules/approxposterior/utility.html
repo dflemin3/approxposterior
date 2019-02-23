@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>approxposterior.utility &mdash; approxposterior 0.2 documentation</title>
+  <title>approxposterior.utility &mdash; approxposterior 0.2.post1 documentation</title>
   
 
   
@@ -37,7 +37,7 @@
         <link rel="index" title="Index"
               href="../../genindex.html"/>
         <link rel="search" title="Search" href="../../search.html"/>
-    <link rel="top" title="approxposterior 0.2 documentation" href="../../index.html"/>
+    <link rel="top" title="approxposterior 0.2.post1 documentation" href="../../index.html"/>
         <link rel="up" title="Module code" href="../index.html"/> 
 
   
@@ -323,7 +323,7 @@
 <span class="c1">################################################################################</span>
 
 
-<div class="viewcode-block" id="AGPUtility"><a class="viewcode-back" href="../../api/utility.html#approxposterior.utility.AGPUtility">[docs]</a><span class="k">def</span> <span class="nf">AGPUtility</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">gp</span><span class="p">):</span>
+<div class="viewcode-block" id="AGPUtility"><a class="viewcode-back" href="../../api/utility.html#approxposterior.utility.AGPUtility">[docs]</a><span class="k">def</span> <span class="nf">AGPUtility</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">gp</span><span class="p">,</span> <span class="n">priorFn</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    AGP (Adaptive Gaussian Process) utility function, the entropy of the</span>
 <span class="sd">    posterior distribution. This is what you maximize to find the next x under</span>
@@ -339,12 +339,19 @@
 <span class="sd">    y : array</span>
 <span class="sd">        y values to condition the gp prediction on.</span>
 <span class="sd">    gp : george GP object</span>
+<span class="sd">    priorFn : function</span>
+<span class="sd">        Function that computes lnPrior probability for a given theta.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    u : float</span>
 <span class="sd">        utility of theta under the gp</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># If guess isn&#39;t allowed by prior, we don&#39;t care what the value of the</span>
+    <span class="c1"># utility function is</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">priorFn</span><span class="p">(</span><span class="n">theta</span><span class="p">)):</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span>
 
     <span class="c1"># Only works if the GP object has been computed, otherwise you messed up</span>
     <span class="k">if</span> <span class="n">gp</span><span class="o">.</span><span class="n">computed</span><span class="p">:</span>
@@ -362,7 +369,7 @@
 <span class="c1"># end function</span>
 
 
-<div class="viewcode-block" id="BAPEUtility"><a class="viewcode-back" href="../../api/utility.html#approxposterior.utility.BAPEUtility">[docs]</a><span class="k">def</span> <span class="nf">BAPEUtility</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">gp</span><span class="p">):</span>
+<div class="viewcode-block" id="BAPEUtility"><a class="viewcode-back" href="../../api/utility.html#approxposterior.utility.BAPEUtility">[docs]</a><span class="k">def</span> <span class="nf">BAPEUtility</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">gp</span><span class="p">,</span> <span class="n">priorFn</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    BAPE (Bayesian Active Posterior Estimation) utility function.  This is what</span>
 <span class="sd">    you maximize to find the next theta under the BAPE formalism.  Note here we</span>
@@ -379,12 +386,19 @@
 <span class="sd">    y : array</span>
 <span class="sd">        y values to condition the gp prediction on.</span>
 <span class="sd">    gp : george GP object</span>
+<span class="sd">    priorFn : function</span>
+<span class="sd">        Function that computes lnPrior probability for a given theta.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    u : float</span>
 <span class="sd">        utility of theta under the gp</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># If guess isn&#39;t allowed by prior, we don&#39;t care what the value of the</span>
+    <span class="c1"># utility function is</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">priorFn</span><span class="p">(</span><span class="n">theta</span><span class="p">)):</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span>
 
     <span class="c1"># Only works if the GP object has been computed, otherwise you messed up</span>
     <span class="k">if</span> <span class="n">gp</span><span class="o">.</span><span class="n">computed</span><span class="p">:</span>
@@ -409,10 +423,9 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="c1"># Required arguments for the utility function</span>
-    <span class="n">args</span> <span class="o">=</span> <span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">gp</span><span class="p">)</span>
+    <span class="n">args</span> <span class="o">=</span> <span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">gp</span><span class="p">,</span> <span class="n">priorFn</span><span class="p">)</span>
 
     <span class="c1"># Solve for theta that maximize fn and is allowed by prior</span>
-    <span class="n">ii</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
 
         <span class="c1"># Mimimze fn, see if prior allows solution</span>
@@ -458,7 +471,7 @@
 <span class="sd">    sampleFn : function</span>
 <span class="sd">        Function to sample initial conditions from.</span>
 <span class="sd">    priorFn : function</span>
-<span class="sd">        Function to apply prior to.</span>
+<span class="sd">        Function that computes lnPrior probability for a given theta.</span>
 <span class="sd">    bounds : tuple/iterable (optional)</span>
 <span class="sd">        Bounds for minimization scheme.  See scipy.optimize.minimize details</span>
 <span class="sd">        for more information.  Defaults to None.</span>
@@ -477,7 +490,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="c1"># Required arguments for the utility function</span>
-    <span class="n">args</span> <span class="o">=</span> <span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">gp</span><span class="p">)</span>
+    <span class="n">args</span> <span class="o">=</span> <span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">gp</span><span class="p">,</span> <span class="n">priorFn</span><span class="p">)</span>
 
     <span class="c1"># Containers</span>
     <span class="n">res</span> <span class="o">=</span> <span class="p">[]</span>
@@ -489,7 +502,7 @@
         <span class="n">poolType</span> <span class="o">=</span> <span class="s2">&quot;MultiPool&quot;</span>
     <span class="c1"># Use all usable cores</span>
     <span class="k">elif</span> <span class="n">nCores</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="n">nCores</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">multiprocessing</span><span class="o">.</span><span class="n">cpu_count</span><span class="p">()</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">nCores</span> <span class="o">=</span> <span class="n">multiprocessing</span><span class="o">.</span><span class="n">cpu_count</span><span class="p">()</span> <span class="ow">or</span> <span class="mi">1</span>
         <span class="k">if</span> <span class="n">nCores</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
             <span class="n">poolType</span> <span class="o">=</span> <span class="s2">&quot;MultiPool&quot;</span>
         <span class="k">else</span><span class="p">:</span>
@@ -557,7 +570,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../',
-            VERSION:'0.2',
+            VERSION:'0.2.post1',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,

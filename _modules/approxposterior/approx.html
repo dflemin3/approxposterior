@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>approxposterior.approx &mdash; approxposterior 0.2 documentation</title>
+  <title>approxposterior.approx &mdash; approxposterior 0.2.post1 documentation</title>
   
 
   
@@ -37,7 +37,7 @@
         <link rel="index" title="Index"
               href="../../genindex.html"/>
         <link rel="search" title="Search" href="../../search.html"/>
-    <link rel="top" title="approxposterior 0.2 documentation" href="../../index.html"/>
+    <link rel="top" title="approxposterior 0.2.post1 documentation" href="../../index.html"/>
         <link rel="up" title="Module code" href="../index.html"/> 
 
   
@@ -333,7 +333,7 @@
 <div class="viewcode-block" id="ApproxPosterior.run"><a class="viewcode-back" href="../../api/approx.html#approxposterior.approx.ApproxPosterior.run">[docs]</a>    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">m</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">nmax</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">Dmax</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">kmax</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
             <span class="n">timing</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">bounds</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">nKLSamples</span><span class="o">=</span><span class="mi">10000</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
             <span class="n">maxComp</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">mcmcKwargs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">samplerKwargs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">estBurnin</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-            <span class="n">thinChains</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">chainFile</span><span class="o">=</span><span class="s2">&quot;apRun&quot;</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">thinChains</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">runName</span><span class="o">=</span><span class="s2">&quot;apRun&quot;</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
             <span class="n">maxLnLikeRestarts</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">gmmKwargs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">gpMethod</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">gpOptions</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
             <span class="n">gpP0</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">optGPEveryN</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">nGPRestarts</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">nMinObjRestarts</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
             <span class="n">nCores</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
@@ -396,7 +396,7 @@
 <span class="sd">            long chains.  Defaults to True.  If true, estimates a thin cadence</span>
 <span class="sd">            via int(0.5*np.min(tau)) where tau is the intergrated autocorrelation</span>
 <span class="sd">            time.</span>
-<span class="sd">        chainFile : str (optional)</span>
+<span class="sd">        runName : str (optional)</span>
 <span class="sd">            Filename for hdf5 file where mcmc chains are saved.  Defaults to</span>
 <span class="sd">            apRun and will be saved as apRunii.h5 for ii in range(nmax).</span>
 <span class="sd">        cache : bool (optional)</span>
@@ -405,9 +405,9 @@
 <span class="sd">            expensive to evaluate. In practice, users should cache forward model</span>
 <span class="sd">            inputs, outputs, ancillary parameters, etc in each likelihood</span>
 <span class="sd">            function evaluation, but saving theta and y here doesn&#39;t hurt.</span>
-<span class="sd">            Saves the forward model, results to apFModelCache.npz, the chains</span>
-<span class="sd">            as chainFileii.h5 for each iteration, ii, and the current GP</span>
-<span class="sd">            parameters in apGP.npz in the current working directory.</span>
+<span class="sd">            Saves the forward model, results to runNameAPFModelCache.npz,</span>
+<span class="sd">            the chains as runNameii.h5 for each, iteration ii, and the GP</span>
+<span class="sd">            parameters in runNameAPGP.npz in the current working directory, etc.</span>
 <span class="sd">        maxLnLikeRestarts : int (optional)</span>
 <span class="sd">            Number of times to restart loglikelihood function (the one that</span>
 <span class="sd">            calls the forward model) if the lnlike fn returns infs/NaNs. Defaults</span>
@@ -457,7 +457,8 @@
         <span class="c1"># Users should probably do this in their likelihood function</span>
         <span class="c1"># anyways, but might as well do it here too.</span>
         <span class="k">if</span> <span class="n">cache</span><span class="p">:</span>
-            <span class="n">np</span><span class="o">.</span><span class="n">savez</span><span class="p">(</span><span class="s2">&quot;apFModelCache.npz&quot;</span><span class="p">,</span> <span class="n">theta</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">theta</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">)</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">savez</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">runName</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;APFModelCache.npz&quot;</span><span class="p">,</span>
+                     <span class="n">theta</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">theta</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">)</span>
 
         <span class="c1"># Set RNG seed?</span>
         <span class="k">if</span> <span class="n">seed</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -523,6 +524,7 @@
                                    <span class="n">optGP</span><span class="o">=</span><span class="n">optGP</span><span class="p">,</span>
                                    <span class="n">nGPRestarts</span><span class="o">=</span><span class="n">nGPRestarts</span><span class="p">,</span>
                                    <span class="n">nMinObjRestarts</span><span class="o">=</span><span class="n">nMinObjRestarts</span><span class="p">,</span>
+                                   <span class="n">runName</span><span class="o">=</span><span class="n">runName</span><span class="p">,</span>
                                    <span class="n">args</span><span class="o">=</span><span class="n">args</span><span class="p">,</span>
                                    <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
@@ -531,7 +533,7 @@
 
             <span class="c1"># If cache, save current GP hyperparameters</span>
             <span class="k">if</span> <span class="n">cache</span><span class="p">:</span>
-                <span class="n">np</span><span class="o">.</span><span class="n">savez</span><span class="p">(</span><span class="s2">&quot;apGP.npz&quot;</span><span class="p">,</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">savez</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">runName</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;APGP.npz&quot;</span><span class="p">,</span>
                          <span class="n">gpParamNames</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">gp</span><span class="o">.</span><span class="n">get_parameter_names</span><span class="p">(),</span>
                          <span class="n">gpParamValues</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">gp</span><span class="o">.</span><span class="n">get_parameter_vector</span><span class="p">())</span>
 
@@ -541,10 +543,9 @@
             <span class="k">if</span> <span class="n">timing</span><span class="p">:</span>
                 <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
 
-            <span class="n">runName</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">chainFile</span><span class="p">)</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">nn</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">sampler</span><span class="p">,</span> <span class="n">iburn</span><span class="p">,</span> <span class="n">ithin</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">runMCMC</span><span class="p">(</span><span class="n">samplerKwargs</span><span class="o">=</span><span class="n">samplerKwargs</span><span class="p">,</span>
                                                       <span class="n">mcmcKwargs</span><span class="o">=</span><span class="n">mcmcKwargs</span><span class="p">,</span>
-                                                      <span class="n">chainFile</span><span class="o">=</span><span class="n">runName</span><span class="p">,</span>
+                                                      <span class="n">runName</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">runName</span><span class="p">)</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">nn</span><span class="p">),</span>
                                                       <span class="n">cache</span><span class="o">=</span><span class="n">cache</span><span class="p">,</span>
                                                       <span class="n">estBurnin</span><span class="o">=</span><span class="n">estBurnin</span><span class="p">,</span>
                                                       <span class="n">thinChains</span><span class="o">=</span><span class="n">thinChains</span><span class="p">,</span>
@@ -605,10 +606,11 @@
             <span class="c1"># Save timing information?</span>
             <span class="k">if</span> <span class="n">cache</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">timing</span><span class="p">:</span>
-                    <span class="n">np</span><span class="o">.</span><span class="n">savez</span><span class="p">(</span><span class="s2">&quot;apTiming.npz&quot;</span><span class="p">,</span> <span class="n">trainingTime</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">trainingTime</span><span class="p">,</span>
-                                             <span class="n">mcmcTime</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">mcmcTime</span><span class="p">,</span>
-                                             <span class="n">gmmTime</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">gmmTime</span><span class="p">,</span>
-                                             <span class="n">klTime</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">klTime</span><span class="p">)</span>
+                    <span class="n">np</span><span class="o">.</span><span class="n">savez</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">runName</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;APTiming.npz&quot;</span><span class="p">,</span>
+                             <span class="n">trainingTime</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">trainingTime</span><span class="p">,</span>
+                             <span class="n">mcmcTime</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">mcmcTime</span><span class="p">,</span>
+                             <span class="n">gmmTime</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">gmmTime</span><span class="p">,</span>
+                             <span class="n">klTime</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">klTime</span><span class="p">)</span>
 
             <span class="c1"># Convergence diagnostics: If KL divergence is less than threshold</span>
             <span class="c1"># for kmax consecutive iterations, we&#39;re finished</span>
@@ -632,12 +634,12 @@
 
                     <span class="c1"># Save KL divergence estimate</span>
                     <span class="k">if</span> <span class="n">cache</span><span class="p">:</span>
-                        <span class="n">np</span><span class="o">.</span><span class="n">savez</span><span class="p">(</span><span class="s2">&quot;apKL.npz&quot;</span><span class="p">,</span> <span class="n">Dkl</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">Dkl</span><span class="p">)</span>
+                        <span class="n">np</span><span class="o">.</span><span class="n">savez</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">runName</span><span class="p">)</span><span class="o">+</span> <span class="s2">&quot;APKL.npz&quot;</span><span class="p">,</span> <span class="n">Dkl</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">Dkl</span><span class="p">)</span>
                 <span class="k">return</span>
 
             <span class="c1"># Save KL divergence estimates</span>
             <span class="k">if</span> <span class="n">cache</span><span class="p">:</span>
-                <span class="n">np</span><span class="o">.</span><span class="n">savez</span><span class="p">(</span><span class="s2">&quot;apKL.npz&quot;</span><span class="p">,</span> <span class="n">Dkl</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">Dkl</span><span class="p">)</span></div>
+                <span class="n">np</span><span class="o">.</span><span class="n">savez</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">runName</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;APKL.npz&quot;</span><span class="p">,</span> <span class="n">Dkl</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">Dkl</span><span class="p">)</span></div>
 
     <span class="c1"># end function</span>
 
@@ -645,7 +647,7 @@
 <div class="viewcode-block" id="ApproxPosterior.findNextPoint"><a class="viewcode-back" href="../../api/approx.html#approxposterior.approx.ApproxPosterior.findNextPoint">[docs]</a>    <span class="k">def</span> <span class="nf">findNextPoint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">computeLnLike</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">bounds</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">gpMethod</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                       <span class="n">maxLnLikeRestarts</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">gpOptions</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                       <span class="n">gpP0</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">optGP</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">nGPRestarts</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
-                      <span class="n">nMinObjRestarts</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">nCores</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+                      <span class="n">nMinObjRestarts</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">nCores</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">runName</span><span class="o">=</span><span class="s2">&quot;apRun&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Find new point, thetaT, by maximizing utility function. Note that we</span>
 <span class="sd">        call a minimizer because minimizing negative of utility function is</span>
@@ -709,6 +711,9 @@
 <span class="sd">        nCores : int (optional)</span>
 <span class="sd">            If &gt; 1, use multiprocessing to distribute optimization restarts. If</span>
 <span class="sd">            &lt; 0, e.g. -1, use all usable cores</span>
+<span class="sd">        runName : str (optional)</span>
+<span class="sd">            Filename for hdf5 file where mcmc chains are saved.  Defaults to</span>
+<span class="sd">            apRun and will be saved as apRunii.h5 for ii in range(nmax).</span>
 <span class="sd">        args : iterable (optional)</span>
 <span class="sd">            Arguments for user-specified loglikelihood function that calls the</span>
 <span class="sd">            forward model. Defaults to None.</span>
@@ -805,14 +810,15 @@
             <span class="c1"># Users should probably do this in their likelihood function</span>
             <span class="c1"># anyways, but might as well do it here too.</span>
             <span class="k">if</span> <span class="n">cache</span><span class="p">:</span>
-                <span class="n">np</span><span class="o">.</span><span class="n">savez</span><span class="p">(</span><span class="s2">&quot;apFModelCache.npz&quot;</span><span class="p">,</span> <span class="n">theta</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">theta</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">)</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">savez</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">runName</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;APFModelCache.npz&quot;</span><span class="p">,</span> <span class="n">theta</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">theta</span><span class="p">,</span>
+                         <span class="n">y</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">)</span>
         <span class="c1"># Don&#39;t care about lnlikelihood, just return thetaT.</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">thetaT</span></div>
     <span class="c1"># end function</span>
 
 
-<div class="viewcode-block" id="ApproxPosterior.runMCMC"><a class="viewcode-back" href="../../api/approx.html#approxposterior.approx.ApproxPosterior.runMCMC">[docs]</a>    <span class="k">def</span> <span class="nf">runMCMC</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">samplerKwargs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mcmcKwargs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">chainFile</span><span class="o">=</span><span class="s2">&quot;apRun&quot;</span><span class="p">,</span>
+<div class="viewcode-block" id="ApproxPosterior.runMCMC"><a class="viewcode-back" href="../../api/approx.html#approxposterior.approx.ApproxPosterior.runMCMC">[docs]</a>    <span class="k">def</span> <span class="nf">runMCMC</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">samplerKwargs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mcmcKwargs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">runName</span><span class="o">=</span><span class="s2">&quot;apRun&quot;</span><span class="p">,</span>
                 <span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">estBurnin</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">thinChains</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
                 <span class="n">args</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -835,18 +841,19 @@
 <span class="sd">                initial_state : array/emcee.State (optional)</span>
 <span class="sd">                    Initial guess for MCMC walkers.  Defaults to None and</span>
 <span class="sd">                    creates guess from priors.</span>
-<span class="sd">        chainFile : str (optional)</span>
-<span class="sd">            Filename for hdf5 file where mcmc chains are saved.  Defaults to</span>
-<span class="sd">            apRun and will be saved as apRunii.h5 for ii in nmax.</span>
+<span class="sd">        runName : str (optional)</span>
+<span class="sd">            Filename prefix for all cached files, e.g. for hdf5 file where mcmc</span>
+<span class="sd">            chains are saved.  Defaults to runNameii.h5. where ii is the</span>
+<span class="sd">            current iteration number.</span>
 <span class="sd">        cache : bool (optional)</span>
 <span class="sd">            Whether or not to cache MCMC chains, forward model input-output</span>
 <span class="sd">            pairs, and GP kernel parameters.  Defaults to True since they&#39;re</span>
 <span class="sd">            expensive to evaluate. In practice, users should cache forward model</span>
 <span class="sd">            inputs, outputs, ancillary parameters, etc in each likelihood</span>
 <span class="sd">            function evaluation, but saving theta and y here doesn&#39;t hurt.</span>
-<span class="sd">            Saves the forward model, results to apFModelCache.npz, the chains</span>
-<span class="sd">            as chainFileii.h5 for each, iteration ii, and the GP parameters in</span>
-<span class="sd">            apGP.npz in the current working directory.</span>
+<span class="sd">            Saves the forward model, results to runNameAPFModelCache.npz,</span>
+<span class="sd">            the chains as runNameii.h5 for each, iteration ii, and the GP</span>
+<span class="sd">            parameters in runNameAPGP.npz in the current working directory, etc.</span>
 <span class="sd">        estBurnin : bool (optional)</span>
 <span class="sd">            Estimate burn-in time using integrated autocorrelation time</span>
 <span class="sd">            heuristic.  Defaults to True. In general, we recommend users</span>
@@ -884,7 +891,7 @@
 
         <span class="c1"># Create backend to save chains?</span>
         <span class="k">if</span> <span class="n">cache</span><span class="p">:</span>
-            <span class="n">bname</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">chainFile</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;.h5&quot;</span>
+            <span class="n">bname</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">runName</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;.h5&quot;</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">backends</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">bname</span><span class="p">)</span>
             <span class="n">backend</span> <span class="o">=</span> <span class="n">emcee</span><span class="o">.</span><span class="n">backends</span><span class="o">.</span><span class="n">HDFBackend</span><span class="p">(</span><span class="n">bname</span><span class="p">)</span>
             <span class="n">backend</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="n">samplerKwargs</span><span class="p">[</span><span class="s2">&quot;nwalkers&quot;</span><span class="p">],</span> <span class="n">samplerKwargs</span><span class="p">[</span><span class="s2">&quot;ndim&quot;</span><span class="p">])</span>
@@ -978,7 +985,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../',
-            VERSION:'0.2',
+            VERSION:'0.2.post1',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,

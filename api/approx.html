@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>ApproxPosterior Class &mdash; approxposterior 0.2 documentation</title>
+  <title>ApproxPosterior Class &mdash; approxposterior 0.2.post1 documentation</title>
   
 
   
@@ -37,7 +37,7 @@
         <link rel="index" title="Index"
               href="../genindex.html"/>
         <link rel="search" title="Search" href="../search.html"/>
-    <link rel="top" title="approxposterior 0.2 documentation" href="../index.html"/>
+    <link rel="top" title="approxposterior 0.2.post1 documentation" href="../index.html"/>
         <link rel="up" title="API" href="../api.html"/>
         <link rel="prev" title="API" href="../api.html"/> 
 
@@ -247,7 +247,7 @@ the AGP (Adaptive Gaussian Process) by Wang &amp; Li (2017).</p>
 </table>
 <dl class="method">
 <dt id="approxposterior.approx.ApproxPosterior.findNextPoint">
-<code class="descname">findNextPoint</code><span class="sig-paren">(</span><em>computeLnLike=True</em>, <em>bounds=None</em>, <em>gpMethod=None</em>, <em>maxLnLikeRestarts=3</em>, <em>seed=None</em>, <em>cache=True</em>, <em>gpOptions=None</em>, <em>gpP0=None</em>, <em>optGP=True</em>, <em>args=None</em>, <em>nGPRestarts=5</em>, <em>nMinObjRestarts=5</em>, <em>nCores=1</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/approx.html#ApproxPosterior.findNextPoint"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.approx.ApproxPosterior.findNextPoint" title="Permalink to this definition">¶</a></dt>
+<code class="descname">findNextPoint</code><span class="sig-paren">(</span><em>computeLnLike=True</em>, <em>bounds=None</em>, <em>gpMethod=None</em>, <em>maxLnLikeRestarts=3</em>, <em>seed=None</em>, <em>cache=True</em>, <em>gpOptions=None</em>, <em>gpP0=None</em>, <em>optGP=True</em>, <em>args=None</em>, <em>nGPRestarts=5</em>, <em>nMinObjRestarts=5</em>, <em>nCores=1</em>, <em>runName='apRun'</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/approx.html#ApproxPosterior.findNextPoint"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.approx.ApproxPosterior.findNextPoint" title="Permalink to this definition">¶</a></dt>
 <dd><p>Find new point, thetaT, by maximizing utility function. Note that we
 call a minimizer because minimizing negative of utility function is
 the same as maximizing it.</p>
@@ -338,6 +338,11 @@ number of the point selection is not working well.</p>
 <div><p>If &gt; 1, use multiprocessing to distribute optimization restarts. If
 &lt; 0, e.g. -1, use all usable cores</p>
 </div></blockquote>
+<p><strong>runName</strong> : str (optional)</p>
+<blockquote>
+<div><p>Filename for hdf5 file where mcmc chains are saved.  Defaults to
+apRun and will be saved as apRunii.h5 for ii in range(nmax).</p>
+</div></blockquote>
 <p><strong>args</strong> : iterable (optional)</p>
 <blockquote>
 <div><p>Arguments for user-specified loglikelihood function that calls the
@@ -372,7 +377,7 @@ Otherwise, returns thetaT and yT.</p>
 
 <dl class="method">
 <dt id="approxposterior.approx.ApproxPosterior.run">
-<code class="descname">run</code><span class="sig-paren">(</span><em>m=10</em>, <em>nmax=2</em>, <em>Dmax=0.1</em>, <em>kmax=5</em>, <em>seed=None</em>, <em>timing=False</em>, <em>bounds=None</em>, <em>nKLSamples=10000</em>, <em>verbose=True</em>, <em>maxComp=3</em>, <em>mcmcKwargs=None</em>, <em>samplerKwargs=None</em>, <em>estBurnin=False</em>, <em>thinChains=False</em>, <em>chainFile='apRun'</em>, <em>cache=True</em>, <em>maxLnLikeRestarts=3</em>, <em>gmmKwargs=None</em>, <em>gpMethod=None</em>, <em>gpOptions=None</em>, <em>gpP0=None</em>, <em>optGPEveryN=1</em>, <em>nGPRestarts=5</em>, <em>nMinObjRestarts=5</em>, <em>nCores=1</em>, <em>args=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/approx.html#ApproxPosterior.run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.approx.ApproxPosterior.run" title="Permalink to this definition">¶</a></dt>
+<code class="descname">run</code><span class="sig-paren">(</span><em>m=10</em>, <em>nmax=2</em>, <em>Dmax=0.1</em>, <em>kmax=5</em>, <em>seed=None</em>, <em>timing=False</em>, <em>bounds=None</em>, <em>nKLSamples=10000</em>, <em>verbose=True</em>, <em>maxComp=3</em>, <em>mcmcKwargs=None</em>, <em>samplerKwargs=None</em>, <em>estBurnin=False</em>, <em>thinChains=False</em>, <em>runName='apRun'</em>, <em>cache=True</em>, <em>maxLnLikeRestarts=3</em>, <em>gmmKwargs=None</em>, <em>gpMethod=None</em>, <em>gpOptions=None</em>, <em>gpP0=None</em>, <em>optGPEveryN=1</em>, <em>nGPRestarts=5</em>, <em>nMinObjRestarts=5</em>, <em>nCores=1</em>, <em>args=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/approx.html#ApproxPosterior.run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.approx.ApproxPosterior.run" title="Permalink to this definition">¶</a></dt>
 <dd><p>Core algorithm to estimate the posterior distribution via Gaussian
 Process regression to the joint distribution for the forward model
 input/output pairs</p>
@@ -471,7 +476,7 @@ long chains.  Defaults to True.  If true, estimates a thin cadence
 via int(0.5*np.min(tau)) where tau is the intergrated autocorrelation
 time.</p>
 </div></blockquote>
-<p><strong>chainFile</strong> : str (optional)</p>
+<p><strong>runName</strong> : str (optional)</p>
 <blockquote>
 <div><p>Filename for hdf5 file where mcmc chains are saved.  Defaults to
 apRun and will be saved as apRunii.h5 for ii in range(nmax).</p>
@@ -483,9 +488,9 @@ pairs, and GP kernel parameters.  Defaults to True since they’re
 expensive to evaluate. In practice, users should cache forward model
 inputs, outputs, ancillary parameters, etc in each likelihood
 function evaluation, but saving theta and y here doesn’t hurt.
-Saves the forward model, results to apFModelCache.npz, the chains
-as chainFileii.h5 for each iteration, ii, and the current GP
-parameters in apGP.npz in the current working directory.</p>
+Saves the forward model, results to runNameAPFModelCache.npz,
+the chains as runNameii.h5 for each, iteration ii, and the GP
+parameters in runNameAPGP.npz in the current working directory, etc.</p>
 </div></blockquote>
 <p><strong>maxLnLikeRestarts</strong> : int (optional)</p>
 <blockquote>
@@ -558,7 +563,7 @@ calls the forward model.</p>
 
 <dl class="method">
 <dt id="approxposterior.approx.ApproxPosterior.runMCMC">
-<code class="descname">runMCMC</code><span class="sig-paren">(</span><em>samplerKwargs=None</em>, <em>mcmcKwargs=None</em>, <em>chainFile='apRun'</em>, <em>cache=True</em>, <em>estBurnin=True</em>, <em>thinChains=True</em>, <em>verbose=False</em>, <em>args=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/approx.html#ApproxPosterior.runMCMC"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.approx.ApproxPosterior.runMCMC" title="Permalink to this definition">¶</a></dt>
+<code class="descname">runMCMC</code><span class="sig-paren">(</span><em>samplerKwargs=None</em>, <em>mcmcKwargs=None</em>, <em>runName='apRun'</em>, <em>cache=True</em>, <em>estBurnin=True</em>, <em>thinChains=True</em>, <em>verbose=False</em>, <em>args=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/approx.html#ApproxPosterior.runMCMC"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.approx.ApproxPosterior.runMCMC" title="Permalink to this definition">¶</a></dt>
 <dd><p>Given forward model input-output pairs, theta and y, and a trained GP,
 run an MCMC using the GP to evaluate the logprobability required by
 MCMC.</p>
@@ -594,10 +599,11 @@ creates guess from priors.</p>
 </dl>
 </div></blockquote>
 </div></blockquote>
-<p><strong>chainFile</strong> : str (optional)</p>
+<p><strong>runName</strong> : str (optional)</p>
 <blockquote>
-<div><p>Filename for hdf5 file where mcmc chains are saved.  Defaults to
-apRun and will be saved as apRunii.h5 for ii in nmax.</p>
+<div><p>Filename prefix for all cached files, e.g. for hdf5 file where mcmc
+chains are saved.  Defaults to runNameii.h5. where ii is the
+current iteration number.</p>
 </div></blockquote>
 <p><strong>cache</strong> : bool (optional)</p>
 <blockquote>
@@ -606,9 +612,9 @@ pairs, and GP kernel parameters.  Defaults to True since they’re
 expensive to evaluate. In practice, users should cache forward model
 inputs, outputs, ancillary parameters, etc in each likelihood
 function evaluation, but saving theta and y here doesn’t hurt.
-Saves the forward model, results to apFModelCache.npz, the chains
-as chainFileii.h5 for each, iteration ii, and the GP parameters in
-apGP.npz in the current working directory.</p>
+Saves the forward model, results to runNameAPFModelCache.npz,
+the chains as runNameii.h5 for each, iteration ii, and the GP
+parameters in runNameAPGP.npz in the current working directory, etc.</p>
 </div></blockquote>
 <p><strong>estBurnin</strong> : bool (optional)</p>
 <blockquote>
@@ -705,7 +711,7 @@ calls the forward model.</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../',
-            VERSION:'0.2',
+            VERSION:'0.2.post1',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
