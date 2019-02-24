@@ -60,6 +60,7 @@ See their paper for details and check out the examples for more information and 
    api
    install
    performance
+   citation
    Github <https://github.com/dflemin3/approxposterior>
    Submit an Issue <https://github.com/dflemin3/approxposterior/issues>
 
