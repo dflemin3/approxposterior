@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Installation &mdash; approxposterior 0.2.post1 documentation</title>
+  <title>Citation &mdash; approxposterior 0.2.post1 documentation</title>
   
 
   
@@ -38,7 +38,7 @@
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
     <link rel="top" title="approxposterior 0.2.post1 documentation" href="index.html"/>
-        <link rel="next" title="Improving Performance" href="performance.html"/> 
+        <link rel="prev" title="Improving Performance" href="performance.html"/> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
@@ -95,9 +95,9 @@
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api.html">API</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="performance.html">Improving Performance</a></li>
-<li class="toctree-l1"><a class="reference internal" href="citation.html">Citation</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Citation</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://github.com/dflemin3/approxposterior">Github</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://github.com/dflemin3/approxposterior/issues">Submit an Issue</a></li>
 </ul>
@@ -144,13 +144,13 @@
     
       <li><a href="index.html">Docs</a> &raquo;</li>
         
-      <li>Installation</li>
+      <li>Citation</li>
     
     
       <li class="wy-breadcrumbs-aside">
         
             
-            <a href="_sources/install.rst.txt" rel="nofollow"> View page source</a>
+            <a href="_sources/citation.rst.txt" rel="nofollow"> View page source</a>
           
         
       </li>
@@ -197,35 +197,47 @@
     margin-right: 4px;  /* make room for the exclamation icon */
 }
 </style>
-<div class="section" id="installation">
-<h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
-<p><code class="xref py py-obj docutils literal notranslate"><span class="pre">approxposterior</span></code> can be installed several ways.</p>
-<p><strong>Using pip</strong></p>
-<p>Using <code class="xref py py-obj docutils literal notranslate"><span class="pre">pip</span></code>:</p>
-<p>First install george</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda install -c conda-forge george
+<div class="section" id="citation">
+<h1>Citation<a class="headerlink" href="#citation" title="Permalink to this headline">¶</a></h1>
+<p>If you use <code class="xref py py-obj docutils literal notranslate"><span class="pre">approxposterior</span></code>, please cite the following:</p>
+<p><em>Fleming and VanderPlas (2018)</em></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>@ARTICLE<span class="o">{</span>Fleming2018,
+   <span class="nv">author</span> <span class="o">=</span> <span class="o">{{</span>Fleming<span class="o">}</span>, D.~P. and <span class="o">{</span>VanderPlas<span class="o">}</span>, J.<span class="o">}</span>,
+    <span class="nv">title</span> <span class="o">=</span> <span class="s2">&quot;{approxposterior: Approximate Posterior Distributions in Python}&quot;</span>,
+  <span class="nv">journal</span> <span class="o">=</span> <span class="o">{</span>The Journal of Open Source Software<span class="o">}</span>,
+     <span class="nv">year</span> <span class="o">=</span> <span class="m">2018</span>,
+    <span class="nv">month</span> <span class="o">=</span> sep,
+   <span class="nv">volume</span> <span class="o">=</span> <span class="m">3</span>,
+    <span class="nv">pages</span> <span class="o">=</span> <span class="o">{</span><span class="m">781</span><span class="o">}</span>,
+      <span class="nv">doi</span> <span class="o">=</span> <span class="o">{</span><span class="m">10</span>.21105/joss.00781<span class="o">}</span>,
+   <span class="nv">adsurl</span> <span class="o">=</span> <span class="o">{</span>http://adsabs.harvard.edu/abs/2018JOSS....3..781P<span class="o">}</span>,
+  <span class="nv">adsnote</span> <span class="o">=</span> <span class="o">{</span>Provided by the SAO/NASA Astrophysics Data System<span class="o">}</span>
+<span class="o">}</span>
 </pre></div>
 </div>
-<p>then install <code class="xref py py-obj docutils literal notranslate"><span class="pre">approxposterior</span></code></p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip install approxposterior
+<p><em>Kandasamy et al. (2015)</em></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>@misc<span class="o">{</span>Kandasamy2015,
+      <span class="nv">author</span> <span class="o">=</span> <span class="o">{</span>Kirthevasan Kandasamy and Jeff Schneider and Barnabas Poczos<span class="o">}</span>,
+      <span class="nv">title</span> <span class="o">=</span> <span class="s2">&quot;{Bayesian Active Learning for Posterior Estimation}&quot;</span>,
+      <span class="nv">note</span> <span class="o">=</span> <span class="o">{</span>International Joint Conference on Artificial Intelligence<span class="o">}</span>,
+      <span class="nv">year</span> <span class="o">=</span> <span class="o">{</span><span class="m">2015</span><span class="o">}</span>,
+      <span class="o">}</span>
 </pre></div>
 </div>
-<p>This step requires installing george (the Python Gaussian Process package) first before
-installing approxposterior to ensure george is setup properly.</p>
-<p>To upgrade:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip install -U --no-deps approxposterior
-</pre></div>
-</div>
-<p><strong>From source</strong></p>
-<p>This method is preferred for those who want the “bleeding edge” version.</p>
-<p>First install george</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda install -c conda-forge george
-</pre></div>
-</div>
-<p>then install <code class="xref py py-obj docutils literal notranslate"><span class="pre">approxposterior</span></code></p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git clone git@github.com:dflemin3/approxposterior.git
-<span class="nb">cd</span> approxposterior
-python setup.py install
+<p><em>Wang &amp; Li (2017)</em></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>@ARTICLE<span class="o">{</span>Wang2017,
+   <span class="nv">author</span> <span class="o">=</span> <span class="o">{{</span>Wang<span class="o">}</span>, H. and <span class="o">{</span>Li<span class="o">}</span>, J.<span class="o">}</span>,
+    <span class="nv">title</span> <span class="o">=</span> <span class="s2">&quot;{Adaptive Gaussian process approximation for Bayesian inference with expensive likelihood functions}&quot;</span>,
+  <span class="nv">journal</span> <span class="o">=</span> <span class="o">{</span>ArXiv e-prints<span class="o">}</span>,
+<span class="nv">archivePrefix</span> <span class="o">=</span> <span class="s2">&quot;arXiv&quot;</span>,
+   <span class="nv">eprint</span> <span class="o">=</span> <span class="o">{</span><span class="m">1703</span>.09930<span class="o">}</span>,
+ <span class="nv">primaryClass</span> <span class="o">=</span> <span class="s2">&quot;stat.CO&quot;</span>,
+ <span class="nv">keywords</span> <span class="o">=</span> <span class="o">{</span>Statistics - Computation, Statistics - Machine Learning<span class="o">}</span>,
+     <span class="nv">year</span> <span class="o">=</span> <span class="m">2017</span>,
+    <span class="nv">month</span> <span class="o">=</span> mar,
+   <span class="nv">adsurl</span> <span class="o">=</span> <span class="o">{</span>http://adsabs.harvard.edu/abs/2017arXiv170309930W<span class="o">}</span>,
+  <span class="nv">adsnote</span> <span class="o">=</span> <span class="o">{</span>Provided by the SAO/NASA Astrophysics Data System<span class="o">}</span>
+<span class="o">}</span>
 </pre></div>
 </div>
 </div>
@@ -240,8 +252,8 @@ python setup.py install
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="performance.html" class="btn btn-neutral float-right" title="Improving Performance" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
+        <a href="performance.html" class="btn btn-neutral" title="Improving Performance" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
