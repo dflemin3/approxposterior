@@ -112,7 +112,7 @@ def defaultGP(theta, y):
 
 
 def optimizeGP(gp, theta, y, seed=None, nGPRestarts=5, method=None, options=None,
-               p0=None, nCores=1):
+               p0=None, nCores=1, cv=False):
     """
     Optimize hyperparameters of an arbitrary george Gaussian Process kernel
     by maximizing the marginalized log-likelihood.
@@ -139,6 +139,10 @@ def optimizeGP(gp, theta, y, seed=None, nGPRestarts=5, method=None, options=None
     nCores : int (optional)
         If > 1, use multiprocessing to distribute optimization restarts. If
         < 0, use all usable cores
+    cv : bool (optional)
+        Whether or not to use 5-fold cross-validation to select kernel
+        hyperparameters from the nGPRestarts maximum likelihood solutions.
+        Defaults to False. This can be useful if the GP is overfitting.
 
     Returns
     -------
@@ -199,8 +203,12 @@ def optimizeGP(gp, theta, y, seed=None, nGPRestarts=5, method=None, options=None
         # Compute marginal log likelihood for this set of kernel hyperparameters
         mll.append(gp.log_likelihood(y, quiet=True))
 
+    # Use CV to select best answer?
+    if cv is not None:
+        pass
     # Pick result with largest marginal log likelihood
-    ind = np.argmax(mll)
+    else:
+        ind = np.argmax(mll)
 
     # Update gp
     gp.set_parameter_vector(res[ind])
