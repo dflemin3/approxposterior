@@ -171,7 +171,7 @@ class ApproxPosterior(object):
             thinChains=False, runName="apRun", cache=True,
             maxLnLikeRestarts=3, gmmKwargs=None, gpMethod=None, gpOptions=None,
             gpP0=None, optGPEveryN=1, nGPRestarts=5, nMinObjRestarts=5,
-            nCores=1, args=None, **kwargs):
+            nCores=1, gpCV=None, args=None, **kwargs):
         """
         Core algorithm to estimate the posterior distribution via Gaussian
         Process regression to the joint distribution for the forward model
@@ -275,6 +275,10 @@ class ApproxPosterior(object):
         nCores : int (optional)
             If > 1, use multiprocessing to distribute optimization restarts. If
             < 0, e.g. -1, use all usable cores
+        gpCV : int (optional)
+            Whether or not to use 5-fold cross-validation to select kernel
+            hyperparameters from the nGPRestarts maximum likelihood solutions.
+            Defaults to None. This can be useful if the GP is overfitting.
         args : iterable (optional)
             Arguments for user-specified loglikelihood function that calls the
             forward model. Defaults to None.
@@ -316,7 +320,7 @@ class ApproxPosterior(object):
         self.gp = gpUtils.optimizeGP(self.gp, self.theta, self.y, seed=seed,
                                      method=gpMethod, options=gpOptions,
                                      p0=gpP0, nGPRestarts=nGPRestarts,
-                                     nCores=nCores)
+                                     nCores=nCores, gpCV=gpCV)
 
         # Main loop
         kk = 0
@@ -359,6 +363,7 @@ class ApproxPosterior(object):
                                    optGP=optGP,
                                    nGPRestarts=nGPRestarts,
                                    nMinObjRestarts=nMinObjRestarts,
+                                   gpCV=gpCV,
                                    runName=runName,
                                    args=args,
                                    **kwargs)
@@ -482,7 +487,8 @@ class ApproxPosterior(object):
     def findNextPoint(self, computeLnLike=True, bounds=None, gpMethod=None,
                       maxLnLikeRestarts=3, seed=None, cache=True, gpOptions=None,
                       gpP0=None, optGP=True, args=None, nGPRestarts=5,
-                      nMinObjRestarts=5, nCores=1, runName="apRun", **kwargs):
+                      nMinObjRestarts=5, nCores=1, gpCV=None, runName="apRun",
+                      **kwargs):
         """
         Find new point, thetaT, by maximizing utility function. Note that we
         call a minimizer because minimizing negative of utility function is
@@ -546,6 +552,10 @@ class ApproxPosterior(object):
         nCores : int (optional)
             If > 1, use multiprocessing to distribute optimization restarts. If
             < 0, e.g. -1, use all usable cores
+        gpCV : int (optional)
+            Whether or not to use 5-fold cross-validation to select kernel
+            hyperparameters from the nGPRestarts maximum likelihood solutions.
+            Defaults to None. This can be useful if the GP is overfitting.
         runName : str (optional)
             Filename for hdf5 file where mcmc chains are saved.  Defaults to
             apRun and will be saved as apRunii.h5 for ii in range(nmax).
@@ -632,7 +642,8 @@ class ApproxPosterior(object):
                                                  seed=seed, method=gpMethod,
                                                  options=gpOptions, p0=gpP0,
                                                  nGPRestarts=nGPRestarts,
-                                                 nCores=nCores)
+                                                 nCores=nCores,
+                                                 gpCV=gpCV)
             except ValueError:
                 print("theta:", self.theta)
                 print("y:", self.y)

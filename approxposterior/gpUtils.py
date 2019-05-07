@@ -16,6 +16,7 @@ import numpy as np
 import multiprocessing
 import george
 from scipy.optimize import minimize
+from sklearn.model_selection import KFold
 
 
 def _nll(p, gp, y):
@@ -112,7 +113,7 @@ def defaultGP(theta, y):
 
 
 def optimizeGP(gp, theta, y, seed=None, nGPRestarts=5, method=None, options=None,
-               p0=None, nCores=1, cv=False):
+               p0=None, nCores=1, gpCV=None):
     """
     Optimize hyperparameters of an arbitrary george Gaussian Process kernel
     by maximizing the marginalized log-likelihood.
@@ -139,10 +140,10 @@ def optimizeGP(gp, theta, y, seed=None, nGPRestarts=5, method=None, options=None
     nCores : int (optional)
         If > 1, use multiprocessing to distribute optimization restarts. If
         < 0, use all usable cores
-    cv : bool (optional)
+    gpCV : int (optional)
         Whether or not to use 5-fold cross-validation to select kernel
         hyperparameters from the nGPRestarts maximum likelihood solutions.
-        Defaults to False. This can be useful if the GP is overfitting.
+        Defaults to None. This can be useful if the GP is overfitting.
 
     Returns
     -------
@@ -204,8 +205,35 @@ def optimizeGP(gp, theta, y, seed=None, nGPRestarts=5, method=None, options=None
         mll.append(gp.log_likelihood(y, quiet=True))
 
     # Use CV to select best answer?
-    if cv:
-        pass
+    if gpCV is not None:
+        if isinstance(gpCV, int):
+            mlls = np.zeros((gpCV, nGPRestarts))
+
+            # Use 5 fold cross-validation
+            kfold = KFold(n_splits=gpCV)
+
+            # Train on train, evaluate predictions on test
+            ii = 0
+            for trainInds, testInds in kf.split(theta, y):
+                # Repeat for each solution
+                tmpMLL = list()
+                for jj in range(len(res)):
+                    # Update the kernel using training set
+                    gp.set_parameter_vector(res[ii])
+                    gp.compute(theta[trainInds])
+
+                    # Compute marginal log likelihood for this set of kernel hyperparameters
+                    mlls[ii,jj] = gp.log_likelihood(y[testInds], quiet=True)
+
+                # End loop over each MLL solution for this cv fold
+                ii = ii + 1
+
+            # Best answer is solution with maximum mean maginal loglikelihood when
+            # averaging over the folds
+            ind = np.argmax(np.mean(mlls, axis=0))
+        else:
+            raise RuntimeError("gpCV must be an integer. gpCV:", gpCV)
+
     # Pick result with largest marginal log likelihood
     else:
         ind = np.argmax(mll)
