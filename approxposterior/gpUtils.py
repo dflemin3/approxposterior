@@ -204,7 +204,7 @@ def optimizeGP(gp, theta, y, seed=None, nGPRestarts=5, method=None, options=None
         mll.append(gp.log_likelihood(y, quiet=True))
 
     # Use CV to select best answer?
-    if cv is not None:
+    if cv:
         pass
     # Pick result with largest marginal log likelihood
     else:
