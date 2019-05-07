@@ -278,7 +278,8 @@ class ApproxPosterior(object):
         gpCV : int (optional)
             Whether or not to use 5-fold cross-validation to select kernel
             hyperparameters from the nGPRestarts maximum likelihood solutions.
-            Defaults to None. This can be useful if the GP is overfitting.
+            Defaults to None. This can be useful if the GP is overfitting, but
+            will likely slow down the code.
         args : iterable (optional)
             Arguments for user-specified loglikelihood function that calls the
             forward model. Defaults to None.
@@ -555,7 +556,8 @@ class ApproxPosterior(object):
         gpCV : int (optional)
             Whether or not to use 5-fold cross-validation to select kernel
             hyperparameters from the nGPRestarts maximum likelihood solutions.
-            Defaults to None. This can be useful if the GP is overfitting.
+            Defaults to None. This can be useful if the GP is overfitting, but
+            will likely slow down the code.
         runName : str (optional)
             Filename for hdf5 file where mcmc chains are saved.  Defaults to
             apRun and will be saved as apRunii.h5 for ii in range(nmax).
@@ -602,7 +604,7 @@ class ApproxPosterior(object):
                                           bounds=bounds,
                                           nMinObjRestarts=nMinObjRestarts,
                                           nCores=nCores)
-
+                                          
             # Compute lnLikelihood at thetaT?
             if computeLnLike:
                 # 2) Query forward model at new point, thetaT
