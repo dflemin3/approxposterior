@@ -604,7 +604,7 @@ class ApproxPosterior(object):
                                           bounds=bounds,
                                           nMinObjRestarts=nMinObjRestarts,
                                           nCores=nCores)
-                                          
+
             # Compute lnLikelihood at thetaT?
             if computeLnLike:
                 # 2) Query forward model at new point, thetaT
@@ -634,10 +634,10 @@ class ApproxPosterior(object):
             try:
                 # Create GP using same kernel, updated estimate of the mean, but new theta
                 currentHype = self.gp.get_parameter_vector()
-                self.gp = george.GP(kernel=self.gp.kernel, fit_mean=True, mean=np.mean(self.y))
+                self.gp = george.GP(kernel=self.gp.kernel, fit_mean=True,
+                                    mean=np.mean(self.y))
                 self.gp.set_parameter_vector(currentHype)
                 self.gp.compute(self.theta)
-
                 # Now optimize GP given new points?
                 if optGP:
                     self.gp = gpUtils.optimizeGP(self.gp, self.theta, self.y,

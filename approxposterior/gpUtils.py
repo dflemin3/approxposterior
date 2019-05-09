@@ -94,9 +94,7 @@ def defaultGP(theta, y):
     initialMetric = np.array([5.0*len(theta)**(-1.0/theta.shape[-1]) for _ in range(theta.shape[-1])])
 
     # Create kernel: We'll model coveriances in loglikelihood space using a
-    # Squared Expoential Kernel as we anticipate Gaussian-ish posterior
-    # distributions in our 2-dimensional parameter space
-    # but wide bounds on the metric just in case
+    # Squared Expoential Kernel with wide bounds on the metric just in case
     metric_bounds = ((-100, 100) for _ in range(theta.shape[-1]))
     kernel = george.kernels.ExpSquaredKernel(initialMetric,
                                              ndim=theta.shape[-1],
@@ -180,7 +178,8 @@ def optimizeGP(gp, theta, y, seed=None, nGPRestarts=5, method=None, options=None
 
         # Inputs for each process
         if p0 is None:
-            iterables = [(_nll, np.hstack(([np.mean(y)], [np.random.uniform(low=-10, high=10) for _ in range(theta.shape[-1])]))) for _ in range(nGPRestarts)]
+            iterables = [(_nll, np.hstack(([np.mean(y)],
+                        [np.random.uniform(low=-10, high=10) for _ in range(theta.shape[-1])]))) for _ in range(nGPRestarts)]
         else:
             iterables = [(_nll, np.array(p0) + 1.0e-3 * np.random.randn(len(p0))) for _ in range(nGPRestarts)]
 
