@@ -23,6 +23,7 @@ import time
 import emcee
 import george
 import os
+from sklearn.preprocessing import MinMaxScaler
 
 
 class ApproxPosterior(object):
@@ -147,6 +148,10 @@ class ApproxPosterior(object):
         if not np.isfinite(lnprior):
             return -np.inf, np.nan
 
+        # Scale data to (0,1) for GP?
+        if self.scaler is not None:
+            theta = self.scaler.transform(theta)
+
         # Mean of predictive distribution conditioned on y (GP posterior estimate)
         # and make sure theta is the right shape for the GP
         try:
@@ -171,7 +176,7 @@ class ApproxPosterior(object):
             thinChains=False, runName="apRun", cache=True,
             maxLnLikeRestarts=3, gmmKwargs=None, gpMethod=None, gpOptions=None,
             gpP0=None, optGPEveryN=1, nGPRestarts=5, nMinObjRestarts=5,
-            nCores=1, gpCV=None, args=None, **kwargs):
+            nCores=1, gpCV=None, scale=False, args=None, **kwargs):
         """
         Core algorithm to estimate the posterior distribution via Gaussian
         Process regression to the joint distribution for the forward model
@@ -280,6 +285,9 @@ class ApproxPosterior(object):
             hyperparameters from the nGPRestarts maximum likelihood solutions.
             Defaults to None. This can be useful if the GP is overfitting, but
             will likely slow down the code.
+        scale : bool (optional)
+            Whether or not to scale parameters to (0,1) following Kandasamy et
+            al. (2015). Defaults to False.
         args : iterable (optional)
             Arguments for user-specified loglikelihood function that calls the
             forward model. Defaults to None.
@@ -296,6 +304,7 @@ class ApproxPosterior(object):
         # calculate and we want them around in case something weird happens.
         # Users should probably do this in their likelihood function
         # anyways, but might as well do it here too.
+        # Note: this is done before any scaling
         if cache:
             np.savez(str(runName) + "APFModelCache.npz",
                      theta=self.theta, y=self.y)
@@ -316,6 +325,14 @@ class ApproxPosterior(object):
             err_msg = "ERROR: bounds provided but len(bounds) != ndim.\n"
             err_msg += "ndim = %d, len(bounds) = %d" % (self.theta.shape[-1], len(bounds))
             raise ValueError(err_msg)
+
+        # Scale features to range [0,1]?
+        if scale:
+            self.scaler = MinMaxScaler()
+            self.scaler.fit(np.asarray(bounds).T)
+            self.theta = self.scaler.transform(self.theta)
+        else:
+            self.scaler = None
 
         # Initial optimization of gaussian process
         self.gp = gpUtils.optimizeGP(self.gp, self.theta, self.y, seed=seed,
@@ -366,6 +383,7 @@ class ApproxPosterior(object):
                                    nMinObjRestarts=nMinObjRestarts,
                                    gpCV=gpCV,
                                    runName=runName,
+                                   scale=scale,
                                    args=args,
                                    **kwargs)
 
@@ -489,7 +507,7 @@ class ApproxPosterior(object):
                       maxLnLikeRestarts=3, seed=None, cache=True, gpOptions=None,
                       gpP0=None, optGP=True, args=None, nGPRestarts=5,
                       nMinObjRestarts=5, nCores=1, gpCV=None, runName="apRun",
-                      **kwargs):
+                      scale=False, **kwargs):
         """
         Find new point, thetaT, by maximizing utility function. Note that we
         call a minimizer because minimizing negative of utility function is
@@ -561,6 +579,9 @@ class ApproxPosterior(object):
         runName : str (optional)
             Filename for hdf5 file where mcmc chains are saved.  Defaults to
             apRun and will be saved as apRunii.h5 for ii in range(nmax).
+        scale : bool (optional)
+            Whether or not to scale parameters to (0,1) following Kandasamy et
+            al. (2015). Defaults to False.
         args : iterable (optional)
             Arguments for user-specified loglikelihood function that calls the
             forward model. Defaults to None.
@@ -607,6 +628,11 @@ class ApproxPosterior(object):
 
             # Compute lnLikelihood at thetaT?
             if computeLnLike:
+                # If scaling, transform thetaT back to physical units for
+                # user-supplied lnlike and lnprior functions
+                if scale:
+                    thetaT = self.scaler.inverse_transform(thetaT)
+
                 # 2) Query forward model at new point, thetaT
                 # Evaluate forward model via loglikelihood function
                 loglikeT = self._lnlike(thetaT, *args, **kwargs)
@@ -624,6 +650,10 @@ class ApproxPosterior(object):
             llIters += 1
 
         if computeLnLike:
+            # If scaling, transform thetaT back to (0,1)
+            if scale:
+                thetaT = self.scaler.transform(thetaT)
+
             # Valid theta, y found. Join theta, y arrays with new points.
             self.theta = np.vstack([self.theta, np.array(thetaT)])
             self.y = np.hstack([self.y, yT])
@@ -647,6 +677,8 @@ class ApproxPosterior(object):
                                                  nCores=nCores,
                                                  gpCV=gpCV)
             except ValueError:
+                if scale:
+                    self.theta = self.inverse_transform(self.theta)
                 print("theta:", self.theta)
                 print("y:", self.y)
                 print("gp parameters names:", self.gp.get_parameter_names())
@@ -658,6 +690,9 @@ class ApproxPosterior(object):
             # Users should probably do this in their likelihood function
             # anyways, but might as well do it here too.
             if cache:
+                # If scaling, save theta in physical units
+                if scale:
+                    self.theta = self.inverse_transform(self.theta)
                 np.savez(str(runName)+"APFModelCache.npz", theta=self.theta,
                          y=self.y)
         # Don't care about lnlikelihood, just return thetaT.
