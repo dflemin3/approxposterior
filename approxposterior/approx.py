@@ -697,7 +697,7 @@ class ApproxPosterior(object):
                                                  gpCV=gpCV)
             except ValueError:
                 # Output errant theta in physical units
-                self.theta = self.inverse_transform(self.theta)
+                self.theta = self.scaler.inverse_transform(self.theta)
                 print("theta:", self.theta)
                 print("y:", self.y)
                 print("gp parameters names:", self.gp.get_parameter_names())
