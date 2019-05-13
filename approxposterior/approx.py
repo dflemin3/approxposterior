@@ -120,7 +120,7 @@ class ApproxPosterior(object):
         self.sampler = None
 
         # Initialize other ancillary parameters
-        self.scaler = None
+        self.scaler = ut.NoScaler() # Default to no parameter scaling
         self.bounds = None
     # end function
 
@@ -152,9 +152,8 @@ class ApproxPosterior(object):
         if not np.isfinite(lnprior):
             return -np.inf, np.nan
 
-        # Scale data to (0,1) for GP?
-        if self.scaler is not None:
-            theta = self.scaler.transform(np.array(theta).reshape(1,-1))
+        # If scaling, do it
+        theta = self.scaler.transform(np.array(theta).reshape(1,-1))
 
         # Mean of predictive distribution conditioned on y (GP posterior estimate)
         # and make sure theta is the right shape for the GP
@@ -336,13 +335,14 @@ class ApproxPosterior(object):
             # Build sklearn scaler
             self.scaler = MinMaxScaler()
             self.scaler.fit(np.asarray(bounds).T)
-            self.theta = self.scaler.transform(self.theta)
 
             # Set bounds to tuple of (0, 1)
             self.bounds = tuple((0,1) for _ in range(len(bounds)))
         else:
-            self.scaler = None
             self.bounds = bounds
+
+        # Process theta
+        self.theta = self.scaler.transform(self.theta)
 
         # Initial optimization of gaussian process
         self.gp = gpUtils.optimizeGP(self.gp, self.theta, self.y, seed=seed,
@@ -393,7 +393,6 @@ class ApproxPosterior(object):
                                    nMinObjRestarts=nMinObjRestarts,
                                    gpCV=gpCV,
                                    runName=runName,
-                                   scale=scale,
                                    args=args,
                                    **kwargs)
 
@@ -517,7 +516,7 @@ class ApproxPosterior(object):
                       maxLnLikeRestarts=3, seed=None, cache=True, gpOptions=None,
                       gpP0=None, optGP=True, args=None, nGPRestarts=5,
                       nMinObjRestarts=5, nCores=1, gpCV=None, runName="apRun",
-                      scale=False, **kwargs):
+                      **kwargs):
         """
         Find new point, thetaT, by maximizing utility function. Note that we
         call a minimizer because minimizing negative of utility function is
@@ -589,9 +588,6 @@ class ApproxPosterior(object):
         runName : str (optional)
             Filename for hdf5 file where mcmc chains are saved.  Defaults to
             apRun and will be saved as apRunii.h5 for ii in range(nmax).
-        scale : bool (optional)
-            Whether or not to scale parameters to (0,1) following Kandasamy et
-            al. (2015). Defaults to False.
         args : iterable (optional)
             Arguments for user-specified loglikelihood function that calls the
             forward model. Defaults to None.
@@ -641,10 +637,10 @@ class ApproxPosterior(object):
             if computeLnLike:
                 # If scaling, transform thetaT back to physical units for
                 # user-supplied lnlike and lnprior functions
-                if scale:
-                    shape = thetaT.shape
-                    # Don't forget to reshape or sklearn will complain
-                    thetaT = self.scaler.inverse_transform(np.array(thetaT).reshape(1,-1)).reshape(shape)
+
+                # Process thetaT taking care to use correct shape for sklearn
+                shape = thetaT.shape
+                thetaT = self.scaler.inverse_transform(np.array(thetaT).reshape(1,-1)).reshape(shape)
 
                 # 2) Query forward model at new point, thetaT
                 # Evaluate forward model via loglikelihood function
@@ -664,8 +660,7 @@ class ApproxPosterior(object):
 
         if computeLnLike:
             # If scaling, transform thetaT back to (0,1)
-            if scale:
-                thetaT = self.scaler.transform(thetaT.reshape(1,-1))
+            thetaT = self.scaler.transform(thetaT.reshape(1,-1))
 
             # Valid theta, y found. Join theta, y arrays with new points.
             self.theta = np.vstack([self.theta, np.array(thetaT)])
@@ -690,8 +685,8 @@ class ApproxPosterior(object):
                                                  nCores=nCores,
                                                  gpCV=gpCV)
             except ValueError:
-                if scale:
-                    self.theta = self.inverse_transform(self.theta)
+                # Output errant theta in physical units
+                self.theta = self.inverse_transform(self.theta)
                 print("theta:", self.theta)
                 print("y:", self.y)
                 print("gp parameters names:", self.gp.get_parameter_names())
@@ -704,8 +699,7 @@ class ApproxPosterior(object):
             # anyways, but might as well do it here too.
             if cache:
                 # If scaling, save theta in physical units
-                if scale:
-                    self.theta = self.inverse_transform(self.theta)
+                self.theta = self.inverse_transform(self.theta)
                 np.savez(str(runName)+"APFModelCache.npz", theta=self.theta,
                          y=self.y)
         # Don't care about lnlikelihood, just return thetaT.

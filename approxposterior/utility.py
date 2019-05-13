@@ -11,11 +11,12 @@ wrappers.
 # Tell module what it's allowed to import
 __all__ = ["logsubexp","AGPUtility","BAPEUtility","minimizeObjective",
            "functionWrapper","functionWrapperArgsOnly","klNumerical",
-           "latinHypercubeSampling"]
+           "latinHypercubeSampling", "NoScaler"]
 
 from . import pool
 import numpy as np
 import multiprocessing
+from sklearn.base import TransformerMixin
 from scipy.optimize import minimize
 from pyDOE import lhs
 
@@ -25,6 +26,52 @@ from pyDOE import lhs
 # Useful classes
 #
 ################################################################################
+
+
+class NoScaler(TransformerMixin):
+    """
+    Dummy sklearn-like scaler that does nothing.
+    """
+
+    def __init__(self, **kwargs):
+        """
+        """
+
+        pass
+    # end function
+
+
+    def fit(self, X, y=None):
+        """
+        """
+
+        pass
+    # end function
+
+
+    def fit_transform(self, X, y=None):
+        """
+        """
+
+        return X
+    # end function
+
+
+    def transform(self, X):
+        """
+        """
+
+        return X
+    # end function
+
+
+    def inverse_transform(self, X):
+        """
+        """
+
+        return X
+    # end function
+# end class
 
 
 class functionWrapper(object):
