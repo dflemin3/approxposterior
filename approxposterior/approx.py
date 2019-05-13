@@ -699,7 +699,7 @@ class ApproxPosterior(object):
             # anyways, but might as well do it here too.
             if cache:
                 # If scaling, save theta in physical units
-                self.theta = self.inverse_transform(self.theta)
+                self.theta = self.scaler.inverse_transform(self.theta)
                 np.savez(str(runName)+"APFModelCache.npz", theta=self.theta,
                          y=self.y)
         # Don't care about lnlikelihood, just return thetaT.
