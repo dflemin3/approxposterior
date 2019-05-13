@@ -34,7 +34,7 @@ class ApproxPosterior(object):
     """
 
     def __init__(self, theta, y, lnprior, lnlike, priorSample, bounds, gp=None,
-                 algorithm="BAPE", scale=False):
+                 algorithm="BAPE", scale=None):
         """
         Initializer.
 
@@ -64,9 +64,12 @@ class ApproxPosterior(object):
             Which utility function to use.  Defaults to BAPE.  Options are BAPE,
             AGP, or alternate.  Case doesn't matter. If alternate, runs AGP on
             even numbers and BAPE on odd.
-        scale : bool (optional)
-            Whether or not to scale parameters to (0,1) following Kandasamy et
-            al. (2015). Defaults to False.
+        scale : str (optional)
+            How to scale parameters. Options are "minmax" for scaling features
+            to between (0,1) following Kandasamy et al. (2015), "standard" for
+            sklearn StandardScaler scaling, e.g. subtracting the mean and
+            dividing by the standard deviation of the training set. Any other
+            option results in no scaling, the default behavior.
 
         Returns
         -------
@@ -125,17 +128,20 @@ class ApproxPosterior(object):
         # Only save last sampler object since they can get pretty huge
         self.sampler = None
 
-        # Scale features to range [0,1]?
-        if scale:
+        # Scale features?
+        if scale is not None and str(scale).lower() == "minmax":
+            # Build minmax scaler based on bounds
+            self.scaler = MinMaxScaler()
+            self.scaler.fit(np.asarray(self.bounds).T)
 
-            # Build sklearn scaler
-            #self.scaler = MinMaxScaler()
-            #self.scaler.fit(np.asarray(self.bounds).T)
+            # Set bounds to tuple of (0, 1)
+            self.bounds = tuple((0,1) for _ in range(len(self.bounds)))
+        elif scale is not None and str(scale).lower() == "standard":
+            # Build sklearn StandardScaler based on training data
             self.scaler = StandardScaler()
             self.scaler.fit(self.theta)
 
-            # Set bounds to tuple of (0, 1)
-            #self.bounds = tuple((0,1) for _ in range(len(self.bounds)))
+            # Set bounds to a generous +/- 10 sigma
             self.bounds = tuple((-10,10) for _ in range(len(self.bounds)))
         else:
             self.scaler = ut.NoScaler()

@@ -388,7 +388,7 @@ def _minimizeObjective(theta0, fn, y, gp, sampleFn, priorFn, bounds=None,
         # Optimization failed, try a new theta0
         # Choose theta0 by uniformly sampling over parameter space and reshape
         # theta0 for the gp
-        theta0 = scaler.transform(sampleFn(1).reshape(1,-1))
+        theta0 = scaler.transform(np.array(sampleFn(1)).reshape(1,-1))
 # end function
 
 
