@@ -118,6 +118,10 @@ class ApproxPosterior(object):
 
         # Only save last sampler object since they can get pretty huge
         self.sampler = None
+
+        # Initialize other ancillary parameters
+        self.scaler = None
+        self.bounds = None
     # end function
 
 

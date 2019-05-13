@@ -331,8 +331,12 @@ def _minimizeObjective(theta0, fn, y, gp, sampleFn, priorFn, bounds=None,
         # Are all values finite?
         if np.all(np.isfinite(tmp)):
             # Is this point in parameter space allowed by the prior?
-            if np.isfinite(priorFn(scaler.inverse_transform(tmp.reshape(1,-1)))):
-                return tmp
+            if scaler is not None:
+                if np.isfinite(priorFn(scaler.inverse_transform(tmp.reshape(1,-1)))):
+                    return tmp
+            else:
+                if np.isfinite(priorFn(tmp)):
+                    return tmp
 
         # Optimization failed, try a new theta0
         # Choose theta0 by uniformly sampling over parameter space and reshape
