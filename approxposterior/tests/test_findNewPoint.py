@@ -43,6 +43,7 @@ def test_find():
                                 lnprior=lh.rosenbrockLnprior,
                                 lnlike=lh.rosenbrockLnlike,
                                 priorSample=lh.rosenbrockSample,
+                                bounds=bounds,
                                 algorithm=algorithm)
 
     # Find new point!

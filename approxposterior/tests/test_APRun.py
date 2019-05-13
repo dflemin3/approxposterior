@@ -49,11 +49,12 @@ def test_run():
                                 lnprior=lh.rosenbrockLnprior,
                                 lnlike=lh.rosenbrockLnlike,
                                 priorSample=lh.rosenbrockSample,
+                                bounds=bounds,
                                 algorithm=algorithm)
 
     # Run!
-    ap.run(m=m, nmax=nmax, Dmax=Dmax, kmax=kmax, bounds=bounds, cache=False,
-           nKLSamples=100000, mcmcKwargs=mcmcKwargs, samplerKwargs=samplerKwargs,
+    ap.run(m=m, nmax=nmax, Dmax=Dmax, kmax=kmax, cache=False, nKLSamples=100000,
+           mcmcKwargs=mcmcKwargs, samplerKwargs=samplerKwargs,
            verbose=False, nGPRestarts=3, seed=seed)
 
     # Ensure medians of chains are consistent with the true values

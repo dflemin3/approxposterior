@@ -33,8 +33,8 @@ class ApproxPosterior(object):
     the AGP (Adaptive Gaussian Process) by Wang & Li (2017).
     """
 
-    def __init__(self, theta, y, lnprior, lnlike, priorSample, gp=None,
-                 algorithm="BAPE"):
+    def __init__(self, theta, y, lnprior, lnlike, priorSample, bounds, gp=None,
+                 algorithm="BAPE", scale=False):
         """
         Initializer.
 
@@ -52,6 +52,8 @@ class ApproxPosterior(object):
             is used to evaluate the log likelihood.
         priorSample : function
             Method to randomly sample points over region allowed by prior
+        bounds : tuple/iterable
+            Hard bounds for parameters
         gp : george.GP (optional)
             Gaussian Process that learns the likelihood conditioned on forward
             model input-output pairs (theta, y). It's recommended that users
@@ -62,6 +64,9 @@ class ApproxPosterior(object):
             Which utility function to use.  Defaults to BAPE.  Options are BAPE,
             AGP, or alternate.  Case doesn't matter. If alternate, runs AGP on
             even numbers and BAPE on odd.
+        scale : bool (optional)
+            Whether or not to scale parameters to (0,1) following Kandasamy et
+            al. (2015). Defaults to False.
 
         Returns
         -------
@@ -79,6 +84,14 @@ class ApproxPosterior(object):
         if np.any(~np.isfinite(self.theta)) or np.any(~np.isfinite(self.y)):
             print("theta, y:", theta, y)
             raise ValueError("All theta and y values must be finite!")
+
+        # Ensure bounds has correct shape
+        if len(bounds) != self.theta.shape[-1]:
+            err_msg = "ERROR: bounds provided but len(bounds) != ndim.\n"
+            err_msg += "ndim = %d, len(bounds) = %d" % (self.theta.shape[-1], len(bounds))
+            raise ValueError(err_msg)
+        else:
+            self.bounds = bounds
 
         # Initialize gaussian process
         if gp is None:
@@ -119,9 +132,19 @@ class ApproxPosterior(object):
         # Only save last sampler object since they can get pretty huge
         self.sampler = None
 
-        # Initialize other ancillary parameters
-        self.scaler = ut.NoScaler() # Default to no parameter scaling
-        self.bounds = None
+        # Scale features to range [0,1]?
+        if scale:
+
+            # Build sklearn scaler
+            self.scaler = MinMaxScaler()
+            self.scaler.fit(np.asarray(self.bounds).T)
+
+            # Set bounds to tuple of (0, 1)
+            self.bounds = tuple((0,1) for _ in range(len(self.bounds)))
+        else:
+            self.scaler = ut.NoScaler()
+            self.bounds = bounds
+
     # end function
 
 
@@ -329,18 +352,6 @@ class ApproxPosterior(object):
             err_msg += "ndim = %d, len(bounds) = %d" % (self.theta.shape[-1], len(bounds))
             raise ValueError(err_msg)
 
-        # Scale features to range [0,1]?
-        if scale:
-
-            # Build sklearn scaler
-            self.scaler = MinMaxScaler()
-            self.scaler.fit(np.asarray(bounds).T)
-
-            # Set bounds to tuple of (0, 1)
-            self.bounds = tuple((0,1) for _ in range(len(bounds)))
-        else:
-            self.bounds = bounds
-
         # Process theta
         self.theta = self.scaler.transform(self.theta)
 
@@ -348,7 +359,8 @@ class ApproxPosterior(object):
         self.gp = gpUtils.optimizeGP(self.gp, self.theta, self.y, seed=seed,
                                      method=gpMethod, options=gpOptions,
                                      p0=gpP0, nGPRestarts=nGPRestarts,
-                                     nCores=nCores, gpCV=gpCV)
+                                     nCores=nCores, gpCV=gpCV,
+                                     scaler=self.scaler)
 
         # Main loop
         kk = 0
@@ -683,7 +695,7 @@ class ApproxPosterior(object):
                                                  options=gpOptions, p0=gpP0,
                                                  nGPRestarts=nGPRestarts,
                                                  nCores=nCores,
-                                                 gpCV=gpCV)
+                                                 gpCV=gpCV, scaler=self.scaler)
             except ValueError:
                 # Output errant theta in physical units
                 self.theta = self.inverse_transform(self.theta)

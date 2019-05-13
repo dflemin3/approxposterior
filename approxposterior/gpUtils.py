@@ -112,7 +112,7 @@ def defaultGP(theta, y):
 
 
 def optimizeGP(gp, theta, y, seed=None, nGPRestarts=5, method=None, options=None,
-               p0=None, nCores=1, gpCV=None):
+               p0=None, nCores=1, gpCV=None, scaler=None):
     """
     Optimize hyperparameters of an arbitrary george Gaussian Process kernel
     by maximizing the marginalized log-likelihood.
@@ -144,11 +144,17 @@ def optimizeGP(gp, theta, y, seed=None, nGPRestarts=5, method=None, options=None
         hyperparameters from the nGPRestarts maximum likelihood solutions.
         Defaults to None. This can be useful if the GP is overfitting, but
         will likely slow down the code.
+    scaler : sklearn.base.TransformerMixin (optional)
+        Scaler to transform parameters. Defaults to None.
 
     Returns
     -------
     optimized_gp : george.GP
     """
+
+    # Default scaler
+    if scaler is None:
+        scaler = util.NoScaler()
 
     # Set default parameters if None are provided
     if method is None:
@@ -220,11 +226,11 @@ def optimizeGP(gp, theta, y, seed=None, nGPRestarts=5, method=None, options=None
                 for jj in range(len(res)):
                     # Update the kernel using training set
                     gp.set_parameter_vector(res[ii])
-                    gp.compute(theta[trainInds])
+                    gp.compute(scaler.transform(theta[trainInds]))
 
                     # Compute marginal log likelihood for this set of
                     # kernel hyperparameters conditioned on the training set
-                    yhat = gp.predict(y[trainInds], theta[testInds],
+                    yhat = gp.predict(y[trainInds], scaler.transform(theta[testInds]),
                                       return_cov=False, return_var=False)
                     mlls[ii,jj] = mean_squared_error(y[testInds], yhat)
                     #mlls[ii,jj] = gp.log_likelihood(y[testInds], quiet=True)
@@ -245,7 +251,7 @@ def optimizeGP(gp, theta, y, seed=None, nGPRestarts=5, method=None, options=None
     # Update gp
     gp.set_parameter_vector(res[ind])
     if gpCV is not None:
-        gp.compute(theta)
+        gp.compute(scaler.transform(theta))
     else:
         gp.recompute()
 
