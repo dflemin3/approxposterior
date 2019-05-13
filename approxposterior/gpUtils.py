@@ -227,7 +227,6 @@ def optimizeGP(gp, theta, y, seed=None, nGPRestarts=5, method=None, options=None
                     yhat = gp.predict(y[trainInds], theta[testInds],
                                       return_cov=False, return_var=False)
                     mlls[ii,jj] = mean_squared_error(y[testInds], yhat)
-                    #mlls[ii,jj] = gp.log_likelihood(y[testInds], quiet=True)
 
                 # End loop over each MLL solution for this cv fold
                 ii = ii + 1

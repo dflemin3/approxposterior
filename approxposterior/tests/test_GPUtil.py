@@ -61,13 +61,13 @@ def testUtilsGP():
 
     # Compute the AGP utility function at some point
     thetaTest = np.array([-2.3573, 4.673])
-    testUtil = ut.AGPUtility(thetaTest, y, gp, lh.rosenbrockLnprior)
+    testUtil = ut.AGPUtility(thetaTest, y, gp, lh.rosenbrockLnprior, ut.NoScaler())
 
     errMsg = "ERROR: AGP util fn bug.  Did you change gp_utils.setup_gp?"
     assert np.allclose(testUtil, 36.17652652, rtol=1.0e-4), errMsg
 
     # Now do the same using the BAPE utility function
-    testUtil = ut.BAPEUtility(thetaTest, y, gp, lh.rosenbrockLnprior)
+    testUtil = ut.BAPEUtility(thetaTest, y, gp, lh.rosenbrockLnprior, ut.NoScaler())
 
     errMsg = "ERROR: BAPE util fn bug.  Did you change gp_utils.setup_gp?"
     assert np.allclose(testUtil, 75.17909884, rtol=1.0e-4), errMsg

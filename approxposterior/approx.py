@@ -23,7 +23,7 @@ import time
 import emcee
 import george
 import os
-from sklearn.preprocessing import MinMaxScaler
+from sklearn.preprocessing import MinMaxScaler, StandardScaler
 
 
 class ApproxPosterior(object):
@@ -93,13 +93,6 @@ class ApproxPosterior(object):
         else:
             self.bounds = bounds
 
-        # Initialize gaussian process
-        if gp is None:
-            print("WARNING: No GP specified. Initializing GP using ExpSquaredKernel.")
-            self.gp = gpUtils.defaultGP(self.theta, self.y)
-        else:
-            self.gp = gp
-
         # Set required functions, algorithm
         self._lnprior = lnprior
         self._lnlike = lnlike
@@ -136,17 +129,27 @@ class ApproxPosterior(object):
         if scale:
 
             # Build sklearn scaler
-            self.scaler = MinMaxScaler()
-            self.scaler.fit(np.asarray(self.bounds).T)
+            #self.scaler = MinMaxScaler()
+            #self.scaler.fit(np.asarray(self.bounds).T)
+            self.scaler = StandardScaler()
+            self.scaler.fit(self.theta)
 
             # Set bounds to tuple of (0, 1)
-            self.bounds = tuple((0,1) for _ in range(len(self.bounds)))
+            #self.bounds = tuple((0,1) for _ in range(len(self.bounds)))
+            self.bounds = tuple((-10,10) for _ in range(len(self.bounds)))
         else:
             self.scaler = ut.NoScaler()
             self.bounds = bounds
 
         # Scale parameters
         self.theta = self.scaler.transform(self.theta)
+
+        # Initialize gaussian process
+        if gp is None:
+            print("WARNING: No GP specified. Initializing GP using ExpSquaredKernel.")
+            self.gp = gpUtils.defaultGP(self.theta, self.y)
+        else:
+            self.gp = gp
 
     # end function
 
@@ -155,6 +158,8 @@ class ApproxPosterior(object):
         """
         Compute the approximate posterior conditional distibution, the
         likelihood + prior learned by the GP, at a given point, theta.
+
+        Expects an unscaled theta.
 
         Parameters
         ----------
