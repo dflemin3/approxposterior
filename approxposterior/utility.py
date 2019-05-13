@@ -57,7 +57,7 @@ class NoScaler(TransformerMixin):
     # end function
 
 
-    def transform(self, X):
+    def transform(self, X, y=None):
         """
         """
 
@@ -65,7 +65,7 @@ class NoScaler(TransformerMixin):
     # end function
 
 
-    def inverse_transform(self, X):
+    def inverse_transform(self, X, y=None):
         """
         """
 
@@ -354,6 +354,8 @@ def _minimizeObjective(theta0, fn, y, gp, sampleFn, priorFn, bounds=None,
     """
     Minimize objective wrapped function for multiprocessing. Same inputs/outputs
     as minimizeObjective.
+
+    Assumes theta0 has already been scaled by ApproxPosterior.scaler
     """
 
     # Required arguments for the utility function
@@ -371,8 +373,6 @@ def _minimizeObjective(theta0, fn, y, gp, sampleFn, priorFn, bounds=None,
         # ValueError.  Try again.
         except ValueError:
             tmp = np.array([np.inf for ii in range(theta0.shape[-1])]).reshape(theta0.shape)
-
-
 
         # Vet answer: must be finite, allowed by prior
         # Are all values finite?

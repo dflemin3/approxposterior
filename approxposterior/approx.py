@@ -145,6 +145,9 @@ class ApproxPosterior(object):
             self.scaler = ut.NoScaler()
             self.bounds = bounds
 
+        # Scale parameters
+        self.theta = self.scaler.transform(self.theta)
+
     # end function
 
 
@@ -176,14 +179,12 @@ class ApproxPosterior(object):
             return -np.inf, np.nan
 
         # If scaling, do it
-        theta = self.scaler.transform(np.array(theta).reshape(1,-1))
+        theta = self.scaler.transform(np.array(theta).reshape(1,-1)).reshape(1,-1)
 
         # Mean of predictive distribution conditioned on y (GP posterior estimate)
         # and make sure theta is the right shape for the GP
         try:
-            mu = self.gp.predict(self.y,
-                                 np.array(theta).reshape(1,-1),
-                                 return_cov=False,
+            mu = self.gp.predict(self.y, theta, return_cov=False,
                                  return_var=False)
         except ValueError:
             return -np.inf, np.nan
@@ -333,7 +334,7 @@ class ApproxPosterior(object):
         # Note: this is done before any scaling
         if cache:
             np.savez(str(runName) + "APFModelCache.npz",
-                     theta=self.theta, y=self.y)
+                     theta=self.scaler.inverse_transform(self.theta), y=self.y)
 
         # Set RNG seed?
         if seed is not None:
@@ -351,16 +352,14 @@ class ApproxPosterior(object):
             err_msg = "ERROR: bounds provided but len(bounds) != ndim.\n"
             err_msg += "ndim = %d, len(bounds) = %d" % (self.theta.shape[-1], len(bounds))
             raise ValueError(err_msg)
-
-        # Process theta
-        self.theta = self.scaler.transform(self.theta)
+        else:
+            self.bounds = bounds
 
         # Initial optimization of gaussian process
         self.gp = gpUtils.optimizeGP(self.gp, self.theta, self.y, seed=seed,
                                      method=gpMethod, options=gpOptions,
                                      p0=gpP0, nGPRestarts=nGPRestarts,
-                                     nCores=nCores, gpCV=gpCV,
-                                     scaler=self.scaler)
+                                     nCores=nCores, gpCV=gpCV)
 
         # Main loop
         kk = 0
@@ -671,7 +670,7 @@ class ApproxPosterior(object):
             llIters += 1
 
         if computeLnLike:
-            # If scaling, transform thetaT back to (0,1)
+            # If scaling, transform thetaT back to scaled units
             thetaT = self.scaler.transform(thetaT.reshape(1,-1))
 
             # Valid theta, y found. Join theta, y arrays with new points.
@@ -695,7 +694,7 @@ class ApproxPosterior(object):
                                                  options=gpOptions, p0=gpP0,
                                                  nGPRestarts=nGPRestarts,
                                                  nCores=nCores,
-                                                 gpCV=gpCV, scaler=self.scaler)
+                                                 gpCV=gpCV)
             except ValueError:
                 # Output errant theta in physical units
                 self.theta = self.inverse_transform(self.theta)
@@ -711,8 +710,8 @@ class ApproxPosterior(object):
             # anyways, but might as well do it here too.
             if cache:
                 # If scaling, save theta in physical units
-                self.theta = self.scaler.inverse_transform(self.theta)
-                np.savez(str(runName)+"APFModelCache.npz", theta=self.theta,
+                np.savez(str(runName)+"APFModelCache.npz",
+                         theta=self.scaler.inverse_transform(self.theta),
                          y=self.y)
         # Don't care about lnlikelihood, just return thetaT.
         else:
