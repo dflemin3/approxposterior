@@ -379,7 +379,7 @@ def _minimizeObjective(theta0, fn, y, gp, sampleFn, priorFn, bounds=None,
         if np.all(np.isfinite(tmp)):
             # Is this point in parameter space allowed by the prior?
             if scaler is not None:
-                if np.isfinite(priorFn(scaler.inverse_transform(tmp.reshape(1,-1)))):
+                if np.isfinite(priorFn(scaler.inverse_transform(tmp.reshape(1,-1)).reshape(tmp.shape[-1],))):
                     return tmp
             else:
                 if np.isfinite(priorFn(tmp)):
