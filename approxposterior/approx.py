@@ -150,7 +150,7 @@ class ApproxPosterior(object):
 
         # Scale data to (0,1) for GP?
         if self.scaler is not None:
-            theta = self.scaler.transform(theta)
+            theta = self.scaler.transform(np.array(theta).reshape(1,-1))
 
         # Mean of predictive distribution conditioned on y (GP posterior estimate)
         # and make sure theta is the right shape for the GP
@@ -328,11 +328,17 @@ class ApproxPosterior(object):
 
         # Scale features to range [0,1]?
         if scale:
+
+            # Build sklearn scaler
             self.scaler = MinMaxScaler()
             self.scaler.fit(np.asarray(bounds).T)
             self.theta = self.scaler.transform(self.theta)
+
+            # Set bounds to tuple of (0, 1)
+            self.bounds = tuple((0,1) for _ in range(len(bounds)))
         else:
             self.scaler = None
+            self.bounds = bounds
 
         # Initial optimization of gaussian process
         self.gp = gpUtils.optimizeGP(self.gp, self.theta, self.y, seed=seed,
@@ -372,7 +378,7 @@ class ApproxPosterior(object):
                 # ComputeLnLike = True means new points are saved in self.theta,
                 # and self.y
                 self.findNextPoint(computeLnLike=True,
-                                   bounds=bounds,
+                                   bounds=self.bounds,
                                    maxLnLikeRestarts=maxLnLikeRestarts,
                                    seed=seed,
                                    cache=cache,
@@ -624,14 +630,17 @@ class ApproxPosterior(object):
                                           priorFn=self._lnprior,
                                           bounds=bounds,
                                           nMinObjRestarts=nMinObjRestarts,
-                                          nCores=nCores)
+                                          nCores=nCores,
+                                          scaler=self.scaler)
 
             # Compute lnLikelihood at thetaT?
             if computeLnLike:
                 # If scaling, transform thetaT back to physical units for
                 # user-supplied lnlike and lnprior functions
                 if scale:
-                    thetaT = self.scaler.inverse_transform(thetaT)
+                    shape = thetaT.shape
+                    # Don't forget to reshape or sklearn will complain
+                    thetaT = self.scaler.inverse_transform(np.array(thetaT).reshape(1,-1)).reshape(shape)
 
                 # 2) Query forward model at new point, thetaT
                 # Evaluate forward model via loglikelihood function
@@ -652,7 +661,7 @@ class ApproxPosterior(object):
         if computeLnLike:
             # If scaling, transform thetaT back to (0,1)
             if scale:
-                thetaT = self.scaler.transform(thetaT)
+                thetaT = self.scaler.transform(thetaT.reshape(1,-1))
 
             # Valid theta, y found. Join theta, y arrays with new points.
             self.theta = np.vstack([self.theta, np.array(thetaT)])

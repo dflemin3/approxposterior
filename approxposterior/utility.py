@@ -302,7 +302,8 @@ def BAPEUtility(theta, y, gp, priorFn):
 # end function
 
 
-def _minimizeObjective(theta0, fn, y, gp, sampleFn, priorFn, bounds=None):
+def _minimizeObjective(theta0, fn, y, gp, sampleFn, priorFn, bounds=None,
+                       scaler=None):
     """
     Minimize objective wrapped function for multiprocessing. Same inputs/outputs
     as minimizeObjective.
@@ -324,11 +325,13 @@ def _minimizeObjective(theta0, fn, y, gp, sampleFn, priorFn, bounds=None):
         except ValueError:
             tmp = np.array([np.inf for ii in range(theta0.shape[-1])]).reshape(theta0.shape)
 
+
+
         # Vet answer: must be finite, allowed by prior
         # Are all values finite?
         if np.all(np.isfinite(tmp)):
             # Is this point in parameter space allowed by the prior?
-            if np.isfinite(priorFn(tmp)):
+            if np.isfinite(priorFn(scaler.inverse_transform(tmp.reshape(1,-1)))):
                 return tmp
 
         # Optimization failed, try a new theta0
@@ -338,7 +341,7 @@ def _minimizeObjective(theta0, fn, y, gp, sampleFn, priorFn, bounds=None):
 # end function
 
 
-def minimizeObjective(fn, y, gp, sampleFn, priorFn, bounds=None,
+def minimizeObjective(fn, y, gp, sampleFn, priorFn, bounds=None, scaler=None,
                       nMinObjRestarts=5, nCores=1):
     """
     Find point that minimizes fn for a gaussian process gp conditioned on y,
@@ -400,10 +403,13 @@ def minimizeObjective(fn, y, gp, sampleFn, priorFn, bounds=None,
     with pool.Pool(pool=poolType, processes=nCores) as optPool:
 
         # Inputs for each process
-        iterables = [np.array(sampleFn(1)).reshape(1,-1) for _ in range(nMinObjRestarts)]
+        if scaler is not None:
+            iterables = [scaler.transform(np.array(sampleFn(1)).reshape(1,-1)) for _ in range(nMinObjRestarts)]
+        else:
+            iterables = [np.array(sampleFn(1)).reshape(1,-1) for _ in range(nMinObjRestarts)]
 
         # keyword arguments for minimizer
-        mKwargs = {"bounds" : bounds}
+        mKwargs = {"bounds" : bounds, "scaler" : scaler}
 
         # Args for minimizer
         mArgs = (fn, y, gp, sampleFn, priorFn)
