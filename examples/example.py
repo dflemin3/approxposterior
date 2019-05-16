@@ -45,12 +45,13 @@ ap = approx.ApproxPosterior(theta=theta,
                             lnlike=lh.rosenbrockLnlike,
                             priorSample=lh.rosenbrockSample,
                             bounds=bounds,
-                            algorithm=algorithm)
+                            algorithm=algorithm,
+                            scale="standard")
 
 # Run!
-ap.run(m=m, nmax=nmax, Dmax=Dmax, kmax=kmax, estBurnin=True,
-       nKLSamples=nKLSamples, mcmcKwargs=mcmcKwargs, cache=True, nGPRestarts=10,
-       samplerKwargs=samplerKwargs, verbose=True, scale=True)
+ap.run(m=m, nmax=nmax, Dmax=Dmax, kmax=kmax, estBurnin=True, nGPRestarts=10,
+       nKLSamples=nKLSamples, mcmcKwargs=mcmcKwargs, cache=False,
+       samplerKwargs=samplerKwargs, verbose=True)
 
 # Check out the final posterior distribution!
 import corner

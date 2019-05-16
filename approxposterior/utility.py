@@ -385,9 +385,7 @@ def _minimizeObjective(theta0, fn, y, gp, sampleFn, priorFn, bounds=None,
             if np.isfinite(priorFn(scaler.inverse_transform(tmp.reshape(1,-1)).reshape(tmp.shape[-1],))):
                 return tmp
 
-        # Optimization failed, try a new theta0
-        # Choose theta0 by uniformly sampling over parameter space and reshape
-        # theta0 for the gp
+        # Optimization failed, try a new theta0 by sampling from the prior
         theta0 = scaler.transform(np.array(sampleFn(1)).reshape(1,-1))
 # end function
 
