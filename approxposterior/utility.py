@@ -283,7 +283,7 @@ def AGPUtility(theta, y, gp, priorFn, scaler):
 
     # If guess isn't allowed by prior, we don't care what the value of the
     # utility function is
-    if not np.isfinite(priorFn(scaler.inverse_transform(np.array(theta).reshape(1,-1)))):
+    if not np.isfinite(priorFn(scaler.inverse_transform(np.array(theta).reshape(-1,1)).reshape(-1,))):
         return np.inf
 
     # Only works if the GP object has been computed, otherwise you messed up
@@ -330,7 +330,7 @@ def BAPEUtility(theta, y, gp, priorFn, scaler):
 
     # If guess isn't allowed by prior, we don't care what the value of the
     # utility function is
-    if not np.isfinite(priorFn(scaler.inverse_transform(np.array(theta).reshape(1,-1)))):
+    if not np.isfinite(priorFn(scaler.inverse_transform(np.array(theta).reshape(-1,1)).reshape(-1,))):
         return np.inf
 
     # Only works if the GP object has been computed, otherwise you messed up

@@ -145,7 +145,7 @@ class ApproxPosterior(object):
             self.bounds = tuple((-10,10) for _ in range(len(self.bounds)))
         else:
             self.scaler = ut.NoScaler()
-            self.bounds = bounds
+            self.bounds = self.bounds
 
         # Scale parameters
         self.theta = self.scaler.transform(self.theta)
@@ -417,6 +417,7 @@ class ApproxPosterior(object):
                                    runName=runName,
                                    args=args,
                                    **kwargs)
+                print("!!!!")
 
             if timing:
                 self.trainingTime.append(time.time() - start)
