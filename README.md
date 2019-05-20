@@ -49,7 +49,7 @@ To install george, run
 From source:
 
 ```bash
-git clone git@github.com:dflemin3/approxposterior.git
+git clone https://github.com/dflemin3/approxposterior.git
 cd approxposterior
 python setup.py install
 ```
