@@ -15,7 +15,7 @@ import numpy as np
 # Define algorithm parameters
 m0 = 50                           # Initial size of training set
 m = 20                            # Number of new points to find each iteration
-nmax = 2#10                         # Maximum number of iterations
+nmax = 10                         # Maximum number of iterations
 Dmax = 0.1                        # KL-Divergence convergence limit
 kmax = 5                          # Number of iterations for Dmax convergence to kick in
 nKLSamples = 10000                # Number of samples from posterior to use to calculate KL-Divergence
@@ -45,8 +45,7 @@ ap = approx.ApproxPosterior(theta=theta,
                             lnlike=lh.rosenbrockLnlike,
                             priorSample=lh.rosenbrockSample,
                             bounds=bounds,
-                            algorithm=algorithm,
-                            scale=None)
+                            algorithm=algorithm)
 
 # Run!
 ap.run(m=m, nmax=nmax, Dmax=Dmax, kmax=kmax, estBurnin=True, nGPRestarts=10,
