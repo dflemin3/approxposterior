@@ -23,7 +23,6 @@ import time
 import emcee
 import george
 import os
-from sklearn.preprocessing import MinMaxScaler, StandardScaler
 
 
 class ApproxPosterior(object):
@@ -34,7 +33,7 @@ class ApproxPosterior(object):
     """
 
     def __init__(self, theta, y, lnprior, lnlike, priorSample, bounds, gp=None,
-                 algorithm="BAPE", scale=None):
+                 algorithm="BAPE"):
         """
         Initializer.
 
@@ -64,12 +63,6 @@ class ApproxPosterior(object):
             Which utility function to use.  Defaults to BAPE.  Options are BAPE,
             AGP, or alternate.  Case doesn't matter. If alternate, runs AGP on
             even numbers and BAPE on odd.
-        scale : str (optional)
-            How to scale parameters. Options are "minmax" for scaling features
-            to between (0,1) following Kandasamy et al. (2015), "standard" for
-            sklearn StandardScaler scaling, e.g. subtracting the mean and
-            dividing by the standard deviation of the training set. Any other
-            option results in no scaling, the default behavior.
 
         Returns
         -------
@@ -128,28 +121,6 @@ class ApproxPosterior(object):
         # Only save last sampler object since they can get pretty huge
         self.sampler = None
 
-        # Scale features?
-        if scale is not None and str(scale).lower() == "minmax":
-            # Build minmax scaler based on bounds
-            self.scaler = MinMaxScaler()
-            self.scaler.fit(np.asarray(self.bounds).T)
-
-            # Set bounds to tuple of (0, 1)
-            self.bounds = tuple((0,1) for _ in range(len(self.bounds)))
-        elif scale is not None and str(scale).lower() == "standard":
-            # Build sklearn StandardScaler based on training data
-            self.scaler = StandardScaler()
-            self.scaler.fit(self.theta)
-
-            # Set bounds to a generous +/- 10 sigma
-            self.bounds = tuple((-10,10) for _ in range(len(self.bounds)))
-        else:
-            self.scaler = ut.NoScaler()
-            self.bounds = self.bounds
-
-        # Scale parameters
-        self.theta = self.scaler.transform(self.theta)
-
         # Initialize gaussian process
         if gp is None:
             print("WARNING: No GP specified. Initializing GP using ExpSquaredKernel.")
@@ -164,8 +135,6 @@ class ApproxPosterior(object):
         """
         Compute the approximate posterior conditional distibution, the
         likelihood + prior learned by the GP, at a given point, theta.
-
-        Expects an unscaled theta.
 
         Parameters
         ----------
@@ -189,13 +158,11 @@ class ApproxPosterior(object):
         if not np.isfinite(lnprior):
             return -np.inf, np.nan
 
-        # If scaling, do it
-        theta = self.scaler.transform(np.array(theta).reshape(1,-1)).reshape(1,-1)
-
         # Mean of predictive distribution conditioned on y (GP posterior estimate)
         # and make sure theta is the right shape for the GP
         try:
-            mu = self.gp.predict(self.y, theta, return_cov=False,
+            mu = self.gp.predict(self.y, np.array(theta).reshape(1,-1),
+                                 return_cov=False,
                                  return_var=False)
         except ValueError:
             return -np.inf, np.nan
@@ -214,7 +181,7 @@ class ApproxPosterior(object):
             thinChains=False, runName="apRun", cache=True,
             maxLnLikeRestarts=3, gmmKwargs=None, gpMethod=None, gpOptions=None,
             gpP0=None, optGPEveryN=1, nGPRestarts=5, nMinObjRestarts=5,
-            nCores=1, gpCV=None, scale=False, args=None, **kwargs):
+            nCores=1, gpCV=None, args=None, **kwargs):
         """
         Core algorithm to estimate the posterior distribution via Gaussian
         Process regression to the joint distribution for the forward model
@@ -323,9 +290,6 @@ class ApproxPosterior(object):
             hyperparameters from the nGPRestarts maximum likelihood solutions.
             Defaults to None. This can be useful if the GP is overfitting, but
             will likely slow down the code.
-        scale : bool (optional)
-            Whether or not to scale parameters to (0,1) following Kandasamy et
-            al. (2015). Defaults to False.
         args : iterable (optional)
             Arguments for user-specified loglikelihood function that calls the
             forward model. Defaults to None.
@@ -344,8 +308,8 @@ class ApproxPosterior(object):
         # anyways, but might as well do it here too.
         # Note: this is done before any scaling
         if cache:
-            np.savez(str(runName) + "APFModelCache.npz",
-                     theta=self.scaler.inverse_transform(self.theta), y=self.y)
+            np.savez(str(runName) + "APFModelCache.npz", theta=self.theta,
+                     y=self.y)
 
         # Set RNG seed?
         if seed is not None:
@@ -417,7 +381,6 @@ class ApproxPosterior(object):
                                    runName=runName,
                                    args=args,
                                    **kwargs)
-                print("!!!!")
 
             if timing:
                 self.trainingTime.append(time.time() - start)
@@ -653,17 +616,12 @@ class ApproxPosterior(object):
                                           priorFn=self._lnprior,
                                           bounds=bounds,
                                           nMinObjRestarts=nMinObjRestarts,
-                                          nCores=nCores,
-                                          scaler=self.scaler)
+                                          nCores=nCores)
 
             # Compute lnLikelihood at thetaT?
             if computeLnLike:
                 # If scaling, transform thetaT back to physical units for
                 # user-supplied lnlike and lnprior functions
-
-                # Process thetaT taking care to use correct shape for sklearn
-                shape = thetaT.shape
-                thetaT = self.scaler.inverse_transform(np.array(thetaT).reshape(1,-1)).reshape(shape)
 
                 # 2) Query forward model at new point, thetaT
                 # Evaluate forward model via loglikelihood function
@@ -682,8 +640,6 @@ class ApproxPosterior(object):
             llIters += 1
 
         if computeLnLike:
-            # If scaling, transform thetaT back to scaled units
-            thetaT = self.scaler.transform(thetaT.reshape(1,-1))
 
             # Valid theta, y found. Join theta, y arrays with new points.
             self.theta = np.vstack([self.theta, np.array(thetaT)])
@@ -696,7 +652,9 @@ class ApproxPosterior(object):
                 # Create GP using same kernel, updated estimate of the mean, but new theta
                 currentHype = self.gp.get_parameter_vector()
                 self.gp = george.GP(kernel=self.gp.kernel, fit_mean=True,
-                                    mean=np.mean(self.y))
+                                    mean=np.mean(self.y),
+                                    white_noise=self.gp.white_noise,
+                                    fit_white_noise=False)
                 self.gp.set_parameter_vector(currentHype)
                 self.gp.compute(self.theta)
                 # Now optimize GP given new points?
@@ -709,7 +667,6 @@ class ApproxPosterior(object):
                                                  gpCV=gpCV)
             except ValueError:
                 # Output errant theta in physical units
-                self.theta = self.scaler.inverse_transform(self.theta)
                 print("theta:", self.theta)
                 print("y:", self.y)
                 print("gp parameters names:", self.gp.get_parameter_names())
@@ -723,7 +680,7 @@ class ApproxPosterior(object):
             if cache:
                 # If scaling, save theta in physical units
                 np.savez(str(runName)+"APFModelCache.npz",
-                         theta=self.scaler.inverse_transform(self.theta),
+                         theta=self.theta,
                          y=self.y)
         # Don't care about lnlikelihood, just return thetaT.
         else:

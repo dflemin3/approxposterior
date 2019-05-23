@@ -70,7 +70,7 @@ def _grad_nll(p, gp, y):
 # end function
 
 
-def defaultGP(theta, y):
+def defaultGP(theta, y, white_noise=-27.407877564614338):
     """
     Basic utility function that initializes a simple GP that works well in many
     applications, but is not guaranteed to work in general.
@@ -82,6 +82,10 @@ def defaultGP(theta, y):
     y : array
         Data to condition GP on, e.g. the lnlike * lnprior at each design point,
         theta.
+    white_noise : float (optional)
+        From george docs: "A description of the logarithm of the white noise
+        variance added to the diagonal of the covariance matrix". Defaults to
+        log(TINY) = -27.407877564614338
 
     Returns
     -------
@@ -100,11 +104,11 @@ def defaultGP(theta, y):
                                              ndim=theta.shape[-1],
                                              metric_bounds=metric_bounds)
 
-    # Guess initial mean function
-    mean = np.mean(y)
+    # amp: np.log(np.var(y)) * kernel
 
     # Create GP and compute the kernel, aka factor the covariance matrix
-    gp = george.GP(kernel=kernel, fit_mean=True, mean=mean)
+    gp = george.GP(kernel=kernel, fit_mean=True, mean=np.mean(y),
+                   white_noise=white_noise, fit_white_noise=False)
     gp.compute(theta)
 
     return gp
@@ -180,6 +184,10 @@ def optimizeGP(gp, theta, y, seed=None, nGPRestarts=5, method=None, options=None
         if p0 is None:
             iterables = [(_nll, np.hstack(([np.mean(y)],
                         [np.random.uniform(low=-10, high=10) for _ in range(theta.shape[-1])]))) for _ in range(nGPRestarts)]
+            #iterables = [(_nll,
+            #            [np.random.uniform(low=-10, high=10) for _ in range(theta.shape[-1])]) for _ in range(nGPRestarts)]
+            #iterables = [(_nll, np.hstack(([np.log(np.var(y))],
+            #            [np.random.uniform(low=-10, high=10) for _ in range(theta.shape[-1])]))) for _ in range(nGPRestarts)]
         else:
             iterables = [(_nll, np.array(p0) + 1.0e-3 * np.random.randn(len(p0))) for _ in range(nGPRestarts)]
 

@@ -11,7 +11,7 @@ wrappers.
 # Tell module what it's allowed to import
 __all__ = ["logsubexp","AGPUtility","BAPEUtility","minimizeObjective",
            "functionWrapper","functionWrapperArgsOnly","klNumerical",
-           "latinHypercubeSampling", "NoScaler"]
+           "latinHypercubeSampling"]
 
 from . import pool
 import numpy as np
@@ -26,52 +26,6 @@ from pyDOE import lhs
 # Useful classes
 #
 ################################################################################
-
-
-class NoScaler(TransformerMixin):
-    """
-    Dummy sklearn-like scaler that does nothing.
-    """
-
-    def __init__(self, **kwargs):
-        """
-        """
-
-        pass
-    # end function
-
-
-    def fit(self, X, y=None):
-        """
-        """
-
-        pass
-    # end function
-
-
-    def fit_transform(self, X, y=None):
-        """
-        """
-
-        return X
-    # end function
-
-
-    def transform(self, X, y=None):
-        """
-        """
-
-        return X
-    # end function
-
-
-    def inverse_transform(self, X, y=None):
-        """
-        """
-
-        return X
-    # end function
-# end class
 
 
 class functionWrapper(object):
@@ -256,7 +210,7 @@ def logsubexp(x1, x2):
 ################################################################################
 
 
-def AGPUtility(theta, y, gp, priorFn, scaler):
+def AGPUtility(theta, y, gp, priorFn):
     """
     AGP (Adaptive Gaussian Process) utility function, the entropy of the
     posterior distribution. This is what you maximize to find the next x under
@@ -283,7 +237,7 @@ def AGPUtility(theta, y, gp, priorFn, scaler):
 
     # If guess isn't allowed by prior, we don't care what the value of the
     # utility function is
-    if not np.isfinite(priorFn(scaler.inverse_transform(np.array(theta).reshape(-1,1)).reshape(-1,))):
+    if not np.isfinite(priorFn(theta)):
         return np.inf
 
     # Only works if the GP object has been computed, otherwise you messed up
@@ -302,7 +256,7 @@ def AGPUtility(theta, y, gp, priorFn, scaler):
 # end function
 
 
-def BAPEUtility(theta, y, gp, priorFn, scaler):
+def BAPEUtility(theta, y, gp, priorFn):
     """
     BAPE (Bayesian Active Posterior Estimation) utility function.  This is what
     you maximize to find the next theta under the BAPE formalism.  Note here we
@@ -330,7 +284,7 @@ def BAPEUtility(theta, y, gp, priorFn, scaler):
 
     # If guess isn't allowed by prior, we don't care what the value of the
     # utility function is
-    if not np.isfinite(priorFn(scaler.inverse_transform(np.array(theta).reshape(-1,1)).reshape(-1,))):
+    if not np.isfinite(priorFn(theta)):
         return np.inf
 
     # Only works if the GP object has been computed, otherwise you messed up
@@ -349,21 +303,14 @@ def BAPEUtility(theta, y, gp, priorFn, scaler):
 # end function
 
 
-def _minimizeObjective(theta0, fn, y, gp, sampleFn, priorFn, bounds=None,
-                       scaler=None):
+def _minimizeObjective(theta0, fn, y, gp, sampleFn, priorFn, bounds=None):
     """
     Minimize objective wrapped function for multiprocessing. Same inputs/outputs
     as minimizeObjective.
-
-    Assumes theta0 has already been scaled by ApproxPosterior.scaler
     """
 
-    # Initial default scaler
-    if scaler is None:
-        scaler = NoScaler()
-
     # Required arguments for the utility function
-    args = (y, gp, priorFn, scaler)
+    args = (y, gp, priorFn)
 
     # Solve for theta that maximize fn and is allowed by prior
     while True:
@@ -382,15 +329,15 @@ def _minimizeObjective(theta0, fn, y, gp, sampleFn, priorFn, bounds=None,
         # Are all values finite?
         if np.all(np.isfinite(tmp)):
             # Is this point in parameter space allowed by the prior?
-            if np.isfinite(priorFn(scaler.inverse_transform(tmp.reshape(1,-1)).reshape(tmp.shape[-1],))):
+            if np.isfinite(priorFn(tmp)):
                 return tmp
 
         # Optimization failed, try a new theta0 by sampling from the prior
-        theta0 = scaler.transform(np.array(sampleFn(1)).reshape(1,-1))
+        theta0 = sampleFn(1)
 # end function
 
 
-def minimizeObjective(fn, y, gp, sampleFn, priorFn, bounds=None, scaler=None,
+def minimizeObjective(fn, y, gp, sampleFn, priorFn, bounds=None,
                       nMinObjRestarts=5, nCores=1):
     """
     Find point that minimizes fn for a gaussian process gp conditioned on y,
@@ -427,12 +374,8 @@ def minimizeObjective(fn, y, gp, sampleFn, priorFn, bounds=None, scaler=None,
         point that minimizes fn
     """
 
-    # Initial default scaler
-    if scaler is None:
-        scaler = NoScaler()
-
     # Required arguments for the utility function
-    args = (y, gp, priorFn, scaler)
+    args = (y, gp, priorFn)
 
     # Containers
     res = []
@@ -456,10 +399,10 @@ def minimizeObjective(fn, y, gp, sampleFn, priorFn, bounds=None, scaler=None,
     with pool.Pool(pool=poolType, processes=nCores) as optPool:
 
         # Inputs for each process
-        iterables = [scaler.transform(np.array(sampleFn(1)).reshape(1,-1)) for _ in range(nMinObjRestarts)]
+        iterables = [sampleFn(1) for _ in range(nMinObjRestarts)]
 
         # keyword arguments for minimizer
-        mKwargs = {"bounds" : bounds, "scaler" : scaler}
+        mKwargs = {"bounds" : bounds}
 
         # Args for minimizer
         mArgs = (fn, y, gp, sampleFn, priorFn)
