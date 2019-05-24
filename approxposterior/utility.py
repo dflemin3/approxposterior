@@ -399,7 +399,7 @@ def minimizeObjective(fn, y, gp, sampleFn, priorFn, bounds=None,
     with pool.Pool(pool=poolType, processes=nCores) as optPool:
 
         # Inputs for each process
-        iterables = [sampleFn(1) for _ in range(nMinObjRestarts)]
+        iterables = [np.array(sampleFn(1)).reshape(1,-1) for _ in range(nMinObjRestarts)]
 
         # keyword arguments for minimizer
         mKwargs = {"bounds" : bounds}
