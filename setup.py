@@ -68,6 +68,7 @@ setup(name = 'approxposterior',
                           'sklearn',
                           'pybind11',
                           'pytest',
-                          'h5py'],
+                          'h5py',
+                          'pyDOE'],
       include_package_data = True,
       zip_safe = False)

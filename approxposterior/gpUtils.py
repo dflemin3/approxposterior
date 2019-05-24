@@ -16,6 +16,8 @@ import numpy as np
 import multiprocessing
 import george
 from scipy.optimize import minimize
+from sklearn.model_selection import KFold
+from sklearn.metrics import mean_squared_error
 
 
 def _nll(p, gp, y):
@@ -68,7 +70,7 @@ def _grad_nll(p, gp, y):
 # end function
 
 
-def defaultGP(theta, y):
+def defaultGP(theta, y, white_noise=-27.407877564614338):
     """
     Basic utility function that initializes a simple GP that works well in many
     applications, but is not guaranteed to work in general.
@@ -80,6 +82,10 @@ def defaultGP(theta, y):
     y : array
         Data to condition GP on, e.g. the lnlike * lnprior at each design point,
         theta.
+    white_noise : float (optional)
+        From george docs: "A description of the logarithm of the white noise
+        variance added to the diagonal of the covariance matrix". Defaults to
+        log(TINY) = -27.407877564614338
 
     Returns
     -------
@@ -92,19 +98,17 @@ def defaultGP(theta, y):
     initialMetric = np.array([5.0*len(theta)**(-1.0/theta.shape[-1]) for _ in range(theta.shape[-1])])
 
     # Create kernel: We'll model coveriances in loglikelihood space using a
-    # Squared Expoential Kernel as we anticipate Gaussian-ish posterior
-    # distributions in our 2-dimensional parameter space
-    # but wide bounds on the metric just in case
+    # Squared Expoential Kernel with wide bounds on the metric just in case
     metric_bounds = ((-100, 100) for _ in range(theta.shape[-1]))
     kernel = george.kernels.ExpSquaredKernel(initialMetric,
                                              ndim=theta.shape[-1],
                                              metric_bounds=metric_bounds)
 
-    # Guess initial mean function
-    mean = np.mean(y)
+    # amp: np.log(np.var(y)) * kernel
 
     # Create GP and compute the kernel, aka factor the covariance matrix
-    gp = george.GP(kernel=kernel, fit_mean=True, mean=mean)
+    gp = george.GP(kernel=kernel, fit_mean=True, mean=np.mean(y),
+                   white_noise=white_noise, fit_white_noise=False)
     gp.compute(theta)
 
     return gp
@@ -112,7 +116,7 @@ def defaultGP(theta, y):
 
 
 def optimizeGP(gp, theta, y, seed=None, nGPRestarts=5, method=None, options=None,
-               p0=None, nCores=1):
+               p0=None, nCores=1, gpCV=None):
     """
     Optimize hyperparameters of an arbitrary george Gaussian Process kernel
     by maximizing the marginalized log-likelihood.
@@ -139,6 +143,11 @@ def optimizeGP(gp, theta, y, seed=None, nGPRestarts=5, method=None, options=None
     nCores : int (optional)
         If > 1, use multiprocessing to distribute optimization restarts. If
         < 0, use all usable cores
+    gpCV : int (optional)
+        Whether or not to use 5-fold cross-validation to select kernel
+        hyperparameters from the nGPRestarts maximum likelihood solutions.
+        Defaults to None. This can be useful if the GP is overfitting, but
+        will likely slow down the code.
 
     Returns
     -------
@@ -173,7 +182,12 @@ def optimizeGP(gp, theta, y, seed=None, nGPRestarts=5, method=None, options=None
 
         # Inputs for each process
         if p0 is None:
-            iterables = [(_nll, np.hstack(([np.mean(y)], [np.random.uniform(low=-10, high=10) for _ in range(theta.shape[-1])]))) for _ in range(nGPRestarts)]
+            iterables = [(_nll, np.hstack(([np.mean(y)],
+                        [np.random.uniform(low=-10, high=10) for _ in range(theta.shape[-1])]))) for _ in range(nGPRestarts)]
+            #iterables = [(_nll,
+            #            [np.random.uniform(low=-10, high=10) for _ in range(theta.shape[-1])]) for _ in range(nGPRestarts)]
+            #iterables = [(_nll, np.hstack(([np.log(np.var(y))],
+            #            [np.random.uniform(low=-10, high=10) for _ in range(theta.shape[-1])]))) for _ in range(nGPRestarts)]
         else:
             iterables = [(_nll, np.array(p0) + 1.0e-3 * np.random.randn(len(p0))) for _ in range(nGPRestarts)]
 
@@ -199,12 +213,48 @@ def optimizeGP(gp, theta, y, seed=None, nGPRestarts=5, method=None, options=None
         # Compute marginal log likelihood for this set of kernel hyperparameters
         mll.append(gp.log_likelihood(y, quiet=True))
 
+    # Use CV to select best answer?
+    if gpCV is not None:
+        if isinstance(gpCV, int):
+            mlls = np.zeros((gpCV, nGPRestarts))
+
+            # Use gpCV fold cross-validation
+            kfold = KFold(n_splits=gpCV)
+
+            # Train on train, evaluate predictions on test
+            ii = 0
+            for trainInds, testInds in kfold.split(theta, y):
+                # Repeat for each solution
+                for jj in range(len(res)):
+                    # Update the kernel using training set
+                    gp.set_parameter_vector(res[ii])
+                    gp.compute(theta[trainInds])
+
+                    # Compute marginal log likelihood for this set of
+                    # kernel hyperparameters conditioned on the training set
+                    yhat = gp.predict(y[trainInds], theta[testInds],
+                                      return_cov=False, return_var=False)
+                    mlls[ii,jj] = mean_squared_error(y[testInds], yhat)
+
+                # End loop over each MLL solution for this cv fold
+                ii = ii + 1
+
+            # Best answer is solution with minimum mean squared error
+            # averaging over the folds
+            ind = np.argmin(np.mean(mlls, axis=0))
+        else:
+            raise RuntimeError("gpCV must be an integer. gpCV:", gpCV)
+
     # Pick result with largest marginal log likelihood
-    ind = np.argmax(mll)
+    else:
+        ind = np.argmax(mll)
 
     # Update gp
     gp.set_parameter_vector(res[ind])
-    gp.recompute()
+    if gpCV is not None:
+        gp.compute(theta)
+    else:
+        gp.recompute()
 
     return gp
 # end function

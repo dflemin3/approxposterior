@@ -10,12 +10,15 @@ wrappers.
 
 # Tell module what it's allowed to import
 __all__ = ["logsubexp","AGPUtility","BAPEUtility","minimizeObjective",
-           "functionWrapper","functionWrapperArgsOnly","klNumerical"]
+           "functionWrapper","functionWrapperArgsOnly","klNumerical",
+           "latinHypercubeSampling"]
 
 from . import pool
 import numpy as np
 import multiprocessing
+from sklearn.base import TransformerMixin
 from scipy.optimize import minimize
+from pyDOE import lhs
 
 
 ################################################################################
@@ -76,6 +79,55 @@ class functionWrapperArgsOnly(object):
         return self.f(*x, **self.kwargs)
     # end function
 # end class
+
+
+################################################################################
+#
+# Data set initialation functions
+#
+################################################################################
+
+
+def latinHypercubeSampling(n, bounds, criterion="maximin"):
+    """
+    Initialize a data set of size n via latin hypercube sampling over bounds
+    using pyDOE.
+
+    Parameters
+    ----------
+    n : int
+        Number of samples in training set
+    bounds : tuple/iterable
+        Parameter bounds
+    criterion : str (optional)
+        From the pyDOE docs:
+        criterion: a string that tells lhs how to sample the points
+        “center” or “c”: center the points within the sampling intervals
+        “maximin” or “m”: maximize the minimum distance between points,
+        but place the point in a randomized location within its interval
+        “centermaximin” or “cm”: same as “maximin” but centered within the
+        intervals
+        “correlation” or “corr”: minimize the maximum correlation coefficient
+        Defaults to "maximin"
+
+    Returns
+    -------
+    samps : numpy array
+        n x ndim array of initial conditions
+    """
+
+    # Extract dimensionality
+    ndim = len(bounds)
+
+    # Generate latin hypercube in each dimension over [0,1]
+    samps = lhs(ndim, samples=n, criterion=criterion)
+
+    # Scale to bounds of each dimension, return
+    for ii in range(ndim):
+        samps[:,ii] = (bounds[ii][1] - bounds[ii][0]) * samps[:,ii] + bounds[ii][0]
+
+    return samps
+# end function
 
 
 ################################################################################
@@ -280,9 +332,7 @@ def _minimizeObjective(theta0, fn, y, gp, sampleFn, priorFn, bounds=None):
             if np.isfinite(priorFn(tmp)):
                 return tmp
 
-        # Optimization failed, try a new theta0
-        # Choose theta0 by uniformly sampling over parameter space and reshape
-        # theta0 for the gp
+        # Optimization failed, try a new theta0 by sampling from the prior
         theta0 = sampleFn(1)
 # end function
 

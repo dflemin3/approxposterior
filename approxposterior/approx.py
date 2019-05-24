@@ -32,7 +32,7 @@ class ApproxPosterior(object):
     the AGP (Adaptive Gaussian Process) by Wang & Li (2017).
     """
 
-    def __init__(self, theta, y, lnprior, lnlike, priorSample, gp=None,
+    def __init__(self, theta, y, lnprior, lnlike, priorSample, bounds, gp=None,
                  algorithm="BAPE"):
         """
         Initializer.
@@ -51,6 +51,8 @@ class ApproxPosterior(object):
             is used to evaluate the log likelihood.
         priorSample : function
             Method to randomly sample points over region allowed by prior
+        bounds : tuple/iterable
+            Hard bounds for parameters
         gp : george.GP (optional)
             Gaussian Process that learns the likelihood conditioned on forward
             model input-output pairs (theta, y). It's recommended that users
@@ -79,12 +81,13 @@ class ApproxPosterior(object):
             print("theta, y:", theta, y)
             raise ValueError("All theta and y values must be finite!")
 
-        # Initialize gaussian process
-        if gp is None:
-            print("WARNING: No GP specified. Initializing GP using ExpSquaredKernel.")
-            self.gp = gpUtils.defaultGP(self.theta, self.y)
+        # Ensure bounds has correct shape
+        if len(bounds) != self.theta.shape[-1]:
+            err_msg = "ERROR: bounds provided but len(bounds) != ndim.\n"
+            err_msg += "ndim = %d, len(bounds) = %d" % (self.theta.shape[-1], len(bounds))
+            raise ValueError(err_msg)
         else:
-            self.gp = gp
+            self.bounds = bounds
 
         # Set required functions, algorithm
         self._lnprior = lnprior
@@ -117,6 +120,14 @@ class ApproxPosterior(object):
 
         # Only save last sampler object since they can get pretty huge
         self.sampler = None
+
+        # Initialize gaussian process
+        if gp is None:
+            print("WARNING: No GP specified. Initializing GP using ExpSquaredKernel.")
+            self.gp = gpUtils.defaultGP(self.theta, self.y)
+        else:
+            self.gp = gp
+
     # end function
 
 
@@ -150,8 +161,7 @@ class ApproxPosterior(object):
         # Mean of predictive distribution conditioned on y (GP posterior estimate)
         # and make sure theta is the right shape for the GP
         try:
-            mu = self.gp.predict(self.y,
-                                 np.array(theta).reshape(1,-1),
+            mu = self.gp.predict(self.y, np.array(theta).reshape(1,-1),
                                  return_cov=False,
                                  return_var=False)
         except ValueError:
@@ -171,7 +181,7 @@ class ApproxPosterior(object):
             thinChains=False, runName="apRun", cache=True,
             maxLnLikeRestarts=3, gmmKwargs=None, gpMethod=None, gpOptions=None,
             gpP0=None, optGPEveryN=1, nGPRestarts=5, nMinObjRestarts=5,
-            nCores=1, args=None, **kwargs):
+            nCores=1, gpCV=None, args=None, **kwargs):
         """
         Core algorithm to estimate the posterior distribution via Gaussian
         Process regression to the joint distribution for the forward model
@@ -275,6 +285,11 @@ class ApproxPosterior(object):
         nCores : int (optional)
             If > 1, use multiprocessing to distribute optimization restarts. If
             < 0, e.g. -1, use all usable cores
+        gpCV : int (optional)
+            Whether or not to use 5-fold cross-validation to select kernel
+            hyperparameters from the nGPRestarts maximum likelihood solutions.
+            Defaults to None. This can be useful if the GP is overfitting, but
+            will likely slow down the code.
         args : iterable (optional)
             Arguments for user-specified loglikelihood function that calls the
             forward model. Defaults to None.
@@ -291,9 +306,10 @@ class ApproxPosterior(object):
         # calculate and we want them around in case something weird happens.
         # Users should probably do this in their likelihood function
         # anyways, but might as well do it here too.
+        # Note: this is done before any scaling
         if cache:
-            np.savez(str(runName) + "APFModelCache.npz",
-                     theta=self.theta, y=self.y)
+            np.savez(str(runName) + "APFModelCache.npz", theta=self.theta,
+                     y=self.y)
 
         # Set RNG seed?
         if seed is not None:
@@ -311,12 +327,14 @@ class ApproxPosterior(object):
             err_msg = "ERROR: bounds provided but len(bounds) != ndim.\n"
             err_msg += "ndim = %d, len(bounds) = %d" % (self.theta.shape[-1], len(bounds))
             raise ValueError(err_msg)
+        else:
+            self.bounds = bounds
 
         # Initial optimization of gaussian process
         self.gp = gpUtils.optimizeGP(self.gp, self.theta, self.y, seed=seed,
                                      method=gpMethod, options=gpOptions,
                                      p0=gpP0, nGPRestarts=nGPRestarts,
-                                     nCores=nCores)
+                                     nCores=nCores, gpCV=gpCV)
 
         # Main loop
         kk = 0
@@ -350,7 +368,7 @@ class ApproxPosterior(object):
                 # ComputeLnLike = True means new points are saved in self.theta,
                 # and self.y
                 self.findNextPoint(computeLnLike=True,
-                                   bounds=bounds,
+                                   bounds=self.bounds,
                                    maxLnLikeRestarts=maxLnLikeRestarts,
                                    seed=seed,
                                    cache=cache,
@@ -359,6 +377,7 @@ class ApproxPosterior(object):
                                    optGP=optGP,
                                    nGPRestarts=nGPRestarts,
                                    nMinObjRestarts=nMinObjRestarts,
+                                   gpCV=gpCV,
                                    runName=runName,
                                    args=args,
                                    **kwargs)
@@ -482,7 +501,8 @@ class ApproxPosterior(object):
     def findNextPoint(self, computeLnLike=True, bounds=None, gpMethod=None,
                       maxLnLikeRestarts=3, seed=None, cache=True, gpOptions=None,
                       gpP0=None, optGP=True, args=None, nGPRestarts=5,
-                      nMinObjRestarts=5, nCores=1, runName="apRun", **kwargs):
+                      nMinObjRestarts=5, nCores=1, gpCV=None, runName="apRun",
+                      **kwargs):
         """
         Find new point, thetaT, by maximizing utility function. Note that we
         call a minimizer because minimizing negative of utility function is
@@ -546,6 +566,11 @@ class ApproxPosterior(object):
         nCores : int (optional)
             If > 1, use multiprocessing to distribute optimization restarts. If
             < 0, e.g. -1, use all usable cores
+        gpCV : int (optional)
+            Whether or not to use 5-fold cross-validation to select kernel
+            hyperparameters from the nGPRestarts maximum likelihood solutions.
+            Defaults to None. This can be useful if the GP is overfitting, but
+            will likely slow down the code.
         runName : str (optional)
             Filename for hdf5 file where mcmc chains are saved.  Defaults to
             apRun and will be saved as apRunii.h5 for ii in range(nmax).
@@ -595,6 +620,9 @@ class ApproxPosterior(object):
 
             # Compute lnLikelihood at thetaT?
             if computeLnLike:
+                # If scaling, transform thetaT back to physical units for
+                # user-supplied lnlike and lnprior functions
+
                 # 2) Query forward model at new point, thetaT
                 # Evaluate forward model via loglikelihood function
                 loglikeT = self._lnlike(thetaT, *args, **kwargs)
@@ -612,6 +640,7 @@ class ApproxPosterior(object):
             llIters += 1
 
         if computeLnLike:
+
             # Valid theta, y found. Join theta, y arrays with new points.
             self.theta = np.vstack([self.theta, np.array(thetaT)])
             self.y = np.hstack([self.y, yT])
@@ -622,18 +651,22 @@ class ApproxPosterior(object):
             try:
                 # Create GP using same kernel, updated estimate of the mean, but new theta
                 currentHype = self.gp.get_parameter_vector()
-                self.gp = george.GP(kernel=self.gp.kernel, fit_mean=True, mean=np.mean(self.y))
+                self.gp = george.GP(kernel=self.gp.kernel, fit_mean=True,
+                                    mean=np.mean(self.y),
+                                    white_noise=self.gp.white_noise,
+                                    fit_white_noise=False)
                 self.gp.set_parameter_vector(currentHype)
                 self.gp.compute(self.theta)
-
                 # Now optimize GP given new points?
                 if optGP:
                     self.gp = gpUtils.optimizeGP(self.gp, self.theta, self.y,
                                                  seed=seed, method=gpMethod,
                                                  options=gpOptions, p0=gpP0,
                                                  nGPRestarts=nGPRestarts,
-                                                 nCores=nCores)
+                                                 nCores=nCores,
+                                                 gpCV=gpCV)
             except ValueError:
+                # Output errant theta in physical units
                 print("theta:", self.theta)
                 print("y:", self.y)
                 print("gp parameters names:", self.gp.get_parameter_names())
@@ -645,7 +678,9 @@ class ApproxPosterior(object):
             # Users should probably do this in their likelihood function
             # anyways, but might as well do it here too.
             if cache:
-                np.savez(str(runName)+"APFModelCache.npz", theta=self.theta,
+                # If scaling, save theta in physical units
+                np.savez(str(runName)+"APFModelCache.npz",
+                         theta=self.theta,
                          y=self.y)
         # Don't care about lnlikelihood, just return thetaT.
         else:
