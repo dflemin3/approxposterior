@@ -97,6 +97,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../api.html">API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../install.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../performance.html">Improving Performance</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../citation.html">Citation</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://github.com/dflemin3/approxposterior">Github</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://github.com/dflemin3/approxposterior/issues">Submit an Issue</a></li>
 </ul>
@@ -181,6 +182,8 @@
 <span class="kn">import</span> <span class="nn">multiprocessing</span>
 <span class="kn">import</span> <span class="nn">george</span>
 <span class="kn">from</span> <span class="nn">scipy.optimize</span> <span class="k">import</span> <span class="n">minimize</span>
+<span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="k">import</span> <span class="n">KFold</span>
+<span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="k">import</span> <span class="n">mean_squared_error</span>
 
 
 <span class="k">def</span> <span class="nf">_nll</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">gp</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
@@ -233,7 +236,7 @@
 <span class="c1"># end function</span>
 
 
-<span class="k">def</span> <span class="nf">defaultGP</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">defaultGP</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">white_noise</span><span class="o">=-</span><span class="mf">27.407877564614338</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Basic utility function that initializes a simple GP that works well in many</span>
 <span class="sd">    applications, but is not guaranteed to work in general.</span>
@@ -245,6 +248,10 @@
 <span class="sd">    y : array</span>
 <span class="sd">        Data to condition GP on, e.g. the lnlike * lnprior at each design point,</span>
 <span class="sd">        theta.</span>
+<span class="sd">    white_noise : float (optional)</span>
+<span class="sd">        From george docs: &quot;A description of the logarithm of the white noise</span>
+<span class="sd">        variance added to the diagonal of the covariance matrix&quot;. Defaults to</span>
+<span class="sd">        log(TINY) = -27.407877564614338</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -257,19 +264,17 @@
     <span class="n">initialMetric</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">5.0</span><span class="o">*</span><span class="nb">len</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span><span class="o">**</span><span class="p">(</span><span class="o">-</span><span class="mf">1.0</span><span class="o">/</span><span class="n">theta</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">theta</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])])</span>
 
     <span class="c1"># Create kernel: We&#39;ll model coveriances in loglikelihood space using a</span>
-    <span class="c1"># Squared Expoential Kernel as we anticipate Gaussian-ish posterior</span>
-    <span class="c1"># distributions in our 2-dimensional parameter space</span>
-    <span class="c1"># but wide bounds on the metric just in case</span>
+    <span class="c1"># Squared Expoential Kernel with wide bounds on the metric just in case</span>
     <span class="n">metric_bounds</span> <span class="o">=</span> <span class="p">((</span><span class="o">-</span><span class="mi">100</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">theta</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]))</span>
     <span class="n">kernel</span> <span class="o">=</span> <span class="n">george</span><span class="o">.</span><span class="n">kernels</span><span class="o">.</span><span class="n">ExpSquaredKernel</span><span class="p">(</span><span class="n">initialMetric</span><span class="p">,</span>
                                              <span class="n">ndim</span><span class="o">=</span><span class="n">theta</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span>
                                              <span class="n">metric_bounds</span><span class="o">=</span><span class="n">metric_bounds</span><span class="p">)</span>
 
-    <span class="c1"># Guess initial mean function</span>
-    <span class="n">mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+    <span class="c1"># amp: np.log(np.var(y)) * kernel</span>
 
     <span class="c1"># Create GP and compute the kernel, aka factor the covariance matrix</span>
-    <span class="n">gp</span> <span class="o">=</span> <span class="n">george</span><span class="o">.</span><span class="n">GP</span><span class="p">(</span><span class="n">kernel</span><span class="o">=</span><span class="n">kernel</span><span class="p">,</span> <span class="n">fit_mean</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">mean</span><span class="o">=</span><span class="n">mean</span><span class="p">)</span>
+    <span class="n">gp</span> <span class="o">=</span> <span class="n">george</span><span class="o">.</span><span class="n">GP</span><span class="p">(</span><span class="n">kernel</span><span class="o">=</span><span class="n">kernel</span><span class="p">,</span> <span class="n">fit_mean</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">mean</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">y</span><span class="p">),</span>
+                   <span class="n">white_noise</span><span class="o">=</span><span class="n">white_noise</span><span class="p">,</span> <span class="n">fit_white_noise</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
     <span class="n">gp</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">gp</span>
@@ -277,7 +282,7 @@
 
 
 <div class="viewcode-block" id="optimizeGP"><a class="viewcode-back" href="../../api/gpUtils.html#approxposterior.gpUtils.optimizeGP">[docs]</a><span class="k">def</span> <span class="nf">optimizeGP</span><span class="p">(</span><span class="n">gp</span><span class="p">,</span> <span class="n">theta</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">nGPRestarts</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-               <span class="n">p0</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">nCores</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+               <span class="n">p0</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">nCores</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">gpCV</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Optimize hyperparameters of an arbitrary george Gaussian Process kernel</span>
 <span class="sd">    by maximizing the marginalized log-likelihood.</span>
@@ -304,6 +309,11 @@
 <span class="sd">    nCores : int (optional)</span>
 <span class="sd">        If &gt; 1, use multiprocessing to distribute optimization restarts. If</span>
 <span class="sd">        &lt; 0, use all usable cores</span>
+<span class="sd">    gpCV : int (optional)</span>
+<span class="sd">        Whether or not to use 5-fold cross-validation to select kernel</span>
+<span class="sd">        hyperparameters from the nGPRestarts maximum likelihood solutions.</span>
+<span class="sd">        Defaults to None. This can be useful if the GP is overfitting, but</span>
+<span class="sd">        will likely slow down the code.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -338,7 +348,12 @@
 
         <span class="c1"># Inputs for each process</span>
         <span class="k">if</span> <span class="n">p0</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">iterables</span> <span class="o">=</span> <span class="p">[(</span><span class="n">_nll</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">(([</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">y</span><span class="p">)],</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">low</span><span class="o">=-</span><span class="mi">10</span><span class="p">,</span> <span class="n">high</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">theta</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])])))</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nGPRestarts</span><span class="p">)]</span>
+            <span class="n">iterables</span> <span class="o">=</span> <span class="p">[(</span><span class="n">_nll</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">(([</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">y</span><span class="p">)],</span>
+                        <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">low</span><span class="o">=-</span><span class="mi">10</span><span class="p">,</span> <span class="n">high</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">theta</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])])))</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nGPRestarts</span><span class="p">)]</span>
+            <span class="c1">#iterables = [(_nll,</span>
+            <span class="c1">#            [np.random.uniform(low=-10, high=10) for _ in range(theta.shape[-1])]) for _ in range(nGPRestarts)]</span>
+            <span class="c1">#iterables = [(_nll, np.hstack(([np.log(np.var(y))],</span>
+            <span class="c1">#            [np.random.uniform(low=-10, high=10) for _ in range(theta.shape[-1])]))) for _ in range(nGPRestarts)]</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">iterables</span> <span class="o">=</span> <span class="p">[(</span><span class="n">_nll</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">p0</span><span class="p">)</span> <span class="o">+</span> <span class="mf">1.0e-3</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">p0</span><span class="p">)))</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nGPRestarts</span><span class="p">)]</span>
 
@@ -364,12 +379,48 @@
         <span class="c1"># Compute marginal log likelihood for this set of kernel hyperparameters</span>
         <span class="n">mll</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">gp</span><span class="o">.</span><span class="n">log_likelihood</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">quiet</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
 
+    <span class="c1"># Use CV to select best answer?</span>
+    <span class="k">if</span> <span class="n">gpCV</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">gpCV</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="n">mlls</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">gpCV</span><span class="p">,</span> <span class="n">nGPRestarts</span><span class="p">))</span>
+
+            <span class="c1"># Use gpCV fold cross-validation</span>
+            <span class="n">kfold</span> <span class="o">=</span> <span class="n">KFold</span><span class="p">(</span><span class="n">n_splits</span><span class="o">=</span><span class="n">gpCV</span><span class="p">)</span>
+
+            <span class="c1"># Train on train, evaluate predictions on test</span>
+            <span class="n">ii</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">for</span> <span class="n">trainInds</span><span class="p">,</span> <span class="n">testInds</span> <span class="ow">in</span> <span class="n">kfold</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+                <span class="c1"># Repeat for each solution</span>
+                <span class="k">for</span> <span class="n">jj</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">res</span><span class="p">)):</span>
+                    <span class="c1"># Update the kernel using training set</span>
+                    <span class="n">gp</span><span class="o">.</span><span class="n">set_parameter_vector</span><span class="p">(</span><span class="n">res</span><span class="p">[</span><span class="n">ii</span><span class="p">])</span>
+                    <span class="n">gp</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">theta</span><span class="p">[</span><span class="n">trainInds</span><span class="p">])</span>
+
+                    <span class="c1"># Compute marginal log likelihood for this set of</span>
+                    <span class="c1"># kernel hyperparameters conditioned on the training set</span>
+                    <span class="n">yhat</span> <span class="o">=</span> <span class="n">gp</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">y</span><span class="p">[</span><span class="n">trainInds</span><span class="p">],</span> <span class="n">theta</span><span class="p">[</span><span class="n">testInds</span><span class="p">],</span>
+                                      <span class="n">return_cov</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">return_var</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+                    <span class="n">mlls</span><span class="p">[</span><span class="n">ii</span><span class="p">,</span><span class="n">jj</span><span class="p">]</span> <span class="o">=</span> <span class="n">mean_squared_error</span><span class="p">(</span><span class="n">y</span><span class="p">[</span><span class="n">testInds</span><span class="p">],</span> <span class="n">yhat</span><span class="p">)</span>
+
+                <span class="c1"># End loop over each MLL solution for this cv fold</span>
+                <span class="n">ii</span> <span class="o">=</span> <span class="n">ii</span> <span class="o">+</span> <span class="mi">1</span>
+
+            <span class="c1"># Best answer is solution with minimum mean squared error</span>
+            <span class="c1"># averaging over the folds</span>
+            <span class="n">ind</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">mlls</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;gpCV must be an integer. gpCV:&quot;</span><span class="p">,</span> <span class="n">gpCV</span><span class="p">)</span>
+
     <span class="c1"># Pick result with largest marginal log likelihood</span>
-    <span class="n">ind</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">mll</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">ind</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">mll</span><span class="p">)</span>
 
     <span class="c1"># Update gp</span>
     <span class="n">gp</span><span class="o">.</span><span class="n">set_parameter_vector</span><span class="p">(</span><span class="n">res</span><span class="p">[</span><span class="n">ind</span><span class="p">])</span>
-    <span class="n">gp</span><span class="o">.</span><span class="n">recompute</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">gpCV</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">gp</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">gp</span><span class="o">.</span><span class="n">recompute</span><span class="p">()</span>
 
     <span class="k">return</span> <span class="n">gp</span></div>
 <span class="c1"># end function</span>

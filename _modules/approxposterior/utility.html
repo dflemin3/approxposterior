@@ -97,6 +97,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../api.html">API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../install.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../performance.html">Improving Performance</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../citation.html">Citation</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://github.com/dflemin3/approxposterior">Github</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://github.com/dflemin3/approxposterior/issues">Submit an Issue</a></li>
 </ul>
@@ -175,12 +176,15 @@
 
 <span class="c1"># Tell module what it&#39;s allowed to import</span>
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;logsubexp&quot;</span><span class="p">,</span><span class="s2">&quot;AGPUtility&quot;</span><span class="p">,</span><span class="s2">&quot;BAPEUtility&quot;</span><span class="p">,</span><span class="s2">&quot;minimizeObjective&quot;</span><span class="p">,</span>
-           <span class="s2">&quot;functionWrapper&quot;</span><span class="p">,</span><span class="s2">&quot;functionWrapperArgsOnly&quot;</span><span class="p">,</span><span class="s2">&quot;klNumerical&quot;</span><span class="p">]</span>
+           <span class="s2">&quot;functionWrapper&quot;</span><span class="p">,</span><span class="s2">&quot;functionWrapperArgsOnly&quot;</span><span class="p">,</span><span class="s2">&quot;klNumerical&quot;</span><span class="p">,</span>
+           <span class="s2">&quot;latinHypercubeSampling&quot;</span><span class="p">]</span>
 
 <span class="kn">from</span> <span class="nn">.</span> <span class="k">import</span> <span class="n">pool</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">multiprocessing</span>
+<span class="kn">from</span> <span class="nn">sklearn.base</span> <span class="k">import</span> <span class="n">TransformerMixin</span>
 <span class="kn">from</span> <span class="nn">scipy.optimize</span> <span class="k">import</span> <span class="n">minimize</span>
+<span class="kn">from</span> <span class="nn">pyDOE</span> <span class="k">import</span> <span class="n">lhs</span>
 
 
 <span class="c1">################################################################################</span>
@@ -241,6 +245,55 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">f</span><span class="p">(</span><span class="o">*</span><span class="n">x</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">)</span></div>
     <span class="c1"># end function</span>
 <span class="c1"># end class</span>
+
+
+<span class="c1">################################################################################</span>
+<span class="c1">#</span>
+<span class="c1"># Data set initialation functions</span>
+<span class="c1">#</span>
+<span class="c1">################################################################################</span>
+
+
+<div class="viewcode-block" id="latinHypercubeSampling"><a class="viewcode-back" href="../../api/utility.html#approxposterior.utility.latinHypercubeSampling">[docs]</a><span class="k">def</span> <span class="nf">latinHypercubeSampling</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">bounds</span><span class="p">,</span> <span class="n">criterion</span><span class="o">=</span><span class="s2">&quot;maximin&quot;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Initialize a data set of size n via latin hypercube sampling over bounds</span>
+<span class="sd">    using pyDOE.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    n : int</span>
+<span class="sd">        Number of samples in training set</span>
+<span class="sd">    bounds : tuple/iterable</span>
+<span class="sd">        Parameter bounds</span>
+<span class="sd">    criterion : str (optional)</span>
+<span class="sd">        From the pyDOE docs:</span>
+<span class="sd">        criterion: a string that tells lhs how to sample the points</span>
+<span class="sd">        “center” or “c”: center the points within the sampling intervals</span>
+<span class="sd">        “maximin” or “m”: maximize the minimum distance between points,</span>
+<span class="sd">        but place the point in a randomized location within its interval</span>
+<span class="sd">        “centermaximin” or “cm”: same as “maximin” but centered within the</span>
+<span class="sd">        intervals</span>
+<span class="sd">        “correlation” or “corr”: minimize the maximum correlation coefficient</span>
+<span class="sd">        Defaults to &quot;maximin&quot;</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    samps : numpy array</span>
+<span class="sd">        n x ndim array of initial conditions</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Extract dimensionality</span>
+    <span class="n">ndim</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">bounds</span><span class="p">)</span>
+
+    <span class="c1"># Generate latin hypercube in each dimension over [0,1]</span>
+    <span class="n">samps</span> <span class="o">=</span> <span class="n">lhs</span><span class="p">(</span><span class="n">ndim</span><span class="p">,</span> <span class="n">samples</span><span class="o">=</span><span class="n">n</span><span class="p">,</span> <span class="n">criterion</span><span class="o">=</span><span class="n">criterion</span><span class="p">)</span>
+
+    <span class="c1"># Scale to bounds of each dimension, return</span>
+    <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ndim</span><span class="p">):</span>
+        <span class="n">samps</span><span class="p">[:,</span><span class="n">ii</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">bounds</span><span class="p">[</span><span class="n">ii</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">bounds</span><span class="p">[</span><span class="n">ii</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span> <span class="o">*</span> <span class="n">samps</span><span class="p">[:,</span><span class="n">ii</span><span class="p">]</span> <span class="o">+</span> <span class="n">bounds</span><span class="p">[</span><span class="n">ii</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">samps</span></div>
+<span class="c1"># end function</span>
 
 
 <span class="c1">################################################################################</span>
@@ -445,9 +498,7 @@
             <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">priorFn</span><span class="p">(</span><span class="n">tmp</span><span class="p">)):</span>
                 <span class="k">return</span> <span class="n">tmp</span>
 
-        <span class="c1"># Optimization failed, try a new theta0</span>
-        <span class="c1"># Choose theta0 by uniformly sampling over parameter space and reshape</span>
-        <span class="c1"># theta0 for the gp</span>
+        <span class="c1"># Optimization failed, try a new theta0 by sampling from the prior</span>
         <span class="n">theta0</span> <span class="o">=</span> <span class="n">sampleFn</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
 <span class="c1"># end function</span>
 
