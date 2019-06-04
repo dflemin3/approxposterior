@@ -50,7 +50,7 @@ ap = approx.ApproxPosterior(theta=theta,
 # Run!
 ap.run(m=m, nmax=nmax, Dmax=Dmax, kmax=kmax, estBurnin=True, nGPRestarts=10,
        nKLSamples=nKLSamples, mcmcKwargs=mcmcKwargs, cache=False,
-       samplerKwargs=samplerKwargs, verbose=True)
+       samplerKwargs=samplerKwargs, verbose=True, onlyLastMCMC=True)
 
 # Check out the final posterior distribution!
 import corner

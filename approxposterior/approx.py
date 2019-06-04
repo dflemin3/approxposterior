@@ -181,7 +181,7 @@ class ApproxPosterior(object):
             thinChains=False, runName="apRun", cache=True,
             maxLnLikeRestarts=3, gmmKwargs=None, gpMethod=None, gpOptions=None,
             gpP0=None, optGPEveryN=1, nGPRestarts=5, nMinObjRestarts=5,
-            nCores=1, gpCV=None, args=None, **kwargs):
+            nCores=1, gpCV=None, onlyLastMCMC=False, args=None, **kwargs):
         """
         Core algorithm to estimate the posterior distribution via Gaussian
         Process regression to the joint distribution for the forward model
@@ -290,6 +290,9 @@ class ApproxPosterior(object):
             hyperparameters from the nGPRestarts maximum likelihood solutions.
             Defaults to None. This can be useful if the GP is overfitting, but
             will likely slow down the code.
+        onlyLastMCMC : bool (optional)
+            Whether or not to only run the MCMC last iteration. Defaults to False.
+            If true, bypasses all KL divergence and related calculations.
         args : iterable (optional)
             Arguments for user-specified loglikelihood function that calls the
             forward model. Defaults to None.
@@ -394,6 +397,17 @@ class ApproxPosterior(object):
             # GP updated: run MCMC sampler to obtain new posterior conditioned
             # on {theta_n, log(L_t*prior)}. Use emcee to obtain posterior dist.
 
+            # If user only wants to run the MCMC at the end and it's not the
+            # last iteration, skip everything below!
+            if onlyLastMCMC and nn != (nmax - 1):
+
+                # No sampler yet...
+                self.sampler = None
+
+                # Skip everything below
+                continue
+
+            # If the above block isn't trigger, run the MCMC and compute KL-divergences
             if timing:
                 start = time.time()
 
@@ -443,7 +457,7 @@ class ApproxPosterior(object):
 
             # Estimate KL-divergence between previous and current posterior
             # Only do this after the 1st (0th) iteration!
-            if nn > 0:
+            if nn > 0 and len(self.GMMs) > 1:
                 # Sample from last iteration's GMM
                 prevSamples, _ = self.GMMs[-2].sample(nKLSamples)
 
@@ -470,7 +484,7 @@ class ApproxPosterior(object):
             # for kmax consecutive iterations, we're finished
 
             # Can't check for convergence on 1st (0th) iteration
-            if nn < 1:
+            if nn < 1 or onlyLastMCMC:
                 deltaDkl = np.inf
             else:
                 deltaDkl = np.fabs(self.Dkl[-1] - self.Dkl[-2])
