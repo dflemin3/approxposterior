@@ -99,11 +99,7 @@ def defaultGP(theta, y, white_noise=-27.407877564614338):
 
     # Create kernel: We'll model coveriances in loglikelihood space using a
     # Squared Expoential Kernel with wide bounds on the metric just in case
-    metric_bounds = ((-100, 100) for _ in range(theta.shape[-1]))
-    kernel = george.kernels.ExpSquaredKernel(initialMetric,
-                                             ndim=theta.shape[-1],
-                                             metric_bounds=metric_bounds)
-
+    kernel = george.kernels.ExpSquaredKernel(initialMetric, ndim=theta.shape[-1])
     # amp: np.log(np.var(y)) * kernel
 
     # Create GP and compute the kernel, aka factor the covariance matrix
@@ -144,10 +140,11 @@ def optimizeGP(gp, theta, y, seed=None, nGPRestarts=5, method=None, options=None
         If > 1, use multiprocessing to distribute optimization restarts. If
         < 0, use all usable cores
     gpCV : int (optional)
-        Whether or not to use 5-fold cross-validation to select kernel
+        Whether or not to use k-fold cross-validation to select kernel
         hyperparameters from the nGPRestarts maximum likelihood solutions.
         Defaults to None. This can be useful if the GP is overfitting, but
-        will likely slow down the code.
+        will likely slow down the code. Defaults to None. If using it, perform
+        gpCV-fold cross-validation.
 
     Returns
     -------
@@ -184,10 +181,6 @@ def optimizeGP(gp, theta, y, seed=None, nGPRestarts=5, method=None, options=None
         if p0 is None:
             iterables = [(_nll, np.hstack(([np.mean(y)],
                         [np.random.uniform(low=-10, high=10) for _ in range(theta.shape[-1])]))) for _ in range(nGPRestarts)]
-            #iterables = [(_nll,
-            #            [np.random.uniform(low=-10, high=10) for _ in range(theta.shape[-1])]) for _ in range(nGPRestarts)]
-            #iterables = [(_nll, np.hstack(([np.log(np.var(y))],
-            #            [np.random.uniform(low=-10, high=10) for _ in range(theta.shape[-1])]))) for _ in range(nGPRestarts)]
         else:
             iterables = [(_nll, np.array(p0) + 1.0e-3 * np.random.randn(len(p0))) for _ in range(nGPRestarts)]
 

@@ -55,7 +55,7 @@ def test_run():
     # Run!
     ap.run(m=m, nmax=nmax, Dmax=Dmax, kmax=kmax, cache=False, nKLSamples=100000,
            mcmcKwargs=mcmcKwargs, samplerKwargs=samplerKwargs,
-           verbose=False, nGPRestarts=3, seed=seed)
+           verbose=False, nGPRestarts=3, seed=seed, onlyLastMCMC=True)
 
     # Ensure medians of chains are consistent with the true values
     samples = ap.sampler.get_chain(discard=ap.iburns[-1], flat=True, thin=ap.ithins[-1])
