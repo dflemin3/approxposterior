@@ -263,10 +263,11 @@ ndim values randomly sampled from a uniform distribution over [-10, 10)</p>
 </div></blockquote>
 <p><strong>gpCV</strong> : int (optional)</p>
 <blockquote>
-<div><p>Whether or not to use 5-fold cross-validation to select kernel
+<div><p>Whether or not to use k-fold cross-validation to select kernel
 hyperparameters from the nGPRestarts maximum likelihood solutions.
 Defaults to None. This can be useful if the GP is overfitting, but
-will likely slow down the code.</p>
+will likely slow down the code. Defaults to None. If using it, perform
+gpCV-fold cross-validation.</p>
 </div></blockquote>
 </td>
 </tr>

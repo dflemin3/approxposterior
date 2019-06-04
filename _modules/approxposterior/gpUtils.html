@@ -265,11 +265,7 @@
 
     <span class="c1"># Create kernel: We&#39;ll model coveriances in loglikelihood space using a</span>
     <span class="c1"># Squared Expoential Kernel with wide bounds on the metric just in case</span>
-    <span class="n">metric_bounds</span> <span class="o">=</span> <span class="p">((</span><span class="o">-</span><span class="mi">100</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">theta</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]))</span>
-    <span class="n">kernel</span> <span class="o">=</span> <span class="n">george</span><span class="o">.</span><span class="n">kernels</span><span class="o">.</span><span class="n">ExpSquaredKernel</span><span class="p">(</span><span class="n">initialMetric</span><span class="p">,</span>
-                                             <span class="n">ndim</span><span class="o">=</span><span class="n">theta</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span>
-                                             <span class="n">metric_bounds</span><span class="o">=</span><span class="n">metric_bounds</span><span class="p">)</span>
-
+    <span class="n">kernel</span> <span class="o">=</span> <span class="n">george</span><span class="o">.</span><span class="n">kernels</span><span class="o">.</span><span class="n">ExpSquaredKernel</span><span class="p">(</span><span class="n">initialMetric</span><span class="p">,</span> <span class="n">ndim</span><span class="o">=</span><span class="n">theta</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
     <span class="c1"># amp: np.log(np.var(y)) * kernel</span>
 
     <span class="c1"># Create GP and compute the kernel, aka factor the covariance matrix</span>
@@ -310,10 +306,11 @@
 <span class="sd">        If &gt; 1, use multiprocessing to distribute optimization restarts. If</span>
 <span class="sd">        &lt; 0, use all usable cores</span>
 <span class="sd">    gpCV : int (optional)</span>
-<span class="sd">        Whether or not to use 5-fold cross-validation to select kernel</span>
+<span class="sd">        Whether or not to use k-fold cross-validation to select kernel</span>
 <span class="sd">        hyperparameters from the nGPRestarts maximum likelihood solutions.</span>
 <span class="sd">        Defaults to None. This can be useful if the GP is overfitting, but</span>
-<span class="sd">        will likely slow down the code.</span>
+<span class="sd">        will likely slow down the code. Defaults to None. If using it, perform</span>
+<span class="sd">        gpCV-fold cross-validation.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -350,10 +347,6 @@
         <span class="k">if</span> <span class="n">p0</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">iterables</span> <span class="o">=</span> <span class="p">[(</span><span class="n">_nll</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">(([</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">y</span><span class="p">)],</span>
                         <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">low</span><span class="o">=-</span><span class="mi">10</span><span class="p">,</span> <span class="n">high</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">theta</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])])))</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nGPRestarts</span><span class="p">)]</span>
-            <span class="c1">#iterables = [(_nll,</span>
-            <span class="c1">#            [np.random.uniform(low=-10, high=10) for _ in range(theta.shape[-1])]) for _ in range(nGPRestarts)]</span>
-            <span class="c1">#iterables = [(_nll, np.hstack(([np.log(np.var(y))],</span>
-            <span class="c1">#            [np.random.uniform(low=-10, high=10) for _ in range(theta.shape[-1])]))) for _ in range(nGPRestarts)]</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">iterables</span> <span class="o">=</span> <span class="p">[(</span><span class="n">_nll</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">p0</span><span class="p">)</span> <span class="o">+</span> <span class="mf">1.0e-3</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">p0</span><span class="p">)))</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nGPRestarts</span><span class="p">)]</span>
 

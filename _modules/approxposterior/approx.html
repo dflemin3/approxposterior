@@ -347,7 +347,7 @@
             <span class="n">thinChains</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">runName</span><span class="o">=</span><span class="s2">&quot;apRun&quot;</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
             <span class="n">maxLnLikeRestarts</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">gmmKwargs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">gpMethod</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">gpOptions</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
             <span class="n">gpP0</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">optGPEveryN</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">nGPRestarts</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">nMinObjRestarts</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
-            <span class="n">nCores</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">gpCV</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+            <span class="n">nCores</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">gpCV</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">onlyLastMCMC</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Core algorithm to estimate the posterior distribution via Gaussian</span>
 <span class="sd">        Process regression to the joint distribution for the forward model</span>
@@ -452,10 +452,14 @@
 <span class="sd">            If &gt; 1, use multiprocessing to distribute optimization restarts. If</span>
 <span class="sd">            &lt; 0, e.g. -1, use all usable cores</span>
 <span class="sd">        gpCV : int (optional)</span>
-<span class="sd">            Whether or not to use 5-fold cross-validation to select kernel</span>
+<span class="sd">            Whether or not to use k-fold cross-validation to select kernel</span>
 <span class="sd">            hyperparameters from the nGPRestarts maximum likelihood solutions.</span>
 <span class="sd">            Defaults to None. This can be useful if the GP is overfitting, but</span>
-<span class="sd">            will likely slow down the code.</span>
+<span class="sd">            will likely slow down the code. Defaults to None. If using it, perform</span>
+<span class="sd">            gpCV-fold cross-validation.</span>
+<span class="sd">        onlyLastMCMC : bool (optional)</span>
+<span class="sd">            Whether or not to only run the MCMC last iteration. Defaults to False.</span>
+<span class="sd">            If true, bypasses all KL divergence and related calculations.</span>
 <span class="sd">        args : iterable (optional)</span>
 <span class="sd">            Arguments for user-specified loglikelihood function that calls the</span>
 <span class="sd">            forward model. Defaults to None.</span>
@@ -560,6 +564,17 @@
             <span class="c1"># GP updated: run MCMC sampler to obtain new posterior conditioned</span>
             <span class="c1"># on {theta_n, log(L_t*prior)}. Use emcee to obtain posterior dist.</span>
 
+            <span class="c1"># If user only wants to run the MCMC at the end and it&#39;s not the</span>
+            <span class="c1"># last iteration, skip everything below!</span>
+            <span class="k">if</span> <span class="n">onlyLastMCMC</span> <span class="ow">and</span> <span class="n">nn</span> <span class="o">!=</span> <span class="p">(</span><span class="n">nmax</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
+
+                <span class="c1"># No sampler yet...</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">sampler</span> <span class="o">=</span> <span class="kc">None</span>
+
+                <span class="c1"># Skip everything below</span>
+                <span class="k">continue</span>
+
+            <span class="c1"># If the above block isn&#39;t trigger, run the MCMC and compute KL-divergences</span>
             <span class="k">if</span> <span class="n">timing</span><span class="p">:</span>
                 <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
 
@@ -609,7 +624,7 @@
 
             <span class="c1"># Estimate KL-divergence between previous and current posterior</span>
             <span class="c1"># Only do this after the 1st (0th) iteration!</span>
-            <span class="k">if</span> <span class="n">nn</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">nn</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">GMMs</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
                 <span class="c1"># Sample from last iteration&#39;s GMM</span>
                 <span class="n">prevSamples</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">GMMs</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">nKLSamples</span><span class="p">)</span>
 
@@ -636,7 +651,7 @@
             <span class="c1"># for kmax consecutive iterations, we&#39;re finished</span>
 
             <span class="c1"># Can&#39;t check for convergence on 1st (0th) iteration</span>
-            <span class="k">if</span> <span class="n">nn</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">nn</span> <span class="o">&lt;</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">onlyLastMCMC</span><span class="p">:</span>
                 <span class="n">deltaDkl</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">deltaDkl</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Dkl</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">Dkl</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">])</span>
