@@ -286,10 +286,11 @@ class ApproxPosterior(object):
             If > 1, use multiprocessing to distribute optimization restarts. If
             < 0, e.g. -1, use all usable cores
         gpCV : int (optional)
-            Whether or not to use 5-fold cross-validation to select kernel
+            Whether or not to use k-fold cross-validation to select kernel
             hyperparameters from the nGPRestarts maximum likelihood solutions.
             Defaults to None. This can be useful if the GP is overfitting, but
-            will likely slow down the code.
+            will likely slow down the code. Defaults to None. If using it, perform
+            gpCV-fold cross-validation.
         onlyLastMCMC : bool (optional)
             Whether or not to only run the MCMC last iteration. Defaults to False.
             If true, bypasses all KL divergence and related calculations.
