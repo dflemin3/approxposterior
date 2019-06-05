@@ -13,7 +13,7 @@ Don't forget to check out the links for example Jupyter Notebooks at the bottom 
 
 .. code-block:: python
 
-  from approxposterior import approx, likelihood as lh
+  from approxposterior import approx, gpUtils, likelihood as lh, utility as ut
   import numpy as np
 
   # Define algorithm parameters
@@ -30,12 +30,13 @@ Don't forget to check out the links for example Jupyter Notebooks at the bottom 
   samplerKwargs = {"nwalkers" : 20}        # emcee.EnsembleSampler parameters
   mcmcKwargs = {"iterations" : int(2.0e4)} # emcee.EnsembleSampler.run_mcmc parameters
 
+
 2) Create an initial training set and gaussian process
 
 .. code-block:: python
 
-  # Randomly sample initial conditions from the prior
-  theta = np.array(lh.rosenbrockSample(m0))
+  # Generate initial conditions using Latin Hypercube sampling over parameter bounds
+  theta = ut.latinHypercubeSampling(m0, bounds, criterion="maximin")
 
   # Evaluate forward model log likelihood + lnprior for each theta
   y = np.zeros(len(theta))
@@ -56,15 +57,17 @@ Don't forget to check out the links for example Jupyter Notebooks at the bottom 
                               lnprior=lh.rosenbrockLnprior,    # logprior function
                               lnlike=lh.rosenbrockLnlike,      # loglikelihood function
                               priorSample=lh.rosenbrockSample, # Prior sample function
-                              algorithm=algorithm)             # Which algorithm to use: BAPE, AGP, or ALTERNATE
+                              algorithm=algorithm,             # BAPE, AGP, or ALTERNATE
+                              bounds=bounds)                   # Parameter bounds
 
 4) Run!
 
 .. code-block:: python
 
-  ap.run(m=m, nmax=nmax, Dmax=Dmax, kmax=kmax, bounds=bounds,  estBurnin=True,
+  # Run!
+  ap.run(m=m, nmax=nmax, Dmax=Dmax, kmax=kmax, estBurnin=True, nGPRestarts=10,
          nKLSamples=nKLSamples, mcmcKwargs=mcmcKwargs, cache=False,
-         samplerKwargs=samplerKwargs, verbose=False)
+         samplerKwargs=samplerKwargs, verbose=False, onlyLastMCMC=True)
 
 5) Examine the final posterior distributions!
 
@@ -80,7 +83,7 @@ Don't forget to check out the links for example Jupyter Notebooks at the bottom 
   fig = corner.corner(samples, quantiles=[0.16, 0.5, 0.84], show_titles=True,
                       scale_hist=True, plot_contours=True)
 
-  #fig.savefig("finalPosterior.png", bbox_inches="tight") # Uncomment to save
+  fig.savefig("finalPosterior.png", bbox_inches="tight") # Uncomment to save
 
 The final posterior distribution will look something like the following:
 

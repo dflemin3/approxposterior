@@ -619,8 +619,8 @@ parameters from the prior distributions.</p>
 <span></span><span class="c1"># Define algorithm parameters</span>
 <span class="n">m0</span> <span class="o">=</span> <span class="mi">20</span>                           <span class="c1"># Initial size of training set</span>
 <span class="n">m</span> <span class="o">=</span> <span class="mi">10</span>                            <span class="c1"># Number of new points to find each iteration</span>
-<span class="n">nmax</span> <span class="o">=</span> <span class="mi">10</span>                         <span class="c1"># Maximum number of iterations</span>
-<span class="n">Dmax</span> <span class="o">=</span> <span class="mf">0.1</span>                        <span class="c1"># KL-Divergence convergence limit</span>
+<span class="n">nmax</span> <span class="o">=</span> <span class="mi">5</span>                          <span class="c1"># Maximum number of iterations</span>
+<span class="n">Dmax</span> <span class="o">=</span> <span class="mi">1</span>                          <span class="c1"># KL-Divergence convergence limit</span>
 <span class="n">kmax</span> <span class="o">=</span> <span class="mi">5</span>                          <span class="c1"># Number of iterations for Dmax convergence to kick in</span>
 <span class="n">nKLSamples</span> <span class="o">=</span> <span class="mi">100000</span>               <span class="c1"># Number of samples from posterior to use to calculate KL-Divergence</span>
 <span class="n">bounds</span> <span class="o">=</span> <span class="p">((</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span><span class="mf">0.5</span><span class="p">),</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">10.0</span><span class="p">))</span>   <span class="c1"># Prior bounds</span>
@@ -676,7 +676,8 @@ performance, iteratively improving the posterior distribution estimate.</p>
                             <span class="n">lnprior</span><span class="o">=</span><span class="n">logPrior</span><span class="p">,</span>              <span class="c1"># logprior function</span>
                             <span class="n">lnlike</span><span class="o">=</span><span class="n">logLikelihood</span><span class="p">,</span>          <span class="c1"># loglikelihood function</span>
                             <span class="n">priorSample</span><span class="o">=</span><span class="n">sampleFunction</span><span class="p">,</span>    <span class="c1"># Prior sample function</span>
-                            <span class="n">algorithm</span><span class="o">=</span><span class="n">algorithm</span><span class="p">)</span>           <span class="c1"># Which algorithm to use: BAPE, AGP, or ALTERNATE</span>
+                            <span class="n">algorithm</span><span class="o">=</span><span class="n">algorithm</span><span class="p">,</span>           <span class="c1"># BAPE, AGP, or ALTERNATE</span>
+                            <span class="n">bounds</span><span class="o">=</span><span class="n">bounds</span><span class="p">)</span>                 <span class="c1"># Parameter bounds</span>
 </pre></div>
 </div>
 </div>
@@ -691,9 +692,9 @@ v3 documentation for more details on how emcee caches data).</p>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
 <span></span><span class="c1"># Run!</span>
-<span class="n">ap</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">m</span><span class="o">=</span><span class="n">m</span><span class="p">,</span> <span class="n">nmax</span><span class="o">=</span><span class="n">nmax</span><span class="p">,</span> <span class="n">Dmax</span><span class="o">=</span><span class="n">Dmax</span><span class="p">,</span> <span class="n">kmax</span><span class="o">=</span><span class="n">kmax</span><span class="p">,</span> <span class="n">bounds</span><span class="o">=</span><span class="n">bounds</span><span class="p">,</span>  <span class="n">estBurnin</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+<span class="n">ap</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">m</span><span class="o">=</span><span class="n">m</span><span class="p">,</span> <span class="n">nmax</span><span class="o">=</span><span class="n">nmax</span><span class="p">,</span> <span class="n">Dmax</span><span class="o">=</span><span class="n">Dmax</span><span class="p">,</span> <span class="n">kmax</span><span class="o">=</span><span class="n">kmax</span><span class="p">,</span> <span class="n">estBurnin</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
        <span class="n">nKLSamples</span><span class="o">=</span><span class="n">nKLSamples</span><span class="p">,</span> <span class="n">mcmcKwargs</span><span class="o">=</span><span class="n">mcmcKwargs</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
-       <span class="n">samplerKwargs</span><span class="o">=</span><span class="n">samplerKwargs</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="n">args</span><span class="p">)</span>
+       <span class="n">samplerKwargs</span><span class="o">=</span><span class="n">samplerKwargs</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="n">args</span><span class="p">,</span> <span class="n">onlyLastMCMC</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>

@@ -384,7 +384,7 @@ function example presented in Wang &amp; Li (2017) using emcee.</p>
 emcee.</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>In [2]:
+<span></span>In [1]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -413,7 +413,7 @@ emcee.</p>
 </div>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>In [3]:
+<span></span>In [2]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -425,7 +425,7 @@ emcee.</p>
 <hr class="docutils" />
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>In [4]:
+<span></span>In [3]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -450,7 +450,7 @@ see how <code class="docutils literal notranslate"><span class="pre">approxposte
 function posterior derived in this notebook.</p>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>In [5]:
+<span></span>In [4]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -464,7 +464,7 @@ function posterior derived in this notebook.</p>
 example in the emcee documentation.</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>In [6]:
+<span></span>In [5]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -479,6 +479,31 @@ example in the emcee documentation.</p>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
 emcee finished!
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
+<span></span>In [6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># Compute acceptance fraction for each walker</span>
+<span class="k">print</span><span class="p">(</span><span class="s2">&quot;Number of iterations: </span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">sampler</span><span class="o">.</span><span class="n">iteration</span><span class="p">)</span>
+
+<span class="c1"># Is the length of the chain at least 50 tau?</span>
+<span class="k">print</span><span class="p">(</span><span class="s2">&quot;Likely converged if iterations &gt; 50 * (integrated autocorrelation time, tau).&quot;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s2">&quot;Number of iterations / tau:&quot;</span><span class="p">,</span> <span class="n">sampler</span><span class="o">.</span><span class="n">iteration</span> <span class="o">/</span> <span class="n">sampler</span><span class="o">.</span><span class="n">get_autocorr_time</span><span class="p">(</span><span class="n">tol</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Number of iterations: 20000
+Likely converged if iterations &gt; 50 * (integrated autocorrelation time, tau).
+Number of iterations / tau: [152.45258457 288.91391155]
 </pre></div></div>
 </div>
 <div class="nbinput docutils container">
@@ -534,7 +559,7 @@ emcee finished!
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_TrueRosenbrockPosterior_11_0.png" src="../_images/notebooks_TrueRosenbrockPosterior_11_0.png" />
+<img alt="../_images/notebooks_TrueRosenbrockPosterior_12_0.png" src="../_images/notebooks_TrueRosenbrockPosterior_12_0.png" />
 </div>
 </div>
 <p><strong>Looks good! Let’s plot the joint and marginal posterior
@@ -558,7 +583,7 @@ distributions.</strong></p>
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_TrueRosenbrockPosterior_13_0.png" src="../_images/notebooks_TrueRosenbrockPosterior_13_0.png" />
+<img alt="../_images/notebooks_TrueRosenbrockPosterior_14_0.png" src="../_images/notebooks_TrueRosenbrockPosterior_14_0.png" />
 </div>
 </div>
 <p>Neat. Now let’s save the sampler object and burn in time into a numpy

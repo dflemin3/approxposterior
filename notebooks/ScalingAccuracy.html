@@ -394,9 +394,11 @@ warranted.</p>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
 <span></span><span class="o">%</span><span class="k">matplotlib</span> inline
 
-<span class="kn">from</span> <span class="nn">approxposterior</span> <span class="kn">import</span> <span class="n">approx</span><span class="p">,</span> <span class="n">likelihood</span> <span class="k">as</span> <span class="n">lh</span><span class="p">,</span> <span class="n">gpUtils</span> <span class="k">as</span> <span class="n">gpu</span>
+<span class="kn">from</span> <span class="nn">approxposterior</span> <span class="kn">import</span> <span class="n">approx</span><span class="p">,</span> <span class="n">likelihood</span> <span class="k">as</span> <span class="n">lh</span><span class="p">,</span> <span class="n">gpUtils</span> <span class="k">as</span> <span class="n">gpu</span><span class="p">,</span> <span class="n">utility</span> <span class="k">as</span> <span class="n">ut</span>
+
 <span class="kn">import</span> <span class="nn">george</span>
 <span class="kn">import</span> <span class="nn">corner</span>
+<span class="kn">import</span> <span class="nn">emcee</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
 
 <span class="kn">import</span> <span class="nn">matplotlib</span> <span class="kn">as</span> <span class="nn">mpl</span>
@@ -429,17 +431,16 @@ warranted.</p>
 <span></span><span class="c1"># Define algorithm parameters</span>
 <span class="n">m0</span> <span class="o">=</span> <span class="mi">50</span>                           <span class="c1"># Initial size of training set</span>
 <span class="n">m</span> <span class="o">=</span> <span class="mi">20</span>                            <span class="c1"># Number of new points to find each iteration</span>
-<span class="n">nmax</span> <span class="o">=</span> <span class="mi">10</span>                         <span class="c1"># Maximum number of iterations</span>
-<span class="n">Dmax</span> <span class="o">=</span> <span class="mi">1</span>                          <span class="c1"># KL-Divergence convergence limit</span>
+<span class="n">nmax</span> <span class="o">=</span> <span class="mi">5</span>                          <span class="c1"># Maximum number of iterations</span>
+<span class="n">Dmax</span> <span class="o">=</span> <span class="mf">0.1</span>                        <span class="c1"># KL-Divergence convergence limit</span>
 <span class="n">kmax</span> <span class="o">=</span> <span class="mi">5</span>                          <span class="c1"># Number of iterations for Dmax convergence to kick in</span>
 <span class="n">nKLSamples</span> <span class="o">=</span> <span class="mi">100000</span>               <span class="c1"># Number of samples from posterior to use to calculate KL-Divergence</span>
 <span class="n">bounds</span> <span class="o">=</span> <span class="p">((</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">),</span> <span class="p">(</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">))</span>         <span class="c1"># Prior bounds</span>
 <span class="n">algorithm</span> <span class="o">=</span> <span class="s2">&quot;BAPE&quot;</span>                <span class="c1"># Use the Kandasamy et al. (2015) formalism</span>
-<span class="n">nCores</span> <span class="o">=</span> <span class="mi">1</span>                        <span class="c1"># Just use one core</span>
 
 <span class="c1"># emcee MCMC parameters</span>
 <span class="n">samplerKwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;nwalkers&quot;</span> <span class="p">:</span> <span class="mi">20</span><span class="p">}</span>        <span class="c1"># emcee.EnsembleSampler parameters</span>
-<span class="n">mcmcKwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;iterations&quot;</span> <span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="mf">2.0e4</span><span class="p">)}</span> <span class="c1"># emcee.EnsembleSampler.run_mcmc parameters</span>
+<span class="n">mcmcKwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;iterations&quot;</span> <span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="mf">1.0e4</span><span class="p">)}</span> <span class="c1"># emcee.EnsembleSampler.run_mcmc parameters</span>
 </pre></div>
 </div>
 </div>
@@ -449,8 +450,8 @@ warranted.</p>
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="c1"># Randomly sample initial conditions from the prior</span>
-<span class="n">theta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">lh</span><span class="o">.</span><span class="n">rosenbrockSample</span><span class="p">(</span><span class="n">m0</span><span class="p">))</span>
+<span></span><span class="c1"># Generate initial conditions using Latin Hypercube sampling over parameter bounds</span>
+<span class="n">theta</span> <span class="o">=</span> <span class="n">ut</span><span class="o">.</span><span class="n">latinHypercubeSampling</span><span class="p">(</span><span class="n">m0</span><span class="p">,</span> <span class="n">bounds</span><span class="p">,</span> <span class="n">criterion</span><span class="o">=</span><span class="s2">&quot;maximin&quot;</span><span class="p">)</span>
 
 <span class="c1"># Evaluate forward model log likelihood + lnprior for each theta</span>
 <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">theta</span><span class="p">))</span>
@@ -468,14 +469,15 @@ warranted.</p>
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="c1"># Set up approxposterior object</span>
+<span></span><span class="c1"># Initialize object using the Wang &amp; Li (2017) Rosenbrock function example</span>
 <span class="n">ap</span> <span class="o">=</span> <span class="n">approx</span><span class="o">.</span><span class="n">ApproxPosterior</span><span class="p">(</span><span class="n">theta</span><span class="o">=</span><span class="n">theta</span><span class="p">,</span>
                             <span class="n">y</span><span class="o">=</span><span class="n">y</span><span class="p">,</span>
                             <span class="n">gp</span><span class="o">=</span><span class="n">gp</span><span class="p">,</span>
                             <span class="n">lnprior</span><span class="o">=</span><span class="n">lh</span><span class="o">.</span><span class="n">rosenbrockLnprior</span><span class="p">,</span>
                             <span class="n">lnlike</span><span class="o">=</span><span class="n">lh</span><span class="o">.</span><span class="n">rosenbrockLnlike</span><span class="p">,</span>
                             <span class="n">priorSample</span><span class="o">=</span><span class="n">lh</span><span class="o">.</span><span class="n">rosenbrockSample</span><span class="p">,</span>
-                            <span class="n">algorithm</span><span class="o">=</span><span class="n">algorithm</span><span class="p">)</span>
+                            <span class="n">algorithm</span><span class="o">=</span><span class="n">algorithm</span><span class="p">,</span>
+                            <span class="n">bounds</span><span class="o">=</span><span class="n">bounds</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -496,9 +498,9 @@ previous joint posterior distributions.</p>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
 <span></span><span class="c1"># Run!</span>
-<span class="n">ap</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">m</span><span class="o">=</span><span class="n">m</span><span class="p">,</span> <span class="n">nmax</span><span class="o">=</span><span class="n">nmax</span><span class="p">,</span> <span class="n">Dmax</span><span class="o">=</span><span class="n">Dmax</span><span class="p">,</span> <span class="n">kmax</span><span class="o">=</span><span class="n">kmax</span><span class="p">,</span> <span class="n">bounds</span><span class="o">=</span><span class="n">bounds</span><span class="p">,</span>  <span class="n">estBurnin</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
-       <span class="n">nKLSamples</span><span class="o">=</span><span class="n">nKLSamples</span><span class="p">,</span> <span class="n">mcmcKwargs</span><span class="o">=</span><span class="n">mcmcKwargs</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">timing</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
-       <span class="n">samplerKwargs</span><span class="o">=</span><span class="n">samplerKwargs</span><span class="p">,</span> <span class="n">nCores</span><span class="o">=</span><span class="n">nCores</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+<span class="n">ap</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">m</span><span class="o">=</span><span class="n">m</span><span class="p">,</span> <span class="n">nmax</span><span class="o">=</span><span class="n">nmax</span><span class="p">,</span> <span class="n">Dmax</span><span class="o">=</span><span class="n">Dmax</span><span class="p">,</span> <span class="n">kmax</span><span class="o">=</span><span class="n">kmax</span><span class="p">,</span> <span class="n">estBurnin</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+       <span class="n">nKLSamples</span><span class="o">=</span><span class="n">nKLSamples</span><span class="p">,</span> <span class="n">mcmcKwargs</span><span class="o">=</span><span class="n">mcmcKwargs</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+       <span class="n">samplerKwargs</span><span class="o">=</span><span class="n">samplerKwargs</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">timing</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -599,7 +601,7 @@ axis).</p>
 </pre></div>
 </div>
 <div class="output_area highlight-none notranslate"><div class="highlight"><pre>
-<span></span>&lt;matplotlib.legend.Legend at 0x11c54da20&gt;
+<span></span>&lt;matplotlib.legend.Legend at 0x1114b27f0&gt;
 </pre></div>
 </div>
 </div>
@@ -729,11 +731,11 @@ the approximate method is.</p>
 <div class="highlight"><pre>
 x0
 True     [-2.4136162  -2.32461971 -2.27654002]
-Approx   [-2.41861253 -2.326913   -2.2804406 ]
+Approx   [-2.41218665 -2.33635282 -2.28346417]
 
 x1
 True     [-1.70102134 -1.40117241 -1.25195281]
-Approx   [-1.70847244 -1.40057231 -1.24229206]
+Approx   [-1.69665851 -1.38851357 -1.24138287]
 </pre></div></div>
 </div>
 <p>Looks good, but let’s visualize this instead…</p>
@@ -772,7 +774,7 @@ Approx   [-1.70847244 -1.40057231 -1.24229206]
 </pre></div>
 </div>
 <div class="output_area highlight-none notranslate"><div class="highlight"><pre>
-<span></span>&lt;matplotlib.legend.Legend at 0x11cf71160&gt;
+<span></span>&lt;matplotlib.legend.Legend at 0x1123f5b00&gt;
 </pre></div>
 </div>
 </div>

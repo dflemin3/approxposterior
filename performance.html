@@ -242,11 +242,6 @@ In practice, we find that high-dimensional applications require restarting this 
 several times, with initial guesses drawn from the prior, to achieve good performance.
 As before, the keyword argument nMinObjRestarts controls the number of optimization
 restarts, with the default value being 5.</p>
-<p><strong>Parallelizing approxposterior</strong></p>
-<p>The above optimizations do not have to occur sequentially, but can be done in
-parallel using multiprocessing.  The nCores keyword argument controls how many
-cores are used to distribute this optimization, with the default being 1.  To use
-all available cores, set nCores = -1.</p>
 </div>
 
 

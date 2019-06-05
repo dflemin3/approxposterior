@@ -217,7 +217,7 @@ your code.  In this example, we set verbose = False for simplicity.</p>
 <ol class="arabic simple">
 <li>First, the user must set model parameters.</li>
 </ol>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">approxposterior</span> <span class="kn">import</span> <span class="n">approx</span><span class="p">,</span> <span class="n">likelihood</span> <span class="k">as</span> <span class="n">lh</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">approxposterior</span> <span class="kn">import</span> <span class="n">approx</span><span class="p">,</span> <span class="n">gpUtils</span><span class="p">,</span> <span class="n">likelihood</span> <span class="k">as</span> <span class="n">lh</span><span class="p">,</span> <span class="n">utility</span> <span class="k">as</span> <span class="n">ut</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
 
 <span class="c1"># Define algorithm parameters</span>
@@ -238,8 +238,8 @@ your code.  In this example, we set verbose = False for simplicity.</p>
 <ol class="arabic simple" start="2">
 <li>Create an initial training set and gaussian process</li>
 </ol>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Randomly sample initial conditions from the prior</span>
-<span class="n">theta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">lh</span><span class="o">.</span><span class="n">rosenbrockSample</span><span class="p">(</span><span class="n">m0</span><span class="p">))</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Generate initial conditions using Latin Hypercube sampling over parameter bounds</span>
+<span class="n">theta</span> <span class="o">=</span> <span class="n">ut</span><span class="o">.</span><span class="n">latinHypercubeSampling</span><span class="p">(</span><span class="n">m0</span><span class="p">,</span> <span class="n">bounds</span><span class="p">,</span> <span class="n">criterion</span><span class="o">=</span><span class="s2">&quot;maximin&quot;</span><span class="p">)</span>
 
 <span class="c1"># Evaluate forward model log likelihood + lnprior for each theta</span>
 <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">theta</span><span class="p">))</span>
@@ -260,15 +260,17 @@ your code.  In this example, we set verbose = False for simplicity.</p>
                             <span class="n">lnprior</span><span class="o">=</span><span class="n">lh</span><span class="o">.</span><span class="n">rosenbrockLnprior</span><span class="p">,</span>    <span class="c1"># logprior function</span>
                             <span class="n">lnlike</span><span class="o">=</span><span class="n">lh</span><span class="o">.</span><span class="n">rosenbrockLnlike</span><span class="p">,</span>      <span class="c1"># loglikelihood function</span>
                             <span class="n">priorSample</span><span class="o">=</span><span class="n">lh</span><span class="o">.</span><span class="n">rosenbrockSample</span><span class="p">,</span> <span class="c1"># Prior sample function</span>
-                            <span class="n">algorithm</span><span class="o">=</span><span class="n">algorithm</span><span class="p">)</span>             <span class="c1"># Which algorithm to use: BAPE, AGP, or ALTERNATE</span>
+                            <span class="n">algorithm</span><span class="o">=</span><span class="n">algorithm</span><span class="p">,</span>             <span class="c1"># BAPE, AGP, or ALTERNATE</span>
+                            <span class="n">bounds</span><span class="o">=</span><span class="n">bounds</span><span class="p">)</span>                   <span class="c1"># Parameter bounds</span>
 </pre></div>
 </div>
 <ol class="arabic simple" start="4">
 <li>Run!</li>
 </ol>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">ap</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">m</span><span class="o">=</span><span class="n">m</span><span class="p">,</span> <span class="n">nmax</span><span class="o">=</span><span class="n">nmax</span><span class="p">,</span> <span class="n">Dmax</span><span class="o">=</span><span class="n">Dmax</span><span class="p">,</span> <span class="n">kmax</span><span class="o">=</span><span class="n">kmax</span><span class="p">,</span> <span class="n">bounds</span><span class="o">=</span><span class="n">bounds</span><span class="p">,</span>  <span class="n">estBurnin</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Run!</span>
+<span class="n">ap</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">m</span><span class="o">=</span><span class="n">m</span><span class="p">,</span> <span class="n">nmax</span><span class="o">=</span><span class="n">nmax</span><span class="p">,</span> <span class="n">Dmax</span><span class="o">=</span><span class="n">Dmax</span><span class="p">,</span> <span class="n">kmax</span><span class="o">=</span><span class="n">kmax</span><span class="p">,</span> <span class="n">estBurnin</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">nGPRestarts</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
        <span class="n">nKLSamples</span><span class="o">=</span><span class="n">nKLSamples</span><span class="p">,</span> <span class="n">mcmcKwargs</span><span class="o">=</span><span class="n">mcmcKwargs</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
-       <span class="n">samplerKwargs</span><span class="o">=</span><span class="n">samplerKwargs</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+       <span class="n">samplerKwargs</span><span class="o">=</span><span class="n">samplerKwargs</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">onlyLastMCMC</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 </pre></div>
 </div>
 <ol class="arabic simple" start="5">
@@ -284,7 +286,7 @@ your code.  In this example, we set verbose = False for simplicity.</p>
 <span class="n">fig</span> <span class="o">=</span> <span class="n">corner</span><span class="o">.</span><span class="n">corner</span><span class="p">(</span><span class="n">samples</span><span class="p">,</span> <span class="n">quantiles</span><span class="o">=</span><span class="p">[</span><span class="mf">0.16</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.84</span><span class="p">],</span> <span class="n">show_titles</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
                     <span class="n">scale_hist</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">plot_contours</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 
-<span class="c1">#fig.savefig(&quot;finalPosterior.png&quot;, bbox_inches=&quot;tight&quot;) # Uncomment to save</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s2">&quot;finalPosterior.png&quot;</span><span class="p">,</span> <span class="n">bbox_inches</span><span class="o">=</span><span class="s2">&quot;tight&quot;</span><span class="p">)</span> <span class="c1"># Uncomment to save</span>
 </pre></div>
 </div>
 <p>The final posterior distribution will look something like the following:</p>

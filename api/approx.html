@@ -385,7 +385,7 @@ Otherwise, returns thetaT and yT.</p>
 
 <dl class="method">
 <dt id="approxposterior.approx.ApproxPosterior.run">
-<code class="descname">run</code><span class="sig-paren">(</span><em>m=10</em>, <em>nmax=2</em>, <em>Dmax=0.1</em>, <em>kmax=5</em>, <em>seed=None</em>, <em>timing=False</em>, <em>bounds=None</em>, <em>nKLSamples=10000</em>, <em>verbose=True</em>, <em>maxComp=3</em>, <em>mcmcKwargs=None</em>, <em>samplerKwargs=None</em>, <em>estBurnin=False</em>, <em>thinChains=False</em>, <em>runName='apRun'</em>, <em>cache=True</em>, <em>maxLnLikeRestarts=3</em>, <em>gmmKwargs=None</em>, <em>gpMethod=None</em>, <em>gpOptions=None</em>, <em>gpP0=None</em>, <em>optGPEveryN=1</em>, <em>nGPRestarts=5</em>, <em>nMinObjRestarts=5</em>, <em>nCores=1</em>, <em>gpCV=None</em>, <em>onlyLastMCMC=False</em>, <em>args=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/approx.html#ApproxPosterior.run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.approx.ApproxPosterior.run" title="Permalink to this definition">¶</a></dt>
+<code class="descname">run</code><span class="sig-paren">(</span><em>m=10</em>, <em>nmax=2</em>, <em>Dmax=0.1</em>, <em>kmax=5</em>, <em>seed=None</em>, <em>timing=False</em>, <em>nKLSamples=10000</em>, <em>verbose=True</em>, <em>maxComp=3</em>, <em>mcmcKwargs=None</em>, <em>samplerKwargs=None</em>, <em>estBurnin=False</em>, <em>thinChains=False</em>, <em>runName='apRun'</em>, <em>cache=True</em>, <em>maxLnLikeRestarts=3</em>, <em>gmmKwargs=None</em>, <em>gpMethod=None</em>, <em>gpOptions=None</em>, <em>gpP0=None</em>, <em>optGPEveryN=1</em>, <em>nGPRestarts=5</em>, <em>nMinObjRestarts=5</em>, <em>nCores=1</em>, <em>gpCV=None</em>, <em>onlyLastMCMC=False</em>, <em>args=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/approx.html#ApproxPosterior.run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.approx.ApproxPosterior.run" title="Permalink to this definition">¶</a></dt>
 <dd><p>Core algorithm to estimate the posterior distribution via Gaussian
 Process regression to the joint distribution for the forward model
 input/output pairs</p>
@@ -419,11 +419,6 @@ converged and terminates.  Defaults to 5.</p>
 <blockquote>
 <div><p>Whether or not to time the code for profiling/speed tests.
 Defaults to False.</p>
-</div></blockquote>
-<p><strong>bounds</strong> : tuple/iterable (optional)</p>
-<blockquote>
-<div><p>Bounds for minimization scheme.  See scipy.optimize.minimize details
-for more information.  Defaults to None.</p>
 </div></blockquote>
 <p><strong>nKLSamples</strong> : int (optionals)</p>
 <blockquote>
