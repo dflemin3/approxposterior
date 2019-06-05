@@ -67,7 +67,7 @@ the MCMC finishes, what the estimated burn-in is, and other quantities that are 
 your code.  In this example, we set ```verbose = False``` for simplicity.
 
 ```python
-from approxposterior import approx, gpUtils, likelihood as lh
+from approxposterior import approx, gpUtils, likelihood as lh, utility as ut
 import numpy as np
 
 # Define algorithm parameters
@@ -84,8 +84,8 @@ algorithm = "BAPE"                # Use the Kandasamy et al. (2015) formalism
 samplerKwargs = {"nwalkers" : 20}        # emcee.EnsembleSampler parameters
 mcmcKwargs = {"iterations" : int(2.0e4)} # emcee.EnsembleSampler.run_mcmc parameters
 
-# Randomly sample initial conditions from the prior
-theta = np.array(lh.rosenbrockSample(m0))
+# Generate initial conditions using Latin Hypercube sampling over parameter bounds
+theta = ut.latinHypercubeSampling(m0, bounds, criterion="maximin")
 
 # Evaluate forward model log likelihood + lnprior for each theta
 y = np.zeros(len(theta))
@@ -102,12 +102,13 @@ ap = approx.ApproxPosterior(theta=theta,
                             lnprior=lh.rosenbrockLnprior,
                             lnlike=lh.rosenbrockLnlike,
                             priorSample=lh.rosenbrockSample,
+                            bounds=bounds,
                             algorithm=algorithm)
 
 # Run!
-ap.run(m=m, nmax=nmax, Dmax=Dmax, kmax=kmax, bounds=bounds,  estBurnin=True,
+ap.run(m=m, nmax=nmax, Dmax=Dmax, kmax=kmax, estBurnin=True, nGPRestarts=10,
        nKLSamples=nKLSamples, mcmcKwargs=mcmcKwargs, cache=False,
-       samplerKwargs=samplerKwargs, verbose=True)
+       samplerKwargs=samplerKwargs, verbose=True, onlyLastMCMC=True)
 
 # Check out the final posterior distribution!
 import corner
@@ -119,7 +120,7 @@ samples = ap.sampler.get_chain(discard=ap.iburns[-1], flat=True, thin=ap.ithins[
 fig = corner.corner(samples, quantiles=[0.16, 0.5, 0.84], show_titles=True,
                     scale_hist=True, plot_contours=True)
 
-#fig.savefig("finalPosterior.png", bbox_inches="tight") # Uncomment to save
+# fig.savefig("finalPosterior.png", bbox_inches="tight") # Uncomment to save
 ```
 
 The final distribution will look something like this:
