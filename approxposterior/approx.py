@@ -176,8 +176,8 @@ class ApproxPosterior(object):
 
 
     def run(self, m=10, nmax=2, Dmax=0.1, kmax=5, seed=None,
-            timing=False, bounds=None, nKLSamples=10000, verbose=True,
-            maxComp=3, mcmcKwargs=None, samplerKwargs=None, estBurnin=False,
+            timing=False, nKLSamples=10000, verbose=True, maxComp=3,
+            mcmcKwargs=None, samplerKwargs=None, estBurnin=False,
             thinChains=False, runName="apRun", cache=True,
             maxLnLikeRestarts=3, gmmKwargs=None, gpMethod=None, gpOptions=None,
             gpP0=None, optGPEveryN=1, nGPRestarts=5, nMinObjRestarts=5,
@@ -204,9 +204,6 @@ class ApproxPosterior(object):
         timing : bool (optional)
             Whether or not to time the code for profiling/speed tests.
             Defaults to False.
-        bounds : tuple/iterable (optional)
-            Bounds for minimization scheme.  See scipy.optimize.minimize details
-            for more information.  Defaults to None.
         nKLSamples : int (optionals)
             Number of samples to draw for Monte Carlo approximation to KL
             divergence between current and previous estimate of the posterior.
@@ -325,14 +322,6 @@ class ApproxPosterior(object):
             self.mcmcTime = list()
             self.gmmTime = list()
             self.klTime = list()
-
-        # If scipy.minimize bounds are provided, make sure it has ndim elements
-        if bounds is not None and (len(bounds) != self.theta.shape[-1]):
-            err_msg = "ERROR: bounds provided but len(bounds) != ndim.\n"
-            err_msg += "ndim = %d, len(bounds) = %d" % (self.theta.shape[-1], len(bounds))
-            raise ValueError(err_msg)
-        else:
-            self.bounds = bounds
 
         # Initial optimization of gaussian process
         self.gp = gpUtils.optimizeGP(self.gp, self.theta, self.y, seed=seed,
