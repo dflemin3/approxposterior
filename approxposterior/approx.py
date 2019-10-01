@@ -228,7 +228,7 @@ class ApproxPosterior(object):
             thinChains=False, runName="apRun", cache=True,
             maxLnLikeRestarts=3, gmmKwargs=None, gpMethod=None, gpOptions=None,
             gpP0=None, optGPEveryN=1, nGPRestarts=5, nMinObjRestarts=5,
-            nCores=1, gpCV=None, onlyLastMCMC=False, args=None, **kwargs):
+            gpCV=None, onlyLastMCMC=False, args=None, **kwargs):
         """
         Core algorithm to estimate the posterior distribution via Gaussian
         Process regression to the joint distribution for the forward model
@@ -326,9 +326,6 @@ class ApproxPosterior(object):
             Number of times to restart minimizing -utility function to select
             next point to improve GP performance.  Defaults to 5.  Increase this
             number of the point selection is not working well.
-        nCores : int (optional)
-            If > 1, use multiprocessing to distribute optimization restarts. If
-            < 0, e.g. -1, use all usable cores
         gpCV : int (optional)
             Whether or not to use k-fold cross-validation to select kernel
             hyperparameters from the nGPRestarts maximum likelihood solutions.
@@ -374,7 +371,7 @@ class ApproxPosterior(object):
         self.gp = gpUtils.optimizeGP(self.gp, self.theta, self.y, seed=seed,
                                      method=gpMethod, options=gpOptions,
                                      p0=gpP0, nGPRestarts=nGPRestarts,
-                                     nCores=nCores, gpCV=gpCV)
+                                     gpCV=gpCV)
 
         # Main loop
         kk = 0
@@ -557,7 +554,7 @@ class ApproxPosterior(object):
     def findNextPoint(self, computeLnLike=True, bounds=None, gpMethod=None,
                       maxLnLikeRestarts=3, seed=None, cache=True, gpOptions=None,
                       gpP0=None, optGP=True, args=None, nGPRestarts=5,
-                      nMinObjRestarts=5, nCores=1, gpCV=None, runName="apRun",
+                      nMinObjRestarts=5, gpCV=None, runName="apRun",
                       **kwargs):
         """
         Find new point, thetaT, by maximizing utility function. Note that we
@@ -619,9 +616,6 @@ class ApproxPosterior(object):
             Number of times to restart minimizing -utility function to select
             next point to improve GP performance.  Defaults to 5.  Increase this
             number of the point selection is not working well.
-        nCores : int (optional)
-            If > 1, use multiprocessing to distribute optimization restarts. If
-            < 0, e.g. -1, use all usable cores
         gpCV : int (optional)
             Whether or not to use 5-fold cross-validation to select kernel
             hyperparameters from the nGPRestarts maximum likelihood solutions.
@@ -671,8 +665,7 @@ class ApproxPosterior(object):
                                           sampleFn=self.priorSample,
                                           priorFn=self._lnprior,
                                           bounds=bounds,
-                                          nMinObjRestarts=nMinObjRestarts,
-                                          nCores=nCores)
+                                          nMinObjRestarts=nMinObjRestarts)
 
             # Compute lnLikelihood at thetaT?
             if computeLnLike:
@@ -719,7 +712,6 @@ class ApproxPosterior(object):
                                                  seed=seed, method=gpMethod,
                                                  options=gpOptions, p0=gpP0,
                                                  nGPRestarts=nGPRestarts,
-                                                 nCores=nCores,
                                                  gpCV=gpCV)
             except ValueError:
                 # Output errant theta in physical units

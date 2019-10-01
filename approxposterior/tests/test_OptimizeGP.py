@@ -67,16 +67,14 @@ def testGPOpt():
 
     # Try serial computation
     gp = gpu.optimizeGP(gp, theta, y, seed=seed, nGPRestarts=5,
-                        method=method, options=options, p0=p0,
-                        nCores=1)
+                        method=method, options=options, p0=p0)
 
     # Extract GP hyperparameters, compare to truth
     hypeSin = gp.get_parameter_vector()
 
     # Now with multiprocessing using as many cores as we can
     gp = gpu.optimizeGP(gp, theta, y, seed=seed, nGPRestarts=5,
-                        method=method, options=options, p0=p0,
-                        nCores=-1)
+                        method=method, options=options, p0=p0)
 
     # Extract GP hyperparameters, compare to truth
     hypeMult = gp.get_parameter_vector()
