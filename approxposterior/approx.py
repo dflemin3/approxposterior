@@ -17,14 +17,14 @@ from . import utility as ut
 from . import gpUtils
 from . import mcmcUtils
 from . import gmmUtils
-from . import regression
+#from . import regression
 
 import numpy as np
 import time
 import emcee
 import george
 import os
-import xgboost as xgb
+#import xgboost as xgb
 
 
 class ApproxPosterior(object):
