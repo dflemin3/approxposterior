@@ -16,7 +16,6 @@ __all__ = ["logsubexp","AGPUtility","BAPEUtility","minimizeObjective",
 from . import pool
 import numpy as np
 import multiprocessing
-from sklearn.base import TransformerMixin
 from scipy.optimize import minimize
 from pyDOE import lhs
 
@@ -83,7 +82,7 @@ class functionWrapperArgsOnly(object):
 
 ################################################################################
 #
-# Data set initialation functions
+# Data set initialization functions
 #
 ################################################################################
 

@@ -13,11 +13,11 @@
   "identifier": "",
   "codeRepository": "github.com/dflemin3/approxposterior",
   "datePublished": "2018-04-24",
-  "dateModified": "2018-04-24",
+  "dateModified": "2019-07-23",
   "dateCreated": "2018-04-24",
   "description": "A python implementation of Kandasamy et al. (2015) for deriving approximate posterior distributions.",
   "keywords": "python, Bayes, posterior, distribution, gaussian process, mcmc",
   "license": "MIT",
   "title": "approxposterior",
-  "version": "v0.1"
+  "version": "v0.2.post1"
 }

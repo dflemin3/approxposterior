@@ -15,7 +15,7 @@ import numpy as np
 # Define algorithm parameters
 m0 = 50                           # Initial size of training set
 m = 20                            # Number of new points to find each iteration
-nmax = 10                         # Maximum number of iterations
+nmax = 2                          # Maximum number of iterations
 Dmax = 0.1                        # KL-Divergence convergence limit
 kmax = 5                          # Number of iterations for Dmax convergence to kick in
 nKLSamples = 10000                # Number of samples from posterior to use to calculate KL-Divergence
@@ -26,8 +26,8 @@ algorithm = "BAPE"                # Use the Kandasamy et al. (2015) formalism
 samplerKwargs = {"nwalkers" : 20}        # emcee.EnsembleSampler parameters
 mcmcKwargs = {"iterations" : int(2.0e4)} # emcee.EnsembleSampler.run_mcmc parameters
 
-# Generate initial conditions using Latin Hypercube sampling over parameter bounds
-theta = ut.latinHypercubeSampling(m0, bounds, criterion="maximin")
+# Sample initial conditions from the prior
+theta = lh.rosenbrockSample(m0)
 
 # Evaluate forward model log likelihood + lnprior for each theta
 y = np.zeros(len(theta))
@@ -48,7 +48,7 @@ ap = approx.ApproxPosterior(theta=theta,
                             algorithm=algorithm)
 
 # Run!
-ap.run(m=m, nmax=nmax, Dmax=Dmax, kmax=kmax, estBurnin=True, nGPRestarts=10,
+ap.run(m=m, nmax=nmax, Dmax=Dmax, kmax=kmax, estBurnin=True, nGPRestarts=1,
        nKLSamples=nKLSamples, mcmcKwargs=mcmcKwargs, cache=False,
        samplerKwargs=samplerKwargs, verbose=True, onlyLastMCMC=True)
 

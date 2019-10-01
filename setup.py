@@ -69,6 +69,7 @@ setup(name = 'approxposterior',
                           'pybind11',
                           'pytest',
                           'h5py',
-                          'pyDOE'],
+                          'pyDOE',
+                          'xgboost'],
       include_package_data = True,
       zip_safe = False)

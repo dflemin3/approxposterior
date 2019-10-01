@@ -17,12 +17,14 @@ from . import utility as ut
 from . import gpUtils
 from . import mcmcUtils
 from . import gmmUtils
+from . import regression
 
 import numpy as np
 import time
 import emcee
 import george
 import os
+import xgboost as xgb
 
 
 class ApproxPosterior(object):
@@ -128,6 +130,51 @@ class ApproxPosterior(object):
         else:
             self.gp = gp
 
+        # Initialize regression algorithm
+        #self.regressor = xgb.XGBRegressor(objective='reg:squarederror')
+
+    # end function
+
+
+    def _regll(self, theta, *args, **kwargs):
+        """
+        Predict the approximate posterior conditional distibution, the
+        likelihood + prior learned by the regressor, at a given point, theta.
+
+        Parameters
+        ----------
+        theta : array-like
+            Test point to evaluate predict posterior distribution
+
+        Returns
+        -------
+        mu : float
+            Predicted posterior estimate at theta
+        lnprior : float
+            log prior evlatuated at theta
+        """
+
+        # Sometimes the input values can be crazy and the GP will blow up
+        if not np.any(np.isfinite(theta)):
+            return -np.inf, np.nan
+
+        # Reject point if prior forbids it
+        lnprior = self._lnprior(theta)
+        if not np.isfinite(lnprior):
+            return -np.inf, np.nan
+
+        # Mean of predictive distribution conditioned on y (GP posterior estimate)
+        # and make sure theta is the right shape for the GP
+        try:
+            mu = -np.exp(self.regressor.predict(theta))
+        except ValueError:
+            return -np.inf, np.nan
+
+        # Catch NaNs/Infs because they can (rarely) happen
+        if not np.isfinite(mu):
+            return -np.inf, np.nan
+        else:
+            return mu, lnprior
     # end function
 
 
@@ -386,6 +433,11 @@ class ApproxPosterior(object):
 
             # GP updated: run MCMC sampler to obtain new posterior conditioned
             # on {theta_n, log(L_t*prior)}. Use emcee to obtain posterior dist.
+
+            # Retrain regression model
+            #self.regressor, _, _ = regression.trainXGBoost(self.regressor,
+            #                                               self.theta, np.log(-self.y),
+            #                                               k=5,hyperparams=None)
 
             # If user only wants to run the MCMC at the end and it's not the
             # last iteration, skip everything below!
