@@ -13,7 +13,6 @@ __all__ = ["optimizeGP"]
 from . import pool
 from . import utility as util
 import numpy as np
-import multiprocessing
 import george
 from scipy.optimize import minimize
 from sklearn.model_selection import KFold
@@ -100,6 +99,8 @@ def defaultGP(theta, y, white_noise=-27.407877564614338):
     # Create kernel: We'll model coveriances in loglikelihood space using a
     # Squared Expoential Kernel with wide bounds on the metric just in case
     kernel = george.kernels.ExpSquaredKernel(initialMetric, ndim=theta.shape[-1])
+    kernel = kernel + george.kernels.DotProductKernel(bounds=None,
+                                                      ndim=theta.shape[-1])
     # amp: np.log(np.var(y)) * kernel
 
     # Create GP and compute the kernel, aka factor the covariance matrix
@@ -170,7 +171,7 @@ def optimizeGP(gp, theta, y, seed=None, nGPRestarts=5, method=None, options=None
                          bounds=None, options=options)["x"]
         res.append(resii)
 
-        # Update the kernel
+        # Update the kernel with solution for computing marginal loglike
         gp.set_parameter_vector(resii)
         gp.recompute()
 
@@ -180,7 +181,7 @@ def optimizeGP(gp, theta, y, seed=None, nGPRestarts=5, method=None, options=None
     # Use CV to select best answer?
     if gpCV is not None:
         if isinstance(gpCV, int):
-            mlls = np.zeros((gpCV, nGPRestarts))
+            mses = np.zeros((gpCV, nGPRestarts))
 
             # Use gpCV fold cross-validation
             kfold = KFold(n_splits=gpCV)
@@ -198,14 +199,14 @@ def optimizeGP(gp, theta, y, seed=None, nGPRestarts=5, method=None, options=None
                     # kernel hyperparameters conditioned on the training set
                     yhat = gp.predict(y[trainInds], theta[testInds],
                                       return_cov=False, return_var=False)
-                    mlls[ii,jj] = mean_squared_error(y[testInds], yhat)
+                    mses[ii,jj] = mean_squared_error(y[testInds], yhat)
 
                 # End loop over each MLL solution for this cv fold
                 ii = ii + 1
 
             # Best answer is solution with minimum mean squared error
             # averaging over the folds
-            ind = np.argmin(np.mean(mlls, axis=0))
+            ind = np.argmin(np.mean(mses, axis=0))
         else:
             raise RuntimeError("gpCV must be an integer. gpCV:", gpCV)
 

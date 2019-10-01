@@ -16,7 +16,7 @@ import george
 # Define algorithm parameters
 m0 = 50                           # Initial size of training set
 m = 20                            # Number of new points to find each iteration
-nmax = 2                          # Maximum number of iterations
+nmax = 3                          # Maximum number of iterations
 Dmax = 0.1                        # KL-Divergence convergence limit
 kmax = 5                          # Number of iterations for Dmax convergence to kick in
 nKLSamples = 10000                # Number of samples from posterior to use to calculate KL-Divergence
@@ -36,18 +36,7 @@ for ii in range(len(theta)):
     y[ii] = lh.rosenbrockLnlike(theta[ii]) + lh.rosenbrockLnprior(theta[ii])
 
 # Create the the default GP which uses an ExpSquaredKernel
-#gp = gpUtils.defaultGP(theta, y)
-
-initialMetric = np.array([5.0*len(theta)**(-1.0/theta.shape[-1]) for _ in range(theta.shape[-1])])
-kernel = george.kernels.ExpSquaredKernel(initialMetric, ndim=theta.shape[-1])
-kernel = kernel + george.kernels.LinearKernel(log_gamma2=initialMetric[0],
-                                              order=1, bounds=None,
-                                              ndim=theta.shape[-1])
-gp = george.GP(kernel=kernel, fit_mean=True, mean=np.mean(y),
-               white_noise=1.0e-10, fit_white_noise=False)
-gp.compute(theta)
-
-p0 = initialMetric + [initialMetric[0]]
+gp = gpUtils.defaultGP(theta, y)
 
 # Initialize object using the Wang & Li (2017) Rosenbrock function example
 ap = approx.ApproxPosterior(theta=theta,
@@ -61,7 +50,7 @@ ap = approx.ApproxPosterior(theta=theta,
 
 # Run!
 ap.run(m=m, nmax=nmax, Dmax=Dmax, kmax=kmax, estBurnin=True, nGPRestarts=1,
-       nKLSamples=nKLSamples, mcmcKwargs=mcmcKwargs, cache=False, gpP0=p0,
+       nKLSamples=nKLSamples, mcmcKwargs=mcmcKwargs, cache=False,
        samplerKwargs=samplerKwargs, verbose=True, onlyLastMCMC=True)
 
 # Check out the final posterior distribution!
