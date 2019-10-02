@@ -57,22 +57,20 @@ def testUtilsGP():
         -8.98802494e+01,  -5.69583369e+01]).squeeze()
 
     # Set up a gp
-    gp = gpUtils.defaultGP(theta, y)
+    gp = gpUtils.defaultGP(theta, y, order=None, white_noise=-1)
 
     # Compute the AGP utility function at some point
     thetaTest = np.array([-2.3573, 4.673])
     testUtil = ut.AGPUtility(thetaTest, y, gp, lh.rosenbrockLnprior)
 
-    # without dot product kernel: 36.17652652
     errMsg = "ERROR: AGP util fn bug.  Did you change gp_utils.setup_gp?"
-    assert np.allclose(testUtil, 17.96477901, rtol=1.0e-4), errMsg
+    assert np.allclose(testUtil, 36.86919304, rtol=1.0e-4), errMsg
 
     # Now do the same using the BAPE utility function
     testUtil = ut.BAPEUtility(thetaTest, y, gp, lh.rosenbrockLnprior)
 
-    # without dot product kernel: 75.17909884
     errMsg = "ERROR: BAPE util fn bug.  Did you change gp_utils.setup_gp?"
-    assert np.allclose(testUtil, 38.58142265, rtol=1.0e-4), errMsg
+    assert np.allclose(testUtil, -8550.80850488, rtol=1.0e-4), errMsg
 
     return None
 # end function

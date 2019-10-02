@@ -69,7 +69,7 @@ def _grad_nll(p, gp, y):
 # end function
 
 
-def defaultGP(theta, y, white_noise=-27.407877564614338):
+def defaultGP(theta, y, order=None, white_noise=-27.407877564614338):
     """
     Basic utility function that initializes a simple GP that works well in many
     applications, but is not guaranteed to work in general.
@@ -81,10 +81,16 @@ def defaultGP(theta, y, white_noise=-27.407877564614338):
     y : array
         Data to condition GP on, e.g. the lnlike * lnprior at each design point,
         theta.
+    order : int (optional)
+        Order of PolynomialKernel to add to ExpSquaredKernel. Defaults to None,
+        that is, no PolynomialKernel is added and the GP only uses the
+        ExpSquaredKernel
     white_noise : float (optional)
         From george docs: "A description of the logarithm of the white noise
         variance added to the diagonal of the covariance matrix". Defaults to
-        log(TINY) = -27.407877564614338
+        log(TINY) = -27.407877564614338. Note: if order is not None, you
+        typically need to set white_noise ~ -1 for the computation to be
+        numerically stable
 
     Returns
     -------
@@ -98,15 +104,21 @@ def defaultGP(theta, y, white_noise=-27.407877564614338):
 
     # Create kernel: We'll model coveriances in loglikelihood space using a
     # Squared Expoential Kernel with wide bounds on the metric just in case
-    kernel = george.kernels.ExpSquaredKernel(initialMetric, ndim=theta.shape[-1])
-    kernel = kernel + george.kernels.DotProductKernel(bounds=None,
-                                                      ndim=theta.shape[-1])
-    # amp: np.log(np.var(y)) * kernel
+    kernel = np.var(y) * george.kernels.ExpSquaredKernel(initialMetric, ndim=theta.shape[-1])
+
+    # Add regression kernel?
+    if order is not None:
+        kernel = kernel + george.kernels.PolynomialKernel(log_sigma2=np.log(np.var(y)/10.0),
+                                                          order=order,
+                                                          bounds=None,
+                                                          ndim=theta.shape[-1])
 
     # Create GP and compute the kernel, aka factor the covariance matrix
     gp = george.GP(kernel=kernel, fit_mean=True, mean=np.mean(y),
                    white_noise=white_noise, fit_white_noise=False)
     gp.compute(theta)
+
+    #print(gp.get_parameter_names())
 
     return gp
 # end function
@@ -159,10 +171,12 @@ def optimizeGP(gp, theta, y, seed=None, nGPRestarts=5, method=None, options=None
     res = []
     mll = []
 
+    # 'mean:value', 'kernel:k1:log_constant', 'kernel:k2:metric:log_M_0_0', 'kernel:k2:metric:log_M_1_1'
     for ii in range(nGPRestarts):
         # Inputs for each process
         if p0 is None:
-            x0 = np.hstack(([np.mean(y)], [np.random.uniform(low=-10, high=10) for _ in range(theta.shape[-1])]))
+            x0 = np.hstack(([np.mean(y), np.log(np.var(y))],
+                            [np.random.uniform(low=-10, high=10) for _ in range(theta.shape[-1])]))
         else:
             x0 = np.array(p0) + 1.0e-3 * np.random.randn(len(p0))
 

@@ -9,7 +9,7 @@ Test loading approxposterior and running the core algorithm for 1 iteration.
 
 """
 
-from approxposterior import approx, likelihood as lh
+from approxposterior import approx, likelihood as lh, gpUtils
 import numpy as np
 import george
 import emcee
@@ -42,10 +42,14 @@ def test_run():
     for ii in range(len(theta)):
         y[ii] = lh.rosenbrockLnlike(theta[ii]) + lh.rosenbrockLnprior(theta[ii])
 
+    # Create the the default GP which uses an ExpSquaredKernel
+    gp = gpUtils.defaultGP(theta, y, order=None, white_noise=np.log(1.0))
+
     # Initialize object using the Wang & Li (2017) Rosenbrock function example
     # Use default GP initialization: ExpSquaredKernel
     ap = approx.ApproxPosterior(theta=theta,
                                 y=y,
+                                gp=gp,
                                 lnprior=lh.rosenbrockLnprior,
                                 lnlike=lh.rosenbrockLnlike,
                                 priorSample=lh.rosenbrockSample,

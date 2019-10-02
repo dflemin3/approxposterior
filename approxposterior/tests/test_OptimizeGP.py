@@ -58,7 +58,7 @@ def testGPOpt():
         -8.98802494e+01,  -5.69583369e+01]).squeeze()
 
     # Set up a gp
-    gp = gpu.defaultGP(theta, y)
+    gp = gpu.defaultGP(theta, y, order=None, white_noise=-1)
 
     # Optimize gp using default opt parameters
     method = "nelder-mead"
@@ -70,22 +70,11 @@ def testGPOpt():
                         method=method, options=options, p0=p0)
 
     # Extract GP hyperparameters, compare to truth
-    hypeSin = gp.get_parameter_vector()
-
-    # Now with multiprocessing using as many cores as we can
-    gp = gpu.optimizeGP(gp, theta, y, seed=seed, nGPRestarts=5,
-                        method=method, options=options, p0=p0)
-
-    # Extract GP hyperparameters, compare to truth
-    hypeMult = gp.get_parameter_vector()
+    hypeTest = gp.get_parameter_vector()
 
     errMsg = "ERROR: GP hyperparameters are not close to the true value!"
-    errMult = "ERROR: Single and multi GP hyperparameters are not close!"
-    #hypeTrue = [-135.91343934, -0.68256741, 2.1394469] # without dot product kernel
-    hypeTrue = [-134.4271546 , -0.79139302, 2.38236493]
-    assert np.allclose(hypeSin, hypeMult), errMult
-    assert np.allclose(hypeSin, hypeTrue), errMsg
-    assert np.allclose(hypeMult, hypeTrue), errMsg
+    hypeTrue = [-5.14608954e+04, 2.06997221e+01, 4.98614796e+00, 1.07822250e+01]
+    assert np.allclose(hypeTest, hypeTrue), errMsg
 # end function
 
 if __name__ == "__main__":
