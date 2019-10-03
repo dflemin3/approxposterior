@@ -161,9 +161,9 @@ def optimizeGP(gp, theta, y, seed=None, nGPRestarts=5, method=None, options=None
 
     # Set default parameters if None are provided
     if method is None:
-        method = "nelder-mead"
+        method = "l-bfgs-b"
     if options is None:
-        options = {"adaptive" : True}
+        options = {}
 
     # Run the optimization routine n_restarts times
     res = []
@@ -174,14 +174,14 @@ def optimizeGP(gp, theta, y, seed=None, nGPRestarts=5, method=None, options=None
         # Inputs for each process
         if p0 is None:
             # Pick random guesses for kernel hyperparameters from a reasonable range
-            meanGuess = np.random.normal(loc=np.mean(y), scale=np.fabs(np.mean(y))/10.0)
-            k1ConstGuess = np.random.normal(loc=np.log(np.var(y)), scale=np.log(np.var(y)/10.0))
+            meanGuess = np.mean(y)
+            k1ConstGuess = np.random.normal(loc=np.log(np.var(y)), scale=np.sqrt(np.log(np.var(y))))
             metricGuess = [np.random.uniform(low=-10, high=10) for _ in range(theta.shape[-1])]
 
             # If a linear regression kernel is included, add guesses for initial parameters
             if("kernel:k2:k1:log_constant" in gp.get_parameter_names()):
-                k2ConstGuess = np.random.normal(loc=np.log(np.var(y)/10.0), scale=np.log(np.var(y)/100.0))
-                k2VarGuess = np.random.normal(loc=np.log(np.var(y)/10.0), scale=np.log(np.var(y)/100.0))
+                k2ConstGuess = np.random.normal(loc=np.log(np.var(y)/10.0), scale=np.sqrt(np.log(np.var(y)/10.0)))
+                k2VarGuess = np.random.normal(loc=np.log(np.var(y)/10.0), scale=np.sqrt(np.log(np.var(y)/10.0)))
 
                 # Stack the guesses
                 x0 = np.hstack(([meanGuess, k1ConstGuess],
