@@ -140,7 +140,7 @@ def optimizeGP(gp, theta, y, seed=None, nGPRestarts=5, method=None, options=None
         Number of times to restart the optimization.  Defaults to 5. Increase
         this number if the GP isn't optimized well.
     method : str (optional)
-        scipy.optimize.minimize method.  Defaults to nelder-mead if None.
+        scipy.optimize.minimize method.  Defaults to l-bfgs-b if None.
     options : dict (optional)
         kwargs for the scipy.optimize.minimize function.  Defaults to None, or
         an empty dictionary.
@@ -192,7 +192,8 @@ def optimizeGP(gp, theta, y, seed=None, nGPRestarts=5, method=None, options=None
                 x0 = np.hstack(([meanGuess, k1ConstGuess], metricGuess))
 
         else:
-            x0 = np.array(p0) + 1.0e-3 * np.random.randn(len(p0))
+            # Take user-supplied guess and slightly perturb it
+            x0 = np.array(p0) + np.min(p0)*1.0e-3 * np.random.randn(len(p0))
 
         # Minimize GP nll, save result, evaluate marginal likelihood
         resii = minimize(_nll, x0, args=(gp, y), method=method, jac=_grad_nll,

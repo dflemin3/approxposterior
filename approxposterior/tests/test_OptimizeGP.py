@@ -73,7 +73,7 @@ def testGPOpt():
     hypeTest = gp.get_parameter_vector()
 
     errMsg = "ERROR: GP hyperparameters are not close to the true value!"
-    hypeTrue = [-5.14608954e+04, 2.06997221e+01, 4.98614796e+00, 1.07822250e+01]
+    hypeTrue = [-3.46338678e+03, 1.52464475e+01, 3.06553135e+00, 8.03144845e+00]
     assert np.allclose(hypeTest, hypeTrue, rtol=1.0e-3), errMsg
 # end function
 
