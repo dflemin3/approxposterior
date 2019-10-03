@@ -110,13 +110,7 @@ class ApproxPosterior(object):
             errMsg = "Unknown algorithm. Valid options: BAPE, AGP, or alternate."
             raise ValueError(errMsg)
 
-        # Initial approximate posteriors are the prior
-        self.posterior = self._lnprior
-        self.prevPosterior = self._lnprior
-
-        # Holders to save GMM fits to posteriors, raw samplers, KL divergences
-        self.Dkl = list()
-        self.GMMs = list()
+        # Holders to save quantities of interest
         self.iburns = list()
         self.ithins = list()
         self.backends = list()
@@ -291,9 +285,6 @@ class ApproxPosterior(object):
             Number of times to restart loglikelihood function (the one that
             calls the forward model) if the lnlike fn returns infs/NaNs. Defaults
             to 3.
-        gmmKwargs : dict (optional)
-            keyword arguments for sklearn.mixture.GaussianMixture. Defaults to
-            None
         gpMethod : str (optional)
             scipy.optimize.minimize method used when optimized GP hyperparameters.
             Defaults to None, which is nelder-mead, and it usually works.
@@ -339,11 +330,11 @@ class ApproxPosterior(object):
 
         # KL-divergence based convergence is deprecated - warn user if they
         # use it!
-        if Dmax is not None or kmax is not None or nKLSamples is not None:
+        if Dmax is not None or kmax is not None or nKLSamples is not None or gmmKwargs is not None:
             if verbose:
                 warn_msg = "KL-divergence convergence is deprecated in " + \
                 "approxposterior version 0.21+. The code will ignore " + \
-                "Dmax, kmax, and nKLSamples and will run for nmax iterations."
+                "Dmax, kmax, nKLSamples, and gmmKwargs and will run for nmax iterations."
                 warnings.warn(warn_msg, DeprecationWarning)
 
         # Save forward model input-output pairs since they take forever to
@@ -442,7 +433,7 @@ class ApproxPosterior(object):
                 # Skip everything below
                 continue
 
-            # If the above block isn't trigger, run the MCMC and compute KL-divergences
+            # If the above block isn't trigger, run the MCMC 
             if timing:
                 start = time.time()
 

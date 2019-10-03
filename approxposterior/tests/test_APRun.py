@@ -20,7 +20,7 @@ def test_run():
     """
 
     # Define algorithm parameters
-    m0 = 200                          # Initial size of training set
+    m0 = 50                           # Initial size of training set
     m = 20                            # Number of new points to find each iteration
     nmax = 2                          # Maximum number of iterations
     Dmax = 0.1                        # KL-Divergence convergence limit
