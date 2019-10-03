@@ -108,17 +108,15 @@ def defaultGP(theta, y, order=None, white_noise=-1):
 
     # Add regression kernel?
     if order is not None:
-        kernel = kernel + george.kernels.PolynomialKernel(log_sigma2=np.log(np.var(y)/10.0),
-                                                          order=order,
-                                                          bounds=None,
-                                                          ndim=theta.shape[-1])
+        kernel = kernel + (np.var(y)/10.0) * george.kernels.PolynomialKernel(log_sigma2=np.log(np.var(y)/10.0),
+                                                                             order=order,
+                                                                             bounds=None,
+                                                                             ndim=theta.shape[-1])
 
     # Create GP and compute the kernel, aka factor the covariance matrix
     gp = george.GP(kernel=kernel, fit_mean=True, mean=np.mean(y),
                    white_noise=white_noise, fit_white_noise=False)
     gp.compute(theta)
-
-    #print(gp.get_parameter_names())
 
     return gp
 # end function
@@ -171,12 +169,27 @@ def optimizeGP(gp, theta, y, seed=None, nGPRestarts=5, method=None, options=None
     res = []
     mll = []
 
-    # 'mean:value', 'kernel:k1:log_constant', 'kernel:k2:metric:log_M_0_0', 'kernel:k2:metric:log_M_1_1'
+    # kernel:k2:k1:log_constant', 'kernel:k2:k2:log_sigma2
     for ii in range(nGPRestarts):
         # Inputs for each process
         if p0 is None:
-            x0 = np.hstack(([np.mean(y), np.log(np.var(y))],
-                            [np.random.uniform(low=-10, high=10) for _ in range(theta.shape[-1])]))
+            # XXX: add normal distribution noise to non-mean variance/amplitude parameters
+            meanGuess = np.mean(y)
+            k1ConstGuess = np.log(np.var(y))
+            metricGuess = [np.random.uniform(low=-10, high=10) for _ in range(theta.shape[-1])]
+
+            # If a linear regression kernel is included, add guesses for initial parameters
+            if("kernel:k2:k1:log_constant" in gp.get_parameter_names()):
+                k2ConstGuess = np.log(np.var(y)/10.0)
+                k2VarGuess = np.log(np.var(y)/10.0)
+
+                x0 = np.hstack(([meanGuess, k1ConstGuess],
+                                 metricGuess,
+                                [k2ConstGuess, k2VarGuess]))
+            # Just 1 kernel: stack guesses
+            else:
+                x0 = np.hstack(([meanGuess, k1ConstGuess], [metricGuess]))
+
         else:
             x0 = np.array(p0) + 1.0e-3 * np.random.randn(len(p0))
 
