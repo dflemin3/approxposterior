@@ -169,26 +169,27 @@ def optimizeGP(gp, theta, y, seed=None, nGPRestarts=5, method=None, options=None
     res = []
     mll = []
 
-    # kernel:k2:k1:log_constant', 'kernel:k2:k2:log_sigma2
+    # Optimize GP hyperparameters by maximizing marginal log_likelihood
     for ii in range(nGPRestarts):
         # Inputs for each process
         if p0 is None:
-            # XXX: add normal distribution noise to non-mean variance/amplitude parameters
-            meanGuess = np.mean(y)
-            k1ConstGuess = np.log(np.var(y))
+            # Pick random guesses for kernel hyperparameters from a reasonable range
+            meanGuess = np.random.normal(loc=np.mean(y), scale=np.fabs(np.mean(y))/10.0)
+            k1ConstGuess = np.random.normal(loc=np.log(np.var(y)), scale=np.log(np.var(y)/10.0))
             metricGuess = [np.random.uniform(low=-10, high=10) for _ in range(theta.shape[-1])]
 
             # If a linear regression kernel is included, add guesses for initial parameters
             if("kernel:k2:k1:log_constant" in gp.get_parameter_names()):
-                k2ConstGuess = np.log(np.var(y)/10.0)
-                k2VarGuess = np.log(np.var(y)/10.0)
+                k2ConstGuess = np.random.normal(loc=np.log(np.var(y)/10.0), scale=np.log(np.var(y)/100.0))
+                k2VarGuess = np.random.normal(loc=np.log(np.var(y)/10.0), scale=np.log(np.var(y)/100.0))
 
+                # Stack the guesses
                 x0 = np.hstack(([meanGuess, k1ConstGuess],
                                  metricGuess,
                                 [k2ConstGuess, k2VarGuess]))
             # Just 1 kernel: stack guesses
             else:
-                x0 = np.hstack(([meanGuess, k1ConstGuess], [metricGuess]))
+                x0 = np.hstack(([meanGuess, k1ConstGuess], metricGuess))
 
         else:
             x0 = np.array(p0) + 1.0e-3 * np.random.randn(len(p0))
