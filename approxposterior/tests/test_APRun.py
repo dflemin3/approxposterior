@@ -23,8 +23,6 @@ def test_run():
     m0 = 50                           # Initial size of training set
     m = 20                            # Number of new points to find each iteration
     nmax = 2                          # Maximum number of iterations
-    Dmax = 0.1                        # KL-Divergence convergence limit
-    kmax = 5                          # Number of iterations for Dmax convergence to kick in
     bounds = ((-5,5), (-5,5))         # Prior bounds
     algorithm = "bape"                # Use the Kandasamy et al. (2015) formalism
     seed = 42                         # For reproducibility
@@ -57,9 +55,9 @@ def test_run():
                                 algorithm=algorithm)
 
     # Run!
-    ap.run(m=m, nmax=nmax, Dmax=Dmax, kmax=kmax, cache=False, nKLSamples=100000,
-           mcmcKwargs=mcmcKwargs, samplerKwargs=samplerKwargs,
-           verbose=False, nGPRestarts=3, seed=seed, onlyLastMCMC=True)
+    ap.run(m=m, nmax=nmax, cache=False, mcmcKwargs=mcmcKwargs,
+           samplerKwargs=samplerKwargs, verbose=False, nGPRestarts=3, seed=seed,
+           onlyLastMCMC=True)
 
     # Ensure medians of chains are consistent with the true values
     samples = ap.sampler.get_chain(discard=ap.iburns[-1], flat=True, thin=ap.ithins[-1])
