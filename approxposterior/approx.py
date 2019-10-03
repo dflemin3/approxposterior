@@ -17,7 +17,6 @@ from . import utility as ut
 from . import gpUtils
 from . import mcmcUtils
 from . import gmmUtils
-#from . import regression
 
 import numpy as np
 import time
@@ -25,7 +24,6 @@ import emcee
 import george
 import os
 import warnings
-#import xgboost as xgb
 
 
 class ApproxPosterior(object):
@@ -124,52 +122,6 @@ class ApproxPosterior(object):
             self.gp = gpUtils.defaultGP(self.theta, self.y)
         else:
             self.gp = gp
-
-        # Initialize regression algorithm
-        #self.regressor = xgb.XGBRegressor(objective='reg:squarederror')
-
-    # end function
-
-
-    def _regll(self, theta, *args, **kwargs):
-        """
-        Predict the approximate posterior conditional distibution, the
-        likelihood + prior learned by the regressor, at a given point, theta.
-
-        Parameters
-        ----------
-        theta : array-like
-            Test point to evaluate predict posterior distribution
-
-        Returns
-        -------
-        mu : float
-            Predicted posterior estimate at theta
-        lnprior : float
-            log prior evlatuated at theta
-        """
-
-        # Sometimes the input values can be crazy and the GP will blow up
-        if not np.any(np.isfinite(theta)):
-            return -np.inf, np.nan
-
-        # Reject point if prior forbids it
-        lnprior = self._lnprior(theta)
-        if not np.isfinite(lnprior):
-            return -np.inf, np.nan
-
-        # Mean of predictive distribution conditioned on y (GP posterior estimate)
-        # and make sure theta is the right shape for the GP
-        try:
-            mu = -np.exp(self.regressor.predict(theta))
-        except ValueError:
-            return -np.inf, np.nan
-
-        # Catch NaNs/Infs because they can (rarely) happen
-        if not np.isfinite(mu):
-            return -np.inf, np.nan
-        else:
-            return mu, lnprior
     # end function
 
 
@@ -760,8 +712,6 @@ class ApproxPosterior(object):
 
         # Estimate burn-in?
         if estBurnin:
-            # Note we set tol=0 so it always provides an estimate, even if
-            # the estimate isn't good, in which case run longer chains!
             iburn = int(2.0*np.max(tau))
         else:
             iburn = 0
