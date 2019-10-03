@@ -433,7 +433,7 @@ class ApproxPosterior(object):
                 # Skip everything below
                 continue
 
-            # If the above block isn't trigger, run the MCMC 
+            # If the above block isn't trigger, run the MCMC
             if timing:
                 start = time.time()
 

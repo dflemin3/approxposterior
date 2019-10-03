@@ -4,7 +4,7 @@
 
 Example script
 
-@author: David P. Fleming [University of Washington, Seattle], 2018
+@author: David P. Fleming [University of Washington, Seattle], 2019
 @email: dflemin3 (at) uw (dot) edu
 
 """
@@ -33,7 +33,7 @@ for ii in range(len(theta)):
     y[ii] = lh.rosenbrockLnlike(theta[ii]) + lh.rosenbrockLnprior(theta[ii])
 
 # Create the the default GP which uses an ExpSquaredKernel
-gp = gpUtils.defaultGP(theta, y, order=1, white_noise=-6)
+gp = gpUtils.defaultGP(theta, y, order=None, white_noise=-1)
 
 # Initialize object using the Wang & Li (2017) Rosenbrock function example
 ap = approx.ApproxPosterior(theta=theta,
@@ -59,4 +59,4 @@ samples = ap.sampler.get_chain(discard=ap.iburns[-1], flat=True, thin=ap.ithins[
 fig = corner.corner(samples, quantiles=[0.16, 0.5, 0.84], show_titles=True,
                     scale_hist=True, plot_contours=True)
 
-fig.savefig("finalPosterior.png", bbox_inches="tight") # Uncomment to save
+fig.savefig("finalPosterior.png", bbox_inches="tight")

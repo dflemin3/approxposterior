@@ -9,8 +9,8 @@ wrappers.
 """
 
 # Tell module what it's allowed to import
-__all__ = ["logsubexp","AGPUtility","BAPEUtility","minimizeObjective",
-           "functionWrapper","functionWrapperArgsOnly","klNumerical",
+__all__ = ["logsubexp", "AGPUtility", "BAPEUtility", "minimizeObjective",
+           "functionWrapper", "functionWrapperArgsOnly", "klNumerical",
            "latinHypercubeSampling"]
 
 import numpy as np
