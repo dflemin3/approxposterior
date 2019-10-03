@@ -10,7 +10,6 @@ Gaussian process utility functions, e.g. optimizing GP hyperparameters.
 # Tell module what it's allowed to import
 __all__ = ["optimizeGP"]
 
-from . import pool
 from . import utility as util
 import numpy as np
 import george
