@@ -370,11 +370,6 @@ class ApproxPosterior(object):
             # GP updated: run MCMC sampler to obtain new posterior conditioned
             # on {theta_n, log(L_t*prior)}. Use emcee to obtain posterior dist.
 
-            # Retrain regression model
-            #self.regressor, _, _ = regression.trainXGBoost(self.regressor,
-            #                                               self.theta, np.log(-self.y),
-            #                                               k=5,hyperparams=None)
-
             # If user only wants to run the MCMC at the end and it's not the
             # last iteration, skip everything below!
             if onlyLastMCMC and nn != (nmax - 1):

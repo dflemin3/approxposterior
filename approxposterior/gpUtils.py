@@ -103,7 +103,9 @@ def defaultGP(theta, y, order=None, white_noise=-1):
 
     # Create kernel: We'll model coveriances in loglikelihood space using a
     # Squared Expoential Kernel with wide bounds on the metric just in case
-    kernel = np.var(y) * george.kernels.ExpSquaredKernel(initialMetric, ndim=theta.shape[-1])
+    kernel = np.var(y) * george.kernels.ExpSquaredKernel(initialMetric,
+                                                         bounds=None,
+                                                         ndim=theta.shape[-1])
 
     # Add regression kernel?
     if order is not None:
