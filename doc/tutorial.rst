@@ -13,16 +13,10 @@ Don't forget to check out the links for example Jupyter Notebooks at the bottom 
 
 .. code-block:: python
 
-  from approxposterior import approx, gpUtils, likelihood as lh, utility as ut
-  import numpy as np
-
   # Define algorithm parameters
   m0 = 50                           # Initial size of training set
   m = 20                            # Number of new points to find each iteration
-  nmax = 10                         # Maximum number of iterations
-  Dmax = 0.1                        # KL-Divergence convergence limit
-  kmax = 5                          # Number of iterations for Dmax convergence to kick in
-  nKLSamples = 10000                # Number of samples from posterior to use to calculate KL-Divergence
+  nmax = 2                          # Maximum number of iterations
   bounds = ((-5,5), (-5,5))         # Prior bounds
   algorithm = "BAPE"                # Use the Kandasamy et al. (2015) formalism
 
@@ -35,8 +29,8 @@ Don't forget to check out the links for example Jupyter Notebooks at the bottom 
 
 .. code-block:: python
 
-  # Generate initial conditions using Latin Hypercube sampling over parameter bounds
-  theta = ut.latinHypercubeSampling(m0, bounds, criterion="maximin")
+  # Sample initial conditions from the prior
+  theta = lh.rosenbrockSample(m0)
 
   # Evaluate forward model log likelihood + lnprior for each theta
   y = np.zeros(len(theta))
@@ -44,7 +38,7 @@ Don't forget to check out the links for example Jupyter Notebooks at the bottom 
       y[ii] = lh.rosenbrockLnlike(theta[ii]) + lh.rosenbrockLnprior(theta[ii])
 
   # Create the the default GP which uses an ExpSquaredKernel
-  gp = gpUtils.defaultGP(theta, y)
+  gp = gpUtils.defaultGP(theta, y, order=1, white_noise=-1)
 
 3) Initialize the :py:obj:`approxposterior` object.
 
@@ -65,9 +59,8 @@ Don't forget to check out the links for example Jupyter Notebooks at the bottom 
 .. code-block:: python
 
   # Run!
-  ap.run(m=m, nmax=nmax, Dmax=Dmax, kmax=kmax, estBurnin=True, nGPRestarts=10,
-         nKLSamples=nKLSamples, mcmcKwargs=mcmcKwargs, cache=False,
-         samplerKwargs=samplerKwargs, verbose=False, onlyLastMCMC=True)
+  ap.run(m=m, nmax=nmax, estBurnin=True, nGPRestarts=1, mcmcKwargs=mcmcKwargs,
+         cache=False, samplerKwargs=samplerKwargs, verbose=True, onlyLastMCMC=True)
 
 5) Examine the final posterior distributions!
 
@@ -83,7 +76,7 @@ Don't forget to check out the links for example Jupyter Notebooks at the bottom 
   fig = corner.corner(samples, quantiles=[0.16, 0.5, 0.84], show_titles=True,
                       scale_hist=True, plot_contours=True)
 
-  fig.savefig("finalPosterior.png", bbox_inches="tight") # Uncomment to save
+  fig.savefig("finalPosterior.png", bbox_inches="tight")
 
 The final posterior distribution will look something like the following:
 
