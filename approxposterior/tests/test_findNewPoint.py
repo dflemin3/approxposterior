@@ -9,7 +9,7 @@ Test finding a new design point, thetaT
 
 """
 
-from approxposterior import approx, likelihood as lh
+from approxposterior import approx, likelihood as lh, gpUtils
 import numpy as np
 import george
 
@@ -20,12 +20,12 @@ def test_find():
     """
 
     # Define algorithm parameters
-    m0 = 500                          # Initial size of training set
+    m0 = 50                           # Initial size of training set
     bounds = ((-5,5), (-5,5))         # Prior bounds
     algorithm = "bape"
 
     # For reproducibility
-    seed = 42
+    seed = 91
     np.random.seed(seed)
 
     # Randomly sample initial conditions from the prior
@@ -36,10 +36,14 @@ def test_find():
     for ii in range(len(theta)):
         y[ii] = lh.rosenbrockLnlike(theta[ii]) + lh.rosenbrockLnprior(theta[ii])
 
+    # Set up a gp
+    gp = gpUtils.defaultGP(theta, y, order=None, white_noise=-1)
+
     # Initialize object using the Wang & Li (2017) Rosenbrock function example
     # using default ExpSquaredKernel GP
     ap = approx.ApproxPosterior(theta=theta,
                                 y=y,
+                                gp=gp,
                                 lnprior=lh.rosenbrockLnprior,
                                 lnlike=lh.rosenbrockLnlike,
                                 priorSample=lh.rosenbrockSample,
@@ -52,7 +56,8 @@ def test_find():
                               seed=seed)
 
     err_msg = "findNextPoint selected incorrect thetaT."
-    assert(np.allclose(thetaT, [-0.556528 ,  0.7294112], rtol=1.0e-3)), err_msg
+    print(thetaT)
+    assert(np.allclose(thetaT, [-3.92618614, 1.1865385], rtol=1.0e-3)), err_msg
 # end function
 
 if __name__ == "__main__":

@@ -23,6 +23,7 @@ import time
 import emcee
 import george
 import os
+import warnings
 
 
 class ApproxPosterior(object):
@@ -107,13 +108,7 @@ class ApproxPosterior(object):
             errMsg = "Unknown algorithm. Valid options: BAPE, AGP, or alternate."
             raise ValueError(errMsg)
 
-        # Initial approximate posteriors are the prior
-        self.posterior = self._lnprior
-        self.prevPosterior = self._lnprior
-
-        # Holders to save GMM fits to posteriors, raw samplers, KL divergences
-        self.Dkl = list()
-        self.GMMs = list()
+        # Holders to save quantities of interest
         self.iburns = list()
         self.ithins = list()
         self.backends = list()
@@ -127,7 +122,6 @@ class ApproxPosterior(object):
             self.gp = gpUtils.defaultGP(self.theta, self.y)
         else:
             self.gp = gp
-
     # end function
 
 
@@ -175,13 +169,13 @@ class ApproxPosterior(object):
     # end function
 
 
-    def run(self, m=10, nmax=2, Dmax=0.1, kmax=5, seed=None,
-            timing=False, nKLSamples=10000, verbose=True, maxComp=3,
+    def run(self, m=10, nmax=2, Dmax=None, kmax=None, seed=None,
+            timing=False, nKLSamples=None, verbose=True, maxComp=3,
             mcmcKwargs=None, samplerKwargs=None, estBurnin=False,
             thinChains=False, runName="apRun", cache=True,
             maxLnLikeRestarts=3, gmmKwargs=None, gpMethod=None, gpOptions=None,
             gpP0=None, optGPEveryN=1, nGPRestarts=5, nMinObjRestarts=5,
-            nCores=1, gpCV=None, onlyLastMCMC=False, args=None, **kwargs):
+            gpCV=None, onlyLastMCMC=False, args=None, **kwargs):
         """
         Core algorithm to estimate the posterior distribution via Gaussian
         Process regression to the joint distribution for the forward model
@@ -193,22 +187,11 @@ class ApproxPosterior(object):
             Number of new input features to find each iteration.  Defaults to 10.
         nmax : int (optional)
             Maximum number of iterations.  Defaults to 2.
-        Dmax : float (optional)
-            Maximum change in KL divergence for convergence checking.  Defaults to 0.1.
-        kmax : int (optional)
-            Maximum number of iterators such that if the change in KL divergence is
-            less than Dmax for kmax iterators, the algorithm is considered
-            converged and terminates.  Defaults to 5.
         seed : int (optional)
             RNG seed.  Defaults to None.
         timing : bool (optional)
             Whether or not to time the code for profiling/speed tests.
             Defaults to False.
-        nKLSamples : int (optionals)
-            Number of samples to draw for Monte Carlo approximation to KL
-            divergence between current and previous estimate of the posterior.
-            Defaults to 10000.  Error on estimation decreases as approximately
-            1/sqrt(nKLSamples). Increase this for higher dimensional problems.
         verbose : bool (optional)
             Output all the diagnostics? Defaults to True.
         maxComp : int (optional)
@@ -254,9 +237,6 @@ class ApproxPosterior(object):
             Number of times to restart loglikelihood function (the one that
             calls the forward model) if the lnlike fn returns infs/NaNs. Defaults
             to 3.
-        gmmKwargs : dict (optional)
-            keyword arguments for sklearn.mixture.GaussianMixture. Defaults to
-            None
         gpMethod : str (optional)
             scipy.optimize.minimize method used when optimized GP hyperparameters.
             Defaults to None, which is nelder-mead, and it usually works.
@@ -279,9 +259,6 @@ class ApproxPosterior(object):
             Number of times to restart minimizing -utility function to select
             next point to improve GP performance.  Defaults to 5.  Increase this
             number of the point selection is not working well.
-        nCores : int (optional)
-            If > 1, use multiprocessing to distribute optimization restarts. If
-            < 0, e.g. -1, use all usable cores
         gpCV : int (optional)
             Whether or not to use k-fold cross-validation to select kernel
             hyperparameters from the nGPRestarts maximum likelihood solutions.
@@ -303,6 +280,15 @@ class ApproxPosterior(object):
         None
         """
 
+        # KL-divergence based convergence is deprecated - warn user if they
+        # use it!
+        if Dmax is not None or kmax is not None or nKLSamples is not None or gmmKwargs is not None:
+            if verbose:
+                warn_msg = "KL-divergence convergence is deprecated in " + \
+                "approxposterior version 0.21+. The code will ignore " + \
+                "Dmax, kmax, nKLSamples, and gmmKwargs and will run for nmax iterations."
+                warnings.warn(warn_msg, DeprecationWarning)
+
         # Save forward model input-output pairs since they take forever to
         # calculate and we want them around in case something weird happens.
         # Users should probably do this in their likelihood function
@@ -320,17 +306,14 @@ class ApproxPosterior(object):
         if timing:
             self.trainingTime = list()
             self.mcmcTime = list()
-            self.gmmTime = list()
-            self.klTime = list()
 
         # Initial optimization of gaussian process
         self.gp = gpUtils.optimizeGP(self.gp, self.theta, self.y, seed=seed,
                                      method=gpMethod, options=gpOptions,
                                      p0=gpP0, nGPRestarts=nGPRestarts,
-                                     nCores=nCores, gpCV=gpCV)
+                                     gpCV=gpCV)
 
-        # Main loop
-        kk = 0
+        # Main loop - run for nmax iterations
         for nn in range(nmax):
             if verbose:
                 print("Iteration: %d" % nn)
@@ -397,7 +380,7 @@ class ApproxPosterior(object):
                 # Skip everything below
                 continue
 
-            # If the above block isn't trigger, run the MCMC and compute KL-divergences
+            # If the above block isn't trigger, run the MCMC
             if timing:
                 start = time.time()
 
@@ -418,94 +401,19 @@ class ApproxPosterior(object):
             if timing:
                 self.mcmcTime.append(time.time() - start)
 
-            if timing:
-                start = time.time()
-
-            # Fit for the approximate posterior distribution using a Gaussian
-            # Mixure model
-            GMM = gmmUtils.fitGMM(self.sampler.get_chain(discard=iburn, flat=True, thin=ithin),
-                                  maxComp=maxComp,
-                                  covType="full",
-                                  useBic=True,
-                                  gmmKwargs=gmmKwargs)
-
-            if verbose:
-                print("GMM fit complete.")
-
-            if timing:
-                self.gmmTime.append(time.time() - start)
-
-            # Save current GMM model
-            self.GMMs.append(GMM)
-
-            # Update posterior estimate
-            self.prevPosterior = self.posterior
-            self.posterior = GMM.score_samples
-
-            if timing:
-                start = time.time()
-
-            # Estimate KL-divergence between previous and current posterior
-            # Only do this after the 1st (0th) iteration!
-            if nn > 0 and len(self.GMMs) > 1:
-                # Sample from last iteration's GMM
-                prevSamples, _ = self.GMMs[-2].sample(nKLSamples)
-
-                # Numerically estimate KL divergence
-                self.Dkl.append(ut.klNumerical(prevSamples,
-                                               self.prevPosterior,
-                                               self.posterior))
-            else:
-                self.Dkl.append(0.0)
-
-            if timing:
-                self.klTime.append(time.time() - start)
-
             # Save timing information?
             if cache:
                 if timing:
                     np.savez(str(runName) + "APTiming.npz",
                              trainingTime=self.trainingTime,
-                             mcmcTime=self.mcmcTime,
-                             gmmTime=self.gmmTime,
-                             klTime=self.klTime)
-
-            # Convergence diagnostics: If KL divergence is less than threshold
-            # for kmax consecutive iterations, we're finished
-
-            # Can't check for convergence on 1st (0th) iteration
-            if nn < 1 or onlyLastMCMC:
-                deltaDkl = np.inf
-            else:
-                deltaDkl = np.fabs(self.Dkl[-1] - self.Dkl[-2])
-
-            # If the KL divergence is too large, reset counter
-            if deltaDkl <= Dmax:
-                kk = kk + 1
-            else:
-                kk = 0
-
-            # Have we converged?
-            if kk >= kmax:
-                if verbose:
-                    print("Converged! n_iters, Dkl, Delta Dkl: %d, %e, %e" % (nn,self.Dkl[-1],deltaDkl))
-
-                    # Save KL divergence estimate
-                    if cache:
-                        np.savez(str(runName)+ "APKL.npz", Dkl=self.Dkl)
-                return
-
-            # Save KL divergence estimates
-            if cache:
-                np.savez(str(runName) + "APKL.npz", Dkl=self.Dkl)
-
+                             mcmcTime=self.mcmcTime)
     # end function
 
 
     def findNextPoint(self, computeLnLike=True, bounds=None, gpMethod=None,
                       maxLnLikeRestarts=3, seed=None, cache=True, gpOptions=None,
                       gpP0=None, optGP=True, args=None, nGPRestarts=5,
-                      nMinObjRestarts=5, nCores=1, gpCV=None, runName="apRun",
+                      nMinObjRestarts=5, gpCV=None, runName="apRun",
                       **kwargs):
         """
         Find new point, thetaT, by maximizing utility function. Note that we
@@ -567,9 +475,6 @@ class ApproxPosterior(object):
             Number of times to restart minimizing -utility function to select
             next point to improve GP performance.  Defaults to 5.  Increase this
             number of the point selection is not working well.
-        nCores : int (optional)
-            If > 1, use multiprocessing to distribute optimization restarts. If
-            < 0, e.g. -1, use all usable cores
         gpCV : int (optional)
             Whether or not to use 5-fold cross-validation to select kernel
             hyperparameters from the nGPRestarts maximum likelihood solutions.
@@ -619,8 +524,7 @@ class ApproxPosterior(object):
                                           sampleFn=self.priorSample,
                                           priorFn=self._lnprior,
                                           bounds=bounds,
-                                          nMinObjRestarts=nMinObjRestarts,
-                                          nCores=nCores)
+                                          nMinObjRestarts=nMinObjRestarts)
 
             # Compute lnLikelihood at thetaT?
             if computeLnLike:
@@ -667,7 +571,6 @@ class ApproxPosterior(object):
                                                  seed=seed, method=gpMethod,
                                                  options=gpOptions, p0=gpP0,
                                                  nGPRestarts=nGPRestarts,
-                                                 nCores=nCores,
                                                  gpCV=gpCV)
             except ValueError:
                 # Output errant theta in physical units
@@ -804,8 +707,6 @@ class ApproxPosterior(object):
 
         # Estimate burn-in?
         if estBurnin:
-            # Note we set tol=0 so it always provides an estimate, even if
-            # the estimate isn't good, in which case run longer chains!
             iburn = int(2.0*np.max(tau))
         else:
             iburn = 0

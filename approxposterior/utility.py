@@ -9,14 +9,11 @@ wrappers.
 """
 
 # Tell module what it's allowed to import
-__all__ = ["logsubexp","AGPUtility","BAPEUtility","minimizeObjective",
-           "functionWrapper","functionWrapperArgsOnly","klNumerical",
+__all__ = ["logsubexp", "AGPUtility", "BAPEUtility", "minimizeObjective",
+           "functionWrapper", "functionWrapperArgsOnly", "klNumerical",
            "latinHypercubeSampling"]
 
-from . import pool
 import numpy as np
-import multiprocessing
-from sklearn.base import TransformerMixin
 from scipy.optimize import minimize
 from pyDOE import lhs
 
@@ -83,7 +80,7 @@ class functionWrapperArgsOnly(object):
 
 ################################################################################
 #
-# Data set initialation functions
+# Data set initialization functions
 #
 ################################################################################
 
@@ -303,42 +300,8 @@ def BAPEUtility(theta, y, gp, priorFn):
 # end function
 
 
-def _minimizeObjective(theta0, fn, y, gp, sampleFn, priorFn, bounds=None):
-    """
-    Minimize objective wrapped function for multiprocessing. Same inputs/outputs
-    as minimizeObjective.
-    """
-
-    # Required arguments for the utility function
-    args = (y, gp, priorFn)
-
-    # Solve for theta that maximize fn and is allowed by prior
-    while True:
-
-        # Mimimze fn, see if prior allows solution
-        try:
-            tmp = minimize(fn, np.array(theta0).reshape(1,-1), args=args,
-                           bounds=bounds, method="nelder-mead",
-                           options={"adaptive" : True})["x"]
-
-        # ValueError.  Try again.
-        except ValueError:
-            tmp = np.array([np.inf for ii in range(theta0.shape[-1])]).reshape(theta0.shape)
-
-        # Vet answer: must be finite, allowed by prior
-        # Are all values finite?
-        if np.all(np.isfinite(tmp)):
-            # Is this point in parameter space allowed by the prior?
-            if np.isfinite(priorFn(tmp)):
-                return tmp
-
-        # Optimization failed, try a new theta0 by sampling from the prior
-        theta0 = sampleFn(1)
-# end function
-
-
 def minimizeObjective(fn, y, gp, sampleFn, priorFn, bounds=None,
-                      nMinObjRestarts=5, nCores=1):
+                      nMinObjRestarts=5):
     """
     Find point that minimizes fn for a gaussian process gp conditioned on y,
     the data, and is allowed by the prior, priorFn.  PriorFn is required as it
@@ -364,9 +327,6 @@ def minimizeObjective(fn, y, gp, sampleFn, priorFn, bounds=None,
         Number of times to restart minimizing -utility function to select
         next point to improve GP performance.  Defaults to 5.  Increase this
         number of the point selection is not working well.
-    nCores : int (optional)
-        If > 1, use multiprocessing to distribute optimization restarts. If
-        < 0, use all usable cores
 
     Returns
     -------
@@ -381,40 +341,38 @@ def minimizeObjective(fn, y, gp, sampleFn, priorFn, bounds=None,
     res = []
     objective = []
 
-    # Solve for theta that maximize fn and is allowed by prior
-    # Figure out how many cores to use with InterruptiblePool
-    if nCores > 1:
-        poolType = "MultiPool"
-    # Use all usable cores
-    elif nCores < 0:
-        nCores = multiprocessing.cpu_count() or 1
-        if nCores > 1:
-            poolType = "MultiPool"
-        else:
-            poolType = "SerialPool"
-    else:
-        poolType = "SerialPool"
-
-    # Use multiprocessing to distribution optimization calls
-    with pool.Pool(pool=poolType, processes=nCores) as optPool:
+    # Loop over optimization calls
+    for ii in range(nMinObjRestarts):
 
         # Inputs for each process
-        iterables = [np.array(sampleFn(1)).reshape(1,-1) for _ in range(nMinObjRestarts)]
+        theta0 = np.array(sampleFn(1)).reshape(1,-1)
 
-        # keyword arguments for minimizer
-        mKwargs = {"bounds" : bounds}
+        # Solve for theta that maximize fn and is allowed by prior
+        while True:
 
-        # Args for minimizer
-        mArgs = (fn, y, gp, sampleFn, priorFn)
+            # Mimimze fn, see if prior allows solution
+            try:
+                tmp = minimize(fn, np.array(theta0).reshape(1,-1), args=args,
+                               bounds=bounds, method="nelder-mead",
+                               options={"adaptive" : True})["x"]
 
-        # Run the minimization on nCores
-        optFn = functionWrapper(_minimizeObjective, *mArgs, **mKwargs)
-        results = optPool.map(optFn, iterables)
+            # ValueError.  Try again.
+            except ValueError:
+                tmp = np.array([np.inf for ii in range(theta0.shape[-1])]).reshape(theta0.shape)
 
-    # Extract solutions
-    for result in results:
-        res.append(result)
-        objective.append(fn(result, *args))
+            # Vet answer: must be finite, allowed by prior
+            # Are all values finite?
+            if np.all(np.isfinite(tmp)):
+                # Is this point in parameter space allowed by the prior?
+                if np.isfinite(priorFn(tmp)):
+
+                     # Save solution, value of utility fn
+                     res.append(tmp)
+                     objective.append(fn(tmp, *args))
+                     break
+
+            # Optimization failed, try a new theta0 by sampling from the prior
+            theta0 = sampleFn(1)
 
     # Return minimum value of the objective
     return np.array(res)[np.argmin(objective)]

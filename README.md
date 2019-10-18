@@ -21,7 +21,7 @@ approximations to the true, underlying distributions with only of order 100s-100
 Code Status and Documentation
 =============================
 
-approxposterior runs on Python 3.5, 3.6.
+approxposterior runs on Python 3.5, 3.6, and 3.7.
 
 [![build status](http://img.shields.io/travis/dflemin3/approxposterior/master.svg?style=flat)](https://travis-ci.org/dflemin3/approxposterior)
 

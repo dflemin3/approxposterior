@@ -9,7 +9,7 @@ Test loading approxposterior and running the core algorithm for 1 iteration.
 
 """
 
-from approxposterior import approx, likelihood as lh
+from approxposterior import approx, likelihood as lh, gpUtils
 import numpy as np
 import george
 import emcee
@@ -20,11 +20,9 @@ def test_run():
     """
 
     # Define algorithm parameters
-    m0 = 200                          # Initial size of training set
+    m0 = 50                           # Initial size of training set
     m = 20                            # Number of new points to find each iteration
     nmax = 2                          # Maximum number of iterations
-    Dmax = 0.1                        # KL-Divergence convergence limit
-    kmax = 5                          # Number of iterations for Dmax convergence to kick in
     bounds = ((-5,5), (-5,5))         # Prior bounds
     algorithm = "bape"                # Use the Kandasamy et al. (2015) formalism
     seed = 42                         # For reproducibility
@@ -42,10 +40,14 @@ def test_run():
     for ii in range(len(theta)):
         y[ii] = lh.rosenbrockLnlike(theta[ii]) + lh.rosenbrockLnprior(theta[ii])
 
+    # Create the the default GP which uses an ExpSquaredKernel
+    gp = gpUtils.defaultGP(theta, y, order=None, white_noise=np.log(1.0))
+
     # Initialize object using the Wang & Li (2017) Rosenbrock function example
     # Use default GP initialization: ExpSquaredKernel
     ap = approx.ApproxPosterior(theta=theta,
                                 y=y,
+                                gp=gp,
                                 lnprior=lh.rosenbrockLnprior,
                                 lnlike=lh.rosenbrockLnlike,
                                 priorSample=lh.rosenbrockSample,
@@ -53,9 +55,9 @@ def test_run():
                                 algorithm=algorithm)
 
     # Run!
-    ap.run(m=m, nmax=nmax, Dmax=Dmax, kmax=kmax, cache=False, nKLSamples=100000,
-           mcmcKwargs=mcmcKwargs, samplerKwargs=samplerKwargs,
-           verbose=False, nGPRestarts=3, seed=seed, onlyLastMCMC=True)
+    ap.run(m=m, nmax=nmax, cache=False, mcmcKwargs=mcmcKwargs,
+           samplerKwargs=samplerKwargs, verbose=False, nGPRestarts=3, seed=seed,
+           onlyLastMCMC=True)
 
     # Ensure medians of chains are consistent with the true values
     samples = ap.sampler.get_chain(discard=ap.iburns[-1], flat=True, thin=ap.ithins[-1])

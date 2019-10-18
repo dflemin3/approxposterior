@@ -13,3 +13,4 @@ dist/*
 *.h5
 *.npz
 examples/Notebooks/dev/
+dev/
