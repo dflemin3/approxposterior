@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>ApproxPosterior Class &mdash; approxposterior 0.2.post1 documentation</title>
+  <title>ApproxPosterior Class &mdash; approxposterior 0.21 documentation</title>
   
 
   
@@ -37,7 +37,7 @@
         <link rel="index" title="Index"
               href="../genindex.html"/>
         <link rel="search" title="Search" href="../search.html"/>
-    <link rel="top" title="approxposterior 0.2.post1 documentation" href="../index.html"/>
+    <link rel="top" title="approxposterior 0.21 documentation" href="../index.html"/>
         <link rel="up" title="API" href="../api.html"/>
         <link rel="prev" title="API" href="../api.html"/> 
 
@@ -68,7 +68,7 @@
             
             
               <div class="version">
-                0.2
+                0.21
               </div>
             
           
@@ -107,7 +107,6 @@
 <li class="toctree-l2"><a class="reference internal" href="mcmcUtils.html">mcmcUtils.py</a></li>
 <li class="toctree-l2"><a class="reference internal" href="likelihood.html">likelihood.py</a></li>
 <li class="toctree-l2"><a class="reference internal" href="utility.html">utility.py</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pool.html">pool.py</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../install.html">Installation</a></li>
@@ -248,7 +247,7 @@ the AGP (Adaptive Gaussian Process) by Wang &amp; Li (2017).</p>
 </table>
 <dl class="method">
 <dt id="approxposterior.approx.ApproxPosterior.findNextPoint">
-<code class="descname">findNextPoint</code><span class="sig-paren">(</span><em>computeLnLike=True</em>, <em>bounds=None</em>, <em>gpMethod=None</em>, <em>maxLnLikeRestarts=3</em>, <em>seed=None</em>, <em>cache=True</em>, <em>gpOptions=None</em>, <em>gpP0=None</em>, <em>optGP=True</em>, <em>args=None</em>, <em>nGPRestarts=5</em>, <em>nMinObjRestarts=5</em>, <em>nCores=1</em>, <em>gpCV=None</em>, <em>runName='apRun'</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/approx.html#ApproxPosterior.findNextPoint"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.approx.ApproxPosterior.findNextPoint" title="Permalink to this definition">¶</a></dt>
+<code class="descname">findNextPoint</code><span class="sig-paren">(</span><em>computeLnLike=True</em>, <em>bounds=None</em>, <em>gpMethod=None</em>, <em>maxLnLikeRestarts=3</em>, <em>seed=None</em>, <em>cache=True</em>, <em>gpOptions=None</em>, <em>gpP0=None</em>, <em>optGP=True</em>, <em>args=None</em>, <em>nGPRestarts=5</em>, <em>nMinObjRestarts=5</em>, <em>gpCV=None</em>, <em>runName='apRun'</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/approx.html#ApproxPosterior.findNextPoint"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.approx.ApproxPosterior.findNextPoint" title="Permalink to this definition">¶</a></dt>
 <dd><p>Find new point, thetaT, by maximizing utility function. Note that we
 call a minimizer because minimizing negative of utility function is
 the same as maximizing it.</p>
@@ -334,11 +333,6 @@ to 5. Increase this number if the GP isn’t optimized well.</p>
 next point to improve GP performance.  Defaults to 5.  Increase this
 number of the point selection is not working well.</p>
 </div></blockquote>
-<p><strong>nCores</strong> : int (optional)</p>
-<blockquote>
-<div><p>If &gt; 1, use multiprocessing to distribute optimization restarts. If
-&lt; 0, e.g. -1, use all usable cores</p>
-</div></blockquote>
 <p><strong>gpCV</strong> : int (optional)</p>
 <blockquote>
 <div><p>Whether or not to use 5-fold cross-validation to select kernel
@@ -385,7 +379,7 @@ Otherwise, returns thetaT and yT.</p>
 
 <dl class="method">
 <dt id="approxposterior.approx.ApproxPosterior.run">
-<code class="descname">run</code><span class="sig-paren">(</span><em>m=10</em>, <em>nmax=2</em>, <em>Dmax=0.1</em>, <em>kmax=5</em>, <em>seed=None</em>, <em>timing=False</em>, <em>nKLSamples=10000</em>, <em>verbose=True</em>, <em>maxComp=3</em>, <em>mcmcKwargs=None</em>, <em>samplerKwargs=None</em>, <em>estBurnin=False</em>, <em>thinChains=False</em>, <em>runName='apRun'</em>, <em>cache=True</em>, <em>maxLnLikeRestarts=3</em>, <em>gmmKwargs=None</em>, <em>gpMethod=None</em>, <em>gpOptions=None</em>, <em>gpP0=None</em>, <em>optGPEveryN=1</em>, <em>nGPRestarts=5</em>, <em>nMinObjRestarts=5</em>, <em>nCores=1</em>, <em>gpCV=None</em>, <em>onlyLastMCMC=False</em>, <em>args=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/approx.html#ApproxPosterior.run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.approx.ApproxPosterior.run" title="Permalink to this definition">¶</a></dt>
+<code class="descname">run</code><span class="sig-paren">(</span><em>m=10</em>, <em>nmax=2</em>, <em>Dmax=None</em>, <em>kmax=None</em>, <em>seed=None</em>, <em>timing=False</em>, <em>nKLSamples=None</em>, <em>verbose=True</em>, <em>maxComp=3</em>, <em>mcmcKwargs=None</em>, <em>samplerKwargs=None</em>, <em>estBurnin=False</em>, <em>thinChains=False</em>, <em>runName='apRun'</em>, <em>cache=True</em>, <em>maxLnLikeRestarts=3</em>, <em>gmmKwargs=None</em>, <em>gpMethod=None</em>, <em>gpOptions=None</em>, <em>gpP0=None</em>, <em>optGPEveryN=1</em>, <em>nGPRestarts=5</em>, <em>nMinObjRestarts=5</em>, <em>gpCV=None</em>, <em>onlyLastMCMC=False</em>, <em>args=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/approx.html#ApproxPosterior.run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.approx.ApproxPosterior.run" title="Permalink to this definition">¶</a></dt>
 <dd><p>Core algorithm to estimate the posterior distribution via Gaussian
 Process regression to the joint distribution for the forward model
 input/output pairs</p>
@@ -401,16 +395,6 @@ input/output pairs</p>
 <blockquote>
 <div><p>Maximum number of iterations.  Defaults to 2.</p>
 </div></blockquote>
-<p><strong>Dmax</strong> : float (optional)</p>
-<blockquote>
-<div><p>Maximum change in KL divergence for convergence checking.  Defaults to 0.1.</p>
-</div></blockquote>
-<p><strong>kmax</strong> : int (optional)</p>
-<blockquote>
-<div><p>Maximum number of iterators such that if the change in KL divergence is
-less than Dmax for kmax iterators, the algorithm is considered
-converged and terminates.  Defaults to 5.</p>
-</div></blockquote>
 <p><strong>seed</strong> : int (optional)</p>
 <blockquote>
 <div><p>RNG seed.  Defaults to None.</p>
@@ -419,13 +403,6 @@ converged and terminates.  Defaults to 5.</p>
 <blockquote>
 <div><p>Whether or not to time the code for profiling/speed tests.
 Defaults to False.</p>
-</div></blockquote>
-<p><strong>nKLSamples</strong> : int (optionals)</p>
-<blockquote>
-<div><p>Number of samples to draw for Monte Carlo approximation to KL
-divergence between current and previous estimate of the posterior.
-Defaults to 10000.  Error on estimation decreases as approximately
-1/sqrt(nKLSamples). Increase this for higher dimensional problems.</p>
 </div></blockquote>
 <p><strong>verbose</strong> : bool (optional)</p>
 <blockquote>
@@ -501,11 +478,6 @@ parameters in runNameAPGP.npz in the current working directory, etc.</p>
 calls the forward model) if the lnlike fn returns infs/NaNs. Defaults
 to 3.</p>
 </div></blockquote>
-<p><strong>gmmKwargs</strong> : dict (optional)</p>
-<blockquote>
-<div><p>keyword arguments for sklearn.mixture.GaussianMixture. Defaults to
-None</p>
-</div></blockquote>
 <p><strong>gpMethod</strong> : str (optional)</p>
 <blockquote>
 <div><p>scipy.optimize.minimize method used when optimized GP hyperparameters.
@@ -539,11 +511,6 @@ to 5. Increase this number if the GP isn’t optimized well.</p>
 <div><p>Number of times to restart minimizing -utility function to select
 next point to improve GP performance.  Defaults to 5.  Increase this
 number of the point selection is not working well.</p>
-</div></blockquote>
-<p><strong>nCores</strong> : int (optional)</p>
-<blockquote>
-<div><p>If &gt; 1, use multiprocessing to distribute optimization restarts. If
-&lt; 0, e.g. -1, use all usable cores</p>
 </div></blockquote>
 <p><strong>gpCV</strong> : int (optional)</p>
 <blockquote>
@@ -727,7 +694,7 @@ calls the forward model.</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../',
-            VERSION:'0.2.post1',
+            VERSION:'0.21',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,

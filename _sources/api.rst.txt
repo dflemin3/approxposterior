@@ -12,4 +12,3 @@ API
     mcmcUtils.py <api/mcmcUtils>
     likelihood.py <api/likelihood>
     utility.py <api/utility>
-    pool.py <api/pool>

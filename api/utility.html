@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Utility Functions &mdash; approxposterior 0.2.post1 documentation</title>
+  <title>Utility Functions &mdash; approxposterior 0.21 documentation</title>
   
 
   
@@ -37,7 +37,7 @@
         <link rel="index" title="Index"
               href="../genindex.html"/>
         <link rel="search" title="Search" href="../search.html"/>
-    <link rel="top" title="approxposterior 0.2.post1 documentation" href="../index.html"/>
+    <link rel="top" title="approxposterior 0.21 documentation" href="../index.html"/>
         <link rel="up" title="API" href="../api.html"/>
         <link rel="prev" title="Likelihood Functions" href="likelihood.html"/> 
 
@@ -68,7 +68,7 @@
             
             
               <div class="version">
-                0.2
+                0.21
               </div>
             
           
@@ -107,7 +107,6 @@
 </li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="pool.html">pool.py</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../install.html">Installation</a></li>
@@ -317,7 +316,7 @@ function as the log is monotonic so the minima are equivalent.</p>
 
 <dl class="function">
 <dt id="approxposterior.utility.minimizeObjective">
-<code class="descclassname">approxposterior.utility.</code><code class="descname">minimizeObjective</code><span class="sig-paren">(</span><em>fn</em>, <em>y</em>, <em>gp</em>, <em>sampleFn</em>, <em>priorFn</em>, <em>bounds=None</em>, <em>nMinObjRestarts=5</em>, <em>nCores=1</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/utility.html#minimizeObjective"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.utility.minimizeObjective" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">approxposterior.utility.</code><code class="descname">minimizeObjective</code><span class="sig-paren">(</span><em>fn</em>, <em>y</em>, <em>gp</em>, <em>sampleFn</em>, <em>priorFn</em>, <em>bounds=None</em>, <em>nMinObjRestarts=5</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/utility.html#minimizeObjective"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.utility.minimizeObjective" title="Permalink to this definition">¶</a></dt>
 <dd><p>Find point that minimizes fn for a gaussian process gp conditioned on y,
 the data, and is allowed by the prior, priorFn.  PriorFn is required as it
 helps to select against points with non-finite likelihoods, e.g. NaNs or
@@ -354,11 +353,6 @@ for more information.  Defaults to None.</p>
 <div><p>Number of times to restart minimizing -utility function to select
 next point to improve GP performance.  Defaults to 5.  Increase this
 number of the point selection is not working well.</p>
-</div></blockquote>
-<p><strong>nCores</strong> : int (optional)</p>
-<blockquote>
-<div><p>If &gt; 1, use multiprocessing to distribute optimization restarts. If
-&lt; 0, use all usable cores</p>
 </div></blockquote>
 </td>
 </tr>
@@ -537,7 +531,7 @@ Defaults to “maximin”</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../',
-            VERSION:'0.2.post1',
+            VERSION:'0.21',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,

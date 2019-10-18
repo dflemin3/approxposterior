@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>approxposterior.utility &mdash; approxposterior 0.2.post1 documentation</title>
+  <title>approxposterior.utility &mdash; approxposterior 0.21 documentation</title>
   
 
   
@@ -37,7 +37,7 @@
         <link rel="index" title="Index"
               href="../../genindex.html"/>
         <link rel="search" title="Search" href="../../search.html"/>
-    <link rel="top" title="approxposterior 0.2.post1 documentation" href="../../index.html"/>
+    <link rel="top" title="approxposterior 0.21 documentation" href="../../index.html"/>
         <link rel="up" title="Module code" href="../index.html"/> 
 
   
@@ -67,7 +67,7 @@
             
             
               <div class="version">
-                0.2
+                0.21
               </div>
             
           
@@ -175,14 +175,11 @@
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="c1"># Tell module what it&#39;s allowed to import</span>
-<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;logsubexp&quot;</span><span class="p">,</span><span class="s2">&quot;AGPUtility&quot;</span><span class="p">,</span><span class="s2">&quot;BAPEUtility&quot;</span><span class="p">,</span><span class="s2">&quot;minimizeObjective&quot;</span><span class="p">,</span>
-           <span class="s2">&quot;functionWrapper&quot;</span><span class="p">,</span><span class="s2">&quot;functionWrapperArgsOnly&quot;</span><span class="p">,</span><span class="s2">&quot;klNumerical&quot;</span><span class="p">,</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;logsubexp&quot;</span><span class="p">,</span> <span class="s2">&quot;AGPUtility&quot;</span><span class="p">,</span> <span class="s2">&quot;BAPEUtility&quot;</span><span class="p">,</span> <span class="s2">&quot;minimizeObjective&quot;</span><span class="p">,</span>
+           <span class="s2">&quot;functionWrapper&quot;</span><span class="p">,</span> <span class="s2">&quot;functionWrapperArgsOnly&quot;</span><span class="p">,</span> <span class="s2">&quot;klNumerical&quot;</span><span class="p">,</span>
            <span class="s2">&quot;latinHypercubeSampling&quot;</span><span class="p">]</span>
 
-<span class="kn">from</span> <span class="nn">.</span> <span class="k">import</span> <span class="n">pool</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">multiprocessing</span>
-<span class="kn">from</span> <span class="nn">sklearn.base</span> <span class="k">import</span> <span class="n">TransformerMixin</span>
 <span class="kn">from</span> <span class="nn">scipy.optimize</span> <span class="k">import</span> <span class="n">minimize</span>
 <span class="kn">from</span> <span class="nn">pyDOE</span> <span class="k">import</span> <span class="n">lhs</span>
 
@@ -249,7 +246,7 @@
 
 <span class="c1">################################################################################</span>
 <span class="c1">#</span>
-<span class="c1"># Data set initialation functions</span>
+<span class="c1"># Data set initialization functions</span>
 <span class="c1">#</span>
 <span class="c1">################################################################################</span>
 
@@ -469,42 +466,8 @@
 <span class="c1"># end function</span>
 
 
-<span class="k">def</span> <span class="nf">_minimizeObjective</span><span class="p">(</span><span class="n">theta0</span><span class="p">,</span> <span class="n">fn</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">gp</span><span class="p">,</span> <span class="n">sampleFn</span><span class="p">,</span> <span class="n">priorFn</span><span class="p">,</span> <span class="n">bounds</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Minimize objective wrapped function for multiprocessing. Same inputs/outputs</span>
-<span class="sd">    as minimizeObjective.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="c1"># Required arguments for the utility function</span>
-    <span class="n">args</span> <span class="o">=</span> <span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">gp</span><span class="p">,</span> <span class="n">priorFn</span><span class="p">)</span>
-
-    <span class="c1"># Solve for theta that maximize fn and is allowed by prior</span>
-    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
-
-        <span class="c1"># Mimimze fn, see if prior allows solution</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="n">tmp</span> <span class="o">=</span> <span class="n">minimize</span><span class="p">(</span><span class="n">fn</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">theta0</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="n">args</span><span class="o">=</span><span class="n">args</span><span class="p">,</span>
-                           <span class="n">bounds</span><span class="o">=</span><span class="n">bounds</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;nelder-mead&quot;</span><span class="p">,</span>
-                           <span class="n">options</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;adaptive&quot;</span> <span class="p">:</span> <span class="kc">True</span><span class="p">})[</span><span class="s2">&quot;x&quot;</span><span class="p">]</span>
-
-        <span class="c1"># ValueError.  Try again.</span>
-        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
-            <span class="n">tmp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span> <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">theta0</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])])</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">theta0</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
-
-        <span class="c1"># Vet answer: must be finite, allowed by prior</span>
-        <span class="c1"># Are all values finite?</span>
-        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">tmp</span><span class="p">)):</span>
-            <span class="c1"># Is this point in parameter space allowed by the prior?</span>
-            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">priorFn</span><span class="p">(</span><span class="n">tmp</span><span class="p">)):</span>
-                <span class="k">return</span> <span class="n">tmp</span>
-
-        <span class="c1"># Optimization failed, try a new theta0 by sampling from the prior</span>
-        <span class="n">theta0</span> <span class="o">=</span> <span class="n">sampleFn</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
-<span class="c1"># end function</span>
-
-
 <div class="viewcode-block" id="minimizeObjective"><a class="viewcode-back" href="../../api/utility.html#approxposterior.utility.minimizeObjective">[docs]</a><span class="k">def</span> <span class="nf">minimizeObjective</span><span class="p">(</span><span class="n">fn</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">gp</span><span class="p">,</span> <span class="n">sampleFn</span><span class="p">,</span> <span class="n">priorFn</span><span class="p">,</span> <span class="n">bounds</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                      <span class="n">nMinObjRestarts</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">nCores</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+                      <span class="n">nMinObjRestarts</span><span class="o">=</span><span class="mi">5</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Find point that minimizes fn for a gaussian process gp conditioned on y,</span>
 <span class="sd">    the data, and is allowed by the prior, priorFn.  PriorFn is required as it</span>
@@ -530,9 +493,6 @@
 <span class="sd">        Number of times to restart minimizing -utility function to select</span>
 <span class="sd">        next point to improve GP performance.  Defaults to 5.  Increase this</span>
 <span class="sd">        number of the point selection is not working well.</span>
-<span class="sd">    nCores : int (optional)</span>
-<span class="sd">        If &gt; 1, use multiprocessing to distribute optimization restarts. If</span>
-<span class="sd">        &lt; 0, use all usable cores</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -547,40 +507,38 @@
     <span class="n">res</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">objective</span> <span class="o">=</span> <span class="p">[]</span>
 
-    <span class="c1"># Solve for theta that maximize fn and is allowed by prior</span>
-    <span class="c1"># Figure out how many cores to use with InterruptiblePool</span>
-    <span class="k">if</span> <span class="n">nCores</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
-        <span class="n">poolType</span> <span class="o">=</span> <span class="s2">&quot;MultiPool&quot;</span>
-    <span class="c1"># Use all usable cores</span>
-    <span class="k">elif</span> <span class="n">nCores</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="n">nCores</span> <span class="o">=</span> <span class="n">multiprocessing</span><span class="o">.</span><span class="n">cpu_count</span><span class="p">()</span> <span class="ow">or</span> <span class="mi">1</span>
-        <span class="k">if</span> <span class="n">nCores</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="n">poolType</span> <span class="o">=</span> <span class="s2">&quot;MultiPool&quot;</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">poolType</span> <span class="o">=</span> <span class="s2">&quot;SerialPool&quot;</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">poolType</span> <span class="o">=</span> <span class="s2">&quot;SerialPool&quot;</span>
-
-    <span class="c1"># Use multiprocessing to distribution optimization calls</span>
-    <span class="k">with</span> <span class="n">pool</span><span class="o">.</span><span class="n">Pool</span><span class="p">(</span><span class="n">pool</span><span class="o">=</span><span class="n">poolType</span><span class="p">,</span> <span class="n">processes</span><span class="o">=</span><span class="n">nCores</span><span class="p">)</span> <span class="k">as</span> <span class="n">optPool</span><span class="p">:</span>
+    <span class="c1"># Loop over optimization calls</span>
+    <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nMinObjRestarts</span><span class="p">):</span>
 
         <span class="c1"># Inputs for each process</span>
-        <span class="n">iterables</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">sampleFn</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nMinObjRestarts</span><span class="p">)]</span>
+        <span class="n">theta0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">sampleFn</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
 
-        <span class="c1"># keyword arguments for minimizer</span>
-        <span class="n">mKwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;bounds&quot;</span> <span class="p">:</span> <span class="n">bounds</span><span class="p">}</span>
+        <span class="c1"># Solve for theta that maximize fn and is allowed by prior</span>
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
 
-        <span class="c1"># Args for minimizer</span>
-        <span class="n">mArgs</span> <span class="o">=</span> <span class="p">(</span><span class="n">fn</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">gp</span><span class="p">,</span> <span class="n">sampleFn</span><span class="p">,</span> <span class="n">priorFn</span><span class="p">)</span>
+            <span class="c1"># Mimimze fn, see if prior allows solution</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">tmp</span> <span class="o">=</span> <span class="n">minimize</span><span class="p">(</span><span class="n">fn</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">theta0</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="n">args</span><span class="o">=</span><span class="n">args</span><span class="p">,</span>
+                               <span class="n">bounds</span><span class="o">=</span><span class="n">bounds</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;nelder-mead&quot;</span><span class="p">,</span>
+                               <span class="n">options</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;adaptive&quot;</span> <span class="p">:</span> <span class="kc">True</span><span class="p">})[</span><span class="s2">&quot;x&quot;</span><span class="p">]</span>
 
-        <span class="c1"># Run the minimization on nCores</span>
-        <span class="n">optFn</span> <span class="o">=</span> <span class="n">functionWrapper</span><span class="p">(</span><span class="n">_minimizeObjective</span><span class="p">,</span> <span class="o">*</span><span class="n">mArgs</span><span class="p">,</span> <span class="o">**</span><span class="n">mKwargs</span><span class="p">)</span>
-        <span class="n">results</span> <span class="o">=</span> <span class="n">optPool</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">optFn</span><span class="p">,</span> <span class="n">iterables</span><span class="p">)</span>
+            <span class="c1"># ValueError.  Try again.</span>
+            <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                <span class="n">tmp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span> <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">theta0</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])])</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">theta0</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
 
-    <span class="c1"># Extract solutions</span>
-    <span class="k">for</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">results</span><span class="p">:</span>
-        <span class="n">res</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
-        <span class="n">objective</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fn</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">))</span>
+            <span class="c1"># Vet answer: must be finite, allowed by prior</span>
+            <span class="c1"># Are all values finite?</span>
+            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">tmp</span><span class="p">)):</span>
+                <span class="c1"># Is this point in parameter space allowed by the prior?</span>
+                <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">priorFn</span><span class="p">(</span><span class="n">tmp</span><span class="p">)):</span>
+
+                     <span class="c1"># Save solution, value of utility fn</span>
+                     <span class="n">res</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tmp</span><span class="p">)</span>
+                     <span class="n">objective</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fn</span><span class="p">(</span><span class="n">tmp</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">))</span>
+                     <span class="k">break</span>
+
+            <span class="c1"># Optimization failed, try a new theta0 by sampling from the prior</span>
+            <span class="n">theta0</span> <span class="o">=</span> <span class="n">sampleFn</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
 
     <span class="c1"># Return minimum value of the objective</span>
     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">res</span><span class="p">)[</span><span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">objective</span><span class="p">)]</span></div>
@@ -621,7 +579,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../',
-            VERSION:'0.2.post1',
+            VERSION:'0.21',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,

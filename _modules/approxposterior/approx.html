@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>approxposterior.approx &mdash; approxposterior 0.2.post1 documentation</title>
+  <title>approxposterior.approx &mdash; approxposterior 0.21 documentation</title>
   
 
   
@@ -37,7 +37,7 @@
         <link rel="index" title="Index"
               href="../../genindex.html"/>
         <link rel="search" title="Search" href="../../search.html"/>
-    <link rel="top" title="approxposterior 0.2.post1 documentation" href="../../index.html"/>
+    <link rel="top" title="approxposterior 0.21 documentation" href="../../index.html"/>
         <link rel="up" title="Module code" href="../index.html"/> 
 
   
@@ -67,7 +67,7 @@
             
             
               <div class="version">
-                0.2
+                0.21
               </div>
             
           
@@ -189,6 +189,7 @@
 <span class="kn">import</span> <span class="nn">emcee</span>
 <span class="kn">import</span> <span class="nn">george</span>
 <span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
 
 
 <div class="viewcode-block" id="ApproxPosterior"><a class="viewcode-back" href="../../api/approx.html#approxposterior.approx.ApproxPosterior">[docs]</a><span class="k">class</span> <span class="nc">ApproxPosterior</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
@@ -273,13 +274,7 @@
             <span class="n">errMsg</span> <span class="o">=</span> <span class="s2">&quot;Unknown algorithm. Valid options: BAPE, AGP, or alternate.&quot;</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">errMsg</span><span class="p">)</span>
 
-        <span class="c1"># Initial approximate posteriors are the prior</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">posterior</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lnprior</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">prevPosterior</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lnprior</span>
-
-        <span class="c1"># Holders to save GMM fits to posteriors, raw samplers, KL divergences</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">Dkl</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">GMMs</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="c1"># Holders to save quantities of interest</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">iburns</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">ithins</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">backends</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
@@ -293,7 +288,6 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">gp</span> <span class="o">=</span> <span class="n">gpUtils</span><span class="o">.</span><span class="n">defaultGP</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">theta</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">gp</span> <span class="o">=</span> <span class="n">gp</span>
-
     <span class="c1"># end function</span>
 
 
@@ -341,13 +335,13 @@
     <span class="c1"># end function</span>
 
 
-<div class="viewcode-block" id="ApproxPosterior.run"><a class="viewcode-back" href="../../api/approx.html#approxposterior.approx.ApproxPosterior.run">[docs]</a>    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">m</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">nmax</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">Dmax</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">kmax</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-            <span class="n">timing</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">nKLSamples</span><span class="o">=</span><span class="mi">10000</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">maxComp</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+<div class="viewcode-block" id="ApproxPosterior.run"><a class="viewcode-back" href="../../api/approx.html#approxposterior.approx.ApproxPosterior.run">[docs]</a>    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">m</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">nmax</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">Dmax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">kmax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">timing</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">nKLSamples</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">maxComp</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
             <span class="n">mcmcKwargs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">samplerKwargs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">estBurnin</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
             <span class="n">thinChains</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">runName</span><span class="o">=</span><span class="s2">&quot;apRun&quot;</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
             <span class="n">maxLnLikeRestarts</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">gmmKwargs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">gpMethod</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">gpOptions</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
             <span class="n">gpP0</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">optGPEveryN</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">nGPRestarts</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">nMinObjRestarts</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
-            <span class="n">nCores</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">gpCV</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">onlyLastMCMC</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+            <span class="n">gpCV</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">onlyLastMCMC</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Core algorithm to estimate the posterior distribution via Gaussian</span>
 <span class="sd">        Process regression to the joint distribution for the forward model</span>
@@ -359,22 +353,11 @@
 <span class="sd">            Number of new input features to find each iteration.  Defaults to 10.</span>
 <span class="sd">        nmax : int (optional)</span>
 <span class="sd">            Maximum number of iterations.  Defaults to 2.</span>
-<span class="sd">        Dmax : float (optional)</span>
-<span class="sd">            Maximum change in KL divergence for convergence checking.  Defaults to 0.1.</span>
-<span class="sd">        kmax : int (optional)</span>
-<span class="sd">            Maximum number of iterators such that if the change in KL divergence is</span>
-<span class="sd">            less than Dmax for kmax iterators, the algorithm is considered</span>
-<span class="sd">            converged and terminates.  Defaults to 5.</span>
 <span class="sd">        seed : int (optional)</span>
 <span class="sd">            RNG seed.  Defaults to None.</span>
 <span class="sd">        timing : bool (optional)</span>
 <span class="sd">            Whether or not to time the code for profiling/speed tests.</span>
 <span class="sd">            Defaults to False.</span>
-<span class="sd">        nKLSamples : int (optionals)</span>
-<span class="sd">            Number of samples to draw for Monte Carlo approximation to KL</span>
-<span class="sd">            divergence between current and previous estimate of the posterior.</span>
-<span class="sd">            Defaults to 10000.  Error on estimation decreases as approximately</span>
-<span class="sd">            1/sqrt(nKLSamples). Increase this for higher dimensional problems.</span>
 <span class="sd">        verbose : bool (optional)</span>
 <span class="sd">            Output all the diagnostics? Defaults to True.</span>
 <span class="sd">        maxComp : int (optional)</span>
@@ -420,9 +403,6 @@
 <span class="sd">            Number of times to restart loglikelihood function (the one that</span>
 <span class="sd">            calls the forward model) if the lnlike fn returns infs/NaNs. Defaults</span>
 <span class="sd">            to 3.</span>
-<span class="sd">        gmmKwargs : dict (optional)</span>
-<span class="sd">            keyword arguments for sklearn.mixture.GaussianMixture. Defaults to</span>
-<span class="sd">            None</span>
 <span class="sd">        gpMethod : str (optional)</span>
 <span class="sd">            scipy.optimize.minimize method used when optimized GP hyperparameters.</span>
 <span class="sd">            Defaults to None, which is nelder-mead, and it usually works.</span>
@@ -445,9 +425,6 @@
 <span class="sd">            Number of times to restart minimizing -utility function to select</span>
 <span class="sd">            next point to improve GP performance.  Defaults to 5.  Increase this</span>
 <span class="sd">            number of the point selection is not working well.</span>
-<span class="sd">        nCores : int (optional)</span>
-<span class="sd">            If &gt; 1, use multiprocessing to distribute optimization restarts. If</span>
-<span class="sd">            &lt; 0, e.g. -1, use all usable cores</span>
 <span class="sd">        gpCV : int (optional)</span>
 <span class="sd">            Whether or not to use k-fold cross-validation to select kernel</span>
 <span class="sd">            hyperparameters from the nGPRestarts maximum likelihood solutions.</span>
@@ -469,6 +446,15 @@
 <span class="sd">        None</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
+        <span class="c1"># KL-divergence based convergence is deprecated - warn user if they</span>
+        <span class="c1"># use it!</span>
+        <span class="k">if</span> <span class="n">Dmax</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">kmax</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">nKLSamples</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">gmmKwargs</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                <span class="n">warn_msg</span> <span class="o">=</span> <span class="s2">&quot;KL-divergence convergence is deprecated in &quot;</span> <span class="o">+</span> \
+                <span class="s2">&quot;approxposterior version 0.21+. The code will ignore &quot;</span> <span class="o">+</span> \
+                <span class="s2">&quot;Dmax, kmax, nKLSamples, and gmmKwargs and will run for nmax iterations.&quot;</span>
+                <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">warn_msg</span><span class="p">,</span> <span class="ne">DeprecationWarning</span><span class="p">)</span>
+
         <span class="c1"># Save forward model input-output pairs since they take forever to</span>
         <span class="c1"># calculate and we want them around in case something weird happens.</span>
         <span class="c1"># Users should probably do this in their likelihood function</span>
@@ -486,17 +472,14 @@
         <span class="k">if</span> <span class="n">timing</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">trainingTime</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">mcmcTime</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">gmmTime</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">klTime</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
 
         <span class="c1"># Initial optimization of gaussian process</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">gp</span> <span class="o">=</span> <span class="n">gpUtils</span><span class="o">.</span><span class="n">optimizeGP</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gp</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">theta</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">,</span>
                                      <span class="n">method</span><span class="o">=</span><span class="n">gpMethod</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="n">gpOptions</span><span class="p">,</span>
                                      <span class="n">p0</span><span class="o">=</span><span class="n">gpP0</span><span class="p">,</span> <span class="n">nGPRestarts</span><span class="o">=</span><span class="n">nGPRestarts</span><span class="p">,</span>
-                                     <span class="n">nCores</span><span class="o">=</span><span class="n">nCores</span><span class="p">,</span> <span class="n">gpCV</span><span class="o">=</span><span class="n">gpCV</span><span class="p">)</span>
+                                     <span class="n">gpCV</span><span class="o">=</span><span class="n">gpCV</span><span class="p">)</span>
 
-        <span class="c1"># Main loop</span>
-        <span class="n">kk</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="c1"># Main loop - run for nmax iterations</span>
         <span class="k">for</span> <span class="n">nn</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nmax</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
                 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Iteration: </span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">nn</span><span class="p">)</span>
@@ -563,7 +546,7 @@
                 <span class="c1"># Skip everything below</span>
                 <span class="k">continue</span>
 
-            <span class="c1"># If the above block isn&#39;t trigger, run the MCMC and compute KL-divergences</span>
+            <span class="c1"># If the above block isn&#39;t trigger, run the MCMC</span>
             <span class="k">if</span> <span class="n">timing</span><span class="p">:</span>
                 <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
 
@@ -584,94 +567,19 @@
             <span class="k">if</span> <span class="n">timing</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">mcmcTime</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span><span class="p">)</span>
 
-            <span class="k">if</span> <span class="n">timing</span><span class="p">:</span>
-                <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
-
-            <span class="c1"># Fit for the approximate posterior distribution using a Gaussian</span>
-            <span class="c1"># Mixure model</span>
-            <span class="n">GMM</span> <span class="o">=</span> <span class="n">gmmUtils</span><span class="o">.</span><span class="n">fitGMM</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sampler</span><span class="o">.</span><span class="n">get_chain</span><span class="p">(</span><span class="n">discard</span><span class="o">=</span><span class="n">iburn</span><span class="p">,</span> <span class="n">flat</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">thin</span><span class="o">=</span><span class="n">ithin</span><span class="p">),</span>
-                                  <span class="n">maxComp</span><span class="o">=</span><span class="n">maxComp</span><span class="p">,</span>
-                                  <span class="n">covType</span><span class="o">=</span><span class="s2">&quot;full&quot;</span><span class="p">,</span>
-                                  <span class="n">useBic</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-                                  <span class="n">gmmKwargs</span><span class="o">=</span><span class="n">gmmKwargs</span><span class="p">)</span>
-
-            <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;GMM fit complete.&quot;</span><span class="p">)</span>
-
-            <span class="k">if</span> <span class="n">timing</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">gmmTime</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span><span class="p">)</span>
-
-            <span class="c1"># Save current GMM model</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">GMMs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">GMM</span><span class="p">)</span>
-
-            <span class="c1"># Update posterior estimate</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">prevPosterior</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">posterior</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">posterior</span> <span class="o">=</span> <span class="n">GMM</span><span class="o">.</span><span class="n">score_samples</span>
-
-            <span class="k">if</span> <span class="n">timing</span><span class="p">:</span>
-                <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
-
-            <span class="c1"># Estimate KL-divergence between previous and current posterior</span>
-            <span class="c1"># Only do this after the 1st (0th) iteration!</span>
-            <span class="k">if</span> <span class="n">nn</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">GMMs</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
-                <span class="c1"># Sample from last iteration&#39;s GMM</span>
-                <span class="n">prevSamples</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">GMMs</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">nKLSamples</span><span class="p">)</span>
-
-                <span class="c1"># Numerically estimate KL divergence</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">Dkl</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ut</span><span class="o">.</span><span class="n">klNumerical</span><span class="p">(</span><span class="n">prevSamples</span><span class="p">,</span>
-                                               <span class="bp">self</span><span class="o">.</span><span class="n">prevPosterior</span><span class="p">,</span>
-                                               <span class="bp">self</span><span class="o">.</span><span class="n">posterior</span><span class="p">))</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">Dkl</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span>
-
-            <span class="k">if</span> <span class="n">timing</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">klTime</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span><span class="p">)</span>
-
             <span class="c1"># Save timing information?</span>
             <span class="k">if</span> <span class="n">cache</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">timing</span><span class="p">:</span>
                     <span class="n">np</span><span class="o">.</span><span class="n">savez</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">runName</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;APTiming.npz&quot;</span><span class="p">,</span>
                              <span class="n">trainingTime</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">trainingTime</span><span class="p">,</span>
-                             <span class="n">mcmcTime</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">mcmcTime</span><span class="p">,</span>
-                             <span class="n">gmmTime</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">gmmTime</span><span class="p">,</span>
-                             <span class="n">klTime</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">klTime</span><span class="p">)</span>
-
-            <span class="c1"># Convergence diagnostics: If KL divergence is less than threshold</span>
-            <span class="c1"># for kmax consecutive iterations, we&#39;re finished</span>
-
-            <span class="c1"># Can&#39;t check for convergence on 1st (0th) iteration</span>
-            <span class="k">if</span> <span class="n">nn</span> <span class="o">&lt;</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">onlyLastMCMC</span><span class="p">:</span>
-                <span class="n">deltaDkl</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">deltaDkl</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Dkl</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">Dkl</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">])</span>
-
-            <span class="c1"># If the KL divergence is too large, reset counter</span>
-            <span class="k">if</span> <span class="n">deltaDkl</span> <span class="o">&lt;=</span> <span class="n">Dmax</span><span class="p">:</span>
-                <span class="n">kk</span> <span class="o">=</span> <span class="n">kk</span> <span class="o">+</span> <span class="mi">1</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">kk</span> <span class="o">=</span> <span class="mi">0</span>
-
-            <span class="c1"># Have we converged?</span>
-            <span class="k">if</span> <span class="n">kk</span> <span class="o">&gt;=</span> <span class="n">kmax</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Converged! n_iters, Dkl, Delta Dkl: </span><span class="si">%d</span><span class="s2">, </span><span class="si">%e</span><span class="s2">, </span><span class="si">%e</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">nn</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">Dkl</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span><span class="n">deltaDkl</span><span class="p">))</span>
-
-                    <span class="c1"># Save KL divergence estimate</span>
-                    <span class="k">if</span> <span class="n">cache</span><span class="p">:</span>
-                        <span class="n">np</span><span class="o">.</span><span class="n">savez</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">runName</span><span class="p">)</span><span class="o">+</span> <span class="s2">&quot;APKL.npz&quot;</span><span class="p">,</span> <span class="n">Dkl</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">Dkl</span><span class="p">)</span>
-                <span class="k">return</span>
-
-            <span class="c1"># Save KL divergence estimates</span>
-            <span class="k">if</span> <span class="n">cache</span><span class="p">:</span>
-                <span class="n">np</span><span class="o">.</span><span class="n">savez</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">runName</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;APKL.npz&quot;</span><span class="p">,</span> <span class="n">Dkl</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">Dkl</span><span class="p">)</span></div>
-
+                             <span class="n">mcmcTime</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">mcmcTime</span><span class="p">)</span></div>
     <span class="c1"># end function</span>
 
 
 <div class="viewcode-block" id="ApproxPosterior.findNextPoint"><a class="viewcode-back" href="../../api/approx.html#approxposterior.approx.ApproxPosterior.findNextPoint">[docs]</a>    <span class="k">def</span> <span class="nf">findNextPoint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">computeLnLike</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">bounds</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">gpMethod</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                       <span class="n">maxLnLikeRestarts</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">gpOptions</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                       <span class="n">gpP0</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">optGP</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">nGPRestarts</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
-                      <span class="n">nMinObjRestarts</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">nCores</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">gpCV</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">runName</span><span class="o">=</span><span class="s2">&quot;apRun&quot;</span><span class="p">,</span>
+                      <span class="n">nMinObjRestarts</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">gpCV</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">runName</span><span class="o">=</span><span class="s2">&quot;apRun&quot;</span><span class="p">,</span>
                       <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Find new point, thetaT, by maximizing utility function. Note that we</span>
@@ -733,9 +641,6 @@
 <span class="sd">            Number of times to restart minimizing -utility function to select</span>
 <span class="sd">            next point to improve GP performance.  Defaults to 5.  Increase this</span>
 <span class="sd">            number of the point selection is not working well.</span>
-<span class="sd">        nCores : int (optional)</span>
-<span class="sd">            If &gt; 1, use multiprocessing to distribute optimization restarts. If</span>
-<span class="sd">            &lt; 0, e.g. -1, use all usable cores</span>
 <span class="sd">        gpCV : int (optional)</span>
 <span class="sd">            Whether or not to use 5-fold cross-validation to select kernel</span>
 <span class="sd">            hyperparameters from the nGPRestarts maximum likelihood solutions.</span>
@@ -785,8 +690,7 @@
                                           <span class="n">sampleFn</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">priorSample</span><span class="p">,</span>
                                           <span class="n">priorFn</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_lnprior</span><span class="p">,</span>
                                           <span class="n">bounds</span><span class="o">=</span><span class="n">bounds</span><span class="p">,</span>
-                                          <span class="n">nMinObjRestarts</span><span class="o">=</span><span class="n">nMinObjRestarts</span><span class="p">,</span>
-                                          <span class="n">nCores</span><span class="o">=</span><span class="n">nCores</span><span class="p">)</span>
+                                          <span class="n">nMinObjRestarts</span><span class="o">=</span><span class="n">nMinObjRestarts</span><span class="p">)</span>
 
             <span class="c1"># Compute lnLikelihood at thetaT?</span>
             <span class="k">if</span> <span class="n">computeLnLike</span><span class="p">:</span>
@@ -833,7 +737,6 @@
                                                  <span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="n">gpMethod</span><span class="p">,</span>
                                                  <span class="n">options</span><span class="o">=</span><span class="n">gpOptions</span><span class="p">,</span> <span class="n">p0</span><span class="o">=</span><span class="n">gpP0</span><span class="p">,</span>
                                                  <span class="n">nGPRestarts</span><span class="o">=</span><span class="n">nGPRestarts</span><span class="p">,</span>
-                                                 <span class="n">nCores</span><span class="o">=</span><span class="n">nCores</span><span class="p">,</span>
                                                  <span class="n">gpCV</span><span class="o">=</span><span class="n">gpCV</span><span class="p">)</span>
             <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
                 <span class="c1"># Output errant theta in physical units</span>
@@ -970,8 +873,6 @@
 
         <span class="c1"># Estimate burn-in?</span>
         <span class="k">if</span> <span class="n">estBurnin</span><span class="p">:</span>
-            <span class="c1"># Note we set tol=0 so it always provides an estimate, even if</span>
-            <span class="c1"># the estimate isn&#39;t good, in which case run longer chains!</span>
             <span class="n">iburn</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="mf">2.0</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">tau</span><span class="p">))</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">iburn</span> <span class="o">=</span> <span class="mi">0</span>
@@ -1025,7 +926,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../',
-            VERSION:'0.2.post1',
+            VERSION:'0.21',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,

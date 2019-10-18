@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>BAPE Algorithm Example &mdash; approxposterior 0.2.post1 documentation</title>
+  <title>BAPE Algorithm Example &mdash; approxposterior 0.21 documentation</title>
   
 
   
@@ -37,7 +37,7 @@
         <link rel="index" title="Index"
               href="../genindex.html"/>
         <link rel="search" title="Search" href="../search.html"/>
-    <link rel="top" title="approxposterior 0.2.post1 documentation" href="../index.html"/>
+    <link rel="top" title="approxposterior 0.21 documentation" href="../index.html"/>
         <link rel="up" title="Tutorial" href="../tutorial.html"/>
         <link rel="next" title="Fitting a Line" href="fittingALine.html"/>
         <link rel="prev" title="Tutorial" href="../tutorial.html"/> 
@@ -69,7 +69,7 @@
             
             
               <div class="version">
-                0.2
+                0.21
               </div>
             
           
@@ -427,10 +427,7 @@ files that hold the MCMC chains!</p>
 <span></span><span class="c1"># Define algorithm parameters</span>
 <span class="n">m0</span> <span class="o">=</span> <span class="mi">50</span>                           <span class="c1"># Initial size of training set</span>
 <span class="n">m</span> <span class="o">=</span> <span class="mi">20</span>                            <span class="c1"># Number of new points to find each iteration</span>
-<span class="n">nmax</span> <span class="o">=</span> <span class="mi">10</span>                         <span class="c1"># Maximum number of iterations</span>
-<span class="n">Dmax</span> <span class="o">=</span> <span class="mf">0.1</span>                        <span class="c1"># KL-Divergence convergence limit</span>
-<span class="n">kmax</span> <span class="o">=</span> <span class="mi">5</span>                          <span class="c1"># Number of iterations for Dmax convergence to kick in</span>
-<span class="n">nKLSamples</span> <span class="o">=</span> <span class="mi">100000</span>               <span class="c1"># Number of samples from posterior to use to calculate KL-Divergence</span>
+<span class="n">nmax</span> <span class="o">=</span> <span class="mi">3</span>                          <span class="c1"># Maximum number of iterations</span>
 <span class="n">bounds</span> <span class="o">=</span> <span class="p">((</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">),</span> <span class="p">(</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">))</span>         <span class="c1"># Prior bounds</span>
 <span class="n">algorithm</span> <span class="o">=</span> <span class="s2">&quot;BAPE&quot;</span>                <span class="c1"># Use the Kandasamy et al. (2015) formalism</span>
 
@@ -457,7 +454,7 @@ files that hold the MCMC chains!</p>
     <span class="n">y</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span> <span class="o">=</span> <span class="n">lh</span><span class="o">.</span><span class="n">rosenbrockLnlike</span><span class="p">(</span><span class="n">theta</span><span class="p">[</span><span class="n">ii</span><span class="p">])</span> <span class="o">+</span> <span class="n">lh</span><span class="o">.</span><span class="n">rosenbrockLnprior</span><span class="p">(</span><span class="n">theta</span><span class="p">[</span><span class="n">ii</span><span class="p">])</span>
 
 <span class="c1">### Initialize GP ###</span>
-<span class="n">gp</span> <span class="o">=</span> <span class="n">gpu</span><span class="o">.</span><span class="n">defaultGP</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+<span class="n">gp</span> <span class="o">=</span> <span class="n">gpu</span><span class="o">.</span><span class="n">defaultGP</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">white_noise</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -502,9 +499,8 @@ the MCMC chain information.</p>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
 <span></span><span class="c1"># Run!</span>
-<span class="n">ap</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">m</span><span class="o">=</span><span class="n">m</span><span class="p">,</span> <span class="n">nmax</span><span class="o">=</span><span class="n">nmax</span><span class="p">,</span> <span class="n">Dmax</span><span class="o">=</span><span class="n">Dmax</span><span class="p">,</span> <span class="n">kmax</span><span class="o">=</span><span class="n">kmax</span><span class="p">,</span> <span class="n">estBurnin</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
-       <span class="n">nKLSamples</span><span class="o">=</span><span class="n">nKLSamples</span><span class="p">,</span> <span class="n">mcmcKwargs</span><span class="o">=</span><span class="n">mcmcKwargs</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
-       <span class="n">samplerKwargs</span><span class="o">=</span><span class="n">samplerKwargs</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+<span class="n">ap</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">m</span><span class="o">=</span><span class="n">m</span><span class="p">,</span> <span class="n">nmax</span><span class="o">=</span><span class="n">nmax</span><span class="p">,</span> <span class="n">estBurnin</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">mcmcKwargs</span><span class="o">=</span><span class="n">mcmcKwargs</span><span class="p">,</span>
+       <span class="n">cache</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">samplerKwargs</span><span class="o">=</span><span class="n">samplerKwargs</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -538,7 +534,7 @@ algorithm evaluated the forward model to improve its predictive ability.</p>
 </pre></div>
 </div>
 <div class="output_area highlight-none notranslate"><div class="highlight"><pre>
-<span></span>&lt;matplotlib.collections.PathCollection at 0x10e3df5c0&gt;
+<span></span>&lt;matplotlib.collections.PathCollection at 0x11de28358&gt;
 </pre></div>
 </div>
 </div>
@@ -552,76 +548,6 @@ algorithm evaluated the forward model to improve its predictive ability.</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre>
 <span></span>In [7]:
-</pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="c1"># 2nd iteration</span>
-<span class="n">reader</span> <span class="o">=</span> <span class="n">emcee</span><span class="o">.</span><span class="n">backends</span><span class="o">.</span><span class="n">HDFBackend</span><span class="p">(</span><span class="n">ap</span><span class="o">.</span><span class="n">backends</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
-<span class="n">samples</span> <span class="o">=</span> <span class="n">reader</span><span class="o">.</span><span class="n">get_chain</span><span class="p">(</span><span class="n">discard</span><span class="o">=</span><span class="n">ap</span><span class="o">.</span><span class="n">iburns</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">flat</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">thin</span><span class="o">=</span><span class="n">ap</span><span class="o">.</span><span class="n">ithins</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
-
-<span class="n">fig</span> <span class="o">=</span> <span class="n">corner</span><span class="o">.</span><span class="n">corner</span><span class="p">(</span><span class="n">samples</span><span class="p">,</span> <span class="n">quantiles</span><span class="o">=</span><span class="p">[</span><span class="mf">0.16</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.84</span><span class="p">],</span> <span class="n">show_titles</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
-                    <span class="n">scale_hist</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">plot_contours</span><span class="o">=</span><span class="bp">True</span><span class="p">);</span>
-
-<span class="c1"># Plot where forward model was evaluated</span>
-<span class="n">fig</span><span class="o">.</span><span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">ap</span><span class="o">.</span><span class="n">theta</span><span class="p">[:(</span><span class="n">m0</span><span class="o">+</span><span class="n">m</span><span class="o">*</span><span class="mi">2</span><span class="p">),</span><span class="mi">0</span><span class="p">],</span> <span class="n">ap</span><span class="o">.</span><span class="n">theta</span><span class="p">[:(</span><span class="n">m0</span><span class="o">+</span><span class="n">m</span><span class="o">*</span><span class="mi">2</span><span class="p">),</span><span class="mi">1</span><span class="p">],</span> <span class="n">s</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;red&quot;</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="nboutput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>Out[7]:
-</pre></div>
-</div>
-<div class="output_area highlight-none notranslate"><div class="highlight"><pre>
-<span></span>&lt;matplotlib.collections.PathCollection at 0x11af194e0&gt;
-</pre></div>
-</div>
-</div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<img alt="../_images/notebooks_example_13_1.png" src="../_images/notebooks_example_13_1.png" />
-</div>
-</div>
-<div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>In [8]:
-</pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="c1"># 4th iteration</span>
-<span class="n">reader</span> <span class="o">=</span> <span class="n">emcee</span><span class="o">.</span><span class="n">backends</span><span class="o">.</span><span class="n">HDFBackend</span><span class="p">(</span><span class="n">ap</span><span class="o">.</span><span class="n">backends</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span>
-<span class="n">samples</span> <span class="o">=</span> <span class="n">reader</span><span class="o">.</span><span class="n">get_chain</span><span class="p">(</span><span class="n">discard</span><span class="o">=</span><span class="n">ap</span><span class="o">.</span><span class="n">iburns</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="n">flat</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">thin</span><span class="o">=</span><span class="n">ap</span><span class="o">.</span><span class="n">ithins</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span>
-
-<span class="n">fig</span> <span class="o">=</span> <span class="n">corner</span><span class="o">.</span><span class="n">corner</span><span class="p">(</span><span class="n">samples</span><span class="p">,</span> <span class="n">quantiles</span><span class="o">=</span><span class="p">[</span><span class="mf">0.16</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.84</span><span class="p">],</span> <span class="n">show_titles</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
-                    <span class="n">scale_hist</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">plot_contours</span><span class="o">=</span><span class="bp">True</span><span class="p">);</span>
-
-<span class="c1"># Plot where forward model was evaluated</span>
-<span class="n">fig</span><span class="o">.</span><span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">ap</span><span class="o">.</span><span class="n">theta</span><span class="p">[:(</span><span class="n">m0</span><span class="o">+</span><span class="n">m</span><span class="o">*</span><span class="mi">3</span><span class="p">),</span><span class="mi">0</span><span class="p">],</span> <span class="n">ap</span><span class="o">.</span><span class="n">theta</span><span class="p">[:(</span><span class="n">m0</span><span class="o">+</span><span class="n">m</span><span class="o">*</span><span class="mi">3</span><span class="p">),</span><span class="mi">1</span><span class="p">],</span> <span class="n">s</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;red&quot;</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="nboutput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>Out[8]:
-</pre></div>
-</div>
-<div class="output_area highlight-none notranslate"><div class="highlight"><pre>
-<span></span>&lt;matplotlib.collections.PathCollection at 0x11db64390&gt;
-</pre></div>
-</div>
-</div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<img alt="../_images/notebooks_example_14_1.png" src="../_images/notebooks_example_14_1.png" />
-</div>
-</div>
-<div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>In [9]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -639,11 +565,11 @@ algorithm evaluated the forward model to improve its predictive ability.</p>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>Out[9]:
+<span></span>Out[7]:
 </pre></div>
 </div>
 <div class="output_area highlight-none notranslate"><div class="highlight"><pre>
-<span></span>&lt;matplotlib.collections.PathCollection at 0x11e800a90&gt;
+<span></span>&lt;matplotlib.collections.PathCollection at 0x11df05c50&gt;
 </pre></div>
 </div>
 </div>
@@ -651,7 +577,7 @@ algorithm evaluated the forward model to improve its predictive ability.</p>
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_example_15_1.png" src="../_images/notebooks_example_15_1.png" />
+<img alt="../_images/notebooks_example_13_1.png" src="../_images/notebooks_example_13_1.png" />
 </div>
 </div>
 <p>The posteriors look great and BAPE only evaluated the forward model in
@@ -702,7 +628,7 @@ high likelihood regions of parameter space!</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../',
-            VERSION:'0.2.post1',
+            VERSION:'0.21',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,

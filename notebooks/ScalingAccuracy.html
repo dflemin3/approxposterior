@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Scaling, Accuracy Example &mdash; approxposterior 0.2.post1 documentation</title>
+  <title>Scaling, Accuracy Example &mdash; approxposterior 0.21 documentation</title>
   
 
   
@@ -37,7 +37,7 @@
         <link rel="index" title="Index"
               href="../genindex.html"/>
         <link rel="search" title="Search" href="../search.html"/>
-    <link rel="top" title="approxposterior 0.2.post1 documentation" href="../index.html"/>
+    <link rel="top" title="approxposterior 0.21 documentation" href="../index.html"/>
         <link rel="up" title="Tutorial" href="../tutorial.html"/>
         <link rel="next" title="KL Divergence Estimation" href="KLDivergenceEstimation.html"/>
         <link rel="prev" title="Fitting a Line" href="fittingALine.html"/> 
@@ -69,7 +69,7 @@
             
             
               <div class="version">
-                0.2
+                0.21
               </div>
             
           
@@ -431,10 +431,7 @@ warranted.</p>
 <span></span><span class="c1"># Define algorithm parameters</span>
 <span class="n">m0</span> <span class="o">=</span> <span class="mi">50</span>                           <span class="c1"># Initial size of training set</span>
 <span class="n">m</span> <span class="o">=</span> <span class="mi">20</span>                            <span class="c1"># Number of new points to find each iteration</span>
-<span class="n">nmax</span> <span class="o">=</span> <span class="mi">5</span>                          <span class="c1"># Maximum number of iterations</span>
-<span class="n">Dmax</span> <span class="o">=</span> <span class="mf">0.1</span>                        <span class="c1"># KL-Divergence convergence limit</span>
-<span class="n">kmax</span> <span class="o">=</span> <span class="mi">5</span>                          <span class="c1"># Number of iterations for Dmax convergence to kick in</span>
-<span class="n">nKLSamples</span> <span class="o">=</span> <span class="mi">100000</span>               <span class="c1"># Number of samples from posterior to use to calculate KL-Divergence</span>
+<span class="n">nmax</span> <span class="o">=</span> <span class="mi">3</span>                          <span class="c1"># Maximum number of iterations</span>
 <span class="n">bounds</span> <span class="o">=</span> <span class="p">((</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">),</span> <span class="p">(</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">))</span>         <span class="c1"># Prior bounds</span>
 <span class="n">algorithm</span> <span class="o">=</span> <span class="s2">&quot;BAPE&quot;</span>                <span class="c1"># Use the Kandasamy et al. (2015) formalism</span>
 
@@ -459,7 +456,7 @@ warranted.</p>
     <span class="n">y</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span> <span class="o">=</span> <span class="n">lh</span><span class="o">.</span><span class="n">rosenbrockLnlike</span><span class="p">(</span><span class="n">theta</span><span class="p">[</span><span class="n">ii</span><span class="p">])</span> <span class="o">+</span> <span class="n">lh</span><span class="o">.</span><span class="n">rosenbrockLnprior</span><span class="p">(</span><span class="n">theta</span><span class="p">[</span><span class="n">ii</span><span class="p">])</span>
 
 <span class="c1">### Initialize GP ###</span>
-<span class="n">gp</span> <span class="o">=</span> <span class="n">gpu</span><span class="o">.</span><span class="n">defaultGP</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+<span class="n">gp</span> <span class="o">=</span> <span class="n">gpu</span><span class="o">.</span><span class="n">defaultGP</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">white_noise</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -498,8 +495,7 @@ previous joint posterior distributions.</p>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
 <span></span><span class="c1"># Run!</span>
-<span class="n">ap</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">m</span><span class="o">=</span><span class="n">m</span><span class="p">,</span> <span class="n">nmax</span><span class="o">=</span><span class="n">nmax</span><span class="p">,</span> <span class="n">Dmax</span><span class="o">=</span><span class="n">Dmax</span><span class="p">,</span> <span class="n">kmax</span><span class="o">=</span><span class="n">kmax</span><span class="p">,</span> <span class="n">estBurnin</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
-       <span class="n">nKLSamples</span><span class="o">=</span><span class="n">nKLSamples</span><span class="p">,</span> <span class="n">mcmcKwargs</span><span class="o">=</span><span class="n">mcmcKwargs</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+<span class="n">ap</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">m</span><span class="o">=</span><span class="n">m</span><span class="p">,</span> <span class="n">nmax</span><span class="o">=</span><span class="n">nmax</span><span class="p">,</span> <span class="n">estBurnin</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">mcmcKwargs</span><span class="o">=</span><span class="n">mcmcKwargs</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
        <span class="n">samplerKwargs</span><span class="o">=</span><span class="n">samplerKwargs</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">timing</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -549,7 +545,7 @@ model evaluation times.</p>
     <span class="k">for</span> <span class="n">jj</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">ap</span><span class="o">.</span><span class="n">trainingTime</span><span class="p">)):</span>
         <span class="c1"># Add time of running forward model to get m new points and training GP, running mcmc,</span>
         <span class="c1"># change in KL divergence, and GMM estimation times</span>
-        <span class="n">gpTimes</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span> <span class="o">+=</span> <span class="n">m</span><span class="o">*</span><span class="n">ns</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span> <span class="o">+</span> <span class="n">ap</span><span class="o">.</span><span class="n">trainingTime</span><span class="p">[</span><span class="n">jj</span><span class="p">]</span> <span class="o">+</span> <span class="n">ap</span><span class="o">.</span><span class="n">mcmcTime</span><span class="p">[</span><span class="n">jj</span><span class="p">]</span> <span class="o">+</span> <span class="n">ap</span><span class="o">.</span><span class="n">klTime</span><span class="p">[</span><span class="n">jj</span><span class="p">]</span> <span class="o">+</span> <span class="n">ap</span><span class="o">.</span><span class="n">gmmTime</span><span class="p">[</span><span class="n">jj</span><span class="p">]</span>
+        <span class="n">gpTimes</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span> <span class="o">+=</span> <span class="n">m</span><span class="o">*</span><span class="n">ns</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span> <span class="o">+</span> <span class="n">ap</span><span class="o">.</span><span class="n">trainingTime</span><span class="p">[</span><span class="n">jj</span><span class="p">]</span> <span class="o">+</span> <span class="n">ap</span><span class="o">.</span><span class="n">mcmcTime</span><span class="p">[</span><span class="n">jj</span><span class="p">]</span>
 </pre></div>
 </div>
 </div>
@@ -601,7 +597,7 @@ axis).</p>
 </pre></div>
 </div>
 <div class="output_area highlight-none notranslate"><div class="highlight"><pre>
-<span></span>&lt;matplotlib.legend.Legend at 0x1114b27f0&gt;
+<span></span>&lt;matplotlib.legend.Legend at 0x10f3e59e8&gt;
 </pre></div>
 </div>
 </div>
@@ -731,11 +727,11 @@ the approximate method is.</p>
 <div class="highlight"><pre>
 x0
 True     [-2.4136162  -2.32461971 -2.27654002]
-Approx   [-2.41218665 -2.33635282 -2.28346417]
+Approx   [-2.4129252  -2.32399244 -2.28301443]
 
 x1
 True     [-1.70102134 -1.40117241 -1.25195281]
-Approx   [-1.69665851 -1.38851357 -1.24138287]
+Approx   [-1.70472383 -1.4223405  -1.27866285]
 </pre></div></div>
 </div>
 <p>Looks good, but let’s visualize this instead…</p>
@@ -774,7 +770,7 @@ Approx   [-1.69665851 -1.38851357 -1.24138287]
 </pre></div>
 </div>
 <div class="output_area highlight-none notranslate"><div class="highlight"><pre>
-<span></span>&lt;matplotlib.legend.Legend at 0x1123f5b00&gt;
+<span></span>&lt;matplotlib.legend.Legend at 0x10f3a3be0&gt;
 </pre></div>
 </div>
 </div>
@@ -903,7 +899,7 @@ Approx   [-1.69665851 -1.38851357 -1.24138287]
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../',
-            VERSION:'0.2.post1',
+            VERSION:'0.21',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,

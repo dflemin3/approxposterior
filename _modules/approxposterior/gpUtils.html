@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>approxposterior.gpUtils &mdash; approxposterior 0.2.post1 documentation</title>
+  <title>approxposterior.gpUtils &mdash; approxposterior 0.21 documentation</title>
   
 
   
@@ -37,7 +37,7 @@
         <link rel="index" title="Index"
               href="../../genindex.html"/>
         <link rel="search" title="Search" href="../../search.html"/>
-    <link rel="top" title="approxposterior 0.2.post1 documentation" href="../../index.html"/>
+    <link rel="top" title="approxposterior 0.21 documentation" href="../../index.html"/>
         <link rel="up" title="Module code" href="../index.html"/> 
 
   
@@ -67,7 +67,7 @@
             
             
               <div class="version">
-                0.2
+                0.21
               </div>
             
           
@@ -176,10 +176,8 @@
 <span class="c1"># Tell module what it&#39;s allowed to import</span>
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;optimizeGP&quot;</span><span class="p">]</span>
 
-<span class="kn">from</span> <span class="nn">.</span> <span class="k">import</span> <span class="n">pool</span>
 <span class="kn">from</span> <span class="nn">.</span> <span class="k">import</span> <span class="n">utility</span> <span class="k">as</span> <span class="n">util</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">multiprocessing</span>
 <span class="kn">import</span> <span class="nn">george</span>
 <span class="kn">from</span> <span class="nn">scipy.optimize</span> <span class="k">import</span> <span class="n">minimize</span>
 <span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="k">import</span> <span class="n">KFold</span>
@@ -236,7 +234,7 @@
 <span class="c1"># end function</span>
 
 
-<span class="k">def</span> <span class="nf">defaultGP</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">white_noise</span><span class="o">=-</span><span class="mf">27.407877564614338</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">defaultGP</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">white_noise</span><span class="o">=-</span><span class="mi">1</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Basic utility function that initializes a simple GP that works well in many</span>
 <span class="sd">    applications, but is not guaranteed to work in general.</span>
@@ -248,10 +246,16 @@
 <span class="sd">    y : array</span>
 <span class="sd">        Data to condition GP on, e.g. the lnlike * lnprior at each design point,</span>
 <span class="sd">        theta.</span>
+<span class="sd">    order : int (optional)</span>
+<span class="sd">        Order of PolynomialKernel to add to ExpSquaredKernel. Defaults to None,</span>
+<span class="sd">        that is, no PolynomialKernel is added and the GP only uses the</span>
+<span class="sd">        ExpSquaredKernel</span>
 <span class="sd">    white_noise : float (optional)</span>
 <span class="sd">        From george docs: &quot;A description of the logarithm of the white noise</span>
 <span class="sd">        variance added to the diagonal of the covariance matrix&quot;. Defaults to</span>
-<span class="sd">        log(TINY) = -27.407877564614338</span>
+<span class="sd">        log(white_noise) = -1. Note: if order is not None, you might need to set</span>
+<span class="sd">        the white_noise to a large value for the computation to be numerically</span>
+<span class="sd">        stable</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -259,14 +263,26 @@
 <span class="sd">        Gaussian process with initialized kernel and factorized covariance matrix.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
+    <span class="c1"># Only handles linear regression (order=1) kernels so far</span>
+    <span class="k">if</span> <span class="n">order</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">order</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;valid order options: None, 1&quot;</span><span class="p">)</span>
+
     <span class="c1"># Guess initial metric, or scale length of the covariances in loglikelihood space</span>
     <span class="c1"># using suggestion from Kandasamy et al. (2015)</span>
     <span class="n">initialMetric</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">5.0</span><span class="o">*</span><span class="nb">len</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span><span class="o">**</span><span class="p">(</span><span class="o">-</span><span class="mf">1.0</span><span class="o">/</span><span class="n">theta</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">theta</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])])</span>
 
     <span class="c1"># Create kernel: We&#39;ll model coveriances in loglikelihood space using a</span>
     <span class="c1"># Squared Expoential Kernel with wide bounds on the metric just in case</span>
-    <span class="n">kernel</span> <span class="o">=</span> <span class="n">george</span><span class="o">.</span><span class="n">kernels</span><span class="o">.</span><span class="n">ExpSquaredKernel</span><span class="p">(</span><span class="n">initialMetric</span><span class="p">,</span> <span class="n">ndim</span><span class="o">=</span><span class="n">theta</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
-    <span class="c1"># amp: np.log(np.var(y)) * kernel</span>
+    <span class="n">kernel</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="n">y</span><span class="p">)</span> <span class="o">*</span> <span class="n">george</span><span class="o">.</span><span class="n">kernels</span><span class="o">.</span><span class="n">ExpSquaredKernel</span><span class="p">(</span><span class="n">initialMetric</span><span class="p">,</span>
+                                                         <span class="n">bounds</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                                                         <span class="n">ndim</span><span class="o">=</span><span class="n">theta</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+
+    <span class="c1"># Add regression kernel?</span>
+    <span class="k">if</span> <span class="n">order</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">kernel</span> <span class="o">=</span> <span class="n">kernel</span> <span class="o">+</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="n">y</span><span class="p">)</span><span class="o">/</span><span class="mf">10.0</span><span class="p">)</span> <span class="o">*</span> <span class="n">george</span><span class="o">.</span><span class="n">kernels</span><span class="o">.</span><span class="n">PolynomialKernel</span><span class="p">(</span><span class="n">log_sigma2</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="n">y</span><span class="p">)</span><span class="o">/</span><span class="mf">10.0</span><span class="p">),</span>
+                                                                             <span class="n">order</span><span class="o">=</span><span class="n">order</span><span class="p">,</span>
+                                                                             <span class="n">bounds</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                                                                             <span class="n">ndim</span><span class="o">=</span><span class="n">theta</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
 
     <span class="c1"># Create GP and compute the kernel, aka factor the covariance matrix</span>
     <span class="n">gp</span> <span class="o">=</span> <span class="n">george</span><span class="o">.</span><span class="n">GP</span><span class="p">(</span><span class="n">kernel</span><span class="o">=</span><span class="n">kernel</span><span class="p">,</span> <span class="n">fit_mean</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">mean</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">y</span><span class="p">),</span>
@@ -278,7 +294,7 @@
 
 
 <div class="viewcode-block" id="optimizeGP"><a class="viewcode-back" href="../../api/gpUtils.html#approxposterior.gpUtils.optimizeGP">[docs]</a><span class="k">def</span> <span class="nf">optimizeGP</span><span class="p">(</span><span class="n">gp</span><span class="p">,</span> <span class="n">theta</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">nGPRestarts</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-               <span class="n">p0</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">nCores</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">gpCV</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+               <span class="n">p0</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">gpCV</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Optimize hyperparameters of an arbitrary george Gaussian Process kernel</span>
 <span class="sd">    by maximizing the marginalized log-likelihood.</span>
@@ -295,16 +311,13 @@
 <span class="sd">        Number of times to restart the optimization.  Defaults to 5. Increase</span>
 <span class="sd">        this number if the GP isn&#39;t optimized well.</span>
 <span class="sd">    method : str (optional)</span>
-<span class="sd">        scipy.optimize.minimize method.  Defaults to nelder-mead if None.</span>
+<span class="sd">        scipy.optimize.minimize method.  Defaults to l-bfgs-b if None.</span>
 <span class="sd">    options : dict (optional)</span>
 <span class="sd">        kwargs for the scipy.optimize.minimize function.  Defaults to None, or</span>
 <span class="sd">        an empty dictionary.</span>
 <span class="sd">    p0 : array (optional)</span>
 <span class="sd">        Initial guess for kernel hyperparameters.  If None, defaults to</span>
 <span class="sd">        ndim values randomly sampled from a uniform distribution over [-10, 10)</span>
-<span class="sd">    nCores : int (optional)</span>
-<span class="sd">        If &gt; 1, use multiprocessing to distribute optimization restarts. If</span>
-<span class="sd">        &lt; 0, use all usable cores</span>
 <span class="sd">    gpCV : int (optional)</span>
 <span class="sd">        Whether or not to use k-fold cross-validation to select kernel</span>
 <span class="sd">        hyperparameters from the nGPRestarts maximum likelihood solutions.</span>
@@ -319,54 +332,47 @@
 
     <span class="c1"># Set default parameters if None are provided</span>
     <span class="k">if</span> <span class="n">method</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">method</span> <span class="o">=</span> <span class="s2">&quot;nelder-mead&quot;</span>
+        <span class="n">method</span> <span class="o">=</span> <span class="s2">&quot;l-bfgs-b&quot;</span>
     <span class="k">if</span> <span class="n">options</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">options</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;adaptive&quot;</span> <span class="p">:</span> <span class="kc">True</span><span class="p">}</span>
+        <span class="n">options</span> <span class="o">=</span> <span class="p">{}</span>
 
-    <span class="c1"># Run the optimization routine n_restarts times, maybe using multiprocessing</span>
+    <span class="c1"># Run the optimization routine n_restarts times</span>
     <span class="n">res</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">mll</span> <span class="o">=</span> <span class="p">[]</span>
 
-    <span class="c1"># Figure out how many cores to use with InterruptiblePool</span>
-    <span class="k">if</span> <span class="n">nCores</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
-        <span class="n">poolType</span> <span class="o">=</span> <span class="s2">&quot;MultiPool&quot;</span>
-    <span class="c1"># Use all usable cores</span>
-    <span class="k">elif</span> <span class="n">nCores</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="n">nCores</span> <span class="o">=</span> <span class="n">multiprocessing</span><span class="o">.</span><span class="n">cpu_count</span><span class="p">()</span> <span class="ow">or</span> <span class="mi">1</span>
-        <span class="k">if</span> <span class="n">nCores</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="n">poolType</span> <span class="o">=</span> <span class="s2">&quot;MultiPool&quot;</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">poolType</span> <span class="o">=</span> <span class="s2">&quot;SerialPool&quot;</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">poolType</span> <span class="o">=</span> <span class="s2">&quot;SerialPool&quot;</span>
-
-    <span class="c1"># Use multiprocessing to distribution optimization calls</span>
-    <span class="k">with</span> <span class="n">pool</span><span class="o">.</span><span class="n">Pool</span><span class="p">(</span><span class="n">pool</span><span class="o">=</span><span class="n">poolType</span><span class="p">,</span> <span class="n">processes</span><span class="o">=</span><span class="n">nCores</span><span class="p">)</span> <span class="k">as</span> <span class="n">optPool</span><span class="p">:</span>
-
+    <span class="c1"># Optimize GP hyperparameters by maximizing marginal log_likelihood</span>
+    <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nGPRestarts</span><span class="p">):</span>
         <span class="c1"># Inputs for each process</span>
         <span class="k">if</span> <span class="n">p0</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">iterables</span> <span class="o">=</span> <span class="p">[(</span><span class="n">_nll</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">(([</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">y</span><span class="p">)],</span>
-                        <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">low</span><span class="o">=-</span><span class="mi">10</span><span class="p">,</span> <span class="n">high</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">theta</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])])))</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nGPRestarts</span><span class="p">)]</span>
+            <span class="c1"># Pick random guesses for kernel hyperparameters from a reasonable range</span>
+            <span class="n">meanGuess</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+            <span class="n">k1ConstGuess</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="n">y</span><span class="p">)),</span> <span class="n">scale</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="n">y</span><span class="p">))))</span>
+            <span class="n">metricGuess</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">low</span><span class="o">=-</span><span class="mi">10</span><span class="p">,</span> <span class="n">high</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">theta</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])]</span>
+
+            <span class="c1"># If a linear regression kernel is included, add guesses for initial parameters</span>
+            <span class="k">if</span><span class="p">(</span><span class="s2">&quot;kernel:k2:k1:log_constant&quot;</span> <span class="ow">in</span> <span class="n">gp</span><span class="o">.</span><span class="n">get_parameter_names</span><span class="p">()):</span>
+                <span class="n">k2ConstGuess</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="n">y</span><span class="p">)</span><span class="o">/</span><span class="mf">10.0</span><span class="p">),</span> <span class="n">scale</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="n">y</span><span class="p">)</span><span class="o">/</span><span class="mf">10.0</span><span class="p">)))</span>
+                <span class="n">k2VarGuess</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="n">y</span><span class="p">)</span><span class="o">/</span><span class="mf">10.0</span><span class="p">),</span> <span class="n">scale</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="n">y</span><span class="p">)</span><span class="o">/</span><span class="mf">10.0</span><span class="p">)))</span>
+
+                <span class="c1"># Stack the guesses</span>
+                <span class="n">x0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">(([</span><span class="n">meanGuess</span><span class="p">,</span> <span class="n">k1ConstGuess</span><span class="p">],</span>
+                                 <span class="n">metricGuess</span><span class="p">,</span>
+                                <span class="p">[</span><span class="n">k2ConstGuess</span><span class="p">,</span> <span class="n">k2VarGuess</span><span class="p">]))</span>
+            <span class="c1"># Just 1 kernel: stack guesses</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">x0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">(([</span><span class="n">meanGuess</span><span class="p">,</span> <span class="n">k1ConstGuess</span><span class="p">],</span> <span class="n">metricGuess</span><span class="p">))</span>
+
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">iterables</span> <span class="o">=</span> <span class="p">[(</span><span class="n">_nll</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">p0</span><span class="p">)</span> <span class="o">+</span> <span class="mf">1.0e-3</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">p0</span><span class="p">)))</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nGPRestarts</span><span class="p">)]</span>
+            <span class="c1"># Take user-supplied guess and slightly perturb it</span>
+            <span class="n">x0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">p0</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">p0</span><span class="p">)</span><span class="o">*</span><span class="mf">1.0e-3</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">p0</span><span class="p">))</span>
 
-        <span class="c1"># keyword arguments for minimizer</span>
-        <span class="n">mKwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;jac&quot;</span> <span class="p">:</span> <span class="n">_grad_nll</span><span class="p">,</span>
-                   <span class="s2">&quot;args&quot;</span> <span class="p">:</span> <span class="p">(</span><span class="n">gp</span><span class="p">,</span> <span class="n">y</span><span class="p">),</span>
-                   <span class="s2">&quot;method&quot;</span> <span class="p">:</span> <span class="n">method</span><span class="p">,</span>
-                   <span class="s2">&quot;options&quot;</span> <span class="p">:</span> <span class="n">options</span><span class="p">,</span>
-                   <span class="s2">&quot;bounds&quot;</span> <span class="p">:</span> <span class="kc">None</span><span class="p">}</span>
+        <span class="c1"># Minimize GP nll, save result, evaluate marginal likelihood</span>
+        <span class="n">resii</span> <span class="o">=</span> <span class="n">minimize</span><span class="p">(</span><span class="n">_nll</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">gp</span><span class="p">,</span> <span class="n">y</span><span class="p">),</span> <span class="n">method</span><span class="o">=</span><span class="n">method</span><span class="p">,</span> <span class="n">jac</span><span class="o">=</span><span class="n">_grad_nll</span><span class="p">,</span>
+                         <span class="n">bounds</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="n">options</span><span class="p">)[</span><span class="s2">&quot;x&quot;</span><span class="p">]</span>
+        <span class="n">res</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">resii</span><span class="p">)</span>
 
-        <span class="c1"># Run the minimization on nCores, wrapping minimize function</span>
-        <span class="n">fn</span> <span class="o">=</span> <span class="n">util</span><span class="o">.</span><span class="n">functionWrapperArgsOnly</span><span class="p">(</span><span class="n">minimize</span><span class="p">,</span> <span class="o">**</span><span class="n">mKwargs</span><span class="p">)</span>
-        <span class="n">results</span> <span class="o">=</span> <span class="n">optPool</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">fn</span><span class="p">,</span> <span class="n">iterables</span><span class="p">)</span>
-
-    <span class="c1"># Extract solutions and recompute marginal log likelihood for solutions</span>
-    <span class="k">for</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">results</span><span class="p">:</span>
-        <span class="n">res</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">x</span><span class="p">)</span>
-
-        <span class="c1"># Update the kernel</span>
-        <span class="n">gp</span><span class="o">.</span><span class="n">set_parameter_vector</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">x</span><span class="p">)</span>
+        <span class="c1"># Update the kernel with solution for computing marginal loglike</span>
+        <span class="n">gp</span><span class="o">.</span><span class="n">set_parameter_vector</span><span class="p">(</span><span class="n">resii</span><span class="p">)</span>
         <span class="n">gp</span><span class="o">.</span><span class="n">recompute</span><span class="p">()</span>
 
         <span class="c1"># Compute marginal log likelihood for this set of kernel hyperparameters</span>
@@ -375,7 +381,7 @@
     <span class="c1"># Use CV to select best answer?</span>
     <span class="k">if</span> <span class="n">gpCV</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">gpCV</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
-            <span class="n">mlls</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">gpCV</span><span class="p">,</span> <span class="n">nGPRestarts</span><span class="p">))</span>
+            <span class="n">mses</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">gpCV</span><span class="p">,</span> <span class="n">nGPRestarts</span><span class="p">))</span>
 
             <span class="c1"># Use gpCV fold cross-validation</span>
             <span class="n">kfold</span> <span class="o">=</span> <span class="n">KFold</span><span class="p">(</span><span class="n">n_splits</span><span class="o">=</span><span class="n">gpCV</span><span class="p">)</span>
@@ -393,14 +399,14 @@
                     <span class="c1"># kernel hyperparameters conditioned on the training set</span>
                     <span class="n">yhat</span> <span class="o">=</span> <span class="n">gp</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">y</span><span class="p">[</span><span class="n">trainInds</span><span class="p">],</span> <span class="n">theta</span><span class="p">[</span><span class="n">testInds</span><span class="p">],</span>
                                       <span class="n">return_cov</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">return_var</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-                    <span class="n">mlls</span><span class="p">[</span><span class="n">ii</span><span class="p">,</span><span class="n">jj</span><span class="p">]</span> <span class="o">=</span> <span class="n">mean_squared_error</span><span class="p">(</span><span class="n">y</span><span class="p">[</span><span class="n">testInds</span><span class="p">],</span> <span class="n">yhat</span><span class="p">)</span>
+                    <span class="n">mses</span><span class="p">[</span><span class="n">ii</span><span class="p">,</span><span class="n">jj</span><span class="p">]</span> <span class="o">=</span> <span class="n">mean_squared_error</span><span class="p">(</span><span class="n">y</span><span class="p">[</span><span class="n">testInds</span><span class="p">],</span> <span class="n">yhat</span><span class="p">)</span>
 
                 <span class="c1"># End loop over each MLL solution for this cv fold</span>
                 <span class="n">ii</span> <span class="o">=</span> <span class="n">ii</span> <span class="o">+</span> <span class="mi">1</span>
 
             <span class="c1"># Best answer is solution with minimum mean squared error</span>
             <span class="c1"># averaging over the folds</span>
-            <span class="n">ind</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">mlls</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span>
+            <span class="n">ind</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">mses</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;gpCV must be an integer. gpCV:&quot;</span><span class="p">,</span> <span class="n">gpCV</span><span class="p">)</span>
 
@@ -453,7 +459,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../',
-            VERSION:'0.2.post1',
+            VERSION:'0.21',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
