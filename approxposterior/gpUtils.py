@@ -97,6 +97,10 @@ def defaultGP(theta, y, order=None, white_noise=-1):
         Gaussian process with initialized kernel and factorized covariance matrix.
     """
 
+    # Only handles linear regression (order=1) kernels so far
+    if order is not None and order > 1:
+        raise NotImplementedError("valid order options: None, 1")
+
     # Guess initial metric, or scale length of the covariances in loglikelihood space
     # using suggestion from Kandasamy et al. (2015)
     initialMetric = np.array([5.0*len(theta)**(-1.0/theta.shape[-1]) for _ in range(theta.shape[-1])])
