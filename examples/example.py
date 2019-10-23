@@ -33,7 +33,7 @@ for ii in range(len(theta)):
     y[ii] = lh.rosenbrockLnlike(theta[ii]) + lh.rosenbrockLnprior(theta[ii])
 
 # Create the the default GP which uses an ExpSquaredKernel
-gp = gpUtils.defaultGP(theta, y, order=1, white_noise=-1)
+gp = gpUtils.defaultGP(theta, y, order=None, white_noise=0)
 
 # Initialize object using the Wang & Li (2017) Rosenbrock function example
 ap = approx.ApproxPosterior(theta=theta,
@@ -59,4 +59,8 @@ samples = ap.sampler.get_chain(discard=ap.iburns[-1], flat=True, thin=ap.ithins[
 fig = corner.corner(samples, quantiles=[0.16, 0.5, 0.84], show_titles=True,
                     scale_hist=True, plot_contours=True)
 
+# Plot where forward model was evaluated - uncomment to plot!
+#fig.axes[2].scatter(ap.theta[:,0], ap.theta[:,1], s=10, color="red", zorder=20)
+
+# Save figure
 fig.savefig("finalPosterior.png", bbox_inches="tight")

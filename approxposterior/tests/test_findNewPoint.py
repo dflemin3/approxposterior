@@ -25,7 +25,7 @@ def test_find():
     algorithm = "bape"
 
     # For reproducibility
-    seed = 91
+    seed = 90
     np.random.seed(seed)
 
     # Randomly sample initial conditions from the prior

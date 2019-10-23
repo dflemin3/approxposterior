@@ -68,7 +68,7 @@ def _grad_nll(p, gp, y):
 # end function
 
 
-def defaultGP(theta, y, order=None, white_noise=-1):
+def defaultGP(theta, y, order=None, white_noise=0):
     """
     Basic utility function that initializes a simple GP that works well in many
     applications, but is not guaranteed to work in general.
@@ -87,7 +87,7 @@ def defaultGP(theta, y, order=None, white_noise=-1):
     white_noise : float (optional)
         From george docs: "A description of the logarithm of the white noise
         variance added to the diagonal of the covariance matrix". Defaults to
-        log(white_noise) = -1. Note: if order is not None, you might need to set
+        log(white_noise) = 0. Note: if order is not None, you might need to set
         the white_noise to a large value for the computation to be numerically
         stable
 
@@ -98,8 +98,8 @@ def defaultGP(theta, y, order=None, white_noise=-1):
     """
 
     # Only handles linear regression (order=1) kernels so far
-    if order is not None and order > 1:
-        raise NotImplementedError("valid order options: None, 1")
+    #if order is not None and order > 1:
+    #    raise NotImplementedError("valid order options: None, 1")
 
     # Guess initial metric, or scale length of the covariances in loglikelihood space
     # using suggestion from Kandasamy et al. (2015)
@@ -113,13 +113,13 @@ def defaultGP(theta, y, order=None, white_noise=-1):
 
     # Add regression kernel?
     if order is not None:
-        kernel = kernel + (np.var(y)/10.0) * george.kernels.PolynomialKernel(log_sigma2=np.log(np.var(y)/10.0),
-                                                                             order=order,
-                                                                             bounds=None,
-                                                                             ndim=theta.shape[-1])
+        kernel = kernel + (np.var(y)/10.0) * george.kernels.LinearKernel(log_gamma2=initialMetric[0],
+                                                                         order=order,
+                                                                         bounds=None,
+                                                                         ndim=theta.shape[-1])
 
     # Create GP and compute the kernel, aka factor the covariance matrix
-    gp = george.GP(kernel=kernel, fit_mean=True, mean=np.mean(y),
+    gp = george.GP(kernel=kernel, fit_mean=False, mean=np.mean(y),
                    white_noise=white_noise, fit_white_noise=False)
     gp.compute(theta)
 
@@ -166,9 +166,9 @@ def optimizeGP(gp, theta, y, seed=None, nGPRestarts=5, method=None, options=None
 
     # Set default parameters if None are provided
     if method is None:
-        method = "l-bfgs-b"
+        method = "nelder-mead"
     if options is None:
-        options = {}
+        options = {"adaptive": True}
 
     # Run the optimization routine n_restarts times
     res = []
@@ -179,7 +179,6 @@ def optimizeGP(gp, theta, y, seed=None, nGPRestarts=5, method=None, options=None
         # Inputs for each process
         if p0 is None:
             # Pick random guesses for kernel hyperparameters from a reasonable range
-            meanGuess = np.mean(y)
             k1ConstGuess = np.random.normal(loc=np.log(np.var(y)), scale=np.sqrt(np.log(np.var(y))))
             metricGuess = [np.random.uniform(low=-10, high=10) for _ in range(theta.shape[-1])]
 
@@ -189,12 +188,12 @@ def optimizeGP(gp, theta, y, seed=None, nGPRestarts=5, method=None, options=None
                 k2VarGuess = np.random.normal(loc=np.log(np.var(y)/10.0), scale=np.sqrt(np.log(np.var(y)/10.0)))
 
                 # Stack the guesses
-                x0 = np.hstack(([meanGuess, k1ConstGuess],
+                x0 = np.hstack(([k1ConstGuess],
                                  metricGuess,
                                 [k2ConstGuess, k2VarGuess]))
             # Just 1 kernel: stack guesses
             else:
-                x0 = np.hstack(([meanGuess, k1ConstGuess], metricGuess))
+                x0 = np.hstack(([k1ConstGuess], metricGuess))
 
         else:
             # Take user-supplied guess and slightly perturb it

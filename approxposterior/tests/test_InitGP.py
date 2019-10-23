@@ -57,7 +57,7 @@ def testInitGP():
     gp = gpUtils.defaultGP(theta, y, order=None, white_noise=-1)
 
     errMsg = "ERROR: Default initialization with incorrect parameters!"
-    true = [-1.32770573e+02, 9.24182041e+00, 1.11571776e-01, 1.11571776e-01]
+    true = [9.24182041e+00, 1.11571776e-01, 1.11571776e-01]
     assert np.allclose(true, gp.get_parameter_vector()), errMsg
 
     return None
