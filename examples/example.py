@@ -19,6 +19,9 @@ m = 20                            # Number of new points to find each iteration
 nmax = 2                          # Maximum number of iterations
 bounds = ((-5,5), (-5,5))         # Prior bounds
 algorithm = "BAPE"                # Use the Kandasamy et al. (2015) formalism
+seed = 57                         # RNG seed
+
+np.random.seed(seed)
 
 # emcee MCMC parameters
 samplerKwargs = {"nwalkers" : 20}        # emcee.EnsembleSampler parameters
@@ -33,7 +36,7 @@ for ii in range(len(theta)):
     y[ii] = lh.rosenbrockLnlike(theta[ii]) + lh.rosenbrockLnprior(theta[ii])
 
 # Create the the default GP which uses an ExpSquaredKernel
-gp = gpUtils.defaultGP(theta, y, order=None, white_noise=1)
+gp = gpUtils.defaultGP(theta, y, order=None, white_noise=0)
 
 # Initialize object using the Wang & Li (2017) Rosenbrock function example
 ap = approx.ApproxPosterior(theta=theta,

@@ -25,7 +25,7 @@ def test_run():
     nmax = 2                          # Maximum number of iterations
     bounds = ((-5,5), (-5,5))         # Prior bounds
     algorithm = "bape"                # Use the Kandasamy et al. (2015) formalism
-    seed = 42                         # For reproducibility
+    seed = 57                         # For reproducibility
     np.random.seed(seed)
 
     # emcee MCMC parameters
