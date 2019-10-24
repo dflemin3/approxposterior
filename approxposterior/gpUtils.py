@@ -166,9 +166,9 @@ def optimizeGP(gp, theta, y, seed=None, nGPRestarts=5, method=None, options=None
 
     # Set default parameters if None are provided
     if method is None:
-        method = "nelder-mead"
+        method = "l-bfgs-b"
     if options is None:
-        options = {"adaptive": True}
+        options = dict()
 
     # Run the optimization routine n_restarts times
     res = []

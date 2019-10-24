@@ -29,7 +29,7 @@ def test_run():
     np.random.seed(seed)
 
     # emcee MCMC parameters
-    mcmcKwargs = {"iterations" : int(5.0e3)} # Number of MCMC steps
+    mcmcKwargs = {"iterations" : int(2.0e4)} # Number of MCMC steps
     samplerKwargs = {"nwalkers" : 20}        # emcee.EnsembleSampler parameters
 
     # Randomly sample initial conditions from the prior
