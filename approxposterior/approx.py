@@ -562,7 +562,7 @@ class ApproxPosterior(object):
                 self.gp = george.GP(kernel=self.gp.kernel, fit_mean=False,
                                     mean=np.mean(self.y),
                                     white_noise=self.gp.white_noise,
-                                    fit_white_noise=True)
+                                    fit_white_noise=False)
                 self.gp.set_parameter_vector(currentHype)
                 self.gp.compute(self.theta)
                 # Now optimize GP given new points?
