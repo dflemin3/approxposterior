@@ -41,7 +41,7 @@ def test_run():
         y[ii] = lh.rosenbrockLnlike(theta[ii]) + lh.rosenbrockLnprior(theta[ii])
 
     # Create the the default GP which uses an ExpSquaredKernel
-    gp = gpUtils.defaultGP(theta, y, order=None, white_noise=np.log(1.0))
+    gp = gpUtils.defaultGP(theta, y, order=None, white_noise=0)
 
     # Initialize object using the Wang & Li (2017) Rosenbrock function example
     # Use default GP initialization: ExpSquaredKernel
@@ -63,8 +63,8 @@ def test_run():
     samples = ap.sampler.get_chain(discard=ap.iburns[-1], flat=True, thin=ap.ithins[-1])
     x1Med, x2Med = np.median(samples, axis=0)
 
-    diffX1 = np.fabs(0.04 - x1Med)
-    diffX2 = np.fabs(1.29 - x2Med)
+    diffX1 = np.fabs(0.0 - x1Med)
+    diffX2 = np.fabs(1.31 - x2Med)
 
     # Differences between estimated and true medians must be close-ish, but not
     # perfect because we've using a small number of samples to make this test
