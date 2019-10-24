@@ -25,11 +25,12 @@ def test_find():
     algorithm = "bape"
 
     # For reproducibility
-    seed = 90
+    seed = 91
     np.random.seed(seed)
 
     # Randomly sample initial conditions from the prior
-    theta = np.array(lh.rosenbrockSample(m0))
+    # Note: adding a corner case because approxposterior loves corners
+    theta = np.array(list(lh.rosenbrockSample(m0)) + [[-5, 5]])
 
     # Evaluate forward model log likelihood + lnprior for each theta
     y = np.zeros(len(theta))
@@ -56,8 +57,7 @@ def test_find():
                               seed=seed)
 
     err_msg = "findNextPoint selected incorrect thetaT."
-    print(thetaT)
-    assert(np.allclose(thetaT, [-3.92618614, 1.1865385], rtol=1.0e-3)), err_msg
+    assert(np.allclose(thetaT, [3.41879708, 3.30728371], rtol=1.0e-3)), err_msg
 # end function
 
 if __name__ == "__main__":
