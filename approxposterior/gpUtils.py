@@ -200,7 +200,7 @@ def optimizeGP(gp, theta, y, seed=None, nGPRestarts=5, method=None,
 
         # Minimize GP nll, save result, evaluate marginal likelihood
         resii = minimize(_nll, x0, args=(gp, y), method=method, jac=_grad_nll,
-                         bounds=gp.kernel.bounds, options=options)["x"]
+                         bounds=None, options=options)["x"]
         res.append(resii)
 
         # Update the kernel with solution for computing marginal loglike
