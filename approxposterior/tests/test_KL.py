@@ -27,7 +27,7 @@ def testKLApproximation():
     """
 
     # Set RNG Seed
-    np.random.seed(42)
+    np.random.seed(57)
 
     num = 1000
     x = np.linspace(-5, 5, num)

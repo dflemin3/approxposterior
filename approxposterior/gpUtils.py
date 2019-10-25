@@ -97,10 +97,6 @@ def defaultGP(theta, y, order=None, white_noise=-10):
         Gaussian process with initialized kernel and factorized covariance matrix.
     """
 
-    # Only handles linear regression (order=1) kernels so far
-    #if order is not None and order > 1:
-    #    raise NotImplementedError("valid order options: None, 1")
-
     # Guess initial metric, or scale length of the covariances in loglikelihood space
     # using suggestion from Kandasamy et al. (2015)
     initialMetric = np.array([5.0*len(theta)**(-1.0/theta.shape[-1]) for _ in range(theta.shape[-1])])
@@ -167,9 +163,9 @@ def optimizeGP(gp, theta, y, seed=None, nGPRestarts=5, method=None, options=None
 
     # Set default parameters if None are provided
     if method is None:
-        method = "nelder-mead"
+        method = "l-bfgs-b"
     if options is None:
-        options = {"adaptive" : True}
+        options = {}
 
     # Run the optimization routine n_restarts times
     res = []
@@ -186,12 +182,12 @@ def optimizeGP(gp, theta, y, seed=None, nGPRestarts=5, method=None, options=None
             # If a linear regression kernel is included, add guesses for initial parameters
             if("kernel:k2:k1:log_constant" in gp.get_parameter_names()):
                 k2ConstGuess = np.random.normal(loc=np.log(np.var(y)/10.0), scale=np.sqrt(np.log(np.var(y)/10.0)))
-                k2VarGuess = np.random.normal(loc=np.log(np.var(y)/10.0), scale=np.sqrt(np.log(np.var(y)/10.0)))
+                k2GammaGuess = np.random.normal(loc=np.log(np.var(y)/10.0), scale=np.sqrt(np.log(np.var(y)/10.0)))
 
                 # Stack the guesses
                 x0 = np.hstack(([k1ConstGuess],
                                  metricGuess,
-                                [k2ConstGuess, k2VarGuess]))
+                                [k2ConstGuess, k2GammaGuess]))
             # Just 1 kernel: stack guesses
             else:
                 x0 = np.hstack(([k1ConstGuess], metricGuess))

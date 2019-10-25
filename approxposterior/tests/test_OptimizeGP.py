@@ -24,7 +24,7 @@ def testGPOpt():
     """
 
     # For reproducibility
-    seed = 91
+    seed = 57
     np.random.seed(seed)
 
     # Define 20 input points
@@ -58,22 +58,19 @@ def testGPOpt():
         -8.98802494e+01,  -5.69583369e+01]).squeeze()
 
     # Set up a gp
-    gp = gpu.defaultGP(theta, y, order=None, white_noise=-1)
+    gp = gpu.defaultGP(theta, y)
 
     # Optimize gp using default opt parameters
-    method = "nelder-mead"
-    options = {"adaptive" : True}
     p0 = gp.get_parameter_vector()
 
     # Try serial computation
-    gp = gpu.optimizeGP(gp, theta, y, seed=seed, nGPRestarts=5,
-                        method=method, options=options, p0=p0)
+    gp = gpu.optimizeGP(gp, theta, y, seed=seed, nGPRestarts=5, p0=p0)
 
     # Extract GP hyperparameters, compare to truth
     hypeTest = gp.get_parameter_vector()
 
     errMsg = "ERROR: GP hyperparameters are not close to the true value!"
-    hypeTrue = [15.71455516, 3.15692135, 8.13921058]
+    hypeTrue = [14.51326751, 3.3454491, 5.07732438]
     assert np.allclose(hypeTest, hypeTrue, rtol=1.0e-3), errMsg
 # end function
 

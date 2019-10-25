@@ -23,6 +23,9 @@ def testInitGP():
     -------
     """
 
+    # Reproducibility
+    np.random.seed(57)
+
     # Define 20 input points
     theta = np.array([[-3.19134011, -2.91421701],
          [-1.18523861,  1.19142021],
