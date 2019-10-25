@@ -36,7 +36,7 @@ for ii in range(len(theta)):
     y[ii] = lh.rosenbrockLnlike(theta[ii]) + lh.rosenbrockLnprior(theta[ii])
 
 # Create the the default GP which uses an ExpSquaredKernel
-gp = gpUtils.defaultGP(theta, y, order=None, white_noise=0)
+gp = gpUtils.defaultGP(theta, y)
 
 # Initialize object using the Wang & Li (2017) Rosenbrock function example
 ap = approx.ApproxPosterior(theta=theta,
@@ -67,3 +67,6 @@ fig.axes[2].scatter(ap.theta[:,0], ap.theta[:,1], s=10, color="red", zorder=20)
 
 # Save figure
 fig.savefig("finalPosterior.png", bbox_inches="tight")
+
+print(ap.gp.get_parameter_names())
+print(ap.gp.get_parameter_vector())

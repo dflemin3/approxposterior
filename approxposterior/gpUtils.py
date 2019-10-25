@@ -68,7 +68,7 @@ def _grad_nll(p, gp, y):
 # end function
 
 
-def defaultGP(theta, y, order=None, white_noise=0):
+def defaultGP(theta, y, order=None, white_noise=-10):
     """
     Basic utility function that initializes a simple GP that works well in many
     applications, but is not guaranteed to work in general.
@@ -120,7 +120,8 @@ def defaultGP(theta, y, order=None, white_noise=0):
 
     # Create GP and compute the kernel, aka factor the covariance matrix
     gp = george.GP(kernel=kernel, fit_mean=False, mean=np.mean(y),
-                   white_noise=white_noise, fit_white_noise=False)
+                   white_noise=white_noise, fit_white_noise=False,
+                   solver=george.HODLRSolver)
     gp.compute(theta)
 
     return gp
@@ -166,9 +167,9 @@ def optimizeGP(gp, theta, y, seed=None, nGPRestarts=5, method=None, options=None
 
     # Set default parameters if None are provided
     if method is None:
-        method = "l-bfgs-b"
+        method = "nelder-mead"
     if options is None:
-        options = dict()
+        options = {"adaptive" : True}
 
     # Run the optimization routine n_restarts times
     res = []
@@ -206,7 +207,18 @@ def optimizeGP(gp, theta, y, seed=None, nGPRestarts=5, method=None, options=None
 
         # Update the kernel with solution for computing marginal loglike
         gp.set_parameter_vector(resii)
-        gp.recompute()
+
+        try:
+            gp.recompute()
+        except np.linalg.linalg.LinAlgError as err:
+            print("ERROR: Can't recompute GP covariance matrix!")
+            print("GP information:")
+            print(gp.get_parameter_names())
+            print(gp.get_parameter_vector())
+            print(theta[23,:])
+            print(theta[24,:])
+            print(theta[25,:])
+            raise err
 
         # Compute marginal log likelihood for this set of kernel hyperparameters
         mll.append(gp.log_likelihood(y, quiet=True))
