@@ -38,7 +38,7 @@ Don't forget to check out the links for example Jupyter Notebooks at the bottom 
       y[ii] = lh.rosenbrockLnlike(theta[ii]) + lh.rosenbrockLnprior(theta[ii])
 
   # Create the the default GP which uses an ExpSquaredKernel
-  gp = gpUtils.defaultGP(theta, y, order=1, white_noise=-1)
+  gp = gpUtils.defaultGP(theta, y)
 
 3) Initialize the :py:obj:`approxposterior` object.
 

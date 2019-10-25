@@ -1,3 +1,18 @@
+0.3
+====
+
+* Added option to have default kernel be sum of ExpSquaredKernel and LinearKernel for Bayesian linear regression
+
+* Major stability improvements to enable more robust GP kernels, including amplitude and white noise terms
+
+* Switched default GP hyperparameter optimization algorithm to l-bfgs-b
+
+* Switched default GP solver to HODLRSolver
+
+* Removed convergence based on KL-divergence metrics as the numerical integration is slow and noisy in high dimensions
+
+* Many documentation improvements, removal of deprecated code
+
 0.2.post1
 =========
 

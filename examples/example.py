@@ -19,7 +19,7 @@ m = 20                            # Number of new points to find each iteration
 nmax = 2                          # Maximum number of iterations
 bounds = ((-5,5), (-5,5))         # Prior bounds
 algorithm = "BAPE"                # Use the Kandasamy et al. (2015) formalism
-seed = 57                         # RNG seed
+seed = 55                         # RNG seed
 
 np.random.seed(seed)
 
@@ -67,6 +67,3 @@ fig.axes[2].scatter(ap.theta[:,0], ap.theta[:,1], s=10, color="red", zorder=20)
 
 # Save figure
 fig.savefig("finalPosterior.png", bbox_inches="tight")
-
-print(ap.gp.get_parameter_names())
-print(ap.gp.get_parameter_vector())
