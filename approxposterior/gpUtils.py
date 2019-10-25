@@ -87,14 +87,15 @@ def defaultGP(theta, y, order=None, white_noise=-10):
     white_noise : float (optional)
         From george docs: "A description of the logarithm of the white noise
         variance added to the diagonal of the covariance matrix". Defaults to
-        log(white_noise) = 0. Note: if order is not None, you might need to set
-        the white_noise to a large value for the computation to be numerically
-        stable
+        log(white_noise) = -10. Note: if order is not None, you might need to
+        set the white_noise to a large value for the computation to be
+        numerically stable, but this, as always, depends on the application.
 
     Returns
     -------
     gp : george.GP
-        Gaussian process with initialized kernel and factorized covariance matrix.
+        Gaussian process with initialized kernel and factorized covariance
+        matrix.
     """
 
     # Guess initial metric, or scale length of the covariances in loglikelihood space
@@ -102,12 +103,13 @@ def defaultGP(theta, y, order=None, white_noise=-10):
     initialMetric = np.array([5.0*len(theta)**(-1.0/theta.shape[-1]) for _ in range(theta.shape[-1])])
 
     # Create kernel: We'll model coveriances in loglikelihood space using a
-    # Squared Expoential Kernel with wide bounds on the metric just in case
+    # Squared Expoential Kernel
     kernel = np.var(y) * george.kernels.ExpSquaredKernel(initialMetric,
                                                          bounds=None,
                                                          ndim=theta.shape[-1])
 
-    # Add regression kernel?
+    # Add a linear regression kernel of order order?
+    # Use a meh guess for the amplitude and for the scale length (gamma)
     if order is not None:
         kernel = kernel + (np.var(y)/10.0) * george.kernels.LinearKernel(log_gamma2=initialMetric[0],
                                                                          order=order,
@@ -124,8 +126,8 @@ def defaultGP(theta, y, order=None, white_noise=-10):
 # end function
 
 
-def optimizeGP(gp, theta, y, seed=None, nGPRestarts=5, method=None, options=None,
-               p0=None, gpCV=None):
+def optimizeGP(gp, theta, y, seed=None, nGPRestarts=5, method=None,
+               options=None, p0=None, gpCV=None):
     """
     Optimize hyperparameters of an arbitrary george Gaussian Process kernel
     by maximizing the marginalized log-likelihood.
@@ -152,22 +154,22 @@ def optimizeGP(gp, theta, y, seed=None, nGPRestarts=5, method=None, options=None
     gpCV : int (optional)
         Whether or not to use k-fold cross-validation to select kernel
         hyperparameters from the nGPRestarts maximum likelihood solutions.
-        Defaults to None. This can be useful if the GP is overfitting, but
-        will likely slow down the code. Defaults to None. If using it, perform
-        gpCV-fold cross-validation.
+        This can be useful if the GP is overfitting, but will likely slow down
+        the code. Defaults to None, aka this functionality is not used. If using
+        it, perform gpCV-fold cross-validation.
 
     Returns
     -------
-    optimized_gp : george.GP
+    optimizedGP : george.GP
     """
 
     # Set default parameters if None are provided
     if method is None:
         method = "l-bfgs-b"
     if options is None:
-        options = {}
+        options = dict()
 
-    # Run the optimization routine n_restarts times
+    # Run the optimization routine nGPRestarts times
     res = []
     mll = []
 
@@ -175,7 +177,7 @@ def optimizeGP(gp, theta, y, seed=None, nGPRestarts=5, method=None, options=None
     for ii in range(nGPRestarts):
         # Inputs for each process
         if p0 is None:
-            # Pick random guesses for kernel hyperparameters from a reasonable range
+            # Pick random guesses for kernel hyperparameters from reasonable range
             k1ConstGuess = np.random.normal(loc=np.log(np.var(y)), scale=np.sqrt(np.log(np.var(y))))
             metricGuess = [np.random.uniform(low=-10, high=10) for _ in range(theta.shape[-1])]
 
@@ -194,27 +196,16 @@ def optimizeGP(gp, theta, y, seed=None, nGPRestarts=5, method=None, options=None
 
         else:
             # Take user-supplied guess and slightly perturb it
-            x0 = np.array(p0) + np.min(p0)*1.0e-3 * np.random.randn(len(p0))
+            x0 = np.array(p0) + np.min(p0) * 1.0e-3 * np.random.randn(len(p0))
 
         # Minimize GP nll, save result, evaluate marginal likelihood
         resii = minimize(_nll, x0, args=(gp, y), method=method, jac=_grad_nll,
-                         bounds=None, options=options)["x"]
+                         bounds=gp.kernel.bounds, options=options)["x"]
         res.append(resii)
 
         # Update the kernel with solution for computing marginal loglike
         gp.set_parameter_vector(resii)
-
-        try:
-            gp.recompute()
-        except np.linalg.linalg.LinAlgError as err:
-            print("ERROR: Can't recompute GP covariance matrix!")
-            print("GP information:")
-            print(gp.get_parameter_names())
-            print(gp.get_parameter_vector())
-            print(theta[23,:])
-            print(theta[24,:])
-            print(theta[25,:])
-            raise err
+        gp.recompute()
 
         # Compute marginal log likelihood for this set of kernel hyperparameters
         mll.append(gp.log_likelihood(y, quiet=True))

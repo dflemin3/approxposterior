@@ -344,7 +344,7 @@ def minimizeObjective(fn, y, gp, sampleFn, priorFn, bounds=None,
     # Loop over optimization calls
     for ii in range(nMinObjRestarts):
 
-        # Inputs for each process
+        # Inputs for each process - guess initial value from prior
         theta0 = np.array(sampleFn(1)).reshape(1,-1)
 
         # Solve for theta that maximize fn and is allowed by prior

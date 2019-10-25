@@ -1,12 +1,11 @@
 # -*- coding: utf-8 -*-
 """
 :py:mod:`approx.py` - ApproxPosterior
------------------------------------
+-------------------------------------
 
-Bayesian Posterior estimation, written in pure python, leveraging
-Dan Forman-Mackey's Gaussian Process implementation, george, and DFM's
-Metropolis-Hastings MCMC implementation, emcee. We include hybrid
-implementations of both Wang & Li (2017) and Kandasamy et al. (2015).
+Bayesian Posterior estimation leveraging Dan Forman-Mackey's Gaussian Process
+implementation, george, and his Metropolis-Hastings MCMC ensemble sampler
+implementation, emcee, and both Wang & Li (2017) and Kandasamy et al. (2015).
 
 """
 
@@ -72,8 +71,9 @@ class ApproxPosterior(object):
 
         # Need to supply the training set
         if theta is None or y is None:
-            raise ValueError("Must supply both theta and y")
+            raise ValueError("Must supply both theta and y for initial GP training set.")
 
+        # Tidy up the shapes
         self.theta = np.array(theta).squeeze()
         self.y = np.array(y).squeeze()
 
@@ -116,7 +116,7 @@ class ApproxPosterior(object):
         # Only save last sampler object since they can get pretty huge
         self.sampler = None
 
-        # Initialize gaussian process
+        # Initialize gaussian process if none provided
         if gp is None:
             print("WARNING: No GP specified. Initializing GP using ExpSquaredKernel.")
             self.gp = gpUtils.defaultGP(self.theta, self.y)
@@ -286,7 +286,8 @@ class ApproxPosterior(object):
             if verbose:
                 warn_msg = "KL-divergence convergence is deprecated in " + \
                 "approxposterior version 0.21+. The code will ignore " + \
-                "Dmax, kmax, nKLSamples, and gmmKwargs and will run for nmax iterations."
+                "Dmax, kmax, nKLSamples, and gmmKwargs. The algorithm will" + \
+                "run for nmax iterations."
                 warnings.warn(warn_msg, DeprecationWarning)
 
         # Save forward model input-output pairs since they take forever to
@@ -342,7 +343,7 @@ class ApproxPosterior(object):
 
                 # Find new (theta, y) pair
                 # ComputeLnLike = True means new points are saved in self.theta,
-                # and self.y
+                # and self.y, gradually expanding the training set
                 self.findNextPoint(computeLnLike=True,
                                    bounds=self.bounds,
                                    maxLnLikeRestarts=maxLnLikeRestarts,
@@ -380,7 +381,7 @@ class ApproxPosterior(object):
                 # Skip everything below
                 continue
 
-            # If the above block isn't trigger, run the MCMC
+            # Run the MCMC
             if timing:
                 start = time.time()
 
@@ -723,5 +724,4 @@ class ApproxPosterior(object):
             print("thin estimate: %d" % ithin)
 
         return self.sampler, iburn, ithin
-
     # end function
