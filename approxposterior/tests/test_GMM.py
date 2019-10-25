@@ -25,7 +25,7 @@ def testGMMFit():
     """
 
     # Set RNG Seed
-    np.random.seed(42)
+    np.random.seed(57)
 
     # Spherical gaussian centered on (5, 10)
     shiftG = np.random.randn(500, 2) + np.array([5, 10])

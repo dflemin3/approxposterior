@@ -25,11 +25,12 @@ def test_find():
     algorithm = "bape"
 
     # For reproducibility
-    seed = 91
+    seed = 57
     np.random.seed(seed)
 
     # Randomly sample initial conditions from the prior
-    theta = np.array(lh.rosenbrockSample(m0))
+    # Note: adding a corner case because approxposterior loves corners
+    theta = np.array(list(lh.rosenbrockSample(m0)) + [[-5, 5]])
 
     # Evaluate forward model log likelihood + lnprior for each theta
     y = np.zeros(len(theta))
@@ -37,7 +38,7 @@ def test_find():
         y[ii] = lh.rosenbrockLnlike(theta[ii]) + lh.rosenbrockLnprior(theta[ii])
 
     # Set up a gp
-    gp = gpUtils.defaultGP(theta, y, order=None, white_noise=-1)
+    gp = gpUtils.defaultGP(theta, y)
 
     # Initialize object using the Wang & Li (2017) Rosenbrock function example
     # using default ExpSquaredKernel GP
@@ -56,8 +57,7 @@ def test_find():
                               seed=seed)
 
     err_msg = "findNextPoint selected incorrect thetaT."
-    print(thetaT)
-    assert(np.allclose(thetaT, [-3.92618614, 1.1865385], rtol=1.0e-3)), err_msg
+    assert(np.allclose(thetaT, [3.16581648, -3.51875001], rtol=1.0e-3)), err_msg
 # end function
 
 if __name__ == "__main__":
