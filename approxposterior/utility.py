@@ -353,7 +353,7 @@ def minimizeObjective(fn, y, gp, sampleFn, priorFn, bounds=None,
             # Mimimze fn, see if prior allows solution
             try:
                 tmp = minimize(fn, np.array(theta0).reshape(1,-1), args=args,
-                               bounds=bounds, method="nelder-mead", tol=1.0e-4,
+                               bounds=bounds, method="nelder-mead",
                                options={"adaptive" : True})["x"]
 
             # ValueError.  Try again.

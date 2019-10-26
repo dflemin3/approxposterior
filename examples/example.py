@@ -16,10 +16,10 @@ import george
 # Define algorithm parameters
 m0 = 50                           # Initial size of training set
 m = 20                            # Number of new points to find each iteration
-nmax = 2                          # Maximum number of iterations
+nmax = 5                          # Maximum number of iterations
 bounds = ((-5,5), (-5,5))         # Prior bounds
-algorithm = "BAPE"                # Use the Kandasamy et al. (2015) formalism
-seed = 55                         # RNG seed
+algorithm = "bape"                # Use the Kandasamy et al. (2015) formalism
+seed = 427                         # RNG seed
 
 np.random.seed(seed)
 
@@ -63,7 +63,7 @@ fig = corner.corner(samples, quantiles=[0.16, 0.5, 0.84], show_titles=True,
                     scale_hist=True, plot_contours=True)
 
 # Plot where forward model was evaluated - uncomment to plot!
-fig.axes[2].scatter(ap.theta[:,0], ap.theta[:,1], s=10, color="red", zorder=20)
+fig.axes[2].scatter(ap.theta[m0:,0], ap.theta[m0:,1], s=10, color="red", zorder=20)
 
 # Save figure
 fig.savefig("finalPosterior.png", bbox_inches="tight")
