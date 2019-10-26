@@ -124,7 +124,7 @@ fig.savefig("finalPosterior.png", bbox_inches="tight")
 
 The final distribution will look something like this:
 
-![Final posterior probability distribution for the Wang & Li (2017) example.](paper/final_posterior.png)
+![Final posterior probability distribution for the Wang & Li (2017) example. The red points were those selected by approxposterior by maximizing the BAPE utility function. Note how the points are selected in regions of high posterior density, precisely where we would want to maximize the GP's predictive ability.](doc/_figures/final_posterior.png)
 
 Check out the [examples](https://github.com/dflemin3/approxposterior/tree/master/examples/Notebooks) directory for Jupyter Notebook examples and explanations. Check out the full [documentation](https://dflemin3.github.io/approxposterior/) for a more in-depth explanation of classes, methods, variables, and how to use the code.
 
