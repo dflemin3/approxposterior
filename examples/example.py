@@ -16,7 +16,7 @@ import george
 # Define algorithm parameters
 m0 = 50                           # Initial size of training set
 m = 20                            # Number of new points to find each iteration
-nmax = 5                          # Maximum number of iterations
+nmax = 2                          # Maximum number of iterations
 bounds = ((-5,5), (-5,5))         # Prior bounds
 algorithm = "bape"                # Use the Kandasamy et al. (2015) formalism
 seed = 57                         # RNG seed
