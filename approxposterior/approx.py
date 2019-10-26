@@ -524,7 +524,6 @@ class ApproxPosterior(object):
             thetaT = ut.minimizeObjective(self.utility, self.y, self.gp,
                                           sampleFn=self.priorSample,
                                           priorFn=self._lnprior,
-                                          bounds=bounds,
                                           nMinObjRestarts=nMinObjRestarts)
 
             # Compute lnLikelihood at thetaT?

@@ -300,8 +300,7 @@ def BAPEUtility(theta, y, gp, priorFn):
 # end function
 
 
-def minimizeObjective(fn, y, gp, sampleFn, priorFn, bounds=None,
-                      nMinObjRestarts=5):
+def minimizeObjective(fn, y, gp, sampleFn, priorFn, nMinObjRestarts=5):
     """
     Find point that minimizes fn for a gaussian process gp conditioned on y,
     the data, and is allowed by the prior, priorFn.  PriorFn is required as it
@@ -320,9 +319,6 @@ def minimizeObjective(fn, y, gp, sampleFn, priorFn, bounds=None,
         Function to sample initial conditions from.
     priorFn : function
         Function that computes lnPrior probability for a given theta.
-    bounds : tuple/iterable (optional)
-        Bounds for minimization scheme.  See scipy.optimize.minimize details
-        for more information.  Defaults to None.
     nMinObjRestarts : int (optional)
         Number of times to restart minimizing -utility function to select
         next point to improve GP performance.  Defaults to 5.  Increase this
@@ -353,7 +349,7 @@ def minimizeObjective(fn, y, gp, sampleFn, priorFn, bounds=None,
             # Mimimze fn, see if prior allows solution
             try:
                 tmp = minimize(fn, np.array(theta0).reshape(1,-1), args=args,
-                               bounds=bounds, method="nelder-mead",
+                               bounds=None, method="nelder-mead",
                                options={"adaptive" : True})["x"]
 
             # ValueError.  Try again.
