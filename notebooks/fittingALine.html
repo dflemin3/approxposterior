@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Fitting a Line &mdash; approxposterior 0.21 documentation</title>
+  <title>Fitting a Line &mdash; approxposterior 0.3 documentation</title>
   
 
   
@@ -37,7 +37,7 @@
         <link rel="index" title="Index"
               href="../genindex.html"/>
         <link rel="search" title="Search" href="../search.html"/>
-    <link rel="top" title="approxposterior 0.21 documentation" href="../index.html"/>
+    <link rel="top" title="approxposterior 0.3 documentation" href="../index.html"/>
         <link rel="up" title="Tutorial" href="../tutorial.html"/>
         <link rel="next" title="Scaling, Accuracy Example" href="ScalingAccuracy.html"/>
         <link rel="prev" title="BAPE Algorithm Example" href="example.html"/> 
@@ -69,7 +69,7 @@
             
             
               <div class="version">
-                0.21
+                0.3
               </div>
             
           
@@ -619,7 +619,7 @@ parameters from the prior distributions.</p>
 <span></span><span class="c1"># Define algorithm parameters</span>
 <span class="n">m0</span> <span class="o">=</span> <span class="mi">20</span>                           <span class="c1"># Initial size of training set</span>
 <span class="n">m</span> <span class="o">=</span> <span class="mi">10</span>                            <span class="c1"># Number of new points to find each iteration</span>
-<span class="n">nmax</span> <span class="o">=</span> <span class="mi">2</span>                          <span class="c1"># Maximum number of iterations</span>
+<span class="n">nmax</span> <span class="o">=</span> <span class="mi">5</span>                          <span class="c1"># Maximum number of iterations</span>
 <span class="n">bounds</span> <span class="o">=</span> <span class="p">((</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span><span class="mf">0.5</span><span class="p">),</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">10.0</span><span class="p">))</span>   <span class="c1"># Prior bounds</span>
 <span class="n">algorithm</span> <span class="o">=</span> <span class="s2">&quot;alternate&quot;</span>                <span class="c1"># Use the Kandasamy et al. (2015) formalism</span>
 
@@ -656,7 +656,7 @@ performance, iteratively improving the posterior distribution estimate.</p>
 
 <span class="c1"># We&#39;ll create the initial GP using approxposterior&#39;s built-in default</span>
 <span class="c1"># initialization.  This default typically works well in many applications.</span>
-<span class="n">gp</span> <span class="o">=</span> <span class="n">gpu</span><span class="o">.</span><span class="n">defaultGP</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">white_noise</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">gp</span> <span class="o">=</span> <span class="n">gpu</span><span class="o">.</span><span class="n">defaultGP</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -772,7 +772,7 @@ likelihood regions of parameter space!</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../',
-            VERSION:'0.21',
+            VERSION:'0.3',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,

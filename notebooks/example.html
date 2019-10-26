@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>BAPE Algorithm Example &mdash; approxposterior 0.21 documentation</title>
+  <title>BAPE Algorithm Example &mdash; approxposterior 0.3 documentation</title>
   
 
   
@@ -37,7 +37,7 @@
         <link rel="index" title="Index"
               href="../genindex.html"/>
         <link rel="search" title="Search" href="../search.html"/>
-    <link rel="top" title="approxposterior 0.21 documentation" href="../index.html"/>
+    <link rel="top" title="approxposterior 0.3 documentation" href="../index.html"/>
         <link rel="up" title="Tutorial" href="../tutorial.html"/>
         <link rel="next" title="Fitting a Line" href="fittingALine.html"/>
         <link rel="prev" title="Tutorial" href="../tutorial.html"/> 
@@ -69,7 +69,7 @@
             
             
               <div class="version">
-                0.21
+                0.3
               </div>
             
           
@@ -454,7 +454,7 @@ files that hold the MCMC chains!</p>
     <span class="n">y</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span> <span class="o">=</span> <span class="n">lh</span><span class="o">.</span><span class="n">rosenbrockLnlike</span><span class="p">(</span><span class="n">theta</span><span class="p">[</span><span class="n">ii</span><span class="p">])</span> <span class="o">+</span> <span class="n">lh</span><span class="o">.</span><span class="n">rosenbrockLnprior</span><span class="p">(</span><span class="n">theta</span><span class="p">[</span><span class="n">ii</span><span class="p">])</span>
 
 <span class="c1">### Initialize GP ###</span>
-<span class="n">gp</span> <span class="o">=</span> <span class="n">gpu</span><span class="o">.</span><span class="n">defaultGP</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">white_noise</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">gp</span> <span class="o">=</span> <span class="n">gpu</span><span class="o">.</span><span class="n">defaultGP</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -534,7 +534,7 @@ algorithm evaluated the forward model to improve its predictive ability.</p>
 </pre></div>
 </div>
 <div class="output_area highlight-none notranslate"><div class="highlight"><pre>
-<span></span>&lt;matplotlib.collections.PathCollection at 0x11de28358&gt;
+<span></span>&lt;matplotlib.collections.PathCollection at 0x10e696278&gt;
 </pre></div>
 </div>
 </div>
@@ -569,7 +569,7 @@ algorithm evaluated the forward model to improve its predictive ability.</p>
 </pre></div>
 </div>
 <div class="output_area highlight-none notranslate"><div class="highlight"><pre>
-<span></span>&lt;matplotlib.collections.PathCollection at 0x11df05c50&gt;
+<span></span>&lt;matplotlib.collections.PathCollection at 0x11b179240&gt;
 </pre></div>
 </div>
 </div>
@@ -628,7 +628,7 @@ high likelihood regions of parameter space!</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../',
-            VERSION:'0.21',
+            VERSION:'0.3',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,

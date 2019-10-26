@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Scaling, Accuracy Example &mdash; approxposterior 0.21 documentation</title>
+  <title>Scaling, Accuracy Example &mdash; approxposterior 0.3 documentation</title>
   
 
   
@@ -37,7 +37,7 @@
         <link rel="index" title="Index"
               href="../genindex.html"/>
         <link rel="search" title="Search" href="../search.html"/>
-    <link rel="top" title="approxposterior 0.21 documentation" href="../index.html"/>
+    <link rel="top" title="approxposterior 0.3 documentation" href="../index.html"/>
         <link rel="up" title="Tutorial" href="../tutorial.html"/>
         <link rel="next" title="KL Divergence Estimation" href="KLDivergenceEstimation.html"/>
         <link rel="prev" title="Fitting a Line" href="fittingALine.html"/> 
@@ -69,7 +69,7 @@
             
             
               <div class="version">
-                0.21
+                0.3
               </div>
             
           
@@ -404,10 +404,6 @@ warranted.</p>
 <span class="kn">import</span> <span class="nn">matplotlib</span> <span class="kn">as</span> <span class="nn">mpl</span>
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
 <span class="n">mpl</span><span class="o">.</span><span class="n">rcParams</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s1">&#39;font.size&#39;</span><span class="p">:</span> <span class="mi">18</span><span class="p">})</span>
-
-<span class="c1"># Tidy up the notebook (I&#39;m not sweeping errors under the rug, I swear!)</span>
-<span class="kn">import</span> <span class="nn">warnings</span>
-<span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s1">&#39;ignore&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -456,7 +452,7 @@ warranted.</p>
     <span class="n">y</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span> <span class="o">=</span> <span class="n">lh</span><span class="o">.</span><span class="n">rosenbrockLnlike</span><span class="p">(</span><span class="n">theta</span><span class="p">[</span><span class="n">ii</span><span class="p">])</span> <span class="o">+</span> <span class="n">lh</span><span class="o">.</span><span class="n">rosenbrockLnprior</span><span class="p">(</span><span class="n">theta</span><span class="p">[</span><span class="n">ii</span><span class="p">])</span>
 
 <span class="c1">### Initialize GP ###</span>
-<span class="n">gp</span> <span class="o">=</span> <span class="n">gpu</span><span class="o">.</span><span class="n">defaultGP</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">white_noise</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">gp</span> <span class="o">=</span> <span class="n">gpu</span><span class="o">.</span><span class="n">defaultGP</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -488,7 +484,7 @@ new design points retrain the Gaussian Process, run the MCMC, fit the
 Gaussian Mixture Model approximation to the joint posterior
 distribution, and estimate the KL divergence between the current and
 previous joint posterior distributions.</p>
-<div class="nbinput nblast docutils container">
+<div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre>
 <span></span>In [5]:
 </pre></div>
@@ -499,6 +495,21 @@ previous joint posterior distributions.</p>
        <span class="n">samplerKwargs</span><span class="o">=</span><span class="n">samplerKwargs</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">timing</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 </pre></div>
 </div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="stderr output_area docutils container">
+<div class="highlight"><pre>
+/Users/dflemin3/anaconda3/lib/python3.6/site-packages/scipy/optimize/_minimize.py:518: RuntimeWarning: Method nelder-mead cannot handle constraints nor bounds.
+  RuntimeWarning)
+/Users/dflemin3/anaconda3/lib/python3.6/site-packages/scipy/optimize/optimize.py:563: RuntimeWarning: invalid value encountered in subtract
+  numpy.max(numpy.abs(fsim[0] - fsim[1:])) &lt;= fatol):
+/Users/dflemin3/anaconda3/lib/python3.6/site-packages/numpy/core/_methods.py:26: RuntimeWarning: invalid value encountered in reduce
+  return umr_maximum(a, axis, None, out, keepdims)
+/Users/dflemin3/anaconda3/lib/python3.6/site-packages/george/gp.py:410: RuntimeWarning: invalid value encountered in subtract
+  A = np.einsum(&#34;i,j&#34;, alpha, alpha) - K_inv
+</pre></div></div>
 </div>
 <p><strong>Estimate Time Scaling as a Function of Forward Model Time</strong></p>
 <hr class="docutils" />
@@ -597,7 +608,7 @@ axis).</p>
 </pre></div>
 </div>
 <div class="output_area highlight-none notranslate"><div class="highlight"><pre>
-<span></span>&lt;matplotlib.legend.Legend at 0x10f3e59e8&gt;
+<span></span>&lt;matplotlib.legend.Legend at 0x116639c50&gt;
 </pre></div>
 </div>
 </div>
@@ -727,11 +738,11 @@ the approximate method is.</p>
 <div class="highlight"><pre>
 x0
 True     [-2.4136162  -2.32461971 -2.27654002]
-Approx   [-2.4129252  -2.32399244 -2.28301443]
+Approx   [-2.42715194 -2.34798697 -2.28754319]
 
 x1
 True     [-1.70102134 -1.40117241 -1.25195281]
-Approx   [-1.70472383 -1.4223405  -1.27866285]
+Approx   [-1.68863509 -1.38795925 -1.24683386]
 </pre></div></div>
 </div>
 <p>Looks good, but let’s visualize this instead…</p>
@@ -770,7 +781,7 @@ Approx   [-1.70472383 -1.4223405  -1.27866285]
 </pre></div>
 </div>
 <div class="output_area highlight-none notranslate"><div class="highlight"><pre>
-<span></span>&lt;matplotlib.legend.Legend at 0x10f3a3be0&gt;
+<span></span>&lt;matplotlib.legend.Legend at 0x116c42c88&gt;
 </pre></div>
 </div>
 </div>
@@ -899,7 +910,7 @@ Approx   [-1.70472383 -1.4223405  -1.27866285]
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../',
-            VERSION:'0.21',
+            VERSION:'0.3',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,

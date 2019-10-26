@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Tutorial &mdash; approxposterior 0.21 documentation</title>
+  <title>Tutorial &mdash; approxposterior 0.3 documentation</title>
   
 
   
@@ -37,7 +37,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="approxposterior 0.21 documentation" href="index.html"/>
+    <link rel="top" title="approxposterior 0.3 documentation" href="index.html"/>
         <link rel="next" title="BAPE Algorithm Example" href="notebooks/example.html"/>
         <link rel="prev" title="approxposterior" href="index.html"/> 
 
@@ -68,7 +68,7 @@
             
             
               <div class="version">
-                0.21
+                0.3
               </div>
             
           
@@ -241,7 +241,7 @@ your code.  In this example, we set verbose = False for simplicity.</p>
     <span class="n">y</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span> <span class="o">=</span> <span class="n">lh</span><span class="o">.</span><span class="n">rosenbrockLnlike</span><span class="p">(</span><span class="n">theta</span><span class="p">[</span><span class="n">ii</span><span class="p">])</span> <span class="o">+</span> <span class="n">lh</span><span class="o">.</span><span class="n">rosenbrockLnprior</span><span class="p">(</span><span class="n">theta</span><span class="p">[</span><span class="n">ii</span><span class="p">])</span>
 
 <span class="c1"># Create the the default GP which uses an ExpSquaredKernel</span>
-<span class="n">gp</span> <span class="o">=</span> <span class="n">gpUtils</span><span class="o">.</span><span class="n">defaultGP</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">white_noise</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">gp</span> <span class="o">=</span> <span class="n">gpUtils</span><span class="o">.</span><span class="n">defaultGP</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
 </pre></div>
 </div>
 <ol class="arabic simple" start="3">
@@ -346,7 +346,7 @@ and more.</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'0.21',
+            VERSION:'0.3',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,

@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>approxposterior.approx &mdash; approxposterior 0.21 documentation</title>
+  <title>approxposterior.approx &mdash; approxposterior 0.3 documentation</title>
   
 
   
@@ -37,7 +37,7 @@
         <link rel="index" title="Index"
               href="../../genindex.html"/>
         <link rel="search" title="Search" href="../../search.html"/>
-    <link rel="top" title="approxposterior 0.21 documentation" href="../../index.html"/>
+    <link rel="top" title="approxposterior 0.3 documentation" href="../../index.html"/>
         <link rel="up" title="Module code" href="../index.html"/> 
 
   
@@ -67,7 +67,7 @@
             
             
               <div class="version">
-                0.21
+                0.3
               </div>
             
           
@@ -167,12 +167,11 @@
 <span></span><span class="c1"># -*- coding: utf-8 -*-</span>
 <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">:py:mod:`approx.py` - ApproxPosterior</span>
-<span class="sd">-----------------------------------</span>
+<span class="sd">-------------------------------------</span>
 
-<span class="sd">Bayesian Posterior estimation, written in pure python, leveraging</span>
-<span class="sd">Dan Forman-Mackey&#39;s Gaussian Process implementation, george, and DFM&#39;s</span>
-<span class="sd">Metropolis-Hastings MCMC implementation, emcee. We include hybrid</span>
-<span class="sd">implementations of both Wang &amp; Li (2017) and Kandasamy et al. (2015).</span>
+<span class="sd">Bayesian Posterior estimation leveraging Dan Forman-Mackey&#39;s Gaussian Process</span>
+<span class="sd">implementation, george, and his Metropolis-Hastings MCMC ensemble sampler</span>
+<span class="sd">implementation, emcee, and both Wang &amp; Li (2017) and Kandasamy et al. (2015).</span>
 
 <span class="sd">&quot;&quot;&quot;</span>
 
@@ -238,8 +237,9 @@
 
         <span class="c1"># Need to supply the training set</span>
         <span class="k">if</span> <span class="n">theta</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">y</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Must supply both theta and y&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Must supply both theta and y for initial GP training set.&quot;</span><span class="p">)</span>
 
+        <span class="c1"># Tidy up the shapes</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">theta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">y</span><span class="p">)</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span>
 
@@ -282,7 +282,7 @@
         <span class="c1"># Only save last sampler object since they can get pretty huge</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">sampler</span> <span class="o">=</span> <span class="kc">None</span>
 
-        <span class="c1"># Initialize gaussian process</span>
+        <span class="c1"># Initialize gaussian process if none provided</span>
         <span class="k">if</span> <span class="n">gp</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;WARNING: No GP specified. Initializing GP using ExpSquaredKernel.&quot;</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">gp</span> <span class="o">=</span> <span class="n">gpUtils</span><span class="o">.</span><span class="n">defaultGP</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">theta</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">)</span>
@@ -452,7 +452,8 @@
             <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
                 <span class="n">warn_msg</span> <span class="o">=</span> <span class="s2">&quot;KL-divergence convergence is deprecated in &quot;</span> <span class="o">+</span> \
                 <span class="s2">&quot;approxposterior version 0.21+. The code will ignore &quot;</span> <span class="o">+</span> \
-                <span class="s2">&quot;Dmax, kmax, nKLSamples, and gmmKwargs and will run for nmax iterations.&quot;</span>
+                <span class="s2">&quot;Dmax, kmax, nKLSamples, and gmmKwargs. The algorithm will&quot;</span> <span class="o">+</span> \
+                <span class="s2">&quot;run for nmax iterations.&quot;</span>
                 <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">warn_msg</span><span class="p">,</span> <span class="ne">DeprecationWarning</span><span class="p">)</span>
 
         <span class="c1"># Save forward model input-output pairs since they take forever to</span>
@@ -508,7 +509,7 @@
 
                 <span class="c1"># Find new (theta, y) pair</span>
                 <span class="c1"># ComputeLnLike = True means new points are saved in self.theta,</span>
-                <span class="c1"># and self.y</span>
+                <span class="c1"># and self.y, gradually expanding the training set</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">findNextPoint</span><span class="p">(</span><span class="n">computeLnLike</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                                    <span class="n">bounds</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">bounds</span><span class="p">,</span>
                                    <span class="n">maxLnLikeRestarts</span><span class="o">=</span><span class="n">maxLnLikeRestarts</span><span class="p">,</span>
@@ -546,7 +547,7 @@
                 <span class="c1"># Skip everything below</span>
                 <span class="k">continue</span>
 
-            <span class="c1"># If the above block isn&#39;t trigger, run the MCMC</span>
+            <span class="c1"># Run the MCMC</span>
             <span class="k">if</span> <span class="n">timing</span><span class="p">:</span>
                 <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
 
@@ -725,10 +726,11 @@
             <span class="k">try</span><span class="p">:</span>
                 <span class="c1"># Create GP using same kernel, updated estimate of the mean, but new theta</span>
                 <span class="n">currentHype</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gp</span><span class="o">.</span><span class="n">get_parameter_vector</span><span class="p">()</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">gp</span> <span class="o">=</span> <span class="n">george</span><span class="o">.</span><span class="n">GP</span><span class="p">(</span><span class="n">kernel</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">gp</span><span class="o">.</span><span class="n">kernel</span><span class="p">,</span> <span class="n">fit_mean</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">gp</span> <span class="o">=</span> <span class="n">george</span><span class="o">.</span><span class="n">GP</span><span class="p">(</span><span class="n">kernel</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">gp</span><span class="o">.</span><span class="n">kernel</span><span class="p">,</span> <span class="n">fit_mean</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
                                     <span class="n">mean</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">),</span>
                                     <span class="n">white_noise</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">gp</span><span class="o">.</span><span class="n">white_noise</span><span class="p">,</span>
-                                    <span class="n">fit_white_noise</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+                                    <span class="n">fit_white_noise</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                                    <span class="n">solver</span><span class="o">=</span><span class="n">george</span><span class="o">.</span><span class="n">HODLRSolver</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">gp</span><span class="o">.</span><span class="n">set_parameter_vector</span><span class="p">(</span><span class="n">currentHype</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">gp</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">theta</span><span class="p">)</span>
                 <span class="c1"># Now optimize GP given new points?</span>
@@ -888,7 +890,6 @@
             <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;thin estimate: </span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">ithin</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">sampler</span><span class="p">,</span> <span class="n">iburn</span><span class="p">,</span> <span class="n">ithin</span></div></div>
-
     <span class="c1"># end function</span>
 </pre></div>
 
@@ -926,7 +927,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../',
-            VERSION:'0.21',
+            VERSION:'0.3',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,

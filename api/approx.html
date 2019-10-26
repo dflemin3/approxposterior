@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>ApproxPosterior Class &mdash; approxposterior 0.21 documentation</title>
+  <title>ApproxPosterior Class &mdash; approxposterior 0.3 documentation</title>
   
 
   
@@ -37,7 +37,7 @@
         <link rel="index" title="Index"
               href="../genindex.html"/>
         <link rel="search" title="Search" href="../search.html"/>
-    <link rel="top" title="approxposterior 0.21 documentation" href="../index.html"/>
+    <link rel="top" title="approxposterior 0.3 documentation" href="../index.html"/>
         <link rel="up" title="API" href="../api.html"/>
         <link rel="prev" title="API" href="../api.html"/> 
 
@@ -68,7 +68,7 @@
             
             
               <div class="version">
-                0.21
+                0.3
               </div>
             
           
@@ -217,10 +217,9 @@
 <span id="approxposterior-class"></span><h1>ApproxPosterior Class<a class="headerlink" href="#module-approxposterior.approx" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="approx-py-approxposterior">
 <h2><code class="xref py py-mod docutils literal notranslate"><span class="pre">approx.py</span></code> - ApproxPosterior<a class="headerlink" href="#approx-py-approxposterior" title="Permalink to this headline">¶</a></h2>
-<p>Bayesian Posterior estimation, written in pure python, leveraging
-Dan Forman-Mackey’s Gaussian Process implementation, george, and DFM’s
-Metropolis-Hastings MCMC implementation, emcee. We include hybrid
-implementations of both Wang &amp; Li (2017) and Kandasamy et al. (2015).</p>
+<p>Bayesian Posterior estimation leveraging Dan Forman-Mackey’s Gaussian Process
+implementation, george, and his Metropolis-Hastings MCMC ensemble sampler
+implementation, emcee, and both Wang &amp; Li (2017) and Kandasamy et al. (2015).</p>
 <dl class="class">
 <dt id="approxposterior.approx.ApproxPosterior">
 <em class="property">class </em><code class="descclassname">approxposterior.approx.</code><code class="descname">ApproxPosterior</code><span class="sig-paren">(</span><em>theta</em>, <em>y</em>, <em>lnprior</em>, <em>lnlike</em>, <em>priorSample</em>, <em>bounds</em>, <em>gp=None</em>, <em>algorithm='BAPE'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/approx.html#ApproxPosterior"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.approx.ApproxPosterior" title="Permalink to this definition">¶</a></dt>
@@ -694,7 +693,7 @@ calls the forward model.</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../',
-            VERSION:'0.21',
+            VERSION:'0.3',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
