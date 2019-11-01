@@ -27,7 +27,7 @@ np.random.seed(seed)
 samplerKwargs = {"nwalkers" : 20}        # emcee.EnsembleSampler parameters
 mcmcKwargs = {"iterations" : int(2.0e4)} # emcee.EnsembleSampler.run_mcmc parameters
 
-# Sample initial conditions from the prior
+# Sample initial conditions from prior
 theta = lh.rosenbrockSample(m0)
 
 # Evaluate forward model log likelihood + lnprior for each theta
@@ -49,8 +49,8 @@ ap = approx.ApproxPosterior(theta=theta,
                             algorithm=algorithm)
 
 # Run!
-ap.run(m=m, nmax=nmax, estBurnin=True, nGPRestarts=15, optGPEveryN=5, mcmcKwargs=mcmcKwargs,
-       cache=False, samplerKwargs=samplerKwargs, gpCV=5, verbose=True, onlyLastMCMC=True)
+ap.run(m=m, nmax=nmax, estBurnin=True, nGPRestarts=5, mcmcKwargs=mcmcKwargs,
+       cache=False, samplerKwargs=samplerKwargs, verbose=True, onlyLastMCMC=True)
 
 # Check out the final posterior distribution!
 import corner
