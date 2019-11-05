@@ -243,7 +243,7 @@ def optimizeGP(gp, theta, y, seed=None, nGPRestarts=5, method=None,
 
             # Best answer is solution with minimum mean squared error
             # averaging over the folds
-            ind = np.argmin(np.mean(mses, axis=1))
+            ind = np.argmin(np.mean(mses, axis=0))
         else:
             raise RuntimeError("gpCV must be an integer. gpCV:", gpCV)
 
