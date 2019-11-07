@@ -23,6 +23,7 @@ import emcee
 import george
 import os
 import warnings
+from sklearn.preprocessing import MinMaxScaler
 
 
 class ApproxPosterior(object):

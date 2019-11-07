@@ -16,6 +16,7 @@ import george
 from scipy.optimize import minimize
 from sklearn.model_selection import KFold
 from sklearn.metrics import mean_squared_error
+from sklearn.preprocessing import MinMaxScaler
 
 
 def _nll(p, gp, y):
@@ -68,7 +69,7 @@ def _grad_nll(p, gp, y):
 # end function
 
 
-def defaultGP(theta, y, order=None, white_noise=-10):
+def defaultGP(theta, y, order=None, white_noise=-10, scaler=None):
     """
     Basic utility function that initializes a simple GP that works well in many
     applications, but is not guaranteed to work in general.
@@ -117,6 +118,7 @@ def defaultGP(theta, y, order=None, white_noise=-10):
                                                                          ndim=theta.shape[-1])
 
     # Create GP and compute the kernel, aka factor the covariance matrix
+    # XXX fit median???
     gp = george.GP(kernel=kernel, fit_mean=False, mean=np.mean(y),
                    white_noise=white_noise, fit_white_noise=False)
     gp.compute(theta)
@@ -171,25 +173,10 @@ def optimizeGP(gp, theta, y, seed=None, nGPRestarts=5, method=None,
 
     # Optimize GP hyperparameters by maximizing marginal log_likelihood
     for ii in range(nGPRestarts):
-        # Inputs for each process
+        # Initialize inputs for each minimization
         if p0 is None:
-            # Pick random guesses for kernel hyperparameters from reasonable range
-            #k1ConstGuess = np.random.normal(loc=np.log(np.var(y)), scale=np.sqrt(np.log(np.var(y))))
-            metricGuess = [np.random.randn() for _ in range(theta.shape[-1])]
-
-            # If a linear regression kernel is included, add guesses for initial parameters
-            if("kernel:k2:k1:log_constant" in gp.get_parameter_names()):
-                k2ConstGuess = np.random.normal(loc=np.log(np.var(y)/10.0), scale=np.sqrt(np.log(np.var(y)/10.0)))
-                k2GammaGuess = np.random.normal(loc=np.log(np.var(y)/10.0), scale=np.sqrt(np.log(np.var(y)/10.0)))
-
-                # Stack the guesses
-                x0 = np.hstack(([k1ConstGuess],
-                                 metricGuess,
-                                [k2ConstGuess, k2GammaGuess]))
-            # Just 1 kernel: stack guesses
-            else:
-                #x0 = np.hstack(([k1ConstGuess], metricGuess))
-                x0 = metricGuess
+            # Pick random guesses for kernel hyperparameters
+            x0 = [np.random.randn() for _ in range(len(gp.get_parameter_vector()))]
 
         else:
             # Take user-supplied guess and slightly perturb it
