@@ -1,7 +1,8 @@
 **approxposterior**
 ===================
 
-*A Python package for approximate Bayesian inference with computationally-expensive models*
+***A Python package for approximate Bayesian inference with computationally-expensive models***
+
 ===========================================================================================
 
 <p>
