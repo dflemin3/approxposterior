@@ -524,7 +524,6 @@ class ApproxPosterior(object):
             thetaT = ut.minimizeObjective(self.utility, self.y, self.gp,
                                           sampleFn=self.priorSample,
                                           priorFn=self._lnprior,
-                                          bounds=bounds,
                                           nMinObjRestarts=nMinObjRestarts)
 
             # Compute lnLikelihood at thetaT?
@@ -563,8 +562,7 @@ class ApproxPosterior(object):
                 self.gp = george.GP(kernel=self.gp.kernel, fit_mean=False,
                                     mean=np.mean(self.y),
                                     white_noise=self.gp.white_noise,
-                                    fit_white_noise=False,
-                                    solver=george.HODLRSolver)
+                                    fit_white_noise=False)
                 self.gp.set_parameter_vector(currentHype)
                 self.gp.compute(self.theta)
                 # Now optimize GP given new points?

@@ -11,12 +11,11 @@ Example script
 
 from approxposterior import approx, gpUtils, likelihood as lh, utility as ut
 import numpy as np
-import george
 
 # Define algorithm parameters
 m0 = 50                           # Initial size of training set
 m = 20                            # Number of new points to find each iteration
-nmax = 5                          # Maximum number of iterations
+nmax = 2                          # Maximum number of iterations
 bounds = ((-5,5), (-5,5))         # Prior bounds
 algorithm = "bape"                # Use the Kandasamy et al. (2015) formalism
 seed = 57                         # RNG seed
@@ -27,7 +26,7 @@ np.random.seed(seed)
 samplerKwargs = {"nwalkers" : 20}        # emcee.EnsembleSampler parameters
 mcmcKwargs = {"iterations" : int(2.0e4)} # emcee.EnsembleSampler.run_mcmc parameters
 
-# Sample initial conditions from the prior
+# Sample initial conditions from prior
 theta = lh.rosenbrockSample(m0)
 
 # Evaluate forward model log likelihood + lnprior for each theta
@@ -49,7 +48,7 @@ ap = approx.ApproxPosterior(theta=theta,
                             algorithm=algorithm)
 
 # Run!
-ap.run(m=m, nmax=nmax, estBurnin=True, nGPRestarts=1, mcmcKwargs=mcmcKwargs,
+ap.run(m=m, nmax=nmax, estBurnin=True, nGPRestarts=5, mcmcKwargs=mcmcKwargs,
        cache=False, samplerKwargs=samplerKwargs, verbose=True, onlyLastMCMC=True)
 
 # Check out the final posterior distribution!
