@@ -3,8 +3,6 @@
 
 ***A Python package for approximate Bayesian inference with computationally-expensive models***
 
-===========================================================================================
-
 <p>
 <a href="https://github.com/dflemin3/approxposterior">
 <img src="https://img.shields.io/badge/GitHub-dflemin3%2Fapproxposterior-blue.svg?style=flat"></a>
