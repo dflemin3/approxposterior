@@ -1,12 +1,12 @@
 **approxposterior**
 ===================
 
-***A Python package for approximate Bayesian inference with computationally-expensive models***
-===============================================================================================
+*A Python package for approximate Bayesian inference with computationally-expensive models*
+===========================================================================================
 
 <p>
 <a href="https://github.com/dflemin3/approxposterior">
-<img src="https://img.shields.io/badge/GitHub-dfm%2Fexoplanet-blue.svg?style=flat"></a>
+<img src="https://img.shields.io/badge/GitHub-dflemin3%2Fapproxposterior-blue.svg?style=flat"></a>
 <a href="https://github.com/dflemin3/approxposterior/blob/master/LICENSE">
 <img src="https://img.shields.io/badge/license-MIT-blue.svg?style=flat"></a>
 <a href="https://travis-ci.org/dflemin3/approxposterior">

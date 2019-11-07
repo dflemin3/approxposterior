@@ -16,7 +16,6 @@ import george
 from scipy.optimize import minimize
 from sklearn.model_selection import KFold
 from sklearn.metrics import mean_squared_error
-from sklearn.preprocessing import MinMaxScaler
 
 
 def _nll(p, gp, y):
@@ -118,7 +117,6 @@ def defaultGP(theta, y, order=None, white_noise=-10, scaler=None):
                                                                          ndim=theta.shape[-1])
 
     # Create GP and compute the kernel, aka factor the covariance matrix
-    # XXX fit median???
     gp = george.GP(kernel=kernel, fit_mean=False, mean=np.mean(y),
                    white_noise=white_noise, fit_white_noise=False)
     gp.compute(theta)
@@ -198,9 +196,6 @@ def optimizeGP(gp, theta, y, seed=None, nGPRestarts=5, method=None,
 
         # Compute marginal log likelihood for this set of kernel hyperparameters
         mll.append(gp.log_likelihood(y, quiet=True))
-        #print("Parameters:", res[-1])
-        #print("Marginal log_likelihood:", mll[-1])
-        #print()
 
     # Use CV to select best answer?
     if gpCV is not None:
