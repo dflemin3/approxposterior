@@ -11,7 +11,6 @@ Example script
 
 from approxposterior import approx, gpUtils, likelihood as lh, utility as ut
 import numpy as np
-import george
 
 # Define algorithm parameters
 m0 = 50                           # Initial size of training set

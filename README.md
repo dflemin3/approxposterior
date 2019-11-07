@@ -59,34 +59,27 @@ python setup.py install
 A simple example
 ===================
 
-Below is a simple application of *approxposterior* based on the Wang & Li (2017) example. Note that
-we adapted this example and shortened it so that it only takes about 1 minute to run.
-
-To keep track of the MCMC progress, set ```verbose = True``` in the ```approx.run``` method. This setting
-outputs X/M where M is the total number of MCMC iterations to be evaluated, 5,000 in this example, and x is the current
-iteration number.  Note that setting ```verbose = True``` also outputs additional diagnostic information, such as when
-the MCMC finishes, what the estimated burn-in is, and other quantities that are useful for tracking the progress of
-your code.  In this example, we set ```verbose = False``` for simplicity.
+Below is a simple application of *approxposterior* based on the Wang & Li (2017) example.
 
 ```python
 from approxposterior import approx, gpUtils, likelihood as lh, utility as ut
 import numpy as np
-import george
 
 # Define algorithm parameters
 m0 = 50                           # Initial size of training set
 m = 20                            # Number of new points to find each iteration
 nmax = 2                          # Maximum number of iterations
 bounds = ((-5,5), (-5,5))         # Prior bounds
-algorithm = "BAPE"                # Use the Kandasamy et al. (2015) formalism
+algorithm = "bape"                # Use the Kandasamy et al. (2015) formalism
 seed = 57                         # RNG seed
+
 np.random.seed(seed)
 
 # emcee MCMC parameters
 samplerKwargs = {"nwalkers" : 20}        # emcee.EnsembleSampler parameters
 mcmcKwargs = {"iterations" : int(2.0e4)} # emcee.EnsembleSampler.run_mcmc parameters
 
-# Sample initial conditions from the prior
+# Sample initial conditions from prior
 theta = lh.rosenbrockSample(m0)
 
 # Evaluate forward model log likelihood + lnprior for each theta
@@ -94,7 +87,7 @@ y = np.zeros(len(theta))
 for ii in range(len(theta)):
     y[ii] = lh.rosenbrockLnlike(theta[ii]) + lh.rosenbrockLnprior(theta[ii])
 
-# Create the the default GP which uses an ExpSquaredKernel and log(white_noise) = -10
+# Create the the default GP which uses an ExpSquaredKernel
 gp = gpUtils.defaultGP(theta, y)
 
 # Initialize object using the Wang & Li (2017) Rosenbrock function example
@@ -108,7 +101,7 @@ ap = approx.ApproxPosterior(theta=theta,
                             algorithm=algorithm)
 
 # Run!
-ap.run(m=m, nmax=nmax, estBurnin=True, nGPRestarts=1, mcmcKwargs=mcmcKwargs,
+ap.run(m=m, nmax=nmax, estBurnin=True, nGPRestarts=5, mcmcKwargs=mcmcKwargs,
        cache=False, samplerKwargs=samplerKwargs, verbose=True, onlyLastMCMC=True)
 
 # Check out the final posterior distribution!
@@ -121,6 +114,10 @@ samples = ap.sampler.get_chain(discard=ap.iburns[-1], flat=True, thin=ap.ithins[
 fig = corner.corner(samples, quantiles=[0.16, 0.5, 0.84], show_titles=True,
                     scale_hist=True, plot_contours=True)
 
+# Plot where forward model was evaluated
+fig.axes[2].scatter(ap.theta[m0:,0], ap.theta[m0:,1], s=10, color="red", zorder=20)
+
+# Save figure
 fig.savefig("finalPosterior.png", bbox_inches="tight")
 ```
 
