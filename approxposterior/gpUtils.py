@@ -117,7 +117,7 @@ def defaultGP(theta, y, order=None, white_noise=-10):
                                                                          ndim=theta.shape[-1])
 
     # Create GP and compute the kernel, aka factor the covariance matrix
-    gp = george.GP(kernel=kernel, fit_mean=False, mean=np.mean(y),
+    gp = george.GP(kernel=kernel, fit_mean=False, mean=np.median(y),
                    white_noise=white_noise, fit_white_noise=False)
     gp.compute(theta)
 
@@ -148,7 +148,7 @@ def optimizeGP(gp, theta, y, seed=None, nGPRestarts=5, method=None,
         kwargs for the scipy.optimize.minimize function.  Defaults to None.
     p0 : array (optional)
         Initial guess for kernel hyperparameters.  If None, defaults to
-        ndim values randomly sampled from a uniform distribution over [-10, 10)
+        np.random.randn for each parameter
     gpCV : int (optional)
         Whether or not to use k-fold cross-validation to select kernel
         hyperparameters from the nGPRestarts maximum likelihood solutions.

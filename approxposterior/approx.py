@@ -245,8 +245,7 @@ class ApproxPosterior(object):
             hyperparameters.  Defaults to None.
         gpP0 : array (optional)
             Initial guess for kernel hyperparameters.  If None, defaults to
-            np.random.uniform(low=-10, high=10) for each dimension, np.mean(y)
-            for the mean function.
+            np.random.randn for each parameter.
         optGPEveryN : int (optional)
             How often to optimize the GP hyperparameters.  Defaults to
             re-optimizing everytime a new design point is found, e.g. every time
@@ -464,8 +463,7 @@ class ApproxPosterior(object):
             hyperparameters.  Defaults to None.
         gpP0 : array (optional)
             Initial guess for kernel hyperparameters.  If None, defaults to
-            np.random.uniform(low=-10, high=10) for each dimension, np.mean(y)
-            for the mean function.
+            np.random.randn for each parameter.
         optGP : bool (optional)
             Whether or not to optimize the GP hyperparameters.  Defaults to
             True.
@@ -560,7 +558,7 @@ class ApproxPosterior(object):
                 # Create GP using same kernel, updated estimate of the mean, but new theta
                 currentHype = self.gp.get_parameter_vector()
                 self.gp = george.GP(kernel=self.gp.kernel, fit_mean=False,
-                                    mean=np.mean(self.y),
+                                    mean=np.median(self.y),
                                     white_noise=self.gp.white_noise,
                                     fit_white_noise=False)
                 self.gp.set_parameter_vector(currentHype)
