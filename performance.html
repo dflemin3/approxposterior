@@ -214,11 +214,11 @@ Rosenbrock function example, both optimizations are relatively easy.  In higher-
 problems, the objective functions, e.g. the GP marginal loglikelihood and the
 utility functions, both typically have multiple extrema, making optimization more
 difficult.  In practice, we have found that restarting the minimization procedure
-with initial guesses randomly distributed throughout parameter space results in good
-performance, however, higher-dimensional problems often requires more restarts.</p>
+with random initial guesses results in good performance, however,
+higher-dimensional problems likely require more restarts.</p>
 <p>If <code class="xref py py-obj docutils literal notranslate"><span class="pre">approxposterior</span></code> is running too slowly, or worse, is not able to derive
 good posterior probability distributions, the algorithm can be tweaked in several ways.</p>
-<p>Note, if you’re interested in how <code class="xref py py-obj docutils literal notranslate"><span class="pre">approxposterior</span></code> scales with forward
+<p>Note: If you’re interested in how <code class="xref py py-obj docutils literal notranslate"><span class="pre">approxposterior</span></code> scales with forward
 model evaluation time and how accurate it is, check out the Scaling and Accuracy
 example notebook on the Tutorial page.</p>
 <p><strong>Optimizing GP Hyperparameters</strong></p>
@@ -232,8 +232,7 @@ hyperparameter optimization should be restarted.</p>
 <p>Furthermore, <code class="xref py py-obj docutils literal notranslate"><span class="pre">approxposterior</span></code> reoptimizes the GP hyperparameters each time
 a new point is selected and added to the training set.  In practice, this is likely
 overkill for some applications, so the user can set optGPEveryN in the run method
-to instead only reoptimize the GP every N new points. In practice, I find that
-optGPEveryN = 25 usually works, but the performance can vary.</p>
+to instead only reoptimize the GP every N new points.</p>
 <p><strong>Optimizing selecting new points in parameter space</strong></p>
 <p>Similar to the GP hyperparameter optimization, finding where next in parameter space
 to run the model to improve the GP’s performance requires maximizing the BAPE or

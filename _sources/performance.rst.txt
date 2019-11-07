@@ -16,13 +16,13 @@ Rosenbrock function example, both optimizations are relatively easy.  In higher-
 problems, the objective functions, e.g. the GP marginal loglikelihood and the
 utility functions, both typically have multiple extrema, making optimization more
 difficult.  In practice, we have found that restarting the minimization procedure
-with initial guesses randomly distributed throughout parameter space results in good
-performance, however, higher-dimensional problems often requires more restarts.
+with random initial guesses results in good performance, however,
+higher-dimensional problems likely require more restarts.
 
 If :py:obj:`approxposterior` is running too slowly, or worse, is not able to derive
 good posterior probability distributions, the algorithm can be tweaked in several ways.
 
-Note, if you're interested in how :py:obj:`approxposterior` scales with forward
+Note: If you're interested in how :py:obj:`approxposterior` scales with forward
 model evaluation time and how accurate it is, check out the Scaling and Accuracy
 example notebook on the Tutorial page.
 
@@ -40,8 +40,7 @@ hyperparameter optimization should be restarted.
 Furthermore, :py:obj:`approxposterior` reoptimizes the GP hyperparameters each time
 a new point is selected and added to the training set.  In practice, this is likely
 overkill for some applications, so the user can set optGPEveryN in the run method
-to instead only reoptimize the GP every N new points. In practice, I find that
-optGPEveryN = 25 usually works, but the performance can vary.
+to instead only reoptimize the GP every N new points. 
 
 .. _george: https://george.readthedocs.io/en/latest/tutorials/hyper/
 

@@ -466,8 +466,7 @@
 <span class="c1"># end function</span>
 
 
-<div class="viewcode-block" id="minimizeObjective"><a class="viewcode-back" href="../../api/utility.html#approxposterior.utility.minimizeObjective">[docs]</a><span class="k">def</span> <span class="nf">minimizeObjective</span><span class="p">(</span><span class="n">fn</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">gp</span><span class="p">,</span> <span class="n">sampleFn</span><span class="p">,</span> <span class="n">priorFn</span><span class="p">,</span> <span class="n">bounds</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                      <span class="n">nMinObjRestarts</span><span class="o">=</span><span class="mi">5</span><span class="p">):</span>
+<div class="viewcode-block" id="minimizeObjective"><a class="viewcode-back" href="../../api/utility.html#approxposterior.utility.minimizeObjective">[docs]</a><span class="k">def</span> <span class="nf">minimizeObjective</span><span class="p">(</span><span class="n">fn</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">gp</span><span class="p">,</span> <span class="n">sampleFn</span><span class="p">,</span> <span class="n">priorFn</span><span class="p">,</span> <span class="n">nMinObjRestarts</span><span class="o">=</span><span class="mi">5</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Find point that minimizes fn for a gaussian process gp conditioned on y,</span>
 <span class="sd">    the data, and is allowed by the prior, priorFn.  PriorFn is required as it</span>
@@ -486,9 +485,6 @@
 <span class="sd">        Function to sample initial conditions from.</span>
 <span class="sd">    priorFn : function</span>
 <span class="sd">        Function that computes lnPrior probability for a given theta.</span>
-<span class="sd">    bounds : tuple/iterable (optional)</span>
-<span class="sd">        Bounds for minimization scheme.  See scipy.optimize.minimize details</span>
-<span class="sd">        for more information.  Defaults to None.</span>
 <span class="sd">    nMinObjRestarts : int (optional)</span>
 <span class="sd">        Number of times to restart minimizing -utility function to select</span>
 <span class="sd">        next point to improve GP performance.  Defaults to 5.  Increase this</span>
@@ -519,7 +515,7 @@
             <span class="c1"># Mimimze fn, see if prior allows solution</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">tmp</span> <span class="o">=</span> <span class="n">minimize</span><span class="p">(</span><span class="n">fn</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">theta0</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="n">args</span><span class="o">=</span><span class="n">args</span><span class="p">,</span>
-                               <span class="n">bounds</span><span class="o">=</span><span class="n">bounds</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;nelder-mead&quot;</span><span class="p">,</span>
+                               <span class="n">bounds</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;nelder-mead&quot;</span><span class="p">,</span>
                                <span class="n">options</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;adaptive&quot;</span> <span class="p">:</span> <span class="kc">True</span><span class="p">})[</span><span class="s2">&quot;x&quot;</span><span class="p">]</span>
 
             <span class="c1"># ValueError.  Try again.</span>

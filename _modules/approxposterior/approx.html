@@ -690,7 +690,6 @@
             <span class="n">thetaT</span> <span class="o">=</span> <span class="n">ut</span><span class="o">.</span><span class="n">minimizeObjective</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">utility</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">gp</span><span class="p">,</span>
                                           <span class="n">sampleFn</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">priorSample</span><span class="p">,</span>
                                           <span class="n">priorFn</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_lnprior</span><span class="p">,</span>
-                                          <span class="n">bounds</span><span class="o">=</span><span class="n">bounds</span><span class="p">,</span>
                                           <span class="n">nMinObjRestarts</span><span class="o">=</span><span class="n">nMinObjRestarts</span><span class="p">)</span>
 
             <span class="c1"># Compute lnLikelihood at thetaT?</span>
@@ -729,8 +728,7 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">gp</span> <span class="o">=</span> <span class="n">george</span><span class="o">.</span><span class="n">GP</span><span class="p">(</span><span class="n">kernel</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">gp</span><span class="o">.</span><span class="n">kernel</span><span class="p">,</span> <span class="n">fit_mean</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
                                     <span class="n">mean</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">),</span>
                                     <span class="n">white_noise</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">gp</span><span class="o">.</span><span class="n">white_noise</span><span class="p">,</span>
-                                    <span class="n">fit_white_noise</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-                                    <span class="n">solver</span><span class="o">=</span><span class="n">george</span><span class="o">.</span><span class="n">HODLRSolver</span><span class="p">)</span>
+                                    <span class="n">fit_white_noise</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">gp</span><span class="o">.</span><span class="n">set_parameter_vector</span><span class="p">(</span><span class="n">currentHype</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">gp</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">theta</span><span class="p">)</span>
                 <span class="c1"># Now optimize GP given new points?</span>
