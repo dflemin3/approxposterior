@@ -68,7 +68,7 @@ def _grad_nll(p, gp, y):
 # end function
 
 
-def defaultGP(theta, y, order=None, white_noise=-10, scaler=None):
+def defaultGP(theta, y, order=None, white_noise=-10):
     """
     Basic utility function that initializes a simple GP that works well in many
     applications, but is not guaranteed to work in general.
