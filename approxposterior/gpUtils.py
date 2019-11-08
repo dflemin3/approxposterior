@@ -158,9 +158,9 @@ def defaultGP(theta, y, order=None, white_noise=-10):
 
     # Create kernel: We'll model coveriances in loglikelihood space using a
     # Squared Expoential Kernel
-    kernel = george.kernels.Matern52Kernel(metric=initialMetric,
-                                                         bounds=None,
-                                                         ndim=theta.shape[-1])
+    kernel = george.kernels.ExpSquaredKernel(metric=initialMetric,
+                                             bounds=None,
+                                             ndim=theta.shape[-1])
 
     # Add a linear regression kernel of order order?
     # Use a meh guess for the amplitude and for the scale length (gamma)
