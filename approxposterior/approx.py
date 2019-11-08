@@ -557,7 +557,7 @@ class ApproxPosterior(object):
             try:
                 # Create GP using same kernel, updated estimate of the mean, but new theta
                 currentHype = self.gp.get_parameter_vector()
-                self.gp = george.GP(kernel=self.gp.kernel, fit_mean=False,
+                self.gp = george.GP(kernel=self.gp.kernel, fit_mean=True,
                                     mean=np.median(self.y),
                                     white_noise=self.gp.white_noise,
                                     fit_white_noise=False)

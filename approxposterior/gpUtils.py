@@ -37,7 +37,12 @@ def _nll(p, gp, y):
         negative log-likelihood of y under gp
     """
 
-    gp.set_parameter_vector(p)
+    # Catch singular matrices
+    try:
+        gp.set_parameter_vector(p)
+    except np.linalg.LinAlgError:
+        return 1e25
+
     ll = gp.log_likelihood(y, quiet=True)
     return -ll if np.isfinite(ll) else 1e25
 # end function
@@ -65,6 +70,55 @@ def _grad_nll(p, gp, y):
     # Negative gradient of log likelihood
     gp.set_parameter_vector(p)
     return -gp.grad_log_likelihood(y, quiet=True)
+# end function
+
+
+def _cvObjective(p, gp, y, theta, cv=10):
+    """
+    Given parameters and data, compute cv-fold cross validation error of the
+    gp given data, theta and y, and the current parameter vector, p
+
+    Parameters
+    ----------
+    p : array
+        GP hyperparameters
+    gp : george.GP
+    y : array
+        data to condition GP
+    theta : array
+        input data to condition GP
+    cv : int (optional)
+        Number of cross validation folds. Defaults to 5.
+
+    Returns
+    -------
+    mse : float
+        cross validation mean squared error
+    """
+
+    # Use cv fold cross-validation
+    mses = np.zeros(cv)
+    kfold = KFold(n_splits=cv)
+
+    # Train on train, evaluate predictions on test
+    ii = 0
+    for trainInds, testInds in kfold.split(theta, y):
+
+        # Update the kernel using training set and current guess, p
+        gp.set_parameter_vector(p)
+        gp.compute(theta[trainInds])
+
+        # Predict mean function at test points, given training data
+        yhat = gp.predict(y[trainInds], theta[testInds],
+                          return_cov=False, return_var=False)
+
+        # Compute mean squared error of the predictions
+        mses[ii] = mean_squared_error(y[testInds], yhat)
+
+        ii = ii + 1
+
+    # Return avg mean squared error
+    return np.mean(mses)
 # end function
 
 
@@ -100,13 +154,13 @@ def defaultGP(theta, y, order=None, white_noise=-10):
 
     # Guess initial metric, or scale length of the covariances in loglikelihood space
     # using suggestion from Kandasamy et al. (2015)
-    initialMetric = [5.0*len(theta)**(-1.0/theta.shape[-1]) for _ in range(theta.shape[-1])]
+    initialMetric = np.array([5.0*len(theta)**(-1.0/theta.shape[-1]) for _ in range(theta.shape[-1])])
 
     # Create kernel: We'll model coveriances in loglikelihood space using a
     # Squared Expoential Kernel
-    kernel = george.kernels.ExpSquaredKernel(metric=initialMetric,
-                                             bounds=None,
-                                             ndim=theta.shape[-1])
+    kernel = george.kernels.Matern52Kernel(metric=initialMetric,
+                                                         bounds=None,
+                                                         ndim=theta.shape[-1])
 
     # Add a linear regression kernel of order order?
     # Use a meh guess for the amplitude and for the scale length (gamma)
@@ -117,7 +171,7 @@ def defaultGP(theta, y, order=None, white_noise=-10):
                                                                          ndim=theta.shape[-1])
 
     # Create GP and compute the kernel, aka factor the covariance matrix
-    gp = george.GP(kernel=kernel, fit_mean=False, mean=np.median(y),
+    gp = george.GP(kernel=kernel, fit_mean=True, mean=np.median(y),
                    white_noise=white_noise, fit_white_noise=False)
     gp.compute(theta)
 
@@ -174,7 +228,7 @@ def optimizeGP(gp, theta, y, seed=None, nGPRestarts=5, method=None,
         # Initialize inputs for each minimization
         if p0 is None:
             # Pick random guesses for kernel hyperparameters
-            x0 = [np.random.randn() for _ in range(len(gp.get_parameter_vector()))]
+            x0 = [np.median(y)] + [np.random.randn() for _ in range(len(gp.get_parameter_vector())-1)]
 
         else:
             # Take user-supplied guess and slightly perturb it
