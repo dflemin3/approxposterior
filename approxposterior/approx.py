@@ -174,7 +174,7 @@ class ApproxPosterior(object):
             mcmcKwargs=None, samplerKwargs=None, estBurnin=False,
             thinChains=False, runName="apRun", cache=True,
             maxLnLikeRestarts=3, gmmKwargs=None, gpMethod=None, gpOptions=None,
-            gpP0=None, optGPEveryN=1, nGPRestarts=5, nMinObjRestarts=5,
+            gpP0=None, optGPEveryN=1, nGPRestarts=1, nMinObjRestarts=5,
             gpCV=None, onlyLastMCMC=False, args=None, **kwargs):
         """
         Core algorithm to estimate the posterior distribution via Gaussian
@@ -253,7 +253,7 @@ class ApproxPosterior(object):
             parameter if approxposterior is running slowly.
         nGPRestarts : int (optional)
             Number of times to restart GP hyperparameter optimization.  Defaults
-            to 5. Increase this number if the GP isn't optimized well.
+            to 1. Increase this number if the GP isn't optimized well.
         nMinObjRestarts : int (optional)
             Number of times to restart minimizing -utility function to select
             next point to improve GP performance.  Defaults to 5.  Increase this
@@ -412,7 +412,7 @@ class ApproxPosterior(object):
 
     def findNextPoint(self, computeLnLike=True, bounds=None, gpMethod=None,
                       maxLnLikeRestarts=3, seed=None, cache=True, gpOptions=None,
-                      gpP0=None, optGP=True, args=None, nGPRestarts=5,
+                      gpP0=None, optGP=True, args=None, nGPRestarts=1,
                       nMinObjRestarts=5, gpCV=None, runName="apRun",
                       **kwargs):
         """
@@ -469,7 +469,7 @@ class ApproxPosterior(object):
             True.
         nGPRestarts : int (optional)
             Number of times to restart GP hyperparameter optimization.  Defaults
-            to 5. Increase this number if the GP isn't optimized well.
+            to 1. Increase this number if the GP isn't optimized well.
         nMinObjRestarts : int (optional)
             Number of times to restart minimizing -utility function to select
             next point to improve GP performance.  Defaults to 5.  Increase this

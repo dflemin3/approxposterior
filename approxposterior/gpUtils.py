@@ -67,8 +67,13 @@ def _grad_nll(p, gp, y):
         gradient of the negative log-likelihood of y under gp
     """
 
+    # Catch singular matrices
+    try:
+        gp.set_parameter_vector(p)
+    except np.linalg.LinAlgError:
+        return 1e25
+
     # Negative gradient of log likelihood
-    gp.set_parameter_vector(p)
     return -gp.grad_log_likelihood(y, quiet=True)
 # end function
 
@@ -179,7 +184,7 @@ def defaultGP(theta, y, order=None, white_noise=-10):
 # end function
 
 
-def optimizeGP(gp, theta, y, seed=None, nGPRestarts=5, method=None,
+def optimizeGP(gp, theta, y, seed=None, nGPRestarts=1, method=None,
                options=None, p0=None, gpCV=None):
     """
     Optimize hyperparameters of an arbitrary george Gaussian Process kernel
@@ -194,7 +199,7 @@ def optimizeGP(gp, theta, y, seed=None, nGPRestarts=5, method=None,
     seed : int (optional)
         numpy RNG seed.  Defaults to None.
     nGPRestarts : int (optional)
-        Number of times to restart the optimization.  Defaults to 5. Increase
+        Number of times to restart the optimization.  Defaults to 1. Increase
         this number if the GP isn't optimized well.
     method : str (optional)
         scipy.optimize.minimize method.  Defaults to powell if None.
@@ -250,6 +255,8 @@ def optimizeGP(gp, theta, y, seed=None, nGPRestarts=5, method=None,
 
         # Compute marginal log likelihood for this set of kernel hyperparameters
         mll.append(gp.log_likelihood(y, quiet=True))
+
+        print(resii, mll[-1])
 
     # Use CV to select best answer?
     if gpCV is not None:
