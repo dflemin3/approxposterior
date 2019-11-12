@@ -256,8 +256,6 @@ def optimizeGP(gp, theta, y, seed=None, nGPRestarts=1, method=None,
         # Compute marginal log likelihood for this set of kernel hyperparameters
         mll.append(gp.log_likelihood(y, quiet=True))
 
-        print(resii, mll[-1])
-
     # Use CV to select best answer?
     if gpCV is not None:
         if isinstance(gpCV, int):
