@@ -315,10 +315,15 @@ class ApproxPosterior(object):
         # calculate and we want them around in case something weird happens.
         # Users should probably do this in their likelihood function
         # anyways, but might as well do it here too.
-        # Note: this is done before any scaling
         if cache:
-            np.savez(str(runName) + "APFModelCache.npz", theta=self.theta,
-                     y=self.y)
+            # If scaling, save theta in physical units
+            if self.scaler is not None:
+                np.savez(str(runName) + "APFModelCache.npz",
+                         theta=self.scaler.inverse_transform(self.theta),
+                         y=self.y)
+            else:
+                np.savez(str(runName) + "APFModelCache.npz",
+                         theta=self.theta, y=self.y)
 
         # Set RNG seed?
         if seed is not None:
