@@ -78,55 +78,6 @@ def _grad_nll(p, gp, y):
 # end function
 
 
-def _cvObjective(p, gp, y, theta, cv=10):
-    """
-    Given parameters and data, compute cv-fold cross validation error of the
-    gp given data, theta and y, and the current parameter vector, p
-
-    Parameters
-    ----------
-    p : array
-        GP hyperparameters
-    gp : george.GP
-    y : array
-        data to condition GP
-    theta : array
-        input data to condition GP
-    cv : int (optional)
-        Number of cross validation folds. Defaults to 5.
-
-    Returns
-    -------
-    mse : float
-        cross validation mean squared error
-    """
-
-    # Use cv fold cross-validation
-    mses = np.zeros(cv)
-    kfold = KFold(n_splits=cv)
-
-    # Train on train, evaluate predictions on test
-    ii = 0
-    for trainInds, testInds in kfold.split(theta, y):
-
-        # Update the kernel using training set and current guess, p
-        gp.set_parameter_vector(p)
-        gp.compute(theta[trainInds])
-
-        # Predict mean function at test points, given training data
-        yhat = gp.predict(y[trainInds], theta[testInds],
-                          return_cov=False, return_var=False)
-
-        # Compute mean squared error of the predictions
-        mses[ii] = mean_squared_error(y[testInds], yhat)
-
-        ii = ii + 1
-
-    # Return avg mean squared error
-    return np.mean(mses)
-# end function
-
-
 def defaultGP(theta, y, order=None, white_noise=-10):
     """
     Basic utility function that initializes a simple GP that works well in many

@@ -23,6 +23,8 @@ import emcee
 import george
 import os
 import warnings
+from sklearn.preprocessing import MinMaxScaler
+
 
 
 class ApproxPosterior(object):
@@ -33,7 +35,7 @@ class ApproxPosterior(object):
     """
 
     def __init__(self, theta, y, lnprior, lnlike, priorSample, bounds, gp=None,
-                 algorithm="BAPE"):
+                 algorithm="BAPE", scaler=None):
         """
         Initializer.
 
@@ -69,6 +71,15 @@ class ApproxPosterior(object):
         None
         """
 
+        # Set scaler
+        if scaler is None:
+            self.scaler = None
+        elif str(scaler).lower() == "minmax":
+            self.scaler = MinMaxScaler()
+        else:
+            errMsg = "Unknown scaler. Valid options: None, minmax."
+            raise ValueError(errMsg)
+
         # Need to supply the training set
         if theta is None or y is None:
             raise ValueError("Must supply both theta and y for initial GP training set.")
@@ -89,6 +100,11 @@ class ApproxPosterior(object):
             raise ValueError(err_msg)
         else:
             self.bounds = bounds
+
+        # Input validated, scale is need be
+        if self.scaler is not None:
+             self.scaler.fit(np.array(self.bounds).T)
+             self.theta = self.scaler.transform(self.theta)
 
         # Set required functions, algorithm
         self._lnprior = lnprior
@@ -118,10 +134,14 @@ class ApproxPosterior(object):
 
         # Initialize gaussian process if none provided
         if gp is None:
-            print("WARNING: No GP specified. Initializing GP using ExpSquaredKernel.")
+            print("No GP specified. Initializing GP using ExpSquaredKernel.")
             self.gp = gpUtils.defaultGP(self.theta, self.y)
         else:
             self.gp = gp
+
+            if self.scaler is not None:
+                print("INFO: Scaling theta and GP supplied by user.")
+                print("Errors can occur if theta was not similarly scaled before initializing GP!")
     # end function
 
 
@@ -155,6 +175,8 @@ class ApproxPosterior(object):
         # Mean of predictive distribution conditioned on y (GP posterior estimate)
         # and make sure theta is the right shape for the GP
         try:
+            if self.scaler is not None:
+                theta = self.scaler.transform(np.array(theta).reshape(1,-1))
             mu = self.gp.predict(self.y, np.array(theta).reshape(1,-1),
                                  return_cov=False,
                                  return_var=False)
@@ -407,6 +429,10 @@ class ApproxPosterior(object):
                     np.savez(str(runName) + "APTiming.npz",
                              trainingTime=self.trainingTime,
                              mcmcTime=self.mcmcTime)
+
+        # Done. Inverse transform theta?
+        if self.scaler is not None:
+            self.theta = self.scaler.inverse_transform(self.theta)
     # end function
 
 
@@ -522,12 +548,15 @@ class ApproxPosterior(object):
             thetaT = ut.minimizeObjective(self.utility, self.y, self.gp,
                                           sampleFn=self.priorSample,
                                           priorFn=self._lnprior,
-                                          nMinObjRestarts=nMinObjRestarts)
+                                          nMinObjRestarts=nMinObjRestarts,
+                                          scaler=self.scaler)
 
             # Compute lnLikelihood at thetaT?
             if computeLnLike:
                 # If scaling, transform thetaT back to physical units for
                 # user-supplied lnlike and lnprior functions
+                if self.scaler is not None:
+                    thetaT = self.scaler.inverse_transform(thetaT.reshape(1,-1))
 
                 # 2) Query forward model at new point, thetaT
                 # Evaluate forward model via loglikelihood function
@@ -546,6 +575,10 @@ class ApproxPosterior(object):
             llIters += 1
 
         if computeLnLike:
+
+            # Back to transformed units
+            if self.scaler is not None:
+                thetaT = self.scaler.transform(np.array(thetaT).reshape(1, -1))
 
             # Valid theta, y found. Join theta, y arrays with new points.
             self.theta = np.vstack([self.theta, np.array(thetaT)])
@@ -572,7 +605,10 @@ class ApproxPosterior(object):
                                                  gpCV=gpCV)
             except ValueError:
                 # Output errant theta in physical units
-                print("theta:", self.theta)
+                if self.scaler is not None:
+                    print("theta:", self.scaler.inverse_transform(self.theta))
+                else:
+                    print("theta:", self.theta)
                 print("y:", self.y)
                 print("gp parameters names:", self.gp.get_parameter_names())
                 print("gp parameters:", self.gp.get_parameter_vector())
@@ -584,12 +620,19 @@ class ApproxPosterior(object):
             # anyways, but might as well do it here too.
             if cache:
                 # If scaling, save theta in physical units
-                np.savez(str(runName)+"APFModelCache.npz",
-                         theta=self.theta,
-                         y=self.y)
-        # Don't care about lnlikelihood, just return thetaT.
+                if self.scaler is not None:
+                    np.savez(str(runName)+"APFModelCache.npz",
+                             theta=self.scaler.inverse_transform(self.theta),
+                             y=self.y)
+                else:
+                    np.savez(str(runName)+"APFModelCache.npz",
+                             theta=self.theta, y=self.y)
+        # Don't care about lnlikelihood, just return thetaT in physical units.
         else:
-            return thetaT
+            if self.scaler is None:
+                return thetaT
+            else:
+                return self.scaler.inverse_transform(thetaT)
     # end function
 
 

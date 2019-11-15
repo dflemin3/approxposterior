@@ -34,22 +34,19 @@ y = np.zeros(len(theta))
 for ii in range(len(theta)):
     y[ii] = lh.rosenbrockLnlike(theta[ii]) + lh.rosenbrockLnprior(theta[ii])
 
-# Create the the default GP which uses an ExpSquaredKernel
-gp = gpUtils.defaultGP(theta, y)
-
 # Initialize object using the Wang & Li (2017) Rosenbrock function example
 ap = approx.ApproxPosterior(theta=theta,
                             y=y,
-                            gp=gp,
                             lnprior=lh.rosenbrockLnprior,
                             lnlike=lh.rosenbrockLnlike,
                             priorSample=lh.rosenbrockSample,
                             bounds=bounds,
-                            algorithm=algorithm)
+                            algorithm=algorithm,
+                            scaler="minmax")
 
 # Run!
 ap.run(m=m, nmax=nmax, estBurnin=True, nGPRestarts=1, mcmcKwargs=mcmcKwargs,
-       cache=False, samplerKwargs=samplerKwargs, verbose=True,
+       cache=False, samplerKwargs=samplerKwargs, verbose=True, thinChains=True,
        onlyLastMCMC=True)
 
 # Check out the final posterior distribution!
