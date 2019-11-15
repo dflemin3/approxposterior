@@ -57,7 +57,7 @@ def test_find():
                               seed=seed)
 
     err_msg = "findNextPoint selected incorrect thetaT."
-    assert(np.allclose(thetaT, [-1.74962069, 0.86581306], rtol=1.0e-3)), err_msg
+    assert(np.allclose(thetaT, [0.79334827, 0.85401409], rtol=1.0e-3)), err_msg
 # end function
 
 if __name__ == "__main__":

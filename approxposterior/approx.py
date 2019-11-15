@@ -165,7 +165,7 @@ class ApproxPosterior(object):
         if not np.isfinite(mu):
             return -np.inf, np.nan
         else:
-            return mu, lnprior
+            return mu + lnprior, lnprior
     # end function
 
 
@@ -531,9 +531,11 @@ class ApproxPosterior(object):
 
                 # If loglike function returns loglike, blobs, ..., only use loglike
                 if hasattr(loglikeT, "__iter__"):
-                    yT = np.array([loglikeT[0] + self._lnprior(thetaT)])
+                    #yT = np.array([loglikeT[0] + self._lnprior(thetaT)])
+                    yT = loglikeT[0]
                 else:
-                    yT = np.array([loglikeT + self._lnprior(thetaT)])
+                    #yT = np.array([loglikeT + self._lnprior(thetaT)])
+                    yT = loglikeT
 
             # Don't compute lnlikelihood, found point, so we're done
             else:

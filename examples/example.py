@@ -32,10 +32,10 @@ theta = lh.rosenbrockSample(m0)
 # Evaluate forward model log likelihood + lnprior for each theta
 y = np.zeros(len(theta))
 for ii in range(len(theta)):
-    y[ii] = lh.rosenbrockLnlike(theta[ii]) + lh.rosenbrockLnprior(theta[ii])
+    y[ii] = lh.rosenbrockLnlike(theta[ii]) #+ lh.rosenbrockLnprior(theta[ii])
 
 # Default gp
-gp = gpUtils.defaultGP(theta, y, white_noise=-10)
+gp = gpUtils.defaultGP(theta, y)
 
 # Initialize object using the Wang & Li (2017) Rosenbrock function example
 ap = approx.ApproxPosterior(theta=theta,
