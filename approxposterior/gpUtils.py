@@ -108,9 +108,8 @@ def defaultGP(theta, y, order=None, white_noise=-10):
         matrix.
     """
 
-    # Guess initial metric, or scale length of the covariances in loglikelihood space
-    # using suggestion from Kandasamy et al. (2015)
-    initialMetric = np.array([5.0*len(theta)**(-1.0/theta.shape[-1]) for _ in range(theta.shape[-1])])
+    # Guess initial metric, or scale length of the covariances (must be > 0)
+    initialMetric = np.fabs(np.random.randn(theta.shape[-1]))
 
     # Create kernel: We'll model coveriances in loglikelihood space using a
     # Squared Expoential Kernel

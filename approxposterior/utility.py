@@ -300,8 +300,7 @@ def BAPEUtility(theta, y, gp, priorFn):
 # end function
 
 
-def minimizeObjective(fn, y, gp, sampleFn, priorFn, nMinObjRestarts=5,
-                      scaler=None):
+def minimizeObjective(fn, y, gp, sampleFn, priorFn, nMinObjRestarts=5):
     """
     Find point that minimizes fn for a gaussian process gp conditioned on y,
     the data, and is allowed by the prior, priorFn.  PriorFn is required as it
@@ -344,9 +343,6 @@ def minimizeObjective(fn, y, gp, sampleFn, priorFn, nMinObjRestarts=5,
         # Inputs for each process - guess initial value from prior
         theta0 = np.array(sampleFn(1)).reshape(1,-1)
 
-        if scaler is not None:
-            theta0 = scaler.transform(theta0)
-
         # Solve for theta that maximize fn and is allowed by prior
         while True:
 
@@ -360,9 +356,6 @@ def minimizeObjective(fn, y, gp, sampleFn, priorFn, nMinObjRestarts=5,
             except ValueError:
                 tmp = np.array([np.inf for ii in range(theta0.shape[-1])]).reshape(theta0.shape)
 
-            if scaler is not None:
-                tmp = scaler.inverse_transform(tmp.reshape(1,-1))
-
             # Vet answer: must be finite, allowed by prior
             # Are all values finite?
             if np.all(np.isfinite(tmp)):
@@ -370,17 +363,12 @@ def minimizeObjective(fn, y, gp, sampleFn, priorFn, nMinObjRestarts=5,
                 if np.isfinite(priorFn(tmp)):
 
                      # Save solution, value of utility fn
-                     if scaler is not None:
-                         tmp = scaler.transform(tmp)
                      res.append(tmp)
                      objective.append(fn(tmp, *args))
                      break
 
             # Optimization failed, try a new theta0 by sampling from the prior
             theta0 = sampleFn(1)
-
-            if scaler is not None:
-                theta0 = scaler.transform(theta0.reshape(1,-1))
 
     # Return value that minimizes objective function
     return np.array(res)[np.argmin(objective)]
