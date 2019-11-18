@@ -41,8 +41,6 @@ def testGPOpt():
 
     # Optimize gp using default opt parameters
     p0 = gp.get_parameter_vector()
-
-    # Try serial computation
     gp = gpu.optimizeGP(gp, theta, y, seed=seed, nGPRestarts=5, p0=p0)
 
     # Extract GP hyperparameters, compare to truth

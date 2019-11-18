@@ -53,8 +53,6 @@ def testKLApproximation():
     # Answer better be close (small percent difference)
     errMsg = "ERROR: Numerical KL divergence approximation incorrect by >0.5%!"
     assert(100*np.fabs((KLDiff - numerical)/KLDiff) < 0.5), errMsg
-
-    return None
 # end function
 
 if __name__ == "__main__":

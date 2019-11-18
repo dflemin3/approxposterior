@@ -15,6 +15,7 @@ __all__ = ["logsubexp", "AGPUtility", "BAPEUtility", "minimizeObjective",
 
 import numpy as np
 from scipy.optimize import minimize
+from scipy.special import erf
 from pyDOE import lhs
 
 
@@ -228,7 +229,7 @@ def AGPUtility(theta, y, gp, priorFn):
 
     Returns
     -------
-    u : float
+    util : float
         utility of theta under the gp
     """
 
@@ -275,7 +276,7 @@ def BAPEUtility(theta, y, gp, priorFn):
 
     Returns
     -------
-    u : float
+    util : float
         utility of theta under the gp
     """
 
@@ -292,6 +293,59 @@ def BAPEUtility(theta, y, gp, priorFn):
 
     try:
         util = -((2.0*mu + var) + logsubexp(var, 0.0))
+    except ValueError:
+        print("Invalid util value.  Negative variance or inf mu?")
+        raise ValueError("util: %e. mu: %e. var: %e" % (util, mu, var))
+
+    return util
+# end function
+
+
+def JonesUtility(theta, y, gp, priorFn):
+    """
+    Expected improvement utility function - Eqn. 15 from "Efficient Global
+    Optimization of Expensive Black-Box Functions", Jones et al. (1998, Journal
+    of Global Optimization)
+
+    Note: In this function, we are interested in *maximizing* the utility
+    function, so we use the maximum of the function, yMax, instead of the
+    minimum (aka current best value), ymin.
+
+    Parameters
+    ----------
+    theta : array
+        parameters to evaluate
+    y : array
+        y values to condition the gp prediction on.
+    gp : george GP object
+    priorFn : function
+        Function that computes lnPrior probability for a given theta.
+
+    Returns
+    -------
+    util : float
+        utility of theta under the gp
+    """
+
+    # If guess isn't allowed by prior, we don't care what the value of the
+    # utility function is
+    if not np.isfinite(priorFn(theta)):
+        return np.inf
+
+    # Only works if the GP object has been computed, otherwise you messed up
+    if gp.computed:
+        mu, var = gp.predict(y, theta.reshape(1,-1), return_var=True)
+    else:
+        raise RuntimeError("ERROR: Need to compute GP before using it!")
+
+    try:
+        std = np.sqrt(var)
+        yMax = np.max(y)
+        chi = (yMax - mu) / std
+
+        cdf = 0.5 * (1.0 + erf(chi / np.sqrt(2.0)))
+        pdf = np.exp(-0.5 * chi**2) / np.sqrt(2.0*np.pi*var)
+        util = (yMax - mu) * cdf + std * pdf
     except ValueError:
         print("Invalid util value.  Negative variance or inf mu?")
         raise ValueError("util: %e. mu: %e. var: %e" % (util, mu, var))
