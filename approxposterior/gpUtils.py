@@ -133,7 +133,7 @@ def defaultGP(theta, y, order=None, white_noise=-10):
 # end function
 
 
-def optimizeGP(gp, theta, y, seed=None, nGPRestarts=1, method=None,
+def optimizeGP(gp, theta, y, seed=None, nGPRestarts=1, method="powell",
                options=None, p0=None, gpCV=None):
     """
     Optimize hyperparameters of an arbitrary george Gaussian Process kernel
@@ -151,7 +151,7 @@ def optimizeGP(gp, theta, y, seed=None, nGPRestarts=1, method=None,
         Number of times to restart the optimization.  Defaults to 1. Increase
         this number if the GP isn't optimized well.
     method : str (optional)
-        scipy.optimize.minimize method.  Defaults to powell if None.
+        scipy.optimize.minimize method.  Defaults to powell.
     options : dict (optional)
         kwargs for the scipy.optimize.minimize function.  Defaults to None.
     p0 : array (optional)
@@ -168,10 +168,6 @@ def optimizeGP(gp, theta, y, seed=None, nGPRestarts=1, method=None,
     -------
     optimizedGP : george.GP
     """
-
-    # Set default parameters if None are provided
-    if method is None:
-        method = "powell"
 
     # Run the optimization routine nGPRestarts times
     res = []
