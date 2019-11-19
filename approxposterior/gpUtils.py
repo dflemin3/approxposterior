@@ -110,7 +110,7 @@ def _grad_nll(p, gp, y):
 # end function
 
 
-def defaultGP(theta, y, order=None, white_noise=-10):
+def defaultGP(theta, y, order=None, white_noise=-5):
     """
     Basic utility function that initializes a simple GP that works well in many
     applications, but is not guaranteed to work in general.
@@ -129,7 +129,7 @@ def defaultGP(theta, y, order=None, white_noise=-10):
     white_noise : float (optional)
         From george docs: "A description of the logarithm of the white noise
         variance added to the diagonal of the covariance matrix". Defaults to
-        log(white_noise) = -10. Note: if order is not None, you might need to
+        log(white_noise) = -5. Note: if order is not None, you might need to
         set the white_noise to a large value for the computation to be
         numerically stable, but this, as always, depends on the application.
 

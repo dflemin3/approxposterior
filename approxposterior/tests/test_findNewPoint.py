@@ -29,8 +29,8 @@ def test_find():
     np.random.seed(seed)
 
     # Randomly sample initial conditions from the prior
-    # Note: adding a corner case because approxposterior loves corners
-    theta = np.array(list(lh.rosenbrockSample(m0)) + [[-5, 5]])
+    # Note: adding corner cases because approxposterior loves corners
+    theta = np.array(list(lh.rosenbrockSample(m0)) + [[-5, 5], [5, 5]])
 
     # Evaluate forward model log likelihood + lnprior for each theta
     y = np.zeros(len(theta))
@@ -57,7 +57,7 @@ def test_find():
                               seed=seed)
 
     err_msg = "findNextPoint selected incorrect thetaT."
-    assert(np.allclose(thetaT, [0.79334827, 0.85401409], rtol=1.0e-3)), err_msg
+    assert(np.allclose(thetaT, [-2.03449242, -3.07172107], rtol=1.0e-3)), err_msg
 # end function
 
 if __name__ == "__main__":
