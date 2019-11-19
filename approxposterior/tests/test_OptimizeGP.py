@@ -24,7 +24,7 @@ def testGPOpt():
     """
 
     # For reproducibility
-    m0 = 50
+    m0 = 100
     seed = 57
     np.random.seed(seed)
 
@@ -47,7 +47,7 @@ def testGPOpt():
     hypeTest = gp.get_parameter_vector()
 
     errMsg = "ERROR: GP hyperparameters are not close to the true value!"
-    hypeTrue = [-5.93422233e+04, 1.99995319e+01, 4.13135784e+00, 1.07703742e+01]
+    hypeTrue = [-7.86481221e+04, 1.99993352e+01, 4.20139230e+00, 1.07577427e+01]
     assert np.allclose(hypeTest, hypeTrue, rtol=1.0e-3), errMsg
 # end function
 
