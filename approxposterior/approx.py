@@ -210,13 +210,12 @@ class ApproxPosterior(object):
     # end function
 
 
-    def run(self, m=10, nmax=2, Dmax=None, kmax=None, seed=None,
-            timing=False, nKLSamples=None, verbose=True, maxComp=3,
+    def run(self, m=10, nmax=2,seed=None, timing=False, verbose=True,
             mcmcKwargs=None, samplerKwargs=None, estBurnin=False,
-            thinChains=False, runName="apRun", cache=True,
-            maxLnLikeRestarts=3, gmmKwargs=None, gpMethod="powell", gpOptions=None,
-            gpP0=None, optGPEveryN=1, nGPRestarts=1, nMinObjRestarts=5,
-            gpCV=None, onlyLastMCMC=False, initGPOpt=True, args=None, **kwargs):
+            thinChains=False, runName="apRun", cache=True, maxLnLikeRestarts=3,
+            gpMethod="powell", gpOptions=None, gpP0=None, optGPEveryN=1,
+            nGPRestarts=1, nMinObjRestarts=5, gpCV=None, onlyLastMCMC=False,
+            initGPOpt=True, args=None, **kwargs):
         """
         Core algorithm to estimate the posterior distribution via Gaussian
         Process regression to the joint distribution for the forward model
@@ -235,9 +234,6 @@ class ApproxPosterior(object):
             Defaults to False.
         verbose : bool (optional)
             Output all the diagnostics? Defaults to True.
-        maxComp : int (optional)
-            Maximum number of mixture model components to fit for when fitting a
-            GMM model to approximate the posterior distribution.  Defaults to 3.
         samplerKwargs : dict (optional)
             Parameters for emcee.EnsembleSampler object
             If None, defaults to the following:
@@ -280,7 +276,7 @@ class ApproxPosterior(object):
             to 3.
         gpMethod : str (optional)
             scipy.optimize.minimize method used when optimized GP hyperparameters.
-            Defaults to None, which is nelder-mead, and it usually works.
+            Defaults to powell (it usually works)
         gpOptions : dict (optional)
             kwargs for the scipy.optimize.minimize function used to optimize GP
             hyperparameters.  Defaults to None.
@@ -322,16 +318,6 @@ class ApproxPosterior(object):
         -------
         None
         """
-
-        # KL-divergence based convergence is deprecated - warn user if they
-        # use it!
-        if Dmax is not None or kmax is not None or nKLSamples is not None or gmmKwargs is not None:
-            if verbose:
-                warn_msg = "KL-divergence convergence is deprecated in " + \
-                "approxposterior version 0.21+. The code will ignore " + \
-                "Dmax, kmax, nKLSamples, and gmmKwargs. The algorithm will" + \
-                "run for nmax iterations."
-                warnings.warn(warn_msg, DeprecationWarning)
 
         # Save forward model input-output pairs since they take forever to
         # calculate and we want them around in case something weird happens.

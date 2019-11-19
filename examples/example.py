@@ -24,7 +24,7 @@ np.random.seed(seed)
 
 # emcee MCMC parameters
 samplerKwargs = {"nwalkers" : 20}        # emcee.EnsembleSampler parameters
-mcmcKwargs = {"iterations" : int(2.0e3)} # emcee.EnsembleSampler.run_mcmc parameters
+mcmcKwargs = {"iterations" : int(2.0e4)} # emcee.EnsembleSampler.run_mcmc parameters
 
 # Sample initial conditions from prior
 theta = lh.rosenbrockSample(m0)
