@@ -48,7 +48,7 @@ ap = approx.ApproxPosterior(theta=theta,
                             algorithm=algorithm)
 
 # Run!
-ap.run(m=m, nmax=nmax, estBurnin=True, nGPRestarts=5, mcmcKwargs=mcmcKwargs,
+ap.run(m=m, nmax=nmax, estBurnin=True, nGPRestarts=1, mcmcKwargs=mcmcKwargs,
        cache=False, samplerKwargs=samplerKwargs, verbose=True, thinChains=True,
        onlyLastMCMC=True)
 
