@@ -307,10 +307,6 @@ def JonesUtility(theta, y, gp, priorFn):
     Optimization of Expensive Black-Box Functions", Jones et al. (1998, Journal
     of Global Optimization)
 
-    Note: In this function, we are interested in *maximizing* the utility
-    function, so we use the maximum of the function, yMax, instead of the
-    minimum (aka current best value), ymin.
-
     Parameters
     ----------
     theta : array
@@ -345,7 +341,7 @@ def JonesUtility(theta, y, gp, priorFn):
 
         cdf = 0.5 * (1.0 + erf(chi / np.sqrt(2.0)))
         pdf = np.exp(-0.5 * chi**2) / np.sqrt(2.0*np.pi*var)
-        util = (yMax - mu) * cdf + std * pdf
+        util = -((yMax - mu) * cdf + std * pdf)
     except ValueError:
         print("Invalid util value.  Negative variance or inf mu?")
         raise ValueError("util: %e. mu: %e. var: %e" % (util, mu, var))

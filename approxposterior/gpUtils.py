@@ -18,7 +18,36 @@ from sklearn.model_selection import KFold
 from sklearn.metrics import mean_squared_error
 
 
-def _nll(p, gp, y):
+def _defaultPrior(p):
+    """
+    Default prior function for GP hyperparameters. Ensures the mean is negative,
+    which makes sense since we hope to regression on the negative loglikelihood.
+    This prior also keeps the hyperparameters within a reasonable range, [-20, 20].
+    Note that george operates on the *log* hyperparameters!
+
+    Parameters
+    ----------
+    p : array/iterable
+        Array of GP hyperparameters
+
+    Returns
+    -------
+    prior : float
+    """
+
+    # Mean must be < 0
+    if p[0] > 0:
+        return -np.inf
+
+    # Restrict range of hyperparameters
+    if np.any(np.fabs(p)[1:] > 20):
+        return -np.inf
+
+    return 0.0
+# end function
+
+
+def _nll(p, gp, y, priorFn=None):
     """
     Given parameters and data, compute the negative log likelihood of the data
     under the george Gaussian process.
@@ -30,6 +59,8 @@ def _nll(p, gp, y):
     gp : george.GP
     y : array
         data to condition GP on
+    priorFn : callable
+        Prior function for the GP hyperparameters, p
 
     Returns
     -------
@@ -37,14 +68,21 @@ def _nll(p, gp, y):
         negative log-likelihood of y under gp
     """
 
+    # Apply priors on GP hyperparameters
+    if priorFn is not None:
+        prior = priorFn(p)
+
+        if not np.isfinite(prior):
+            return 1.0e25
+
     # Catch singular matrices
     try:
         gp.set_parameter_vector(p)
     except np.linalg.LinAlgError:
-        return 1e25
+        return 1.0e25
 
     ll = gp.log_likelihood(y, quiet=True)
-    return -ll if np.isfinite(ll) else 1e25
+    return -ll if np.isfinite(ll) else 1.0e25
 # end function
 
 
@@ -66,12 +104,6 @@ def _grad_nll(p, gp, y):
     gnll : float
         gradient of the negative log-likelihood of y under gp
     """
-
-    # Catch singular matrices
-    try:
-        gp.set_parameter_vector(p)
-    except np.linalg.LinAlgError:
-        return 1e25
 
     # Negative gradient of log likelihood
     return -gp.grad_log_likelihood(y, quiet=True)
@@ -113,8 +145,8 @@ def defaultGP(theta, y, order=None, white_noise=-10):
 
     # Create kernel: We'll model coveriances in loglikelihood space using a
     # Squared Expoential Kernel
-    kernel = george.kernels.ExpSquaredKernel(metric=initialMetric,
-                                             ndim=theta.shape[-1])
+    kernel = np.var(y) * george.kernels.ExpSquaredKernel(metric=initialMetric,
+                                                         ndim=theta.shape[-1])
 
     # Add a linear regression kernel of order order?
     # Use a meh guess for the amplitude and for the scale length (gamma)
@@ -134,7 +166,7 @@ def defaultGP(theta, y, order=None, white_noise=-10):
 
 
 def optimizeGP(gp, theta, y, seed=None, nGPRestarts=1, method="powell",
-               options=None, p0=None, gpCV=None):
+               options=None, p0=None, gpCV=None, gpHyperPrior=_defaultPrior):
     """
     Optimize hyperparameters of an arbitrary george Gaussian Process kernel
     by maximizing the marginalized log-likelihood.
@@ -163,6 +195,10 @@ def optimizeGP(gp, theta, y, seed=None, nGPRestarts=1, method="powell",
         This can be useful if the GP is overfitting, but will likely slow down
         the code. Defaults to None, aka this functionality is not used. If using
         it, perform gpCV-fold cross-validation.
+    gpHyperPrior : str/callable (optional)
+        Prior function for GP hyperparameters. Defaults to the _defaultPrior fn.
+        This function asserts that the mean must be negative and that each log
+        hyperparameter is within the range [-20,20].
 
     Returns
     -------
@@ -190,8 +226,8 @@ def optimizeGP(gp, theta, y, seed=None, nGPRestarts=1, method="powell",
         else:
             jac = None
 
-        resii = minimize(_nll, x0, args=(gp, y), method=method, jac=jac,
-                         bounds=None, options=options)["x"]
+        resii = minimize(_nll, x0, args=(gp, y, gpHyperPrior), method=method,
+                         jac=jac, bounds=None, options=options)["x"]
         res.append(resii)
 
         # Update the kernel with solution for computing marginal loglike

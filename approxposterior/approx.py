@@ -104,7 +104,7 @@ class ApproxPosterior(object):
         elif self.algorithm == "alternate":
             # If alternate, AGP on even, BAPE on odd
             self.utility = ut.AGPUtility
-        elif self.algoritm == "jones":
+        elif self.algorithm == "jones":
             self.utility = ut.JonesUtility
         else:
             errMsg = "Unknown algorithm. Valid options: BAPE, AGP, Jones, or alternate."
@@ -167,7 +167,7 @@ class ApproxPosterior(object):
         if not np.isfinite(mu):
             return -np.inf, np.nan
         else:
-            return mu + lnprior, lnprior
+            return mu, lnprior
     # end function
 
 
@@ -214,7 +214,7 @@ class ApproxPosterior(object):
             timing=False, nKLSamples=None, verbose=True, maxComp=3,
             mcmcKwargs=None, samplerKwargs=None, estBurnin=False,
             thinChains=False, runName="apRun", cache=True,
-            maxLnLikeRestarts=3, gmmKwargs=None, gpMethod=None, gpOptions=None,
+            maxLnLikeRestarts=3, gmmKwargs=None, gpMethod="powell", gpOptions=None,
             gpP0=None, optGPEveryN=1, nGPRestarts=1, nMinObjRestarts=5,
             gpCV=None, onlyLastMCMC=False, initGPOpt=True, args=None, **kwargs):
         """
@@ -574,11 +574,9 @@ class ApproxPosterior(object):
 
                 # If loglike function returns loglike, blobs, ..., only use loglike
                 if hasattr(loglikeT, "__iter__"):
-                    #yT = np.array([loglikeT[0] + self._lnprior(thetaT)])
-                    yT = loglikeT[0]
+                    yT = np.array([loglikeT[0] + self._lnprior(thetaT)])
                 else:
-                    #yT = np.array([loglikeT + self._lnprior(thetaT)])
-                    yT = loglikeT
+                    yT = np.array([loglikeT + self._lnprior(thetaT)])
 
             # Don't compute lnlikelihood, found point, so we're done
             else:
@@ -598,11 +596,12 @@ class ApproxPosterior(object):
                 # Create GP using same kernel, updated estimate of the mean, but new theta
                 currentHype = self.gp.get_parameter_vector()
                 self.gp = george.GP(kernel=self.gp.kernel, fit_mean=True,
-                                    mean=np.median(self.y),
+                                    mean=self.gp.mean,
                                     white_noise=self.gp.white_noise,
                                     fit_white_noise=False)
                 self.gp.set_parameter_vector(currentHype)
                 self.gp.compute(self.theta)
+                print(self.gp.get_parameter_vector())
                 # Now optimize GP given new points?
                 if bOptGP:
                     self.optGP(seed=seed, method=gpMethod, options=gpOptions,
