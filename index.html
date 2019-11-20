@@ -38,7 +38,7 @@
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
     <link rel="top" title="approxposterior 0.3 documentation" href="#"/>
-        <link rel="next" title="Tutorial" href="tutorial.html"/> 
+        <link rel="next" title="Approximate Bayesian Inference" href="tutorial.html"/> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
@@ -93,7 +93,7 @@
             
               <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Approximate Bayesian Inference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="map.html">MAP Estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="notebooks/fittingALine.html">Fitting a Line</a></li>
 <li class="toctree-l1"><a class="reference internal" href="notebooks/ScalingAccuracy.html">Scaling and Accuracy</a></li>
@@ -202,10 +202,18 @@
 </style>
 <div class="section" id="approxposterior">
 <h1>approxposterior<a class="headerlink" href="#approxposterior" title="Permalink to this headline">¶</a></h1>
-<p>A Python implementation of <cite>Bayesian Active Learning for Posterior Estimation</cite> (<a class="reference external" href="https://www.cs.cmu.edu/~kkandasa/pubs/kandasamyIJCAI15activePostEst.pdf">BAPE</a>)
+<p><code class="xref py py-obj docutils literal notranslate"><span class="pre">approxposterior</span></code> is a Python package for efficient approximate Bayesian
+inference and optimization of computationally-expensive models. <code class="xref py py-obj docutils literal notranslate"><span class="pre">approxposterior</span></code>
+trains a Gaussian process (GP) surrogate for the computationally-expensive model
+and employs an active learning approach to iteratively improve the GPs predictive
+performance while minimizing the number of calls to the expensive model required
+to generate the GP’s training set.</p>
+<p><code class="xref py py-obj docutils literal notranslate"><span class="pre">approxposterior</span></code> implements variants of <cite>Bayesian Active Learning for Posterior Estimation</cite> (<a class="reference external" href="https://www.cs.cmu.edu/~kkandasa/pubs/kandasamyIJCAI15activePostEst.pdf">BAPE</a>)
 by Kandasamy et al. (2015) and <cite>Adaptive Gaussian process approximation for
-Bayesian inference with expensive likelihood functions</cite> (<a class="reference external" href="https://arxiv.org/abs/1703.09930">AGP</a>) by Wang &amp; Li (2017). For information
-on how to install <code class="xref py py-obj docutils literal notranslate"><span class="pre">approxposterior</span></code>, numerous example use cases, and detailed API
+Bayesian inference with expensive likelihood functions</cite> (<a class="reference external" href="https://arxiv.org/abs/1703.09930">AGP</a>) by Wang &amp; Li (2017).
+These active learning algorithms outline schemes for GP active learning that <code class="xref py py-obj docutils literal notranslate"><span class="pre">approxposterior</span></code>
+uses for its Bayesian inference and/or optimization.</p>
+<p>For information on how to install <code class="xref py py-obj docutils literal notranslate"><span class="pre">approxposterior</span></code>, numerous example use cases, and detailed API
 documentation, check out the Table of Contents to the left and below.</p>
 </div>
 <div class="section" id="introduction">
@@ -220,7 +228,7 @@ approximations to the true, underlying distributions with only of order 100s-100
 <div class="toctree-wrapper compound">
 <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial</a><ul>
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Approximate Bayesian Inference</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="notebooks/TrueRosenbrockPosterior.html">Rosenbrock Function Example</a></li>
 </ul>
 </li>
@@ -262,7 +270,7 @@ approximations to the true, underlying distributions with only of order 100s-100
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="tutorial.html" class="btn btn-neutral float-right" title="Tutorial" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="tutorial.html" class="btn btn-neutral float-right" title="Approximate Bayesian Inference" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
     </div>

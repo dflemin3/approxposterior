@@ -94,7 +94,7 @@
             
               <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Approximate Bayesian Inference</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">MAP Estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="notebooks/fittingALine.html">Fitting a Line</a></li>
 <li class="toctree-l1"><a class="reference internal" href="notebooks/ScalingAccuracy.html">Scaling and Accuracy</a></li>
@@ -203,8 +203,14 @@
 </style>
 <div class="section" id="map-estimation">
 <h1>MAP Estimation<a class="headerlink" href="#map-estimation" title="Permalink to this headline">¶</a></h1>
+<p><code class="xref py py-obj docutils literal notranslate"><span class="pre">approxposterior</span></code> can be used to find an accurate approximation of the
+minimum (or maximum) of a function by estimating an approximate maximum a
+posteriori (MAP) solution for a function after training on a small number of
+function evaluations. This method is particularly useful when the function in
+question is computationally-expensive to evaluate so one wishes to minimizes the
+number of evaluations.</p>
 <p>Below is a quick example of how to use <code class="xref py py-obj docutils literal notranslate"><span class="pre">approxposterior</span></code> to estimate the
-maximum a posteriori (MAP) solution of the Rosenbrock Function example from Wang &amp; Li (2017).</p>
+MAP solution of the Rosenbrock Function example from Wang &amp; Li (2017).</p>
 <p>In this case, we are using the Rosenbrock function as our -loglikelihood function.
 The MAP solution we find using <code class="xref py py-obj docutils literal notranslate"><span class="pre">approxposterior</span></code> is therefore the minimum of the
 Rosenbrock function. The 2D Rosenbrock function has a global minimum of 0 at (1,1),
@@ -275,9 +281,10 @@ so that what we hope to recover!</p>
     <span class="k">for</span> <span class="n">jj</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">100</span><span class="p">):</span>
         <span class="n">rosen</span><span class="p">[</span><span class="n">ii</span><span class="p">,</span><span class="n">jj</span><span class="p">]</span> <span class="o">=</span> <span class="n">lh</span><span class="o">.</span><span class="n">rosenbrockLnlike</span><span class="p">([</span><span class="n">arr</span><span class="p">[</span><span class="n">ii</span><span class="p">],</span> <span class="n">arr</span><span class="p">[</span><span class="n">jj</span><span class="p">]])</span>
 
-<span class="c1"># Plot Rosenbrock function (rescale because it varies by several orders of magnitude)</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="o">-</span><span class="n">rosen</span><span class="p">)</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">origin</span><span class="o">=</span><span class="s2">&quot;lower&quot;</span><span class="p">,</span> <span class="n">aspect</span><span class="o">=</span><span class="s2">&quot;auto&quot;</span><span class="p">,</span> <span class="n">interpolation</span><span class="o">=</span><span class="s2">&quot;nearest&quot;</span><span class="p">,</span>
-          <span class="n">extent</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="o">-</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">],</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="c1"># Plot Rosenbrock function (rescale because it varies by several orders of</span>
+<span class="c1"># magnitude and is &lt; 0)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="o">-</span><span class="n">rosen</span><span class="p">)</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">origin</span><span class="o">=</span><span class="s2">&quot;lower&quot;</span><span class="p">,</span> <span class="n">aspect</span><span class="o">=</span><span class="s2">&quot;auto&quot;</span><span class="p">,</span>
+          <span class="n">interpolation</span><span class="o">=</span><span class="s2">&quot;nearest&quot;</span><span class="p">,</span> <span class="n">extent</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="o">-</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">],</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 
 <span class="c1"># Plot truth</span>
 <span class="n">ax</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s2">&quot;:&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;white&quot;</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
@@ -298,11 +305,12 @@ so that what we hope to recover!</p>
 </pre></div>
 </div>
 <a class="reference internal image-reference" href="_images/rosenbrockMAP.png"><img alt="_images/rosenbrockMAP.png" src="_images/rosenbrockMAP.png" style="width: 400px;" /></a>
-<p><code class="xref py py-obj docutils literal notranslate"><span class="pre">approxposterior</span></code> MAP solution: (0.973, 0.943), -2.553785e-4.
-Pretty close to the truth, and better yet, only 50 Rosenbrock function
-evaluations were used to train the <code class="xref py py-obj docutils literal notranslate"><span class="pre">approxposterior</span></code> GP used to estimate
+<p><code class="xref py py-obj docutils literal notranslate"><span class="pre">approxposterior</span></code> MAP solution: (0.973, 0.943), -2.553785e-4 (red point)
+compared to the truth (1,1), 0 (white dashed lines).
+Our answer is pretty close to the truth, and better yet, <code class="xref py py-obj docutils literal notranslate"><span class="pre">approxposterior</span></code>
+only required 50 Rosenbrock function evaluations to train its GP used to estimate
 the MAP solution. For computationally-expensive forward models, this method can
-be used for efficient approximate Bayesian optimization of functions.</p>
+be used for efficient (approximate) Bayesian optimization of functions.</p>
 </div>
 
 

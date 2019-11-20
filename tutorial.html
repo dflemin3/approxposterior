@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Tutorial &mdash; approxposterior 0.3 documentation</title>
+  <title>Approximate Bayesian Inference &mdash; approxposterior 0.3 documentation</title>
   
 
   
@@ -94,7 +94,7 @@
             
               <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Tutorial</a><ul>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Approximate Bayesian Inference</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="notebooks/TrueRosenbrockPosterior.html">Rosenbrock Function Example</a></li>
 </ul>
 </li>
@@ -151,7 +151,7 @@
     
       <li><a href="index.html">Docs</a> &raquo;</li>
         
-      <li>Tutorial</li>
+      <li>Approximate Bayesian Inference</li>
     
     
       <li class="wy-breadcrumbs-aside">
@@ -204,11 +204,16 @@
     margin-right: 4px;  /* make room for the exclamation icon */
 }
 </style>
-<div class="section" id="tutorial">
-<h1>Tutorial<a class="headerlink" href="#tutorial" title="Permalink to this headline">¶</a></h1>
-<p>Below is a quick example of how to use <code class="xref py py-obj docutils literal notranslate"><span class="pre">approxposterior</span></code> to compute the posterior
-distribution of the Rosenbrock Function example from Wang &amp; Li (2017) using the
-BAPE algorithm. Note that setting verbose = True also outputs additional diagnostic information, such as when
+<div class="section" id="approximate-bayesian-inference">
+<h1>Approximate Bayesian Inference<a class="headerlink" href="#approximate-bayesian-inference" title="Permalink to this headline">¶</a></h1>
+<p>Below is a quick example of how to use <code class="xref py py-obj docutils literal notranslate"><span class="pre">approxposterior</span></code> to estimate an
+accurate approximation to the posterior distribution of the Rosenbrock Function example from Wang &amp; Li (2017) using the
+BAPE algorithm. In many Bayesian inference applications, sampling methods used to derive posterior distributions,
+such as Markov Chain Monte Carlo (MCMC) methods, can require &gt;1,000,000 functions evaluations. In cases where the
+forward model is computationally expensive, such methods quickly become infeasible. The active learning
+approach employed by <code class="xref py py-obj docutils literal notranslate"><span class="pre">approxposterior</span></code>, however, requires orders of magnitude fewer simulations to
+train <code class="xref py py-obj docutils literal notranslate"><span class="pre">approxposterior</span></code>’s GP, yielding accurate approximate Bayesian posterior distributions.</p>
+<p>Note that setting verbose = True also outputs additional diagnostic information, such as when
 the MCMC finishes, what the estimated burn-in is, and other quantities that are useful for tracking the progress of
 your code.  In this example, we set verbose = False for simplicity.</p>
 <ol class="arabic simple">

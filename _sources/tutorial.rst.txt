@@ -1,9 +1,15 @@
-Tutorial
-========
+Approximate Bayesian Inference
+==============================
 
-Below is a quick example of how to use :py:obj:`approxposterior` to compute the posterior
-distribution of the Rosenbrock Function example from Wang & Li (2017) using the
-BAPE algorithm. Note that setting verbose = True also outputs additional diagnostic information, such as when
+Below is a quick example of how to use :py:obj:`approxposterior` to estimate an
+accurate approximation to the posterior distribution of the Rosenbrock Function example from Wang & Li (2017) using the
+BAPE algorithm. In many Bayesian inference applications, sampling methods used to derive posterior distributions,
+such as Markov Chain Monte Carlo (MCMC) methods, can require >1,000,000 functions evaluations. In cases where the
+forward model is computationally expensive, such methods quickly become infeasible. The active learning
+approach employed by :py:obj:`approxposterior`, however, requires orders of magnitude fewer simulations to
+train :py:obj:`approxposterior`'s GP, yielding accurate approximate Bayesian posterior distributions.
+
+Note that setting verbose = True also outputs additional diagnostic information, such as when
 the MCMC finishes, what the estimated burn-in is, and other quantities that are useful for tracking the progress of
 your code.  In this example, we set verbose = False for simplicity.
 
