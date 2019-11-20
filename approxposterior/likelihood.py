@@ -12,6 +12,7 @@ __all__ = ["rosenbrockLnlike", "rosenbrockLnprior","rosenbrockSample",
            "rosenbrockLnprob"]
 
 import numpy as np
+from scipy.optimize import rosen
 
 
 ################################################################################
@@ -23,7 +24,7 @@ import numpy as np
 
 def rosenbrockLnlike(x):
     """
-    2D Rosenbrock function as a log likelihood following Wang & Li (2017)
+    Rosenbrock function as a loglikelihood following Wang & Li (2017)
 
     Parameters
     ----------
@@ -35,15 +36,7 @@ def rosenbrockLnlike(x):
         likelihood
     """
 
-    x = np.array(x)
-    if x.ndim > 1:
-        x1 = x[:,0]
-        x2 = x[:,1]
-    else:
-        x1 = x[0]
-        x2 = x[1]
-
-    return -0.01*(x1 - 1.0)**2 - (x1*x1 - x2)**2
+    return -rosen(x)/100.0
 # end function
 
 
@@ -69,15 +62,17 @@ def rosenbrockLnprior(x):
 # end function
 
 
-def rosenbrockSample(n=1):
+def rosenbrockSample(n=1, dim=2):
     """
     Sample N points from the prior pi(x) is a uniform distribution over
     [-5, 5] x [-5, 5]
 
     Parameters
     ----------
-    n : int
-        Number of samples
+    n : int (optional)
+        Number of samples. Defaults to 1.
+    dim : int (optional)
+        Dimensionality. Defaults to 2.
 
     Returns
     -------
@@ -85,7 +80,7 @@ def rosenbrockSample(n=1):
         n x 2 array of floats samples from the prior
     """
 
-    return np.random.uniform(low=-5, high=5, size=(n,2)).squeeze()
+    return np.random.uniform(low=-5, high=5, size=(n,dim)).squeeze()
 # end function
 
 
