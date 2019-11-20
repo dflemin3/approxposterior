@@ -39,6 +39,7 @@
         <link rel="search" title="Search" href="../search.html"/>
     <link rel="top" title="approxposterior 0.3 documentation" href="../index.html"/>
         <link rel="up" title="API" href="../api.html"/>
+        <link rel="next" title="Installation" href="../install.html"/>
         <link rel="prev" title="Likelihood Functions" href="likelihood.html"/> 
 
   
@@ -95,6 +96,7 @@
               <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../tutorial.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../map.html">MAP Estimation</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../api.html">API</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="approx.html">approx.py</a></li>
 <li class="toctree-l2"><a class="reference internal" href="gmmUtils.html">gmmUtils.py</a></li>
@@ -102,9 +104,7 @@
 <li class="toctree-l2"><a class="reference internal" href="mcmcUtils.html">mcmcUtils.py</a></li>
 <li class="toctree-l2"><a class="reference internal" href="likelihood.html">likelihood.py</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">utility.py</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#utility-py-utility-functions"><code class="docutils literal notranslate"><span class="pre">utility.py</span></code> - Utility Functions</a><ul class="simple">
-</ul>
-</li>
+<li class="toctree-l3"><a class="reference internal" href="#utility-py-utility-functions"><code class="docutils literal notranslate"><span class="pre">utility.py</span></code> - Utility Functions</a></li>
 </ul>
 </li>
 </ul>
@@ -217,8 +217,8 @@
 <span id="utility-functions"></span><h1>Utility Functions<a class="headerlink" href="#module-approxposterior.utility" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="utility-py-utility-functions">
 <h2><code class="xref py py-mod docutils literal notranslate"><span class="pre">utility.py</span></code> - Utility Functions<a class="headerlink" href="#utility-py-utility-functions" title="Permalink to this headline">¶</a></h2>
-<p>Utility functions ranging from minimizing GP objective functions to function
-wrappers.</p>
+<p>Utility functions in terms of usefulness, e.g. minimizing GP utility functions,
+and the GP utility functions, e.g. the BAPE utility.</p>
 <dl class="function">
 <dt id="approxposterior.utility.logsubexp">
 <code class="descclassname">approxposterior.utility.</code><code class="descname">logsubexp</code><span class="sig-paren">(</span><em>x1</em>, <em>x2</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/utility.html#logsubexp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.utility.logsubexp" title="Permalink to this definition">¶</a></dt>
@@ -266,7 +266,7 @@ minimizing this is the same as maximizing the actual utility function.</p>
 </div></blockquote>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>u</strong> : float</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>util</strong> : float</p>
 <blockquote class="last">
 <div><p>utility of theta under the gp</p>
 </div></blockquote>
@@ -304,7 +304,41 @@ function as the log is monotonic so the minima are equivalent.</p>
 </div></blockquote>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>u</strong> : float</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>util</strong> : float</p>
+<blockquote class="last">
+<div><p>utility of theta under the gp</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="approxposterior.utility.NaiveUtility">
+<code class="descclassname">approxposterior.utility.</code><code class="descname">NaiveUtility</code><span class="sig-paren">(</span><em>theta</em>, <em>y</em>, <em>gp</em>, <em>priorFn</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/utility.html#NaiveUtility"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.utility.NaiveUtility" title="Permalink to this definition">¶</a></dt>
+<dd><p>Naive utility function that is maximized by GP predictions with
+large loglikelihoods and large uncertainties.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>theta</strong> : array</p>
+<blockquote>
+<div><p>parameters to evaluate</p>
+</div></blockquote>
+<p><strong>y</strong> : array</p>
+<blockquote>
+<div><p>y values to condition the gp prediction on.</p>
+</div></blockquote>
+<p><strong>gp</strong> : george GP object</p>
+<p><strong>priorFn</strong> : function</p>
+<blockquote>
+<div><p>Function that computes lnPrior probability for a given theta.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>util</strong> : float</p>
 <blockquote class="last">
 <div><p>utility of theta under the gp</p>
 </div></blockquote>
@@ -356,42 +390,6 @@ number of the point selection is not working well.</p>
 <div><p>point that minimizes fn</p>
 </div></blockquote>
 </td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="class">
-<dt id="approxposterior.utility.functionWrapper">
-<em class="property">class </em><code class="descclassname">approxposterior.utility.</code><code class="descname">functionWrapper</code><span class="sig-paren">(</span><em>f</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/utility.html#functionWrapper"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.utility.functionWrapper" title="Permalink to this definition">¶</a></dt>
-<dd><p>Wrapper class for functions.</p>
-<p class="rubric">Methods</p>
-<table border="1" class="longtable docutils">
-<colgroup>
-<col width="10%" />
-<col width="90%" />
-</colgroup>
-<tbody valign="top">
-<tr class="row-odd"><td><code class="xref py py-obj docutils literal notranslate"><span class="pre">__call__</span></code>(x)</td>
-<td>Call the function on some input x.</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="class">
-<dt id="approxposterior.utility.functionWrapperArgsOnly">
-<em class="property">class </em><code class="descclassname">approxposterior.utility.</code><code class="descname">functionWrapperArgsOnly</code><span class="sig-paren">(</span><em>f</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/utility.html#functionWrapperArgsOnly"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.utility.functionWrapperArgsOnly" title="Permalink to this definition">¶</a></dt>
-<dd><p>Wrapper class for functions where input are the args.</p>
-<p class="rubric">Methods</p>
-<table border="1" class="longtable docutils">
-<colgroup>
-<col width="10%" />
-<col width="90%" />
-</colgroup>
-<tbody valign="top">
-<tr class="row-odd"><td><code class="xref py py-obj docutils literal notranslate"><span class="pre">__call__</span></code>(x)</td>
-<td>Call the function on some input x.</td>
 </tr>
 </tbody>
 </table>
@@ -493,6 +491,8 @@ Defaults to “maximin”</p>
           <footer>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../install.html" class="btn btn-neutral float-right" title="Installation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
         <a href="likelihood.html" class="btn btn-neutral" title="Likelihood Functions" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>

@@ -94,6 +94,7 @@
               <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../tutorial.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../map.html">MAP Estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../api.html">API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../install.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../performance.html">Improving Performance</a></li>
@@ -169,79 +170,18 @@
 <span class="sd">:py:mod:`utility.py` - Utility Functions</span>
 <span class="sd">-----------------------------------</span>
 
-<span class="sd">Utility functions ranging from minimizing GP objective functions to function</span>
-<span class="sd">wrappers.</span>
-
+<span class="sd">Utility functions in terms of usefulness, e.g. minimizing GP utility functions,</span>
+<span class="sd">and the GP utility functions, e.g. the BAPE utility.</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="c1"># Tell module what it&#39;s allowed to import</span>
-<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;logsubexp&quot;</span><span class="p">,</span> <span class="s2">&quot;AGPUtility&quot;</span><span class="p">,</span> <span class="s2">&quot;BAPEUtility&quot;</span><span class="p">,</span> <span class="s2">&quot;minimizeObjective&quot;</span><span class="p">,</span>
-           <span class="s2">&quot;functionWrapper&quot;</span><span class="p">,</span> <span class="s2">&quot;functionWrapperArgsOnly&quot;</span><span class="p">,</span> <span class="s2">&quot;klNumerical&quot;</span><span class="p">,</span>
-           <span class="s2">&quot;latinHypercubeSampling&quot;</span><span class="p">]</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;logsubexp&quot;</span><span class="p">,</span> <span class="s2">&quot;AGPUtility&quot;</span><span class="p">,</span> <span class="s2">&quot;BAPEUtility&quot;</span><span class="p">,</span> <span class="s2">&quot;NaiveUtility&quot;</span><span class="p">,</span>
+           <span class="s2">&quot;minimizeObjective&quot;</span><span class="p">,</span> <span class="s2">&quot;klNumerical&quot;</span><span class="p">,</span> <span class="s2">&quot;latinHypercubeSampling&quot;</span><span class="p">]</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">scipy.optimize</span> <span class="k">import</span> <span class="n">minimize</span>
+<span class="kn">from</span> <span class="nn">scipy.special</span> <span class="k">import</span> <span class="n">erf</span>
 <span class="kn">from</span> <span class="nn">pyDOE</span> <span class="k">import</span> <span class="n">lhs</span>
-
-
-<span class="c1">################################################################################</span>
-<span class="c1">#</span>
-<span class="c1"># Useful classes</span>
-<span class="c1">#</span>
-<span class="c1">################################################################################</span>
-
-
-<div class="viewcode-block" id="functionWrapper"><a class="viewcode-back" href="../../api/utility.html#approxposterior.utility.functionWrapper">[docs]</a><span class="k">class</span> <span class="nc">functionWrapper</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Wrapper class for functions.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Initialize!</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-
-        <span class="c1"># Need function, optional args and kwargs</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">f</span> <span class="o">=</span> <span class="n">f</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">args</span> <span class="o">=</span> <span class="n">args</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span> <span class="o">=</span> <span class="n">kwargs</span>
-    <span class="c1"># end function</span>
-
-
-    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Call the function on some input x.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">f</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">)</span></div>
-    <span class="c1"># end function</span>
-<span class="c1"># end class</span>
-
-
-<div class="viewcode-block" id="functionWrapperArgsOnly"><a class="viewcode-back" href="../../api/utility.html#approxposterior.utility.functionWrapperArgsOnly">[docs]</a><span class="k">class</span> <span class="nc">functionWrapperArgsOnly</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Wrapper class for functions where input are the args.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Initialize!</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-
-        <span class="c1"># Need function, optional args and kwargs</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">f</span> <span class="o">=</span> <span class="n">f</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span> <span class="o">=</span> <span class="n">kwargs</span>
-    <span class="c1"># end function</span>
-
-
-    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Call the function on some input x.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">f</span><span class="p">(</span><span class="o">*</span><span class="n">x</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">)</span></div>
-    <span class="c1"># end function</span>
-<span class="c1"># end class</span>
 
 
 <span class="c1">################################################################################</span>
@@ -394,7 +334,7 @@
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    u : float</span>
+<span class="sd">    util : float</span>
 <span class="sd">        utility of theta under the gp</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
@@ -441,7 +381,7 @@
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    u : float</span>
+<span class="sd">    util : float</span>
 <span class="sd">        utility of theta under the gp</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
@@ -457,7 +397,49 @@
         <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;ERROR: Need to compute GP before using it!&quot;</span><span class="p">)</span>
 
     <span class="k">try</span><span class="p">:</span>
-        <span class="n">util</span> <span class="o">=</span> <span class="o">-</span><span class="p">((</span><span class="mf">2.0</span><span class="o">*</span><span class="n">mu</span> <span class="o">+</span> <span class="n">var</span><span class="p">)</span> <span class="o">+</span> <span class="n">logsubexp</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">))</span>
+        <span class="n">util</span> <span class="o">=</span> <span class="o">-</span><span class="p">((</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">mu</span> <span class="o">+</span> <span class="n">var</span><span class="p">)</span> <span class="o">+</span> <span class="n">logsubexp</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">))</span>
+    <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Invalid util value.  Negative variance or inf mu?&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;util: </span><span class="si">%e</span><span class="s2">. mu: </span><span class="si">%e</span><span class="s2">. var: </span><span class="si">%e</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">util</span><span class="p">,</span> <span class="n">mu</span><span class="p">,</span> <span class="n">var</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">util</span></div>
+<span class="c1"># end function</span>
+
+
+<div class="viewcode-block" id="NaiveUtility"><a class="viewcode-back" href="../../api/utility.html#approxposterior.utility.NaiveUtility">[docs]</a><span class="k">def</span> <span class="nf">NaiveUtility</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">gp</span><span class="p">,</span> <span class="n">priorFn</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Naive utility function that is maximized by GP predictions with</span>
+<span class="sd">    large loglikelihoods and large uncertainties.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    theta : array</span>
+<span class="sd">        parameters to evaluate</span>
+<span class="sd">    y : array</span>
+<span class="sd">        y values to condition the gp prediction on.</span>
+<span class="sd">    gp : george GP object</span>
+<span class="sd">    priorFn : function</span>
+<span class="sd">        Function that computes lnPrior probability for a given theta.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    util : float</span>
+<span class="sd">        utility of theta under the gp</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># If guess isn&#39;t allowed by prior, we don&#39;t care what the value of the</span>
+    <span class="c1"># utility function is</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">priorFn</span><span class="p">(</span><span class="n">theta</span><span class="p">)):</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+
+    <span class="c1"># Only works if the GP object has been computed, otherwise you messed up</span>
+    <span class="k">if</span> <span class="n">gp</span><span class="o">.</span><span class="n">computed</span><span class="p">:</span>
+        <span class="n">mu</span><span class="p">,</span> <span class="n">var</span> <span class="o">=</span> <span class="n">gp</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">theta</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="n">return_var</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;ERROR: Need to compute GP before using it!&quot;</span><span class="p">)</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">util</span> <span class="o">=</span> <span class="o">-</span><span class="n">mu</span> <span class="o">*</span> <span class="n">var</span>
     <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Invalid util value.  Negative variance or inf mu?&quot;</span><span class="p">)</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;util: </span><span class="si">%e</span><span class="s2">. mu: </span><span class="si">%e</span><span class="s2">. var: </span><span class="si">%e</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">util</span><span class="p">,</span> <span class="n">mu</span><span class="p">,</span> <span class="n">var</span><span class="p">))</span>
@@ -496,7 +478,7 @@
 <span class="sd">        point that minimizes fn</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="c1"># Required arguments for the utility function</span>
+    <span class="c1"># Arguments for the utility function</span>
     <span class="n">args</span> <span class="o">=</span> <span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">gp</span><span class="p">,</span> <span class="n">priorFn</span><span class="p">)</span>
 
     <span class="c1"># Containers</span>
@@ -506,37 +488,18 @@
     <span class="c1"># Loop over optimization calls</span>
     <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nMinObjRestarts</span><span class="p">):</span>
 
-        <span class="c1"># Inputs for each process - guess initial value from prior</span>
+        <span class="c1"># Guess initial value from prior</span>
         <span class="n">theta0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">sampleFn</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
 
-        <span class="c1"># Solve for theta that maximize fn and is allowed by prior</span>
-        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="n">tmp</span> <span class="o">=</span> <span class="n">minimize</span><span class="p">(</span><span class="n">fn</span><span class="p">,</span> <span class="n">theta0</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="n">args</span><span class="p">,</span> <span class="n">bounds</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                       <span class="n">method</span><span class="o">=</span><span class="s2">&quot;nelder-mead&quot;</span><span class="p">,</span>
+                       <span class="n">options</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;adaptive&quot;</span> <span class="p">:</span> <span class="kc">True</span><span class="p">})[</span><span class="s2">&quot;x&quot;</span><span class="p">]</span>
 
-            <span class="c1"># Mimimze fn, see if prior allows solution</span>
-            <span class="k">try</span><span class="p">:</span>
-                <span class="n">tmp</span> <span class="o">=</span> <span class="n">minimize</span><span class="p">(</span><span class="n">fn</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">theta0</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="n">args</span><span class="o">=</span><span class="n">args</span><span class="p">,</span>
-                               <span class="n">bounds</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;nelder-mead&quot;</span><span class="p">,</span>
-                               <span class="n">options</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;adaptive&quot;</span> <span class="p">:</span> <span class="kc">True</span><span class="p">})[</span><span class="s2">&quot;x&quot;</span><span class="p">]</span>
+        <span class="c1"># Save solution, function value</span>
+        <span class="n">res</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tmp</span><span class="p">)</span>
+        <span class="n">objective</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fn</span><span class="p">(</span><span class="n">tmp</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">))</span>
 
-            <span class="c1"># ValueError.  Try again.</span>
-            <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
-                <span class="n">tmp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span> <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">theta0</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])])</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">theta0</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
-
-            <span class="c1"># Vet answer: must be finite, allowed by prior</span>
-            <span class="c1"># Are all values finite?</span>
-            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">tmp</span><span class="p">)):</span>
-                <span class="c1"># Is this point in parameter space allowed by the prior?</span>
-                <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">priorFn</span><span class="p">(</span><span class="n">tmp</span><span class="p">)):</span>
-
-                     <span class="c1"># Save solution, value of utility fn</span>
-                     <span class="n">res</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tmp</span><span class="p">)</span>
-                     <span class="n">objective</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fn</span><span class="p">(</span><span class="n">tmp</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">))</span>
-                     <span class="k">break</span>
-
-            <span class="c1"># Optimization failed, try a new theta0 by sampling from the prior</span>
-            <span class="n">theta0</span> <span class="o">=</span> <span class="n">sampleFn</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
-
-    <span class="c1"># Return minimum value of the objective</span>
+    <span class="c1"># Return value that minimizes objective function</span>
     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">res</span><span class="p">)[</span><span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">objective</span><span class="p">)]</span></div>
 <span class="c1"># end function</span>
 </pre></div>

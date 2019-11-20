@@ -96,6 +96,7 @@
               <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../tutorial.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../map.html">MAP Estimation</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../api.html">API</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="approx.html">approx.py</a></li>
 <li class="toctree-l2"><a class="reference internal" href="gmmUtils.html">gmmUtils.py</a></li>
@@ -219,7 +220,7 @@
 <p>Gaussian process utility functions, e.g. optimizing GP hyperparameters.</p>
 <dl class="function">
 <dt id="approxposterior.gpUtils.optimizeGP">
-<code class="descclassname">approxposterior.gpUtils.</code><code class="descname">optimizeGP</code><span class="sig-paren">(</span><em>gp</em>, <em>theta</em>, <em>y</em>, <em>seed=None</em>, <em>nGPRestarts=5</em>, <em>method=None</em>, <em>options=None</em>, <em>p0=None</em>, <em>gpCV=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/gpUtils.html#optimizeGP"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.gpUtils.optimizeGP" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">approxposterior.gpUtils.</code><code class="descname">optimizeGP</code><span class="sig-paren">(</span><em>gp</em>, <em>theta</em>, <em>y</em>, <em>seed=None</em>, <em>nGPRestarts=1</em>, <em>method='powell'</em>, <em>options=None</em>, <em>p0=None</em>, <em>gpCV=None</em>, <em>gpHyperPrior=&lt;function _defaultPrior&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/gpUtils.html#optimizeGP"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.gpUtils.optimizeGP" title="Permalink to this definition">¶</a></dt>
 <dd><p>Optimize hyperparameters of an arbitrary george Gaussian Process kernel
 by maximizing the marginalized log-likelihood.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -238,12 +239,12 @@ by maximizing the marginalized log-likelihood.</p>
 </div></blockquote>
 <p><strong>nGPRestarts</strong> : int (optional)</p>
 <blockquote>
-<div><p>Number of times to restart the optimization.  Defaults to 5. Increase
+<div><p>Number of times to restart the optimization.  Defaults to 1. Increase
 this number if the GP isn’t optimized well.</p>
 </div></blockquote>
 <p><strong>method</strong> : str (optional)</p>
 <blockquote>
-<div><p>scipy.optimize.minimize method.  Defaults to powell if None.</p>
+<div><p>scipy.optimize.minimize method.  Defaults to powell.</p>
 </div></blockquote>
 <p><strong>options</strong> : dict (optional)</p>
 <blockquote>
@@ -252,7 +253,7 @@ this number if the GP isn’t optimized well.</p>
 <p><strong>p0</strong> : array (optional)</p>
 <blockquote>
 <div><p>Initial guess for kernel hyperparameters.  If None, defaults to
-ndim values randomly sampled from a uniform distribution over [-10, 10)</p>
+np.random.randn for each parameter</p>
 </div></blockquote>
 <p><strong>gpCV</strong> : int (optional)</p>
 <blockquote>
@@ -261,6 +262,12 @@ hyperparameters from the nGPRestarts maximum likelihood solutions.
 This can be useful if the GP is overfitting, but will likely slow down
 the code. Defaults to None, aka this functionality is not used. If using
 it, perform gpCV-fold cross-validation.</p>
+</div></blockquote>
+<p><strong>gpHyperPrior</strong> : str/callable (optional)</p>
+<blockquote>
+<div><p>Prior function for GP hyperparameters. Defaults to the _defaultPrior fn.
+This function asserts that the mean must be negative and that each log
+hyperparameter is within the range [-20,20].</p>
 </div></blockquote>
 </td>
 </tr>

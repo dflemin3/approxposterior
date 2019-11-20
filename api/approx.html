@@ -95,6 +95,7 @@
               <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../tutorial.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../map.html">MAP Estimation</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../api.html">API</a><ul class="current">
 <li class="toctree-l2 current"><a class="current reference internal" href="#">approx.py</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#approx-py-approxposterior"><code class="docutils literal notranslate"><span class="pre">approx.py</span></code> - ApproxPosterior</a><ul class="simple">
@@ -233,10 +234,16 @@ the AGP (Adaptive Gaussian Process) by Wang &amp; Li (2017).</p>
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="#approxposterior.approx.ApproxPosterior.findNextPoint" title="approxposterior.approx.ApproxPosterior.findNextPoint"><code class="xref py py-obj docutils literal notranslate"><span class="pre">findNextPoint</span></code></a>([computeLnLike,&nbsp;bounds,&nbsp;…])</td>
+<tr class="row-odd"><td><a class="reference internal" href="#approxposterior.approx.ApproxPosterior.findMAP" title="approxposterior.approx.ApproxPosterior.findMAP"><code class="xref py py-obj docutils literal notranslate"><span class="pre">findMAP</span></code></a>([theta0,&nbsp;method,&nbsp;options,&nbsp;nRestarts])</td>
+<td>Find maximum a posteriori (MAP) estimate, given a trained GP.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#approxposterior.approx.ApproxPosterior.findNextPoint" title="approxposterior.approx.ApproxPosterior.findNextPoint"><code class="xref py py-obj docutils literal notranslate"><span class="pre">findNextPoint</span></code></a>([computeLnLike,&nbsp;bounds,&nbsp;…])</td>
 <td>Find new point, thetaT, by maximizing utility function.</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#approxposterior.approx.ApproxPosterior.run" title="approxposterior.approx.ApproxPosterior.run"><code class="xref py py-obj docutils literal notranslate"><span class="pre">run</span></code></a>([m,&nbsp;nmax,&nbsp;Dmax,&nbsp;kmax,&nbsp;seed,&nbsp;timing,&nbsp;…])</td>
+<tr class="row-odd"><td><a class="reference internal" href="#approxposterior.approx.ApproxPosterior.optGP" title="approxposterior.approx.ApproxPosterior.optGP"><code class="xref py py-obj docutils literal notranslate"><span class="pre">optGP</span></code></a>([seed,&nbsp;method,&nbsp;options,&nbsp;p0,&nbsp;…])</td>
+<td>Optimize hyperparameters of object’s GP</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#approxposterior.approx.ApproxPosterior.run" title="approxposterior.approx.ApproxPosterior.run"><code class="xref py py-obj docutils literal notranslate"><span class="pre">run</span></code></a>([m,&nbsp;nmax,&nbsp;seed,&nbsp;timing,&nbsp;verbose,&nbsp;…])</td>
 <td>Core algorithm to estimate the posterior distribution via Gaussian Process regression to the joint distribution for the forward model input/output pairs</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#approxposterior.approx.ApproxPosterior.runMCMC" title="approxposterior.approx.ApproxPosterior.runMCMC"><code class="xref py py-obj docutils literal notranslate"><span class="pre">runMCMC</span></code></a>([samplerKwargs,&nbsp;mcmcKwargs,&nbsp;…])</td>
@@ -245,8 +252,54 @@ the AGP (Adaptive Gaussian Process) by Wang &amp; Li (2017).</p>
 </tbody>
 </table>
 <dl class="method">
+<dt id="approxposterior.approx.ApproxPosterior.findMAP">
+<code class="descname">findMAP</code><span class="sig-paren">(</span><em>theta0=None</em>, <em>method='nelder-mead'</em>, <em>options=None</em>, <em>nRestarts=5</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/approx.html#ApproxPosterior.findMAP"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.approx.ApproxPosterior.findMAP" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find maximum a posteriori (MAP) estimate, given a trained GP. To find
+the MAP, this function minimizes -mu.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>theta0</strong> : iterable</p>
+<blockquote>
+<div><p>Initial guess. Defaults to empirical MAP + Gaussian noise,
+theta0 = theta[np.argmin(y)] + np.random.randn()</p>
+</div></blockquote>
+<p><strong>findMLE</strong> : bool (optional)</p>
+<blockquote>
+<div><p>If True, find the MLE instead of the MAP</p>
+</div></blockquote>
+<p><strong>method</strong> : str (optional)</p>
+<blockquote>
+<div><p>scipy.optimize.minimize method.  Defaults to powell.</p>
+</div></blockquote>
+<p><strong>options</strong> : dict (optional)</p>
+<blockquote>
+<div><p>kwargs for the scipy.optimize.minimize function.  Defaults to None.</p>
+</div></blockquote>
+<p><strong>nRestarts</strong> : int (optional)</p>
+<blockquote>
+<div><p>Number of times to restart the optimization. Defaults to 5.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>MAP</strong> : iterable</p>
+<blockquote>
+<div><p>maximum a posteriori estimate</p>
+</div></blockquote>
+<p><strong>fn</strong> : float</p>
+<blockquote class="last">
+<div><p>Mean of GP predictive function at MAP</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
 <dt id="approxposterior.approx.ApproxPosterior.findNextPoint">
-<code class="descname">findNextPoint</code><span class="sig-paren">(</span><em>computeLnLike=True</em>, <em>bounds=None</em>, <em>gpMethod=None</em>, <em>maxLnLikeRestarts=3</em>, <em>seed=None</em>, <em>cache=True</em>, <em>gpOptions=None</em>, <em>gpP0=None</em>, <em>optGP=True</em>, <em>args=None</em>, <em>nGPRestarts=5</em>, <em>nMinObjRestarts=5</em>, <em>gpCV=None</em>, <em>runName='apRun'</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/approx.html#ApproxPosterior.findNextPoint"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.approx.ApproxPosterior.findNextPoint" title="Permalink to this definition">¶</a></dt>
+<code class="descname">findNextPoint</code><span class="sig-paren">(</span><em>computeLnLike=True</em>, <em>bounds=None</em>, <em>gpMethod=None</em>, <em>maxLnLikeRestarts=3</em>, <em>seed=None</em>, <em>cache=True</em>, <em>gpOptions=None</em>, <em>gpP0=None</em>, <em>bOptGP=True</em>, <em>args=None</em>, <em>nGPRestarts=1</em>, <em>nMinObjRestarts=5</em>, <em>gpCV=None</em>, <em>runName='apRun'</em>, <em>gpHyperPrior=&lt;function _defaultPrior&gt;</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/approx.html#ApproxPosterior.findNextPoint"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.approx.ApproxPosterior.findNextPoint" title="Permalink to this definition">¶</a></dt>
 <dd><p>Find new point, thetaT, by maximizing utility function. Note that we
 call a minimizer because minimizing negative of utility function is
 the same as maximizing it.</p>
@@ -313,10 +366,9 @@ hyperparameters.  Defaults to None.</p>
 <p><strong>gpP0</strong> : array (optional)</p>
 <blockquote>
 <div><p>Initial guess for kernel hyperparameters.  If None, defaults to
-np.random.uniform(low=-10, high=10) for each dimension, np.mean(y)
-for the mean function.</p>
+np.random.randn for each parameter.</p>
 </div></blockquote>
-<p><strong>optGP</strong> : bool (optional)</p>
+<p><strong>bOptGP</strong> : bool (optional)</p>
 <blockquote>
 <div><p>Whether or not to optimize the GP hyperparameters.  Defaults to
 True.</p>
@@ -324,7 +376,7 @@ True.</p>
 <p><strong>nGPRestarts</strong> : int (optional)</p>
 <blockquote>
 <div><p>Number of times to restart GP hyperparameter optimization.  Defaults
-to 5. Increase this number if the GP isn’t optimized well.</p>
+to 1. Increase this number if the GP isn’t optimized well.</p>
 </div></blockquote>
 <p><strong>nMinObjRestarts</strong> : int (optional)</p>
 <blockquote>
@@ -343,6 +395,12 @@ will likely slow down the code.</p>
 <blockquote>
 <div><p>Filename for hdf5 file where mcmc chains are saved.  Defaults to
 apRun and will be saved as apRunii.h5 for ii in range(nmax).</p>
+</div></blockquote>
+<p><strong>gpHyperPrior</strong> : str/callable (optional)</p>
+<blockquote>
+<div><p>Prior function for GP hyperparameters. Defaults to the _defaultPrior fn.
+This function asserts that the mean must be negative and that each log
+hyperparameter is within the range [-20,20].</p>
 </div></blockquote>
 <p><strong>args</strong> : iterable (optional)</p>
 <blockquote>
@@ -377,8 +435,61 @@ Otherwise, returns thetaT and yT.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="approxposterior.approx.ApproxPosterior.optGP">
+<code class="descname">optGP</code><span class="sig-paren">(</span><em>seed=None</em>, <em>method='powell'</em>, <em>options=None</em>, <em>p0=None</em>, <em>nGPRestarts=1</em>, <em>gpCV=None</em>, <em>gpHyperPrior=&lt;function _defaultPrior&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/approx.html#ApproxPosterior.optGP"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.approx.ApproxPosterior.optGP" title="Permalink to this definition">¶</a></dt>
+<dd><p>Optimize hyperparameters of object’s GP</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>seed</strong> : int (optional)</p>
+<blockquote>
+<div><p>numpy RNG seed.  Defaults to None.</p>
+</div></blockquote>
+<p><strong>nGPRestarts</strong> : int (optional)</p>
+<blockquote>
+<div><p>Number of times to restart the optimization.  Defaults to 1. Increase
+this number if the GP isn’t optimized well.</p>
+</div></blockquote>
+<p><strong>method</strong> : str (optional)</p>
+<blockquote>
+<div><p>scipy.optimize.minimize method.  Defaults to powell.</p>
+</div></blockquote>
+<p><strong>options</strong> : dict (optional)</p>
+<blockquote>
+<div><p>kwargs for the scipy.optimize.minimize function.  Defaults to None.</p>
+</div></blockquote>
+<p><strong>p0</strong> : array (optional)</p>
+<blockquote>
+<div><p>Initial guess for kernel hyperparameters.  If None, defaults to
+np.random.randn for each parameter</p>
+</div></blockquote>
+<p><strong>gpCV</strong> : int (optional)</p>
+<blockquote>
+<div><p>Whether or not to use k-fold cross-validation to select kernel
+hyperparameters from the nGPRestarts maximum likelihood solutions.
+This can be useful if the GP is overfitting, but will likely slow down
+the code. Defaults to None, aka this functionality is not used. If using
+it, perform gpCV-fold cross-validation.</p>
+</div></blockquote>
+<p><strong>gpHyperPrior</strong> : str/callable (optional)</p>
+<blockquote>
+<div><p>Prior function for GP hyperparameters. Defaults to the _defaultPrior fn.
+This function asserts that the mean must be negative and that each log
+hyperparameter is within the range [-20,20].</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>optimizedGP</strong> : george.GP</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
 <dt id="approxposterior.approx.ApproxPosterior.run">
-<code class="descname">run</code><span class="sig-paren">(</span><em>m=10</em>, <em>nmax=2</em>, <em>Dmax=None</em>, <em>kmax=None</em>, <em>seed=None</em>, <em>timing=False</em>, <em>nKLSamples=None</em>, <em>verbose=True</em>, <em>maxComp=3</em>, <em>mcmcKwargs=None</em>, <em>samplerKwargs=None</em>, <em>estBurnin=False</em>, <em>thinChains=False</em>, <em>runName='apRun'</em>, <em>cache=True</em>, <em>maxLnLikeRestarts=3</em>, <em>gmmKwargs=None</em>, <em>gpMethod=None</em>, <em>gpOptions=None</em>, <em>gpP0=None</em>, <em>optGPEveryN=1</em>, <em>nGPRestarts=5</em>, <em>nMinObjRestarts=5</em>, <em>gpCV=None</em>, <em>onlyLastMCMC=False</em>, <em>args=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/approx.html#ApproxPosterior.run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.approx.ApproxPosterior.run" title="Permalink to this definition">¶</a></dt>
+<code class="descname">run</code><span class="sig-paren">(</span><em>m=10</em>, <em>nmax=2</em>, <em>seed=None</em>, <em>timing=False</em>, <em>verbose=True</em>, <em>mcmcKwargs=None</em>, <em>samplerKwargs=None</em>, <em>estBurnin=False</em>, <em>thinChains=False</em>, <em>runName='apRun'</em>, <em>cache=True</em>, <em>maxLnLikeRestarts=3</em>, <em>gpMethod='powell'</em>, <em>gpOptions=None</em>, <em>gpP0=None</em>, <em>optGPEveryN=1</em>, <em>nGPRestarts=1</em>, <em>nMinObjRestarts=5</em>, <em>gpCV=None</em>, <em>onlyLastMCMC=False</em>, <em>initGPOpt=True</em>, <em>gpHyperPrior=&lt;function _defaultPrior&gt;</em>, <em>args=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/approx.html#ApproxPosterior.run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.approx.ApproxPosterior.run" title="Permalink to this definition">¶</a></dt>
 <dd><p>Core algorithm to estimate the posterior distribution via Gaussian
 Process regression to the joint distribution for the forward model
 input/output pairs</p>
@@ -406,11 +517,6 @@ Defaults to False.</p>
 <p><strong>verbose</strong> : bool (optional)</p>
 <blockquote>
 <div><p>Output all the diagnostics? Defaults to True.</p>
-</div></blockquote>
-<p><strong>maxComp</strong> : int (optional)</p>
-<blockquote>
-<div><p>Maximum number of mixture model components to fit for when fitting a
-GMM model to approximate the posterior distribution.  Defaults to 3.</p>
 </div></blockquote>
 <p><strong>samplerKwargs</strong> : dict (optional)</p>
 <blockquote>
@@ -480,7 +586,7 @@ to 3.</p>
 <p><strong>gpMethod</strong> : str (optional)</p>
 <blockquote>
 <div><p>scipy.optimize.minimize method used when optimized GP hyperparameters.
-Defaults to None, which is nelder-mead, and it usually works.</p>
+Defaults to powell (it usually works)</p>
 </div></blockquote>
 <p><strong>gpOptions</strong> : dict (optional)</p>
 <blockquote>
@@ -490,8 +596,7 @@ hyperparameters.  Defaults to None.</p>
 <p><strong>gpP0</strong> : array (optional)</p>
 <blockquote>
 <div><p>Initial guess for kernel hyperparameters.  If None, defaults to
-np.random.uniform(low=-10, high=10) for each dimension, np.mean(y)
-for the mean function.</p>
+np.random.randn for each parameter.</p>
 </div></blockquote>
 <p><strong>optGPEveryN</strong> : int (optional)</p>
 <blockquote>
@@ -503,7 +608,7 @@ parameter if approxposterior is running slowly.</p>
 <p><strong>nGPRestarts</strong> : int (optional)</p>
 <blockquote>
 <div><p>Number of times to restart GP hyperparameter optimization.  Defaults
-to 5. Increase this number if the GP isn’t optimized well.</p>
+to 1. Increase this number if the GP isn’t optimized well.</p>
 </div></blockquote>
 <p><strong>nMinObjRestarts</strong> : int (optional)</p>
 <blockquote>
@@ -523,6 +628,17 @@ gpCV-fold cross-validation.</p>
 <blockquote>
 <div><p>Whether or not to only run the MCMC last iteration. Defaults to False.
 If true, bypasses all KL divergence and related calculations.</p>
+</div></blockquote>
+<p><strong>initGPOpt</strong> : bool (optional)</p>
+<blockquote>
+<div><p>Whether or not to optimize GP hyperparameters before 0th iteration.
+Defaults to True (aka assume user didn’t optimize GP hyperparameters)</p>
+</div></blockquote>
+<p><strong>gpHyperPrior</strong> : str/callable (optional)</p>
+<blockquote>
+<div><p>Prior function for GP hyperparameters. Defaults to the _defaultPrior fn.
+This function asserts that the mean must be negative and that each log
+hyperparameter is within the range [-20,20].</p>
 </div></blockquote>
 <p><strong>args</strong> : iterable (optional)</p>
 <blockquote>
