@@ -19,18 +19,18 @@
 Overview
 ========
 
-*approxposterior* is a Python package for efficient approximate Bayesian
-inference and optimization of computationally-expensive models. :py:obj:`approxposterior`
+`approxposterior` is a Python package for efficient approximate Bayesian
+inference and optimization of computationally-expensive models. `approxposterior`
 trains a Gaussian process (GP) surrogate for the computationally-expensive model
 and employs an active learning approach to iteratively improve the GPs predictive
 performance while minimizing the number of calls to the expensive model required
 to generate the GP's training set.
 
-*approxposterior* implements both the [Bayesian Active Learning for Posterior Estimation (BAPE, Kandasamy et al. (2015))](https://www.cs.cmu.edu/~kkandasa/pubs/kandasamyIJCAI15activePostEst.pdf) and [Adaptive Gaussian process approximation for Bayesian inference with expensive likelihood functions (AGP, Wang & Li (2017))](https://arxiv.org/abs/1703.09930) algorithms for estimating posterior probability distributions for use with inference problems with computationally-expensive models. In such situations,
-the goal is to infer posterior probability distributions for model parameters, given some data, with the additional constraint of minimizing the number of forward model evaluations given the model's assumed large computational cost.  *approxposterior* trains a Gaussian Process (GP) surrogate model for the likelihood evaluation by modeling the covariances in logprobability (logprior + loglikelihood) space. *approxposterior* then uses this GP within an MCMC sampler for each likelihood evaluation to perform the inference. *approxposterior* iteratively improves the GP's predictive performance by leveraging the inherent uncertainty in the GP's predictions to identify high-likelihood regions in parameter space where the GP is uncertain.  *approxposterior* then evaluates the forward model at these points to expand the training set in relevant regions of parameter space, re-training the GP to maximize its predictive ability while minimizing the size of the training set.  Check out [the BAPE paper](https://www.cs.cmu.edu/~kkandasa/pubs/kandasamyIJCAI15activePostEst.pdf) by Kandasamy et al. (2015) and [the AGP paper](https://arxiv.org/abs/1703.09930) by Wang & Li (2017) for in-depth descriptions of the respective algorithms.
+`approxposterior` implements both the [Bayesian Active Learning for Posterior Estimation (BAPE, Kandasamy et al. (2015))](https://www.cs.cmu.edu/~kkandasa/pubs/kandasamyIJCAI15activePostEst.pdf) and [Adaptive Gaussian process approximation for Bayesian inference with expensive likelihood functions (AGP, Wang & Li (2017))](https://arxiv.org/abs/1703.09930) algorithms for estimating posterior probability distributions for use with inference problems with computationally-expensive models. In such situations,
+the goal is to infer posterior probability distributions for model parameters, given some data, with the additional constraint of minimizing the number of forward model evaluations given the model's assumed large computational cost.  `approxposterior` trains a Gaussian Process (GP) surrogate model for the likelihood evaluation by modeling the covariances in logprobability (logprior + loglikelihood) space. `approxposterior` then uses this GP within an MCMC sampler for each likelihood evaluation to perform the inference. `approxposterior` iteratively improves the GP's predictive performance by leveraging the inherent uncertainty in the GP's predictions to identify high-likelihood regions in parameter space where the GP is uncertain.  `approxposterior` then evaluates the forward model at these points to expand the training set in relevant regions of parameter space, re-training the GP to maximize its predictive ability while minimizing the size of the training set.  Check out [the BAPE paper](https://www.cs.cmu.edu/~kkandasa/pubs/kandasamyIJCAI15activePostEst.pdf) by Kandasamy et al. (2015) and [the AGP paper](https://arxiv.org/abs/1703.09930) by Wang & Li (2017) for in-depth descriptions of the respective algorithms.
 
-In practice, we find that *approxposterior* can estimate posterior probability distributions that are accurate
-approximations to the true, underlying distributions with only of order 100s-1000s model evaluations to train the GP, compared to 1,000,000, often more, required by MCMC methods, depending on the inference problem. The estimated marginal posterior distributions have medians that are all typically within a few percent of the true values, with similar uncertainties to the true distributions.  We have validated *approxposterior* for 2-5 dimensional problems, while Kandasamy et al. (2015) found in an 9-dimensional case that the BAPE algorithm significantly outperformed MCMC methods in terms of both accuracy and speed. See their paper for details and check out the examples for more information and example use cases.
+In practice, we find that `approxposterior` can estimate posterior probability distributions that are accurate
+approximations to the true, underlying distributions with only of order 100s-1000s model evaluations to train the GP, compared to 1,000,000, often more, required by MCMC methods, depending on the inference problem. The estimated marginal posterior distributions have medians that are all typically within a few percent of the true values, with similar uncertainties to the true distributions.  We have validated `approxposterior` for 2-5 dimensional problems, while Kandasamy et al. (2015) found in an 9-dimensional case that the BAPE algorithm significantly outperformed MCMC methods in terms of both accuracy and speed. See their paper for details and check out the examples for more information and example use cases.
 
 Documentation
 =============
@@ -64,7 +64,7 @@ python setup.py install
 A simple example
 ================
 
-Below is a simple application of *approxposterior* based on the Wang & Li (2017) example.
+Below is a simple application of `approxposterior` based on the Wang & Li (2017) example.
 
 ```python
 from approxposterior import approx, gpUtils, likelihood as lh, utility as ut
@@ -130,12 +130,12 @@ The final distribution will look something like this:
 
 ![final_posterior](doc/_figures/final_posterior.png)
 
-The red points were selected by *approxposterior* by maximizing the BAPE utility function.
-At each red point, *approxposterior* ran the forward model to evaluate the true likelihood
+The red points were selected by `approxposterior` by maximizing the BAPE utility function.
+At each red point, `approxposterior` ran the forward model to evaluate the true likelihood
 and added this input-likelihood pair to the GP's training set, re-training the GP each time
 to improve its predictive ability. Note how the points are selected in regions of
 high posterior density, precisely where we would want to maximize the GP's predictive ability! By using the
-BAPE point selection scheme, *approxposterior* does not waste computational resources by
+BAPE point selection scheme, `approxposterior` does not waste computational resources by
 evaluating the forward model in low likelihood regions.
 
 Check out the [examples](https://github.com/dflemin3/approxposterior/tree/master/examples/Notebooks) directory for Jupyter Notebook examples and explanations. Check out the full [documentation](https://dflemin3.github.io/approxposterior/) for a more in-depth explanation of classes, methods, variables, and how to use the code.

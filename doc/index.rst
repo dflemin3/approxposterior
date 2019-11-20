@@ -36,9 +36,6 @@ approximations to the true, underlying distributions with only of order 100s-100
 .. _BAPE: https://www.cs.cmu.edu/~kkandasa/pubs/kandasamyIJCAI15activePostEst.pdf
 .. _AGP: https://arxiv.org/abs/1703.09930
 
-Table of Contents
-=================
-
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
