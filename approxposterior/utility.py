@@ -321,16 +321,22 @@ def minimizeObjective(fn, y, gp, sampleFn, priorFn, nMinObjRestarts=5):
     # Loop over optimization calls
     for ii in range(nMinObjRestarts):
 
-        # Guess initial value from prior
-        theta0 = np.array(sampleFn(1)).reshape(1,-1)
+        # Keep minimizing until a valid solution is found
+        while True:
+            # Guess initial value from prior
+            theta0 = np.array(sampleFn(1)).reshape(1,-1)
 
-        tmp = minimize(fn, theta0, args=args, bounds=None,
-                       method="nelder-mead",
-                       options={"adaptive" : True})["x"]
+            tmp = minimize(fn, theta0, args=args, bounds=None,
+                           method="nelder-mead",
+                           options={"adaptive" : True})["x"]
 
-        # Save solution, function value
-        res.append(tmp)
-        objective.append(fn(tmp, *args))
+            # If solution is finite and allowed by the prior, save!
+            if np.all(np.isfinite(tmp)):
+                if np.isfinite(priorFn(tmp)):
+                    # Save solution, function value
+                    res.append(tmp)
+                    objective.append(fn(tmp, *args))
+                    break
 
     # Return value that minimizes objective function
     return np.array(res)[np.argmin(objective)]

@@ -157,7 +157,7 @@ class ApproxPosterior(object):
         # Mean of predictive distribution conditioned on y (GP posterior estimate)
         # and make sure theta is the right shape for the GP
         try:
-            mu = self.gp.predict(self.y, np.array(theta).reshape(1,-1),
+            mu, = self.gp.predict(self.y, np.array(theta).reshape(1,-1),
                                  return_cov=False,
                                  return_var=False)
         except ValueError:
@@ -765,10 +765,7 @@ class ApproxPosterior(object):
         Parameters
         ----------
         theta0 : iterable
-            Initial guess. Defaults to empirical MAP + Gaussian noise,
-            theta0 = theta[np.argmin(y)] + np.random.randn()
-        findMLE : bool (optional)
-            If True, find the MLE instead of the MAP
+            Initial guess. Defaults to a sample from the prior function.
         method : str (optional)
             scipy.optimize.minimize method.  Defaults to powell.
         options : dict (optional)
@@ -795,7 +792,7 @@ class ApproxPosterior(object):
         else:
             bounds = None
 
-        # Initialize option if method is nelder-mead
+        # Initialize option if method is nelder-mead and options not provided
         if str(method.lower()) == "nelder-mead":
             if options is None:
                 options = {"adaptive" : True}
@@ -808,24 +805,32 @@ class ApproxPosterior(object):
         def fn(x):
             # If not allowed by the prior, reject!
             if not np.isfinite(self._lnprior(x)):
-                return 1.0e25
+                return np.inf
             else:
                 return -(self._gpll(x)[0])
 
         # Loop over optimization calls
         for ii in range(nRestarts):
-            # Guess initial point
-            if theta0 is None:
-                t0 = self.theta[np.argmin(self.y)] + np.random.randn()
-            else:
-                t0 = np.array(theta0) + np.min(theta0) * 1.0e-3 * np.random.randn(len(theta0))
+            # Keep minimizing until a valid solution is found
+            while True:
+                # Guess initial point
+                if theta0 is None:
+                    t0 = self.theta[np.argmax(self.y)] + 1.0e-3 * np.random.randn()
+                else:
+                    t0 = np.array(theta0) + np.min(theta0) * 1.0e-3 * np.random.randn(len(theta0))
 
-            tmp = minimize(fn, t0, method=method, options=options,
-                           bounds=bounds)
+                tmp = minimize(fn, t0, method=method, options=options,
+                               bounds=bounds)["x"]
 
-            # Save current answer
-            res.append(tmp["x"])
-            vals.append(fn(tmp["x"]))
+                print(tmp)
+
+                # If solution is finite and allowed by the prior, save!
+                if np.all(np.isfinite(tmp)):
+                    if np.isfinite(self._lnprior(tmp)):
+                        # Save solution, function value
+                        res.append(tmp)
+                        vals.append(fn(tmp))
+                        break
 
         # Return best answer
         bestInd = np.argmin(vals)

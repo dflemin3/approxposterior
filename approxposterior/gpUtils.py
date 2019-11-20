@@ -39,7 +39,7 @@ def defaultHyperPrior(p):
     if p[0] > 0:
         return -np.inf
 
-    # Restrict range of hyperparameters
+    # Restrict range of hyperparameters (ignoring mean term)
     if np.any(np.fabs(p)[1:] > 20):
         return -np.inf
 
@@ -70,19 +70,17 @@ def _nll(p, gp, y, priorFn=None):
 
     # Apply priors on GP hyperparameters
     if priorFn is not None:
-        prior = priorFn(p)
-
-        if not np.isfinite(prior):
-            return 1.0e25
+        if not np.isfinite(priorFn(p)):
+            return np.inf
 
     # Catch singular matrices
     try:
         gp.set_parameter_vector(p)
     except np.linalg.LinAlgError:
-        return 1.0e25
+        return np.inf
 
     ll = gp.log_likelihood(y, quiet=True)
-    return -ll if np.isfinite(ll) else 1.0e25
+    return -ll if np.isfinite(ll) else np.inf
 # end function
 
 
@@ -216,7 +214,6 @@ def optimizeGP(gp, theta, y, seed=None, nGPRestarts=1, method="powell",
         if p0 is None:
             # Pick random guesses for kernel hyperparameters
             x0 = [np.median(y)] + [np.random.randn() for _ in range(len(gp.get_parameter_vector())-1)]
-
         else:
             # Take user-supplied guess and slightly perturb it
             x0 = np.array(p0) + np.min(p0) * 1.0e-3 * np.random.randn(len(p0))
