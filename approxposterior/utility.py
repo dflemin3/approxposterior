@@ -272,7 +272,7 @@ def NaiveUtility(theta, y, gp, priorFn):
         raise RuntimeError("ERROR: Need to compute GP before using it!")
 
     try:
-        util = -(mu / var)
+        util = -mu * var
     except ValueError:
         print("Invalid util value.  Negative variance or inf mu?")
         raise ValueError("util: %e. mu: %e. var: %e" % (util, mu, var))

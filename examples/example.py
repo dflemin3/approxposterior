@@ -17,8 +17,8 @@ m0 = 50                           # Initial size of training set
 m = 20                            # Number of new points to find each iteration
 nmax = 2                          # Maximum number of iterations
 bounds = ((-5,5), (-5,5))         # Prior bounds
-algorithm = "naive"               # Use the Kandasamy et al. (2015) formalism
-seed = 91                         # RNG seed
+algorithm = "bape"                # Use the Kandasamy et al. (2015) formalism
+seed = 57                         # RNG seed
 
 np.random.seed(seed)
 

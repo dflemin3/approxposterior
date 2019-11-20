@@ -51,10 +51,16 @@ def testUtilsGP():
 
     # Now do the same using the BAPE utility function
     testUtil = ut.BAPEUtility(thetaTest, y, gp, lh.rosenbrockLnprior)
-    print(testUtil)
 
     errMsg = "ERROR: BAPE util fn bug.  Did you change gp_utils.setup_gp?"
     assert np.allclose(testUtil, -114623.57332731, rtol=1.0e-4), errMsg
+
+    # Now do the same using the naive utility function
+    testUtil = ut.NaiveUtility(thetaTest, y, gp, lh.rosenbrockLnprior)
+    print(testUtil)
+
+    errMsg = "ERROR: naive util fn bug.  Did you change gp_utils.setup_gp?"
+    assert np.allclose(testUtil, 2226233.22000008, rtol=1.0e-4), errMsg
 # end function
 
 if __name__ == "__main__":
