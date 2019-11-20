@@ -1,8 +1,15 @@
 MAP Estimation
 ==============
 
+:py:obj:`approxposterior` can be used to find an accurate approximation of the
+minimum (or maximum) of a function by estimating an approximate maximum a
+posteriori (MAP) solution for a function after training on a small number of
+function evaluations. This method is particularly useful when the function in
+question is computationally-expensive to evaluate so one wishes to minimizes the
+number of evaluations.
+
 Below is a quick example of how to use :py:obj:`approxposterior` to estimate the
-maximum a posteriori (MAP) solution of the Rosenbrock Function example from Wang & Li (2017).
+MAP solution of the Rosenbrock Function example from Wang & Li (2017).
 
 In this case, we are using the Rosenbrock function as our -loglikelihood function.
 The MAP solution we find using :py:obj:`approxposterior` is therefore the minimum of the
@@ -76,9 +83,10 @@ so that what we hope to recover!
       for jj in range(100):
           rosen[ii,jj] = lh.rosenbrockLnlike([arr[ii], arr[jj]])
 
-  # Plot Rosenbrock function (rescale because it varies by several orders of magnitude)
-  ax.imshow(-np.log(-rosen).T, origin="lower", aspect="auto", interpolation="nearest",
-            extent=[-5, 5, -5, 5], zorder=0)
+  # Plot Rosenbrock function (rescale because it varies by several orders of
+  # magnitude and is < 0)
+  ax.imshow(-np.log(-rosen).T, origin="lower", aspect="auto",
+            interpolation="nearest", extent=[-5, 5, -5, 5], zorder=0)
 
   # Plot truth
   ax.axhline(1, lw=2, ls=":", color="white", zorder=1)
@@ -100,8 +108,9 @@ so that what we hope to recover!
 .. image:: _figures/rosenbrockMAP.png
   :width: 400
 
-:py:obj:`approxposterior` MAP solution: (0.973, 0.943), -2.553785e-4.
-Pretty close to the truth, and better yet, only 50 Rosenbrock function
-evaluations were used to train the :py:obj:`approxposterior` GP used to estimate
+:py:obj:`approxposterior` MAP solution: (0.973, 0.943), -2.553785e-4 (red point)
+compared to the truth (1,1), 0 (white dashed lines).
+Our answer is pretty close to the truth, and better yet, :py:obj:`approxposterior`
+only required 50 Rosenbrock function evaluations to train its GP used to estimate
 the MAP solution. For computationally-expensive forward models, this method can
-be used for efficient approximate Bayesian optimization of functions.
+be used for efficient (approximate) Bayesian optimization of functions.

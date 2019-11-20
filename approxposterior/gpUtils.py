@@ -121,7 +121,7 @@ def defaultGP(theta, y, order=None, white_noise=-10):
     theta : array
         Design points
     y : array
-        Data to condition GP on, e.g. the lnlike * lnprior at each design point,
+        Data to condition GP on, e.g. the lnlike + lnprior at each design point,
         theta.
     order : int (optional)
         Order of PolynomialKernel to add to ExpSquaredKernel. Defaults to None,

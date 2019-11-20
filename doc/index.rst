@@ -8,10 +8,20 @@ approxposterior
 
 .. _Python: http://www.python.org/
 
-A Python implementation of `Bayesian Active Learning for Posterior Estimation` (BAPE_)
+:py:obj:`approxposterior` is a Python package for efficient approximate Bayesian
+inference and optimization of computationally-expensive models. :py:obj:`approxposterior`
+trains a Gaussian process (GP) surrogate for the computationally-expensive model
+and employs an active learning approach to iteratively improve the GPs predictive
+performance while minimizing the number of calls to the expensive model required
+to generate the GP's training set.
+
+:py:obj:`approxposterior` implements variants of `Bayesian Active Learning for Posterior Estimation` (BAPE_)
 by Kandasamy et al. (2015) and `Adaptive Gaussian process approximation for
-Bayesian inference with expensive likelihood functions` (AGP_) by Wang & Li (2017). For information
-on how to install :py:obj:`approxposterior`, numerous example use cases, and detailed API
+Bayesian inference with expensive likelihood functions` (AGP_) by Wang & Li (2017).
+These active learning algorithms outline schemes for GP active learning that :py:obj:`approxposterior`
+uses for its Bayesian inference and/or optimization.
+
+For information on how to install :py:obj:`approxposterior`, numerous example use cases, and detailed API
 documentation, check out the Table of Contents to the left and below.
 
 Introduction
