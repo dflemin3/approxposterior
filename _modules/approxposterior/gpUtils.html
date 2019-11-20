@@ -177,7 +177,7 @@
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="c1"># Tell module what it&#39;s allowed to import</span>
-<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;optimizeGP&quot;</span><span class="p">]</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;defaultHyperPrior&quot;</span><span class="p">,</span> <span class="s2">&quot;defaultGP&quot;</span><span class="p">,</span> <span class="s2">&quot;optimizeGP&quot;</span><span class="p">]</span>
 
 <span class="kn">from</span> <span class="nn">.</span> <span class="k">import</span> <span class="n">utility</span> <span class="k">as</span> <span class="n">util</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
@@ -187,7 +187,7 @@
 <span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="k">import</span> <span class="n">mean_squared_error</span>
 
 
-<span class="k">def</span> <span class="nf">_defaultPrior</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+<div class="viewcode-block" id="defaultHyperPrior"><a class="viewcode-back" href="../../api/gpUtils.html#approxposterior.gpUtils.defaultHyperPrior">[docs]</a><span class="k">def</span> <span class="nf">defaultHyperPrior</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Default prior function for GP hyperparameters. Ensures the mean is negative,</span>
 <span class="sd">    which makes sense since we hope to regression on the negative loglikelihood.</span>
@@ -212,7 +212,7 @@
     <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">p</span><span class="p">)[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">&gt;</span> <span class="mi">20</span><span class="p">):</span>
         <span class="k">return</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span>
 
-    <span class="k">return</span> <span class="mf">0.0</span>
+    <span class="k">return</span> <span class="mf">0.0</span></div>
 <span class="c1"># end function</span>
 
 
@@ -279,7 +279,7 @@
 <span class="c1"># end function</span>
 
 
-<span class="k">def</span> <span class="nf">defaultGP</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">white_noise</span><span class="o">=-</span><span class="mi">10</span><span class="p">):</span>
+<div class="viewcode-block" id="defaultGP"><a class="viewcode-back" href="../../api/gpUtils.html#approxposterior.gpUtils.defaultGP">[docs]</a><span class="k">def</span> <span class="nf">defaultGP</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">white_noise</span><span class="o">=-</span><span class="mi">10</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Basic utility function that initializes a simple GP that works well in many</span>
 <span class="sd">    applications, but is not guaranteed to work in general.</span>
@@ -330,12 +330,12 @@
                    <span class="n">white_noise</span><span class="o">=</span><span class="n">white_noise</span><span class="p">,</span> <span class="n">fit_white_noise</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
     <span class="n">gp</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">gp</span>
+    <span class="k">return</span> <span class="n">gp</span></div>
 <span class="c1"># end function</span>
 
 
 <div class="viewcode-block" id="optimizeGP"><a class="viewcode-back" href="../../api/gpUtils.html#approxposterior.gpUtils.optimizeGP">[docs]</a><span class="k">def</span> <span class="nf">optimizeGP</span><span class="p">(</span><span class="n">gp</span><span class="p">,</span> <span class="n">theta</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">nGPRestarts</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;powell&quot;</span><span class="p">,</span>
-               <span class="n">options</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">p0</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">gpCV</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">gpHyperPrior</span><span class="o">=</span><span class="n">_defaultPrior</span><span class="p">):</span>
+               <span class="n">options</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">p0</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">gpCV</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">gpHyperPrior</span><span class="o">=</span><span class="n">defaultHyperPrior</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Optimize hyperparameters of an arbitrary george Gaussian Process kernel</span>
 <span class="sd">    by maximizing the marginalized log-likelihood.</span>
@@ -365,7 +365,7 @@
 <span class="sd">        the code. Defaults to None, aka this functionality is not used. If using</span>
 <span class="sd">        it, perform gpCV-fold cross-validation.</span>
 <span class="sd">    gpHyperPrior : str/callable (optional)</span>
-<span class="sd">        Prior function for GP hyperparameters. Defaults to the _defaultPrior fn.</span>
+<span class="sd">        Prior function for GP hyperparameters. Defaults to the defaultHyperPrior fn.</span>
 <span class="sd">        This function asserts that the mean must be negative and that each log</span>
 <span class="sd">        hyperparameter is within the range [-20,20].</span>
 

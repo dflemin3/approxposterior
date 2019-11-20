@@ -341,7 +341,7 @@
 
 
 <div class="viewcode-block" id="ApproxPosterior.optGP"><a class="viewcode-back" href="../../api/approx.html#approxposterior.approx.ApproxPosterior.optGP">[docs]</a>    <span class="k">def</span> <span class="nf">optGP</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;powell&quot;</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">p0</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-              <span class="n">nGPRestarts</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">gpCV</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">gpHyperPrior</span><span class="o">=</span><span class="n">gpUtils</span><span class="o">.</span><span class="n">_defaultPrior</span><span class="p">):</span>
+              <span class="n">nGPRestarts</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">gpCV</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">gpHyperPrior</span><span class="o">=</span><span class="n">gpUtils</span><span class="o">.</span><span class="n">defaultHyperPrior</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Optimize hyperparameters of object&#39;s GP</span>
 
@@ -366,7 +366,7 @@
 <span class="sd">            the code. Defaults to None, aka this functionality is not used. If using</span>
 <span class="sd">            it, perform gpCV-fold cross-validation.</span>
 <span class="sd">        gpHyperPrior : str/callable (optional)</span>
-<span class="sd">            Prior function for GP hyperparameters. Defaults to the _defaultPrior fn.</span>
+<span class="sd">            Prior function for GP hyperparameters. Defaults to the defaultHyperPrior fn.</span>
 <span class="sd">            This function asserts that the mean must be negative and that each log</span>
 <span class="sd">            hyperparameter is within the range [-20,20].</span>
 
@@ -388,7 +388,7 @@
             <span class="n">thinChains</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">runName</span><span class="o">=</span><span class="s2">&quot;apRun&quot;</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">maxLnLikeRestarts</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
             <span class="n">gpMethod</span><span class="o">=</span><span class="s2">&quot;powell&quot;</span><span class="p">,</span> <span class="n">gpOptions</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">gpP0</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">optGPEveryN</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
             <span class="n">nGPRestarts</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">nMinObjRestarts</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">gpCV</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">onlyLastMCMC</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-            <span class="n">initGPOpt</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">gpHyperPrior</span><span class="o">=</span><span class="n">gpUtils</span><span class="o">.</span><span class="n">_defaultPrior</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+            <span class="n">initGPOpt</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">gpHyperPrior</span><span class="o">=</span><span class="n">gpUtils</span><span class="o">.</span><span class="n">defaultHyperPrior</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Core algorithm to estimate the posterior distribution via Gaussian</span>
 <span class="sd">        Process regression to the joint distribution for the forward model</span>
@@ -481,7 +481,7 @@
 <span class="sd">            Whether or not to optimize GP hyperparameters before 0th iteration.</span>
 <span class="sd">            Defaults to True (aka assume user didn&#39;t optimize GP hyperparameters)</span>
 <span class="sd">        gpHyperPrior : str/callable (optional)</span>
-<span class="sd">            Prior function for GP hyperparameters. Defaults to the _defaultPrior fn.</span>
+<span class="sd">            Prior function for GP hyperparameters. Defaults to the defaultHyperPrior fn.</span>
 <span class="sd">            This function asserts that the mean must be negative and that each log</span>
 <span class="sd">            hyperparameter is within the range [-20,20].</span>
 <span class="sd">        args : iterable (optional)</span>
@@ -621,7 +621,7 @@
                       <span class="n">maxLnLikeRestarts</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">gpOptions</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                       <span class="n">gpP0</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">bOptGP</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">nGPRestarts</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
                       <span class="n">nMinObjRestarts</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">gpCV</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">runName</span><span class="o">=</span><span class="s2">&quot;apRun&quot;</span><span class="p">,</span>
-                      <span class="n">gpHyperPrior</span><span class="o">=</span><span class="n">gpUtils</span><span class="o">.</span><span class="n">_defaultPrior</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+                      <span class="n">gpHyperPrior</span><span class="o">=</span><span class="n">gpUtils</span><span class="o">.</span><span class="n">defaultHyperPrior</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Find new point, thetaT, by maximizing utility function. Note that we</span>
 <span class="sd">        call a minimizer because minimizing negative of utility function is</span>
@@ -690,7 +690,7 @@
 <span class="sd">            Filename for hdf5 file where mcmc chains are saved.  Defaults to</span>
 <span class="sd">            apRun and will be saved as apRunii.h5 for ii in range(nmax).</span>
 <span class="sd">        gpHyperPrior : str/callable (optional)</span>
-<span class="sd">            Prior function for GP hyperparameters. Defaults to the _defaultPrior fn.</span>
+<span class="sd">            Prior function for GP hyperparameters. Defaults to the defaultHyperPrior fn.</span>
 <span class="sd">            This function asserts that the mean must be negative and that each log</span>
 <span class="sd">            hyperparameter is within the range [-20,20].</span>
 <span class="sd">        args : iterable (optional)</span>

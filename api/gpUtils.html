@@ -221,8 +221,77 @@
 <h2><code class="xref py py-mod docutils literal notranslate"><span class="pre">gpUtils.py</span></code> - Gaussian Process Utilities<a class="headerlink" href="#gputils-py-gaussian-process-utilities" title="Permalink to this headline">¶</a></h2>
 <p>Gaussian process utility functions, e.g. optimizing GP hyperparameters.</p>
 <dl class="function">
+<dt id="approxposterior.gpUtils.defaultHyperPrior">
+<code class="descclassname">approxposterior.gpUtils.</code><code class="descname">defaultHyperPrior</code><span class="sig-paren">(</span><em>p</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/gpUtils.html#defaultHyperPrior"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.gpUtils.defaultHyperPrior" title="Permalink to this definition">¶</a></dt>
+<dd><p>Default prior function for GP hyperparameters. Ensures the mean is negative,
+which makes sense since we hope to regression on the negative loglikelihood.
+This prior also keeps the hyperparameters within a reasonable range, [-20, 20].
+Note that george operates on the <em>log</em> hyperparameters!</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>p</strong> : array/iterable</p>
+<blockquote>
+<div><p>Array of GP hyperparameters</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>prior</strong> : float</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="approxposterior.gpUtils.defaultGP">
+<code class="descclassname">approxposterior.gpUtils.</code><code class="descname">defaultGP</code><span class="sig-paren">(</span><em>theta</em>, <em>y</em>, <em>order=None</em>, <em>white_noise=-10</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/gpUtils.html#defaultGP"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.gpUtils.defaultGP" title="Permalink to this definition">¶</a></dt>
+<dd><p>Basic utility function that initializes a simple GP that works well in many
+applications, but is not guaranteed to work in general.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>theta</strong> : array</p>
+<blockquote>
+<div><p>Design points</p>
+</div></blockquote>
+<p><strong>y</strong> : array</p>
+<blockquote>
+<div><p>Data to condition GP on, e.g. the lnlike * lnprior at each design point,
+theta.</p>
+</div></blockquote>
+<p><strong>order</strong> : int (optional)</p>
+<blockquote>
+<div><p>Order of PolynomialKernel to add to ExpSquaredKernel. Defaults to None,
+that is, no PolynomialKernel is added and the GP only uses the
+ExpSquaredKernel</p>
+</div></blockquote>
+<p><strong>white_noise</strong> : float (optional)</p>
+<blockquote>
+<div><p>From george docs: “A description of the logarithm of the white noise
+variance added to the diagonal of the covariance matrix”. Defaults to
+log(white_noise) = -10. Note: if order is not None, you might need to
+set the white_noise to a large value for the computation to be
+numerically stable, but this, as always, depends on the application.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>gp</strong> : george.GP</p>
+<blockquote class="last">
+<div><p>Gaussian process with initialized kernel and factorized covariance
+matrix.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
 <dt id="approxposterior.gpUtils.optimizeGP">
-<code class="descclassname">approxposterior.gpUtils.</code><code class="descname">optimizeGP</code><span class="sig-paren">(</span><em>gp</em>, <em>theta</em>, <em>y</em>, <em>seed=None</em>, <em>nGPRestarts=1</em>, <em>method='powell'</em>, <em>options=None</em>, <em>p0=None</em>, <em>gpCV=None</em>, <em>gpHyperPrior=&lt;function _defaultPrior&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/gpUtils.html#optimizeGP"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.gpUtils.optimizeGP" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">approxposterior.gpUtils.</code><code class="descname">optimizeGP</code><span class="sig-paren">(</span><em>gp</em>, <em>theta</em>, <em>y</em>, <em>seed=None</em>, <em>nGPRestarts=1</em>, <em>method='powell'</em>, <em>options=None</em>, <em>p0=None</em>, <em>gpCV=None</em>, <em>gpHyperPrior=&lt;function defaultHyperPrior&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/gpUtils.html#optimizeGP"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.gpUtils.optimizeGP" title="Permalink to this definition">¶</a></dt>
 <dd><p>Optimize hyperparameters of an arbitrary george Gaussian Process kernel
 by maximizing the marginalized log-likelihood.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -267,7 +336,7 @@ it, perform gpCV-fold cross-validation.</p>
 </div></blockquote>
 <p><strong>gpHyperPrior</strong> : str/callable (optional)</p>
 <blockquote>
-<div><p>Prior function for GP hyperparameters. Defaults to the _defaultPrior fn.
+<div><p>Prior function for GP hyperparameters. Defaults to the defaultHyperPrior fn.
 This function asserts that the mean must be negative and that each log
 hyperparameter is within the range [-20,20].</p>
 </div></blockquote>
