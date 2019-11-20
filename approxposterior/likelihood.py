@@ -43,7 +43,8 @@ def rosenbrockLnlike(x):
 def rosenbrockLnprior(x):
     """
     Uniform log prior for the 2D Rosenbrock likelihood following Wang & Li (2017)
-    where the prior pi(x) is a uniform distribution over [-5, 5] x [-5, 5]
+    where the prior pi(x) is a uniform distribution over [-5, 5] x [-5, 5] x ...
+    for however many dimensions (dim = x.shape[-1])
 
     Parameters
     ----------
