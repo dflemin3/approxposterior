@@ -21,7 +21,7 @@ from sklearn.metrics import mean_squared_error
 def defaultHyperPrior(p):
     """
     Default prior function for GP hyperparameters. Ensures the mean is negative,
-    which makes sense since we hope to regression on the negative loglikelihood.
+    which makes sense since we hope to regress on the negative loglikelihood.
     This prior also keeps the hyperparameters within a reasonable range, [-20, 20].
     Note that george operates on the *log* hyperparameters!
 
@@ -112,8 +112,9 @@ def _grad_nll(p, gp, y):
 
 def defaultGP(theta, y, order=None, white_noise=-10):
     """
-    Basic utility function that initializes a simple GP that works well in many
-    applications, but is not guaranteed to work in general.
+    Basic utility function that initializes a simple GP with an ExpSquaredKernel
+    that works well in many applications as it effectively enforces a prior on
+    the smoothness of the function and is infinitely differentiable.
 
     Parameters
     ----------
@@ -169,7 +170,7 @@ def optimizeGP(gp, theta, y, seed=None, nGPRestarts=1, method="powell",
                options=None, p0=None, gpCV=None, gpHyperPrior=defaultHyperPrior):
     """
     Optimize hyperparameters of an arbitrary george Gaussian Process kernel
-    by maximizing the marginalized log-likelihood.
+    by maximizing the marginal loglikelihood.
 
     Parameters
     ----------

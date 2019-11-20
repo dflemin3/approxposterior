@@ -760,7 +760,7 @@ class ApproxPosterior(object):
                 nRestarts=5):
         """
         Find maximum a posteriori (MAP) estimate, given a trained GP. To find
-        the MAP, this function minimizes -mu.
+        the MAP, this function minimizes -mean predicted by the GP.
 
         Parameters
         ----------
