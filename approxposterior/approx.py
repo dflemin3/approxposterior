@@ -17,6 +17,7 @@ from . import gpUtils
 from . import mcmcUtils
 
 import numpy as np
+from scipy.optimize import minimize
 import time
 import emcee
 import george
@@ -753,3 +754,82 @@ class ApproxPosterior(object):
 
         return self.sampler, iburn, ithin
     # end function
+
+
+    def findMAP(self, theta0=None, method="nelder-mead", options=None,
+                nRestarts=5):
+        """
+        Find maximum a posteriori (MAP) estimate, given a trained GP. To find
+        the MAP, this function minimizes -mu.
+
+        Parameters
+        ----------
+        theta0 : iterable
+            Initial guess. Defaults to empirical MAP + Gaussian noise,
+            theta0 = theta[np.argmin(y)] + np.random.randn()
+        findMLE : bool (optional)
+            If True, find the MLE instead of the MAP
+        method : str (optional)
+            scipy.optimize.minimize method.  Defaults to powell.
+        options : dict (optional)
+            kwargs for the scipy.optimize.minimize function.  Defaults to None.
+        nRestarts : int (optional)
+            Number of times to restart the optimization. Defaults to 5.
+
+        Returns
+        -------
+        MAP : iterable
+            maximum a posteriori estimate
+        fn : float
+            Mean of GP predictive function at MAP
+        """
+
+        # Initialize theta0 if not provided. If provided, validate it
+        if theta0 is not None:
+            theta0 = np.array(theta0).squeeze()
+            assert theta0.shape == theta.shape[-1]
+
+        # Figure out if we can supply bounds
+        if str(method).lower() in ["l-bfgs-b", "tnc"]:
+            bounds = self.bounds
+        else:
+            bounds = None
+
+        # Initialize option if method is nelder-mead
+        if str(method.lower()) == "nelder-mead":
+            if options is None:
+                options = {"adaptive" : True}
+
+        # Containers for solutions
+        res = []
+        vals = []
+
+        # Set optimization fn for MAP
+        def fn(x):
+            # If not allowed by the prior, reject!
+            if not np.isfinite(self._lnprior(x)):
+                return 1.0e25
+            else:
+                return -(self._gpll(x)[0])
+
+        # Loop over optimization calls
+        for ii in range(nRestarts):
+            # Guess initial point
+            if theta0 is None:
+                t0 = self.theta[np.argmin(self.y)] + np.random.randn()
+            else:
+                t0 = np.array(theta0) + np.min(theta0) * 1.0e-3 * np.random.randn(len(theta0))
+
+            tmp = minimize(fn, t0, method=method, options=options,
+                           bounds=bounds)
+
+            # Save current answer
+            res.append(tmp["x"])
+            vals.append(fn(tmp["x"]))
+
+        # Return best answer
+        bestInd = np.argmin(vals)
+
+        return res[bestInd], vals[bestInd]
+    # end function
+# end class

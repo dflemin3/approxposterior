@@ -324,32 +324,13 @@ def minimizeObjective(fn, y, gp, sampleFn, priorFn, nMinObjRestarts=5):
         # Inputs for each process - guess initial value from prior
         theta0 = np.array(sampleFn(1)).reshape(1,-1)
 
-        # Solve for theta that maximize fn and is allowed by prior
-        while True:
+        tmp = minimize(fn, theta0, args=args, bounds=None,
+                       method="nelder-mead",
+                       options={"adaptive" : True})["x"]
 
-            # Mimimze fn, see if prior allows solution
-            try:
-                tmp = minimize(fn, theta0, args=args, bounds=None,
-                               method="nelder-mead",
-                               options={"adaptive" : True})["x"]
-
-            # ValueError.  Try again.
-            except ValueError:
-                tmp = np.array([np.inf for ii in range(theta0.shape[-1])]).reshape(theta0.shape)
-
-            # Vet answer: must be finite, allowed by prior
-            # Are all values finite?
-            if np.all(np.isfinite(tmp)):
-                # Is this point in parameter space allowed by the prior?
-                if np.isfinite(priorFn(tmp)):
-
-                     # Save solution, value of utility fn
-                     res.append(tmp)
-                     objective.append(fn(tmp, *args))
-                     break
-
-            # Optimization failed, try a new theta0 by sampling from the prior
-            theta0 = sampleFn(1)
+        # Save solution, function value
+        res.append(tmp)
+        objective.append(fn(tmp, *args))
 
     # Return value that minimizes objective function
     return np.array(res)[np.argmin(objective)]

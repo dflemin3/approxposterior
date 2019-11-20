@@ -17,14 +17,14 @@ m0 = 50                           # Initial size of training set
 m = 20                            # Number of new points to find each iteration
 nmax = 2                          # Maximum number of iterations
 bounds = ((-5,5), (-5,5))         # Prior bounds
-algorithm = "bape"                # Use the Kandasamy et al. (2015) formalism
+algorithm = "naive"                # Use the Kandasamy et al. (2015) formalism
 seed = 57                         # RNG seed
 
 np.random.seed(seed)
 
 # emcee MCMC parameters
 samplerKwargs = {"nwalkers" : 20}        # emcee.EnsembleSampler parameters
-mcmcKwargs = {"iterations" : int(2.0e4)} # emcee.EnsembleSampler.run_mcmc parameters
+mcmcKwargs = {"iterations" : int(2.0e3)} # emcee.EnsembleSampler.run_mcmc parameters
 
 # Sample initial conditions from prior
 theta = lh.rosenbrockSample(m0)
@@ -51,6 +51,9 @@ ap = approx.ApproxPosterior(theta=theta,
 ap.run(m=m, nmax=nmax, estBurnin=True, nGPRestarts=3, mcmcKwargs=mcmcKwargs,
        cache=False, samplerKwargs=samplerKwargs, verbose=True, thinChains=True,
        onlyLastMCMC=True)
+
+mle, val = ap.findMAP(nRestarts=5)
+print(mle, val)
 
 # Check out the final posterior distribution!
 import corner
