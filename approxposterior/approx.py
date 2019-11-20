@@ -822,8 +822,6 @@ class ApproxPosterior(object):
                 tmp = minimize(fn, t0, method=method, options=options,
                                bounds=bounds)["x"]
 
-                print(tmp)
-
                 # If solution is finite and allowed by the prior, save!
                 if np.all(np.isfinite(tmp)):
                     if np.isfinite(self._lnprior(tmp)):
