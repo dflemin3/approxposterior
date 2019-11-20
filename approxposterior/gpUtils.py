@@ -8,7 +8,7 @@ Gaussian process utility functions, e.g. optimizing GP hyperparameters.
 """
 
 # Tell module what it's allowed to import
-__all__ = ["optimizeGP"]
+__all__ = ["defaultHyperPrior", "defaultGP", "optimizeGP"]
 
 from . import utility as util
 import numpy as np
@@ -18,7 +18,7 @@ from sklearn.model_selection import KFold
 from sklearn.metrics import mean_squared_error
 
 
-def _defaultPrior(p):
+def defaultHyperPrior(p):
     """
     Default prior function for GP hyperparameters. Ensures the mean is negative,
     which makes sense since we hope to regression on the negative loglikelihood.
@@ -166,7 +166,7 @@ def defaultGP(theta, y, order=None, white_noise=-10):
 
 
 def optimizeGP(gp, theta, y, seed=None, nGPRestarts=1, method="powell",
-               options=None, p0=None, gpCV=None, gpHyperPrior=_defaultPrior):
+               options=None, p0=None, gpCV=None, gpHyperPrior=defaultHyperPrior):
     """
     Optimize hyperparameters of an arbitrary george Gaussian Process kernel
     by maximizing the marginalized log-likelihood.
@@ -196,7 +196,7 @@ def optimizeGP(gp, theta, y, seed=None, nGPRestarts=1, method="powell",
         the code. Defaults to None, aka this functionality is not used. If using
         it, perform gpCV-fold cross-validation.
     gpHyperPrior : str/callable (optional)
-        Prior function for GP hyperparameters. Defaults to the _defaultPrior fn.
+        Prior function for GP hyperparameters. Defaults to the defaultHyperPrior fn.
         This function asserts that the mean must be negative and that each log
         hyperparameter is within the range [-20,20].
 

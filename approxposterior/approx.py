@@ -172,7 +172,7 @@ class ApproxPosterior(object):
 
 
     def optGP(self, seed=None, method="powell", options=None, p0=None,
-              nGPRestarts=1, gpCV=None, gpHyperPrior=gpUtils._defaultPrior):
+              nGPRestarts=1, gpCV=None, gpHyperPrior=gpUtils.defaultHyperPrior):
         """
         Optimize hyperparameters of object's GP
 
@@ -197,7 +197,7 @@ class ApproxPosterior(object):
             the code. Defaults to None, aka this functionality is not used. If using
             it, perform gpCV-fold cross-validation.
         gpHyperPrior : str/callable (optional)
-            Prior function for GP hyperparameters. Defaults to the _defaultPrior fn.
+            Prior function for GP hyperparameters. Defaults to the defaultHyperPrior fn.
             This function asserts that the mean must be negative and that each log
             hyperparameter is within the range [-20,20].
 
@@ -219,7 +219,7 @@ class ApproxPosterior(object):
             thinChains=False, runName="apRun", cache=True, maxLnLikeRestarts=3,
             gpMethod="powell", gpOptions=None, gpP0=None, optGPEveryN=1,
             nGPRestarts=1, nMinObjRestarts=5, gpCV=None, onlyLastMCMC=False,
-            initGPOpt=True, gpHyperPrior=gpUtils._defaultPrior, args=None, **kwargs):
+            initGPOpt=True, gpHyperPrior=gpUtils.defaultHyperPrior, args=None, **kwargs):
         """
         Core algorithm to estimate the posterior distribution via Gaussian
         Process regression to the joint distribution for the forward model
@@ -312,7 +312,7 @@ class ApproxPosterior(object):
             Whether or not to optimize GP hyperparameters before 0th iteration.
             Defaults to True (aka assume user didn't optimize GP hyperparameters)
         gpHyperPrior : str/callable (optional)
-            Prior function for GP hyperparameters. Defaults to the _defaultPrior fn.
+            Prior function for GP hyperparameters. Defaults to the defaultHyperPrior fn.
             This function asserts that the mean must be negative and that each log
             hyperparameter is within the range [-20,20].
         args : iterable (optional)
@@ -452,7 +452,7 @@ class ApproxPosterior(object):
                       maxLnLikeRestarts=3, seed=None, cache=True, gpOptions=None,
                       gpP0=None, bOptGP=True, args=None, nGPRestarts=1,
                       nMinObjRestarts=5, gpCV=None, runName="apRun",
-                      gpHyperPrior=gpUtils._defaultPrior, **kwargs):
+                      gpHyperPrior=gpUtils.defaultHyperPrior, **kwargs):
         """
         Find new point, thetaT, by maximizing utility function. Note that we
         call a minimizer because minimizing negative of utility function is
@@ -521,7 +521,7 @@ class ApproxPosterior(object):
             Filename for hdf5 file where mcmc chains are saved.  Defaults to
             apRun and will be saved as apRunii.h5 for ii in range(nmax).
         gpHyperPrior : str/callable (optional)
-            Prior function for GP hyperparameters. Defaults to the _defaultPrior fn.
+            Prior function for GP hyperparameters. Defaults to the defaultHyperPrior fn.
             This function asserts that the mean must be negative and that each log
             hyperparameter is within the range [-20,20].
         args : iterable (optional)
