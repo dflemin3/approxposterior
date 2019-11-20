@@ -38,7 +38,7 @@
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
     <link rel="top" title="approxposterior 0.3 documentation" href="index.html"/>
-        <link rel="next" title="BAPE Algorithm Example" href="notebooks/example.html"/>
+        <link rel="next" title="KL Divergence Estimation" href="notebooks/KLDivergenceEstimation.html"/>
         <link rel="prev" title="approxposterior" href="index.html"/> 
 
   
@@ -95,15 +95,14 @@
               <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Tutorial</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="notebooks/example.html">Example</a></li>
-<li class="toctree-l2"><a class="reference internal" href="notebooks/fittingALine.html">Fitting a Line</a></li>
-<li class="toctree-l2"><a class="reference internal" href="notebooks/ScalingAccuracy.html">Scaling and Accuracy</a></li>
 <li class="toctree-l2"><a class="reference internal" href="notebooks/KLDivergenceEstimation.html">KL Divergence Estimation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="notebooks/posteriorFittingWithGMM.html">Posterior Fitting with Gaussian Mixture Models</a></li>
 <li class="toctree-l2"><a class="reference internal" href="notebooks/TrueRosenbrockPosterior.html">Rosenbrock Function Example</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="map.html">MAP Estimation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="notebooks/fittingALine.html">Fitting a Line</a></li>
+<li class="toctree-l1"><a class="reference internal" href="notebooks/ScalingAccuracy.html">Scaling and Accuracy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api.html">API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="performance.html">Improving Performance</a></li>
@@ -214,7 +213,6 @@ distribution of the Rosenbrock Function example from Wang &amp; Li (2017) using 
 BAPE algorithm. Note that setting verbose = True also outputs additional diagnostic information, such as when
 the MCMC finishes, what the estimated burn-in is, and other quantities that are useful for tracking the progress of
 your code.  In this example, we set verbose = False for simplicity.</p>
-<p>Don’t forget to check out the links for example Jupyter Notebooks at the bottom of the page!</p>
 <ol class="arabic simple">
 <li>First, the user must set model parameters.</li>
 </ol>
@@ -284,17 +282,12 @@ your code.  In this example, we set verbose = False for simplicity.</p>
 </pre></div>
 </div>
 <p>The final posterior distribution will look something like the following:</p>
-<a class="reference internal image-reference" href="_images/final_posterior.png"><img alt="Final posterior distribution for approxposterior run of the Wang &amp; Li (2017) example." src="_images/final_posterior.png" style="width: 400px;" /></a>
-<p>Check out the example notebooks to see example use cases, how the code runtime scales
-for different forward model evaluation times, how we compute the Kullback–Leibler (KL) divergence,
-and more.</p>
+<a class="reference internal image-reference" href="_images/final_posterior.png"><img alt="_images/final_posterior.png" src="_images/final_posterior.png" style="width: 400px;" /></a>
+<p>Check out the example notebooks to see some additional features of <code class="xref py py-obj docutils literal notranslate"><span class="pre">approxposterior</span></code>.</p>
 <blockquote>
 <div><div class="toctree-wrapper compound">
 <p class="caption"><span class="caption-text">Jupyter Notebook Examples:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="notebooks/example.html">Example</a></li>
-<li class="toctree-l1"><a class="reference internal" href="notebooks/fittingALine.html">Fitting a Line</a></li>
-<li class="toctree-l1"><a class="reference internal" href="notebooks/ScalingAccuracy.html">Scaling and Accuracy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="notebooks/KLDivergenceEstimation.html">KL Divergence Estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="notebooks/posteriorFittingWithGMM.html">Posterior Fitting with Gaussian Mixture Models</a></li>
 <li class="toctree-l1"><a class="reference internal" href="notebooks/TrueRosenbrockPosterior.html">Rosenbrock Function Example</a></li>
@@ -313,7 +306,7 @@ and more.</p>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="notebooks/example.html" class="btn btn-neutral float-right" title="BAPE Algorithm Example" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="notebooks/KLDivergenceEstimation.html" class="btn btn-neutral float-right" title="KL Divergence Estimation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
         <a href="index.html" class="btn btn-neutral" title="approxposterior" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>

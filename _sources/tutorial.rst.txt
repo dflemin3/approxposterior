@@ -7,8 +7,6 @@ BAPE algorithm. Note that setting verbose = True also outputs additional diagnos
 the MCMC finishes, what the estimated burn-in is, and other quantities that are useful for tracking the progress of
 your code.  In this example, we set verbose = False for simplicity.
 
-Don't forget to check out the links for example Jupyter Notebooks at the bottom of the page!
-
 1) First, the user must set model parameters.
 
 .. code-block:: python
@@ -82,19 +80,13 @@ The final posterior distribution will look something like the following:
 
 .. image:: _figures/final_posterior.png
   :width: 400
-  :alt: Final posterior distribution for approxposterior run of the Wang & Li (2017) example.
 
-Check out the example notebooks to see example use cases, how the code runtime scales
-for different forward model evaluation times, how we compute the Kullback–Leibler (KL) divergence,
-and more.
+Check out the example notebooks to see some additional features of :py:obj:`approxposterior`.
 
   .. toctree::
      :maxdepth: 1
      :caption: Jupyter Notebook Examples:
 
-     Example <notebooks/example.ipynb>
-     Fitting a Line <notebooks/fittingALine.ipynb>
-     Scaling and Accuracy <notebooks/ScalingAccuracy.ipynb>
      KL Divergence Estimation <notebooks/KLDivergenceEstimation.ipynb>
      Posterior Fitting with Gaussian Mixture Models <notebooks/posteriorFittingWithGMM.ipynb>
      Rosenbrock Function Example <notebooks/TrueRosenbrockPosterior.ipynb>

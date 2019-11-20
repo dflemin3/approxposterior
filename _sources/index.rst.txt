@@ -35,6 +35,8 @@ Table of Contents
 
    tutorial
    map
+   Fitting a Line <notebooks/fittingALine.ipynb>
+   Scaling and Accuracy <notebooks/ScalingAccuracy.ipynb>
    api
    install
    performance
