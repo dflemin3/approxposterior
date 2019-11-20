@@ -3,80 +3,18 @@
 :py:mod:`utility.py` - Utility Functions
 -----------------------------------
 
-Utility functions ranging from minimizing GP objective functions to function
-wrappers.
-
+Utility functions in terms of usefulness, e.g. minimizing GP utility functions,
+and the GP utility functions, e.g. the BAPE utility.
 """
 
 # Tell module what it's allowed to import
-__all__ = ["logsubexp", "AGPUtility", "BAPEUtility", "minimizeObjective",
-           "functionWrapper", "functionWrapperArgsOnly", "klNumerical",
-           "latinHypercubeSampling"]
+__all__ = ["logsubexp", "AGPUtility", "BAPEUtility", "NaiveUtility",
+           "minimizeObjective", "klNumerical", "latinHypercubeSampling"]
 
 import numpy as np
 from scipy.optimize import minimize
 from scipy.special import erf
 from pyDOE import lhs
-
-
-################################################################################
-#
-# Useful classes
-#
-################################################################################
-
-
-class functionWrapper(object):
-    """
-    Wrapper class for functions.
-    """
-
-    def __init__(self, f, *args, **kwargs):
-        """
-        Initialize!
-        """
-
-        # Need function, optional args and kwargs
-        self.f = f
-        self.args = args
-        self.kwargs = kwargs
-    # end function
-
-
-    def __call__(self, x):
-        """
-        Call the function on some input x.
-        """
-
-        return self.f(x, *self.args, **self.kwargs)
-    # end function
-# end class
-
-
-class functionWrapperArgsOnly(object):
-    """
-    Wrapper class for functions where input are the args.
-    """
-
-    def __init__(self, f, **kwargs):
-        """
-        Initialize!
-        """
-
-        # Need function, optional args and kwargs
-        self.f = f
-        self.kwargs = kwargs
-    # end function
-
-
-    def __call__(self, x):
-        """
-        Call the function on some input x.
-        """
-
-        return self.f(*x, **self.kwargs)
-    # end function
-# end class
 
 
 ################################################################################
@@ -292,7 +230,7 @@ def BAPEUtility(theta, y, gp, priorFn):
         raise RuntimeError("ERROR: Need to compute GP before using it!")
 
     try:
-        util = -((2.0*mu + var) + logsubexp(var, 0.0))
+        util = -((2.0 * mu + var) + logsubexp(var, 0.0))
     except ValueError:
         print("Invalid util value.  Negative variance or inf mu?")
         raise ValueError("util: %e. mu: %e. var: %e" % (util, mu, var))
@@ -301,11 +239,10 @@ def BAPEUtility(theta, y, gp, priorFn):
 # end function
 
 
-def JonesUtility(theta, y, gp, priorFn):
+def NaiveUtility(theta, y, gp, priorFn):
     """
-    Expected improvement utility function - Eqn. 15 from "Efficient Global
-    Optimization of Expensive Black-Box Functions", Jones et al. (1998, Journal
-    of Global Optimization)
+    Naive utility function that is maximized by GP predictions with
+    large loglikelihoods and large uncertainties.
 
     Parameters
     ----------
@@ -335,13 +272,7 @@ def JonesUtility(theta, y, gp, priorFn):
         raise RuntimeError("ERROR: Need to compute GP before using it!")
 
     try:
-        std = np.sqrt(var)
-        yMax = np.max(y)
-        chi = (yMax - mu) / std
-
-        cdf = 0.5 * (1.0 + erf(chi / np.sqrt(2.0)))
-        pdf = np.exp(-0.5 * chi**2) / np.sqrt(2.0*np.pi*var)
-        util = -((yMax - mu) * cdf + std * pdf)
+        util = -(mu / var)
     except ValueError:
         print("Invalid util value.  Negative variance or inf mu?")
         raise ValueError("util: %e. mu: %e. var: %e" % (util, mu, var))

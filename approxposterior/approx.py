@@ -103,8 +103,8 @@ class ApproxPosterior(object):
         elif self.algorithm == "alternate":
             # If alternate, AGP on even, BAPE on odd
             self.utility = ut.AGPUtility
-        elif self.algorithm == "jones":
-            self.utility = ut.JonesUtility
+        elif self.algorithm == "naive":
+            self.utility = ut.NaiveUtility
         else:
             errMsg = "Unknown algorithm. Valid options: BAPE, AGP, Jones, or alternate."
             raise ValueError(errMsg)
