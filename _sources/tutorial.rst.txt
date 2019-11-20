@@ -81,12 +81,10 @@ The final posterior distribution will look something like the following:
 .. image:: _figures/final_posterior.png
   :width: 400
 
-Check out the example notebooks to see some additional features of :py:obj:`approxposterior`.
+Check the notebook below to see MCMC sampling with using the Rosenbrock function and :py:obj:`emcee`.
 
   .. toctree::
      :maxdepth: 1
      :caption: Jupyter Notebook Examples:
 
-     KL Divergence Estimation <notebooks/KLDivergenceEstimation.ipynb>
-     Posterior Fitting with Gaussian Mixture Models <notebooks/posteriorFittingWithGMM.ipynb>
      Rosenbrock Function Example <notebooks/TrueRosenbrockPosterior.ipynb>
