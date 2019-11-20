@@ -190,7 +190,7 @@
 <div class="viewcode-block" id="defaultHyperPrior"><a class="viewcode-back" href="../../api/gpUtils.html#approxposterior.gpUtils.defaultHyperPrior">[docs]</a><span class="k">def</span> <span class="nf">defaultHyperPrior</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Default prior function for GP hyperparameters. Ensures the mean is negative,</span>
-<span class="sd">    which makes sense since we hope to regression on the negative loglikelihood.</span>
+<span class="sd">    which makes sense since we hope to regress on the negative loglikelihood.</span>
 <span class="sd">    This prior also keeps the hyperparameters within a reasonable range, [-20, 20].</span>
 <span class="sd">    Note that george operates on the *log* hyperparameters!</span>
 
@@ -281,8 +281,9 @@
 
 <div class="viewcode-block" id="defaultGP"><a class="viewcode-back" href="../../api/gpUtils.html#approxposterior.gpUtils.defaultGP">[docs]</a><span class="k">def</span> <span class="nf">defaultGP</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">white_noise</span><span class="o">=-</span><span class="mi">10</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Basic utility function that initializes a simple GP that works well in many</span>
-<span class="sd">    applications, but is not guaranteed to work in general.</span>
+<span class="sd">    Basic utility function that initializes a simple GP with an ExpSquaredKernel</span>
+<span class="sd">    that works well in many applications as it effectively enforces a prior on</span>
+<span class="sd">    the smoothness of the function and is infinitely differentiable.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -338,7 +339,7 @@
                <span class="n">options</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">p0</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">gpCV</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">gpHyperPrior</span><span class="o">=</span><span class="n">defaultHyperPrior</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Optimize hyperparameters of an arbitrary george Gaussian Process kernel</span>
-<span class="sd">    by maximizing the marginalized log-likelihood.</span>
+<span class="sd">    by maximizing the marginal loglikelihood.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>

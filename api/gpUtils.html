@@ -224,7 +224,7 @@
 <dt id="approxposterior.gpUtils.defaultHyperPrior">
 <code class="descclassname">approxposterior.gpUtils.</code><code class="descname">defaultHyperPrior</code><span class="sig-paren">(</span><em>p</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/gpUtils.html#defaultHyperPrior"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.gpUtils.defaultHyperPrior" title="Permalink to this definition">¶</a></dt>
 <dd><p>Default prior function for GP hyperparameters. Ensures the mean is negative,
-which makes sense since we hope to regression on the negative loglikelihood.
+which makes sense since we hope to regress on the negative loglikelihood.
 This prior also keeps the hyperparameters within a reasonable range, [-20, 20].
 Note that george operates on the <em>log</em> hyperparameters!</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -247,8 +247,9 @@ Note that george operates on the <em>log</em> hyperparameters!</p>
 <dl class="function">
 <dt id="approxposterior.gpUtils.defaultGP">
 <code class="descclassname">approxposterior.gpUtils.</code><code class="descname">defaultGP</code><span class="sig-paren">(</span><em>theta</em>, <em>y</em>, <em>order=None</em>, <em>white_noise=-10</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/gpUtils.html#defaultGP"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.gpUtils.defaultGP" title="Permalink to this definition">¶</a></dt>
-<dd><p>Basic utility function that initializes a simple GP that works well in many
-applications, but is not guaranteed to work in general.</p>
+<dd><p>Basic utility function that initializes a simple GP with an ExpSquaredKernel
+that works well in many applications as it effectively enforces a prior on
+the smoothness of the function and is infinitely differentiable.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -293,7 +294,7 @@ matrix.</p>
 <dt id="approxposterior.gpUtils.optimizeGP">
 <code class="descclassname">approxposterior.gpUtils.</code><code class="descname">optimizeGP</code><span class="sig-paren">(</span><em>gp</em>, <em>theta</em>, <em>y</em>, <em>seed=None</em>, <em>nGPRestarts=1</em>, <em>method='powell'</em>, <em>options=None</em>, <em>p0=None</em>, <em>gpCV=None</em>, <em>gpHyperPrior=&lt;function defaultHyperPrior&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/gpUtils.html#optimizeGP"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.gpUtils.optimizeGP" title="Permalink to this definition">¶</a></dt>
 <dd><p>Optimize hyperparameters of an arbitrary george Gaussian Process kernel
-by maximizing the marginalized log-likelihood.</p>
+by maximizing the marginal loglikelihood.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
