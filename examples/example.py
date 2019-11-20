@@ -52,9 +52,6 @@ ap.run(m=m, nmax=nmax, estBurnin=True, nGPRestarts=3, mcmcKwargs=mcmcKwargs,
        cache=False, samplerKwargs=samplerKwargs, verbose=True, thinChains=True,
        onlyLastMCMC=True)
 
-mle, val = ap.findMAP(nRestarts=5)
-print(mle, val)
-
 # Check out the final posterior distribution!
 import corner
 
