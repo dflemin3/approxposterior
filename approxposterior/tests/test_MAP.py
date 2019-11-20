@@ -57,8 +57,8 @@ def test_MAP():
 
     # Compare estimated MAP to true values
     errMsg = "True MAP solution is incorrect."
-    # Allow up to 5% error in each parameter
-    assert(np.allclose(trueMAP, testMAP, atol=5.0e-2)), errMsg
+    # Allow up to 10% error in each parameter
+    assert(np.allclose(trueMAP, testMAP, atol=1.0e-1)), errMsg
     # All up to 0.1% error in function value
     errMsg = "True MAP function value is incorrect."
     assert(np.allclose(trueVal, testVal, atol=1.0e-3)), errMsg
