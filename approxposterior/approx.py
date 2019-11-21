@@ -219,7 +219,8 @@ class ApproxPosterior(object):
             thinChains=False, runName="apRun", cache=True, maxLnLikeRestarts=3,
             gpMethod="powell", gpOptions=None, gpP0=None, optGPEveryN=1,
             nGPRestarts=1, nMinObjRestarts=5, gpCV=None, onlyLastMCMC=False,
-            initGPOpt=True, gpHyperPrior=gpUtils.defaultHyperPrior, args=None, **kwargs):
+            initGPOpt=True, gpHyperPrior=gpUtils.defaultHyperPrior,
+            dropInitialTraining=True, args=None, **kwargs):
         """
         Core algorithm to estimate the posterior distribution via Gaussian
         Process regression to the joint distribution for the forward model
@@ -315,6 +316,13 @@ class ApproxPosterior(object):
             Prior function for GP hyperparameters. Defaults to the defaultHyperPrior fn.
             This function asserts that the mean must be negative and that each log
             hyperparameter is within the range [-20,20].
+        dropInitialTraining : bool (optional)
+            Whether or not to drop the initial training set and only regress
+            the GP on points it chose after learning on the initial training set.
+            This can be useful in cases where approxposterior uses the initial
+            training set to identify the high likelihood regions while not needing
+            to regress on low-likelihood/useless points in the initial training
+            set. Defaults to False.
         args : iterable (optional)
             Arguments for user-specified loglikelihood function that calls the
             forward model. Defaults to None.
@@ -326,6 +334,9 @@ class ApproxPosterior(object):
         -------
         None
         """
+
+        if dropInitialTraining:
+            lenToDrop = len(self.y)
 
         # Save forward model input-output pairs since they take forever to
         # calculate and we want them around in case something weird happens.
@@ -395,6 +406,28 @@ class ApproxPosterior(object):
                                    runName=runName,
                                    args=args,
                                    **kwargs)
+
+            # Drop the initial training set?
+            if dropInitialTraining % ii == 0:
+                print(lenToDrop)
+                self.theta = self.theta[lenToDrop:,:]
+                self.y = self.y[lenToDrop:]
+
+                print(self.theta.shape, self.y.shape)
+                print(self.gp.get_parameter_vector())
+
+                # Create GP using same kernel, updated estimate of the mean, but new theta
+                currentHype = self.gp.get_parameter_vector()
+                self.gp = george.GP(kernel=self.gp.kernel, fit_mean=True,
+                                    mean=self.gp.mean,
+                                    white_noise=self.gp.white_noise,
+                                    fit_white_noise=False)
+                self.gp.set_parameter_vector(currentHype)
+                self.gp.compute(self.theta)
+
+                self.optGP(seed=seed, method=gpMethod, options=gpOptions,
+                           p0=gpP0, nGPRestarts=nGPRestarts, gpCV=gpCV,
+                           gpHyperPrior=gpHyperPrior)
 
             if timing:
                 self.trainingTime.append(time.time() - start)

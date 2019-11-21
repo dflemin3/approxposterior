@@ -40,15 +40,14 @@ def testGPOpt():
     gp = gpu.defaultGP(theta, y)
 
     # Optimize gp using default opt parameters
-    p0 = gp.get_parameter_vector()
-    gp = gpu.optimizeGP(gp, theta, y, seed=seed, nGPRestarts=5, p0=p0)
+    gp = gpu.optimizeGP(gp, theta, y, seed=seed, nGPRestarts=5)
 
     # Extract GP hyperparameters, compare to truth
     # Ignore mean fit - just focus on scale lengths and amplitude
     hypeTest = gp.get_parameter_vector()[1:]
 
     errMsg = "ERROR: GP hyperparameters are not close to the true value!"
-    hypeTrue = [19.99953189, 4.13135784, 10.77037424]
+    hypeTrue = [19.99958521, 4.13510287, 10.75990385]
     assert np.allclose(hypeTest, hypeTrue, rtol=1.0e-2), errMsg
 # end function
 
