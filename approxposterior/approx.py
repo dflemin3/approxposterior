@@ -220,7 +220,7 @@ class ApproxPosterior(object):
             gpMethod="powell", gpOptions=None, gpP0=None, optGPEveryN=1,
             nGPRestarts=1, nMinObjRestarts=5, gpCV=None, onlyLastMCMC=False,
             initGPOpt=True, gpHyperPrior=gpUtils.defaultHyperPrior,
-            dropInitialTraining=True, args=None, **kwargs):
+            dropInitialTraining=False, args=None, **kwargs):
         """
         Core algorithm to estimate the posterior distribution via Gaussian
         Process regression to the joint distribution for the forward model
@@ -335,6 +335,8 @@ class ApproxPosterior(object):
         None
         """
 
+        # If dropping initial training set after 1st round of point selection,
+        # save length on initial training set
         if dropInitialTraining:
             lenToDrop = len(self.y)
 
@@ -407,14 +409,10 @@ class ApproxPosterior(object):
                                    args=args,
                                    **kwargs)
 
-            # Drop the initial training set?
-            if dropInitialTraining % ii == 0:
-                print(lenToDrop)
+            # Drop the initial training set after 1st round of point selection?
+            if dropInitialTraining and nn == 0:
                 self.theta = self.theta[lenToDrop:,:]
                 self.y = self.y[lenToDrop:]
-
-                print(self.theta.shape, self.y.shape)
-                print(self.gp.get_parameter_vector())
 
                 # Create GP using same kernel, updated estimate of the mean, but new theta
                 currentHype = self.gp.get_parameter_vector()
