@@ -18,7 +18,7 @@ from sklearn.model_selection import KFold
 from sklearn.metrics import mean_squared_error
 
 
-def defaultHyperPrior(p):
+def defaultHyperPrior(p, y):
     """
     Default prior function for GP hyperparameters. Ensures the mean is negative,
     which makes sense since we hope to regress on the negative loglikelihood.
@@ -70,7 +70,7 @@ def _nll(p, gp, y, priorFn=None):
 
     # Apply priors on GP hyperparameters
     if priorFn is not None:
-        if not np.isfinite(priorFn(p)):
+        if not np.isfinite(priorFn(p, y)):
             return np.inf
 
     # Catch singular matrices
@@ -108,7 +108,7 @@ def _grad_nll(p, gp, y):
 # end function
 
 
-def defaultGP(theta, y, order=None, white_noise=-10):
+def defaultGP(theta, y, order=None, white_noise=-10, fitAmp=True):
     """
     Basic utility function that initializes a simple GP with an ExpSquaredKernel
     that works well in many applications as it effectively enforces a prior on
@@ -131,6 +131,8 @@ def defaultGP(theta, y, order=None, white_noise=-10):
         log(white_noise) = -10. Note: if order is not None, you might need to
         set the white_noise to a large value for the computation to be
         numerically stable, but this, as always, depends on the application.
+    fitAmp : bool (optional)
+        Whether or not to include an amplitude term. Defaults to True.
 
     Returns
     -------
@@ -144,8 +146,12 @@ def defaultGP(theta, y, order=None, white_noise=-10):
 
     # Create kernel: We'll model coveriances in loglikelihood space using a
     # Squared Expoential Kernel
-    kernel = np.var(y) * george.kernels.ExpSquaredKernel(metric=initialMetric,
-                                                         ndim=theta.shape[-1])
+    kernel = george.kernels.ExpSquaredKernel(metric=initialMetric,
+                                             ndim=theta.shape[-1])
+
+    # Include an amplitude term
+    if fitAmp:
+        kernel = np.var(y) * kernel
 
     # Add a linear regression kernel of order order?
     # Use a meh guess for the amplitude and for the scale length (gamma)
