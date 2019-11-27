@@ -157,7 +157,7 @@ class ApproxPosterior(object):
         # Mean of predictive distribution conditioned on y (GP posterior estimate)
         # and make sure theta is the right shape for the GP
         try:
-            mu, = self.gp.predict(self.y, np.array(theta).reshape(1,-1),
+            mu = self.gp.predict(self.y, np.array(theta).reshape(1,-1),
                                  return_cov=False,
                                  return_var=False)
         except ValueError:
