@@ -172,9 +172,12 @@
 <span class="sd">:py:mod:`approx.py` - ApproxPosterior</span>
 <span class="sd">-------------------------------------</span>
 
-<span class="sd">Bayesian Posterior estimation leveraging Dan Forman-Mackey&#39;s Gaussian Process</span>
-<span class="sd">implementation, george, and his Metropolis-Hastings MCMC ensemble sampler</span>
-<span class="sd">implementation, emcee, and both Wang &amp; Li (2017) and Kandasamy et al. (2015).</span>
+<span class="sd">Bayesian Posterior estimation using Dan Forman-Mackey&#39;s Gaussian Process</span>
+<span class="sd">implementation, george, to learn the logprobability of points and the</span>
+<span class="sd">Metropolis-Hastings MCMC ensemble sampler, emcee, to infer the approximate</span>
+<span class="sd">posterior distributions given the GP model. approxposterior uses both</span>
+<span class="sd">Wang &amp; Li (2017) and Kandasamy et al. (2015) utility functions for point</span>
+<span class="sd">selection to optimially expand the GP&#39;s training set.</span>
 
 <span class="sd">&quot;&quot;&quot;</span>
 
@@ -196,13 +199,14 @@
 
 <div class="viewcode-block" id="ApproxPosterior"><a class="viewcode-back" href="../../api/approx.html#approxposterior.approx.ApproxPosterior">[docs]</a><span class="k">class</span> <span class="nc">ApproxPosterior</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Class to approximate the posterior distributions using either the</span>
-<span class="sd">    Bayesian Active Posterior Estimation (BAPE) by Kandasamy et al. (2015) or</span>
-<span class="sd">    the AGP (Adaptive Gaussian Process) by Wang &amp; Li (2017).</span>
+<span class="sd">    Class to approximate Bayesian posterior distributions using the</span>
+<span class="sd">    Bayesian Active Posterior Estimation (BAPE) by Kandasamy et al. (2015),</span>
+<span class="sd">    the AGP (Adaptive Gaussian Process) by Wang &amp; Li (2017), or a custom</span>
+<span class="sd">    naive utility function.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">theta</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">lnprior</span><span class="p">,</span> <span class="n">lnlike</span><span class="p">,</span> <span class="n">priorSample</span><span class="p">,</span> <span class="n">bounds</span><span class="p">,</span> <span class="n">gp</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                 <span class="n">algorithm</span><span class="o">=</span><span class="s2">&quot;BAPE&quot;</span><span class="p">):</span>
+                 <span class="n">algorithm</span><span class="o">=</span><span class="s2">&quot;bape&quot;</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Initializer.</span>
 
@@ -229,13 +233,14 @@
 <span class="sd">            approxposterior initialized a GP with a single ExpSquaredKernel as</span>
 <span class="sd">            these work well in practice.</span>
 <span class="sd">        algorithm : str (optional)</span>
-<span class="sd">            Which utility function to use.  Defaults to BAPE.  Options are BAPE,</span>
-<span class="sd">            AGP, or alternate.  Case doesn&#39;t matter. If alternate, runs AGP on</span>
-<span class="sd">            even numbers and BAPE on odd.</span>
+<span class="sd">            Point selection algorithm that specifies which utility function to</span>
+<span class="sd">            use.  Defaults to bape.  Options are bape,</span>
+<span class="sd">            agp, alternate (between bape and agp), and naive.</span>
+<span class="sd">            Case doesn&#39;t matter. If alternate, runs agp on even numbers and bape</span>
+<span class="sd">            on odd.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        None</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="c1"># Need to supply the training set</span>
@@ -276,7 +281,7 @@
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">algorithm</span> <span class="o">==</span> <span class="s2">&quot;naive&quot;</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">utility</span> <span class="o">=</span> <span class="n">ut</span><span class="o">.</span><span class="n">NaiveUtility</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">errMsg</span> <span class="o">=</span> <span class="s2">&quot;Unknown algorithm. Valid options: BAPE, AGP, Jones, or alternate.&quot;</span>
+            <span class="n">errMsg</span> <span class="o">=</span> <span class="s2">&quot;Unknown algorithm. Valid options: bape, agp, naive, or alternate.&quot;</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">errMsg</span><span class="p">)</span>
 
         <span class="c1"># Holders to save quantities of interest</span>
@@ -289,7 +294,7 @@
 
         <span class="c1"># Initialize gaussian process if none provided</span>
         <span class="k">if</span> <span class="n">gp</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;No GP specified. Initializing GP using ExpSquaredKernel.&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;INFO: No GP specified. Initializing GP using ExpSquaredKernel.&quot;</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">gp</span> <span class="o">=</span> <span class="n">gpUtils</span><span class="o">.</span><span class="n">defaultGP</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">theta</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">gp</span> <span class="o">=</span> <span class="n">gp</span>
@@ -326,7 +331,7 @@
         <span class="c1"># Mean of predictive distribution conditioned on y (GP posterior estimate)</span>
         <span class="c1"># and make sure theta is the right shape for the GP</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="n">mu</span><span class="p">,</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gp</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span>
+            <span class="n">mu</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gp</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span>
                                  <span class="n">return_cov</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
                                  <span class="n">return_var</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
@@ -369,10 +374,11 @@
 <span class="sd">        optimizedGP : george.GP</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="c1"># Optimize</span>
+        <span class="c1"># Optimize and reasign gp</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">gp</span> <span class="o">=</span> <span class="n">gpUtils</span><span class="o">.</span><span class="n">optimizeGP</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gp</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">theta</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">,</span>
                                      <span class="n">method</span><span class="o">=</span><span class="n">method</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="n">options</span><span class="p">,</span>
-                                     <span class="n">p0</span><span class="o">=</span><span class="n">p0</span><span class="p">,</span> <span class="n">nGPRestarts</span><span class="o">=</span><span class="n">nGPRestarts</span><span class="p">)</span></div>
+                                     <span class="n">p0</span><span class="o">=</span><span class="n">p0</span><span class="p">,</span> <span class="n">nGPRestarts</span><span class="o">=</span><span class="n">nGPRestarts</span><span class="p">,</span>
+                                     <span class="n">gpHyperPrior</span><span class="o">=</span><span class="n">gpHyperPrior</span><span class="p">)</span></div>
     <span class="c1"># end function</span>
 
 
@@ -440,7 +446,9 @@
 <span class="sd">        maxLnLikeRestarts : int (optional)</span>
 <span class="sd">            Number of times to restart loglikelihood function (the one that</span>
 <span class="sd">            calls the forward model) if the lnlike fn returns infs/NaNs. Defaults</span>
-<span class="sd">            to 3.</span>
+<span class="sd">            to 3. If you find the need to increase this parameter, don&#39;t because</span>
+<span class="sd">            your lnlike or lnprior function is probably at fault or your model</span>
+<span class="sd">            is not properly specified.</span>
 <span class="sd">        gpMethod : str (optional)</span>
 <span class="sd">            scipy.optimize.minimize method used when optimized GP hyperparameters.</span>
 <span class="sd">            Defaults to powell (it usually works)</span>
@@ -464,7 +472,6 @@
 <span class="sd">            number of the point selection is not working well.</span>
 <span class="sd">        onlyLastMCMC : bool (optional)</span>
 <span class="sd">            Whether or not to only run the MCMC last iteration. Defaults to False.</span>
-<span class="sd">            If true, bypasses all KL divergence and related calculations.</span>
 <span class="sd">        initGPOpt : bool (optional)</span>
 <span class="sd">            Whether or not to optimize GP hyperparameters before 0th iteration.</span>
 <span class="sd">            Defaults to True (aka assume user didn&#39;t optimize GP hyperparameters)</span>
@@ -488,7 +495,6 @@
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        None</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="c1"># If dropping initial training set after 1st round of point selection,</span>
@@ -603,10 +609,10 @@
                 <span class="c1"># Skip everything below</span>
                 <span class="k">continue</span>
 
-            <span class="c1"># Run the MCMC</span>
             <span class="k">if</span> <span class="n">timing</span><span class="p">:</span>
                 <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
 
+            <span class="c1"># Run the MCMC</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">sampler</span><span class="p">,</span> <span class="n">iburn</span><span class="p">,</span> <span class="n">ithin</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">runMCMC</span><span class="p">(</span><span class="n">samplerKwargs</span><span class="o">=</span><span class="n">samplerKwargs</span><span class="p">,</span>
                                                       <span class="n">mcmcKwargs</span><span class="o">=</span><span class="n">mcmcKwargs</span><span class="p">,</span>
                                                       <span class="n">runName</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">runName</span><span class="p">)</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">nn</span><span class="p">),</span>
@@ -677,7 +683,8 @@
 <span class="sd">            practice, users should cache forward model inputs, outputs,</span>
 <span class="sd">            ancillary parameters, etc in each likelihood function evaluation,</span>
 <span class="sd">            but saving theta and y here doesn&#39;t hurt.  Saves the results to</span>
-<span class="sd">            apFModelCache.npz in the current working directory.</span>
+<span class="sd">            apFModelCache.npz in the current working directory (name can change</span>
+<span class="sd">            if user specifies runName).</span>
 <span class="sd">        gpMethod : str (optional)</span>
 <span class="sd">            scipy.optimize.minimize method used when optimized GP hyperparameters.</span>
 <span class="sd">            Defaults to None, which is powell, and it usually works.</span>
@@ -699,7 +706,7 @@
 <span class="sd">            number of the point selection is not working well.</span>
 <span class="sd">        runName : str (optional)</span>
 <span class="sd">            Filename for hdf5 file where mcmc chains are saved.  Defaults to</span>
-<span class="sd">            apRun and will be saved as apRunii.h5 for ii in range(nmax).</span>
+<span class="sd">            apRun.</span>
 <span class="sd">        gpHyperPrior : str/callable (optional)</span>
 <span class="sd">            Prior function for GP hyperparameters. Defaults to the defaultHyperPrior fn.</span>
 <span class="sd">            This function asserts that the mean must be negative and that each log</span>
@@ -709,7 +716,7 @@
 <span class="sd">            forward model. Defaults to None.</span>
 <span class="sd">        kwargs : dict (optional)</span>
 <span class="sd">            Keyword arguments for user-specified loglikelihood function that</span>
-<span class="sd">            calls the forward model.</span>
+<span class="sd">            calls the forward model. Defaults to None.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -811,8 +818,8 @@
                 <span class="n">args</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Given forward model input-output pairs, theta and y, and a trained GP,</span>
-<span class="sd">        run an MCMC using the GP to evaluate the logprobability required by</span>
-<span class="sd">        MCMC.</span>
+<span class="sd">        run an MCMC using the GP to evaluate the logprobability instead of the</span>
+<span class="sd">        true, computationally-expensive forward model.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -846,7 +853,7 @@
 <span class="sd">            Estimate burn-in time using integrated autocorrelation time</span>
 <span class="sd">            heuristic.  Defaults to True. In general, we recommend users</span>
 <span class="sd">            inspect the chains and calculate the burnin after the fact to ensure</span>
-<span class="sd">            convergence.</span>
+<span class="sd">            convergence, but this function works pretty well.</span>
 <span class="sd">        thinChains : bool (optional)</span>
 <span class="sd">            Whether or not to thin chains before GMM fitting.  Useful if running</span>
 <span class="sd">            long chains.  Defaults to True.  If true, estimates a thin cadence</span>
@@ -940,7 +947,8 @@
                 <span class="n">nRestarts</span><span class="o">=</span><span class="mi">5</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Find maximum a posteriori (MAP) estimate, given a trained GP. To find</span>
-<span class="sd">        the MAP, this function minimizes -mean predicted by the GP.</span>
+<span class="sd">        the MAP, this function minimizes -mean predicted by the GP, aka finds</span>
+<span class="sd">        what the GP believes is the point of maximum logprobability.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -958,7 +966,7 @@
 <span class="sd">        MAP : iterable</span>
 <span class="sd">            maximum a posteriori estimate</span>
 <span class="sd">        fn : float</span>
-<span class="sd">            Mean of GP predictive function at MAP</span>
+<span class="sd">            Mean of GP predictive function at MAP solution</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="c1"># Initialize theta0 if not provided. If provided, validate it</span>
@@ -997,6 +1005,7 @@
                 <span class="k">if</span> <span class="n">theta0</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                     <span class="n">t0</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">theta</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">)]</span> <span class="o">+</span> <span class="mf">1.0e-3</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">()</span>
                 <span class="k">else</span><span class="p">:</span>
+                    <span class="c1"># Perturb user-supplied guess</span>
                     <span class="n">t0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">theta0</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">theta0</span><span class="p">)</span> <span class="o">*</span> <span class="mf">1.0e-3</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">theta0</span><span class="p">))</span>
 
                 <span class="n">tmp</span> <span class="o">=</span> <span class="n">minimize</span><span class="p">(</span><span class="n">fn</span><span class="p">,</span> <span class="n">t0</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="n">method</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="n">options</span><span class="p">,</span>

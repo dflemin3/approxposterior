@@ -220,15 +220,19 @@
 <span id="approxposterior-class"></span><h1>ApproxPosterior Class<a class="headerlink" href="#module-approxposterior.approx" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="approx-py-approxposterior">
 <h2><code class="xref py py-mod docutils literal notranslate"><span class="pre">approx.py</span></code> - ApproxPosterior<a class="headerlink" href="#approx-py-approxposterior" title="Permalink to this headline">¶</a></h2>
-<p>Bayesian Posterior estimation leveraging Dan Forman-Mackey’s Gaussian Process
-implementation, george, and his Metropolis-Hastings MCMC ensemble sampler
-implementation, emcee, and both Wang &amp; Li (2017) and Kandasamy et al. (2015).</p>
+<p>Bayesian Posterior estimation using Dan Forman-Mackey’s Gaussian Process
+implementation, george, to learn the logprobability of points and the
+Metropolis-Hastings MCMC ensemble sampler, emcee, to infer the approximate
+posterior distributions given the GP model. approxposterior uses both
+Wang &amp; Li (2017) and Kandasamy et al. (2015) utility functions for point
+selection to optimially expand the GP’s training set.</p>
 <dl class="class">
 <dt id="approxposterior.approx.ApproxPosterior">
-<em class="property">class </em><code class="descclassname">approxposterior.approx.</code><code class="descname">ApproxPosterior</code><span class="sig-paren">(</span><em>theta</em>, <em>y</em>, <em>lnprior</em>, <em>lnlike</em>, <em>priorSample</em>, <em>bounds</em>, <em>gp=None</em>, <em>algorithm='BAPE'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/approx.html#ApproxPosterior"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.approx.ApproxPosterior" title="Permalink to this definition">¶</a></dt>
-<dd><p>Class to approximate the posterior distributions using either the
-Bayesian Active Posterior Estimation (BAPE) by Kandasamy et al. (2015) or
-the AGP (Adaptive Gaussian Process) by Wang &amp; Li (2017).</p>
+<em class="property">class </em><code class="descclassname">approxposterior.approx.</code><code class="descname">ApproxPosterior</code><span class="sig-paren">(</span><em>theta</em>, <em>y</em>, <em>lnprior</em>, <em>lnlike</em>, <em>priorSample</em>, <em>bounds</em>, <em>gp=None</em>, <em>algorithm='bape'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/approx.html#ApproxPosterior"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.approx.ApproxPosterior" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class to approximate Bayesian posterior distributions using the
+Bayesian Active Posterior Estimation (BAPE) by Kandasamy et al. (2015),
+the AGP (Adaptive Gaussian Process) by Wang &amp; Li (2017), or a custom
+naive utility function.</p>
 <p class="rubric">Methods</p>
 <table border="1" class="longtable docutils">
 <colgroup>
@@ -249,7 +253,7 @@ the AGP (Adaptive Gaussian Process) by Wang &amp; Li (2017).</p>
 <td>Core algorithm to estimate the posterior distribution via Gaussian Process regression to the joint distribution for the forward model input/output pairs</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#approxposterior.approx.ApproxPosterior.runMCMC" title="approxposterior.approx.ApproxPosterior.runMCMC"><code class="xref py py-obj docutils literal notranslate"><span class="pre">runMCMC</span></code></a>([samplerKwargs,&nbsp;mcmcKwargs,&nbsp;…])</td>
-<td>Given forward model input-output pairs, theta and y, and a trained GP, run an MCMC using the GP to evaluate the logprobability required by MCMC.</td>
+<td>Given forward model input-output pairs, theta and y, and a trained GP, run an MCMC using the GP to evaluate the logprobability instead of the true, computationally-expensive forward model.</td>
 </tr>
 </tbody>
 </table>
@@ -257,7 +261,8 @@ the AGP (Adaptive Gaussian Process) by Wang &amp; Li (2017).</p>
 <dt id="approxposterior.approx.ApproxPosterior.findMAP">
 <code class="descname">findMAP</code><span class="sig-paren">(</span><em>theta0=None</em>, <em>method='nelder-mead'</em>, <em>options=None</em>, <em>nRestarts=5</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/approx.html#ApproxPosterior.findMAP"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.approx.ApproxPosterior.findMAP" title="Permalink to this definition">¶</a></dt>
 <dd><p>Find maximum a posteriori (MAP) estimate, given a trained GP. To find
-the MAP, this function minimizes -mean predicted by the GP.</p>
+the MAP, this function minimizes -mean predicted by the GP, aka finds
+what the GP believes is the point of maximum logprobability.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -286,7 +291,7 @@ the MAP, this function minimizes -mean predicted by the GP.</p>
 </div></blockquote>
 <p><strong>fn</strong> : float</p>
 <blockquote class="last">
-<div><p>Mean of GP predictive function at MAP</p>
+<div><p>Mean of GP predictive function at MAP solution</p>
 </div></blockquote>
 </td>
 </tr>
@@ -348,7 +353,8 @@ to True since the forward model is expensive to evaluate. In
 practice, users should cache forward model inputs, outputs,
 ancillary parameters, etc in each likelihood function evaluation,
 but saving theta and y here doesn’t hurt.  Saves the results to
-apFModelCache.npz in the current working directory.</p>
+apFModelCache.npz in the current working directory (name can change
+if user specifies runName).</p>
 </div></blockquote>
 <p><strong>gpMethod</strong> : str (optional)</p>
 <blockquote>
@@ -384,7 +390,7 @@ number of the point selection is not working well.</p>
 <p><strong>runName</strong> : str (optional)</p>
 <blockquote>
 <div><p>Filename for hdf5 file where mcmc chains are saved.  Defaults to
-apRun and will be saved as apRunii.h5 for ii in range(nmax).</p>
+apRun.</p>
 </div></blockquote>
 <p><strong>gpHyperPrior</strong> : str/callable (optional)</p>
 <blockquote>
@@ -400,7 +406,7 @@ forward model. Defaults to None.</p>
 <p><strong>kwargs</strong> : dict (optional)</p>
 <blockquote>
 <div><p>Keyword arguments for user-specified loglikelihood function that
-calls the forward model.</p>
+calls the forward model. Defaults to None.</p>
 </div></blockquote>
 </td>
 </tr>
@@ -563,7 +569,9 @@ parameters in runNameAPGP.npz in the current working directory, etc.</p>
 <blockquote>
 <div><p>Number of times to restart loglikelihood function (the one that
 calls the forward model) if the lnlike fn returns infs/NaNs. Defaults
-to 3.</p>
+to 3. If you find the need to increase this parameter, don’t because
+your lnlike or lnprior function is probably at fault or your model
+is not properly specified.</p>
 </div></blockquote>
 <p><strong>gpMethod</strong> : str (optional)</p>
 <blockquote>
@@ -600,8 +608,7 @@ number of the point selection is not working well.</p>
 </div></blockquote>
 <p><strong>onlyLastMCMC</strong> : bool (optional)</p>
 <blockquote>
-<div><p>Whether or not to only run the MCMC last iteration. Defaults to False.
-If true, bypasses all KL divergence and related calculations.</p>
+<div><p>Whether or not to only run the MCMC last iteration. Defaults to False.</p>
 </div></blockquote>
 <p><strong>initGPOpt</strong> : bool (optional)</p>
 <blockquote>
@@ -629,13 +636,10 @@ set. Defaults to False.</p>
 forward model. Defaults to None.</p>
 </div></blockquote>
 <p><strong>kwargs</strong> : dict (optional)</p>
-<blockquote>
+<blockquote class="last">
 <div><p>Keyword arguments for user-specified loglikelihood function that
 calls the forward model.</p>
 </div></blockquote>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">None</p>
 </td>
 </tr>
 </tbody>
@@ -646,8 +650,8 @@ calls the forward model.</p>
 <dt id="approxposterior.approx.ApproxPosterior.runMCMC">
 <code class="descname">runMCMC</code><span class="sig-paren">(</span><em>samplerKwargs=None</em>, <em>mcmcKwargs=None</em>, <em>runName='apRun'</em>, <em>cache=True</em>, <em>estBurnin=True</em>, <em>thinChains=True</em>, <em>verbose=False</em>, <em>args=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/approx.html#ApproxPosterior.runMCMC"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.approx.ApproxPosterior.runMCMC" title="Permalink to this definition">¶</a></dt>
 <dd><p>Given forward model input-output pairs, theta and y, and a trained GP,
-run an MCMC using the GP to evaluate the logprobability required by
-MCMC.</p>
+run an MCMC using the GP to evaluate the logprobability instead of the
+true, computationally-expensive forward model.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -702,7 +706,7 @@ parameters in runNameAPGP.npz in the current working directory, etc.</p>
 <div><p>Estimate burn-in time using integrated autocorrelation time
 heuristic.  Defaults to True. In general, we recommend users
 inspect the chains and calculate the burnin after the fact to ensure
-convergence.</p>
+convergence, but this function works pretty well.</p>
 </div></blockquote>
 <p><strong>thinChains</strong> : bool (optional)</p>
 <blockquote>

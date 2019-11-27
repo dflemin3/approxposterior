@@ -170,9 +170,10 @@
 <span></span><span class="c1"># -*- coding: utf-8 -*-</span>
 <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">:py:mod:`gpUtils.py` - Gaussian Process Utilities</span>
-<span class="sd">-----------------------------------</span>
+<span class="sd">-------------------------------------------------</span>
 
-<span class="sd">Gaussian process utility functions, e.g. optimizing GP hyperparameters.</span>
+<span class="sd">Gaussian process utility functions for initializing GPs and optimizing their</span>
+<span class="sd">hyperparameters.</span>
 
 <span class="sd">&quot;&quot;&quot;</span>
 
@@ -187,12 +188,13 @@
 <span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="k">import</span> <span class="n">mean_squared_error</span>
 
 
-<div class="viewcode-block" id="defaultHyperPrior"><a class="viewcode-back" href="../../api/gpUtils.html#approxposterior.gpUtils.defaultHyperPrior">[docs]</a><span class="k">def</span> <span class="nf">defaultHyperPrior</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+<div class="viewcode-block" id="defaultHyperPrior"><a class="viewcode-back" href="../../api/gpUtils.html#approxposterior.gpUtils.defaultHyperPrior">[docs]</a><span class="k">def</span> <span class="nf">defaultHyperPrior</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Default prior function for GP hyperparameters. Ensures the mean is negative,</span>
 <span class="sd">    which makes sense since we hope to regress on the negative loglikelihood.</span>
-<span class="sd">    This prior also keeps the hyperparameters within a reasonable range, [-20, 20].</span>
-<span class="sd">    Note that george operates on the *log* hyperparameters!</span>
+<span class="sd">    This prior also keeps the hyperparameters within a reasonable huge range,</span>
+<span class="sd">    [-20, 20]. Note that george operates on the *log* hyperparameters, except</span>
+<span class="sd">    for the mean function.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -239,7 +241,7 @@
 
     <span class="c1"># Apply priors on GP hyperparameters</span>
     <span class="k">if</span> <span class="n">priorFn</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">priorFn</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">y</span><span class="p">)):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">priorFn</span><span class="p">(</span><span class="n">p</span><span class="p">)):</span>
             <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span>
 
     <span class="c1"># Catch singular matrices</span>
@@ -279,9 +281,9 @@
 
 <div class="viewcode-block" id="defaultGP"><a class="viewcode-back" href="../../api/gpUtils.html#approxposterior.gpUtils.defaultGP">[docs]</a><span class="k">def</span> <span class="nf">defaultGP</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">white_noise</span><span class="o">=-</span><span class="mi">10</span><span class="p">,</span> <span class="n">fitAmp</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Basic utility function that initializes a simple GP with an ExpSquaredKernel</span>
-<span class="sd">    that works well in many applications as it effectively enforces a prior on</span>
-<span class="sd">    the smoothness of the function and is infinitely differentiable.</span>
+<span class="sd">    Basic utility function that initializes a simple GP with an ExpSquaredKernel.</span>
+<span class="sd">    This kernel  works well in many applications as it effectively enforces a</span>
+<span class="sd">    prior on the smoothness of the function and is infinitely differentiable.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -298,7 +300,7 @@
 <span class="sd">        From george docs: &quot;A description of the logarithm of the white noise</span>
 <span class="sd">        variance added to the diagonal of the covariance matrix&quot;. Defaults to</span>
 <span class="sd">        log(white_noise) = -10. Note: if order is not None, you might need to</span>
-<span class="sd">        set the white_noise to a large value for the computation to be</span>
+<span class="sd">        set the white_noise to a larger value for the computation to be</span>
 <span class="sd">        numerically stable, but this, as always, depends on the application.</span>
 <span class="sd">    fitAmp : bool (optional)</span>
 <span class="sd">        Whether or not to include an amplitude term. Defaults to False.</span>
@@ -314,7 +316,7 @@
     <span class="n">initialMetric</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">theta</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]))</span>
 
     <span class="c1"># Create kernel: We&#39;ll model coveriances in loglikelihood space using a</span>
-    <span class="c1"># Squared Expoential Kernel</span>
+    <span class="c1"># ndim-dimensional Squared Expoential Kernel</span>
     <span class="n">kernel</span> <span class="o">=</span> <span class="n">george</span><span class="o">.</span><span class="n">kernels</span><span class="o">.</span><span class="n">ExpSquaredKernel</span><span class="p">(</span><span class="n">metric</span><span class="o">=</span><span class="n">initialMetric</span><span class="p">,</span>
                                              <span class="n">ndim</span><span class="o">=</span><span class="n">theta</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
 
@@ -342,8 +344,8 @@
 <div class="viewcode-block" id="optimizeGP"><a class="viewcode-back" href="../../api/gpUtils.html#approxposterior.gpUtils.optimizeGP">[docs]</a><span class="k">def</span> <span class="nf">optimizeGP</span><span class="p">(</span><span class="n">gp</span><span class="p">,</span> <span class="n">theta</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">nGPRestarts</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;powell&quot;</span><span class="p">,</span>
                <span class="n">options</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">p0</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">gpHyperPrior</span><span class="o">=</span><span class="n">defaultHyperPrior</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Optimize hyperparameters of an arbitrary george Gaussian Process kernel</span>
-<span class="sd">    by maximizing the marginal loglikelihood.</span>
+<span class="sd">    Optimize hyperparameters of an arbitrary george Gaussian Process by</span>
+<span class="sd">    maximizing the marginal loglikelihood.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
