@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 :py:mod:`mcmcUtils.py` - Markov Chain Monte Carlo Utility Functions
------------------------------------
+-------------------------------------------------------------------
 
 MCMC utility functions for validating emcee MCMC runs within approxposterior.
 """
@@ -10,11 +10,6 @@ MCMC utility functions for validating emcee MCMC runs within approxposterior.
 __all__ = ["validateMCMCKwargs"]
 
 import numpy as np
-import emcee
-
-import emcee
-version = emcee.__version__
-assert int(version.split(".")[0]) > 2, "approxposterior is only compatible with emcee versions >= 3"
 
 
 def validateMCMCKwargs(ap, samplerKwargs, mcmcKwargs, verbose=False):

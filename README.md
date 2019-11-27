@@ -40,6 +40,12 @@ Check out the documentation at [https://dflemin3.github.io/approxposterior/](htt
 Installation
 ============
 
+Using conda:
+
+```bash
+    conda install -c conda-forge approxposterior
+```
+
 Using pip:
 
 ```bash

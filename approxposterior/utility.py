@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 """
 :py:mod:`utility.py` - Utility Functions
------------------------------------
+----------------------------------------
 
-Utility functions in terms of usefulness, e.g. minimizing GP utility functions,
-and the GP utility functions, e.g. the BAPE utility.
+Utility functions in terms of usefulness, e.g. minimizing GP utility functions
+or computing KL divergences, and the GP utility functions, e.g. the bape utility.
 """
 
 # Tell module what it's allowed to import
