@@ -47,7 +47,7 @@ setup(name = 'approxposterior',
       description = 'Gaussian Process Approximation to Posterior Distributions',
       long_description = readme(),
       classifiers = [
-                      'Development Status :: 5 - Stable',
+                      'Development Status :: 5 - Production/Stable',
                       'License :: OSI Approved :: MIT License',
                       'Programming Language :: Python :: 3.5',
                       'Programming Language :: Python :: 3.6',
