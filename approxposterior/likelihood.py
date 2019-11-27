@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 :py:mod:`likelihood.py` - Example Likelihood Functions
------------------------------------
+------------------------------------------------------
 
 This file contains routines for simple loglikelihood and prior functions for
 test cases, like the Wang & Li (2017) Rosenbrock function example.

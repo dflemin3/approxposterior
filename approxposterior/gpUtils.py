@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 """
 :py:mod:`gpUtils.py` - Gaussian Process Utilities
------------------------------------
+-------------------------------------------------
 
-Gaussian process utility functions, e.g. optimizing GP hyperparameters.
+Gaussian process utility functions for initializing GPs and optimizing their
+hyperparameters.
 
 """
 
@@ -18,12 +19,13 @@ from sklearn.model_selection import KFold
 from sklearn.metrics import mean_squared_error
 
 
-def defaultHyperPrior(p, y):
+def defaultHyperPrior(p):
     """
     Default prior function for GP hyperparameters. Ensures the mean is negative,
     which makes sense since we hope to regress on the negative loglikelihood.
-    This prior also keeps the hyperparameters within a reasonable range, [-20, 20].
-    Note that george operates on the *log* hyperparameters!
+    This prior also keeps the hyperparameters within a reasonable huge range,
+    [-20, 20]. Note that george operates on the *log* hyperparameters, except
+    for the mean function.
 
     Parameters
     ----------
@@ -70,7 +72,7 @@ def _nll(p, gp, y, priorFn=None):
 
     # Apply priors on GP hyperparameters
     if priorFn is not None:
-        if not np.isfinite(priorFn(p, y)):
+        if not np.isfinite(priorFn(p)):
             return np.inf
 
     # Catch singular matrices
@@ -110,9 +112,9 @@ def _grad_nll(p, gp, y):
 
 def defaultGP(theta, y, order=None, white_noise=-10, fitAmp=False):
     """
-    Basic utility function that initializes a simple GP with an ExpSquaredKernel
-    that works well in many applications as it effectively enforces a prior on
-    the smoothness of the function and is infinitely differentiable.
+    Basic utility function that initializes a simple GP with an ExpSquaredKernel.
+    This kernel  works well in many applications as it effectively enforces a
+    prior on the smoothness of the function and is infinitely differentiable.
 
     Parameters
     ----------
@@ -129,7 +131,7 @@ def defaultGP(theta, y, order=None, white_noise=-10, fitAmp=False):
         From george docs: "A description of the logarithm of the white noise
         variance added to the diagonal of the covariance matrix". Defaults to
         log(white_noise) = -10. Note: if order is not None, you might need to
-        set the white_noise to a large value for the computation to be
+        set the white_noise to a larger value for the computation to be
         numerically stable, but this, as always, depends on the application.
     fitAmp : bool (optional)
         Whether or not to include an amplitude term. Defaults to False.
@@ -145,7 +147,7 @@ def defaultGP(theta, y, order=None, white_noise=-10, fitAmp=False):
     initialMetric = np.fabs(np.random.randn(theta.shape[-1]))
 
     # Create kernel: We'll model coveriances in loglikelihood space using a
-    # Squared Expoential Kernel
+    # ndim-dimensional Squared Expoential Kernel
     kernel = george.kernels.ExpSquaredKernel(metric=initialMetric,
                                              ndim=theta.shape[-1])
 
@@ -173,8 +175,8 @@ def defaultGP(theta, y, order=None, white_noise=-10, fitAmp=False):
 def optimizeGP(gp, theta, y, seed=None, nGPRestarts=1, method="powell",
                options=None, p0=None, gpHyperPrior=defaultHyperPrior):
     """
-    Optimize hyperparameters of an arbitrary george Gaussian Process kernel
-    by maximizing the marginal loglikelihood.
+    Optimize hyperparameters of an arbitrary george Gaussian Process by
+    maximizing the marginal loglikelihood.
 
     Parameters
     ----------

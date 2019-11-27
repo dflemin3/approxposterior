@@ -3,9 +3,12 @@
 :py:mod:`approx.py` - ApproxPosterior
 -------------------------------------
 
-Bayesian Posterior estimation leveraging Dan Forman-Mackey's Gaussian Process
-implementation, george, and his Metropolis-Hastings MCMC ensemble sampler
-implementation, emcee, and both Wang & Li (2017) and Kandasamy et al. (2015).
+Bayesian Posterior estimation using Dan Forman-Mackey's Gaussian Process
+implementation, george, to learn the logprobability of points and the
+Metropolis-Hastings MCMC ensemble sampler, emcee, to infer the approximate
+posterior distributions given the GP model. approxposterior uses both
+Wang & Li (2017) and Kandasamy et al. (2015) utility functions for point
+selection to optimially expand the GP's training set.
 
 """
 
@@ -27,13 +30,14 @@ import warnings
 
 class ApproxPosterior(object):
     """
-    Class to approximate the posterior distributions using either the
-    Bayesian Active Posterior Estimation (BAPE) by Kandasamy et al. (2015) or
-    the AGP (Adaptive Gaussian Process) by Wang & Li (2017).
+    Class to approximate Bayesian posterior distributions using the
+    Bayesian Active Posterior Estimation (BAPE) by Kandasamy et al. (2015),
+    the AGP (Adaptive Gaussian Process) by Wang & Li (2017), or a custom
+    naive utility function.
     """
 
     def __init__(self, theta, y, lnprior, lnlike, priorSample, bounds, gp=None,
-                 algorithm="BAPE"):
+                 algorithm="bape"):
         """
         Initializer.
 
@@ -60,13 +64,14 @@ class ApproxPosterior(object):
             approxposterior initialized a GP with a single ExpSquaredKernel as
             these work well in practice.
         algorithm : str (optional)
-            Which utility function to use.  Defaults to BAPE.  Options are BAPE,
-            AGP, or alternate.  Case doesn't matter. If alternate, runs AGP on
-            even numbers and BAPE on odd.
+            Point selection algorithm that specifies which utility function to
+            use.  Defaults to bape.  Options are bape,
+            agp, alternate (between bape and agp), and naive.
+            Case doesn't matter. If alternate, runs agp on even numbers and bape
+            on odd.
 
         Returns
         -------
-        None
         """
 
         # Need to supply the training set
@@ -107,7 +112,7 @@ class ApproxPosterior(object):
         elif self.algorithm == "naive":
             self.utility = ut.NaiveUtility
         else:
-            errMsg = "Unknown algorithm. Valid options: BAPE, AGP, Jones, or alternate."
+            errMsg = "Unknown algorithm. Valid options: bape, agp, naive, or alternate."
             raise ValueError(errMsg)
 
         # Holders to save quantities of interest
@@ -120,7 +125,7 @@ class ApproxPosterior(object):
 
         # Initialize gaussian process if none provided
         if gp is None:
-            print("No GP specified. Initializing GP using ExpSquaredKernel.")
+            print("INFO: No GP specified. Initializing GP using ExpSquaredKernel.")
             self.gp = gpUtils.defaultGP(self.theta, self.y)
         else:
             self.gp = gp
@@ -157,7 +162,7 @@ class ApproxPosterior(object):
         # Mean of predictive distribution conditioned on y (GP posterior estimate)
         # and make sure theta is the right shape for the GP
         try:
-            mu, = self.gp.predict(self.y, np.array(theta).reshape(1,-1),
+            mu = self.gp.predict(self.y, np.array(theta).reshape(1,-1),
                                  return_cov=False,
                                  return_var=False)
         except ValueError:
@@ -200,10 +205,11 @@ class ApproxPosterior(object):
         optimizedGP : george.GP
         """
 
-        # Optimize
+        # Optimize and reasign gp
         self.gp = gpUtils.optimizeGP(self.gp, self.theta, self.y, seed=seed,
                                      method=method, options=options,
-                                     p0=p0, nGPRestarts=nGPRestarts)
+                                     p0=p0, nGPRestarts=nGPRestarts,
+                                     gpHyperPrior=gpHyperPrior)
     # end function
 
 
@@ -271,7 +277,9 @@ class ApproxPosterior(object):
         maxLnLikeRestarts : int (optional)
             Number of times to restart loglikelihood function (the one that
             calls the forward model) if the lnlike fn returns infs/NaNs. Defaults
-            to 3.
+            to 3. If you find the need to increase this parameter, don't because
+            your lnlike or lnprior function is probably at fault or your model
+            is not properly specified.
         gpMethod : str (optional)
             scipy.optimize.minimize method used when optimized GP hyperparameters.
             Defaults to powell (it usually works)
@@ -295,7 +303,6 @@ class ApproxPosterior(object):
             number of the point selection is not working well.
         onlyLastMCMC : bool (optional)
             Whether or not to only run the MCMC last iteration. Defaults to False.
-            If true, bypasses all KL divergence and related calculations.
         initGPOpt : bool (optional)
             Whether or not to optimize GP hyperparameters before 0th iteration.
             Defaults to True (aka assume user didn't optimize GP hyperparameters)
@@ -319,7 +326,6 @@ class ApproxPosterior(object):
 
         Returns
         -------
-        None
         """
 
         # If dropping initial training set after 1st round of point selection,
@@ -434,10 +440,10 @@ class ApproxPosterior(object):
                 # Skip everything below
                 continue
 
-            # Run the MCMC
             if timing:
                 start = time.time()
 
+            # Run the MCMC
             self.sampler, iburn, ithin = self.runMCMC(samplerKwargs=samplerKwargs,
                                                       mcmcKwargs=mcmcKwargs,
                                                       runName=str(runName) + str(nn),
@@ -508,7 +514,8 @@ class ApproxPosterior(object):
             practice, users should cache forward model inputs, outputs,
             ancillary parameters, etc in each likelihood function evaluation,
             but saving theta and y here doesn't hurt.  Saves the results to
-            apFModelCache.npz in the current working directory.
+            apFModelCache.npz in the current working directory (name can change
+            if user specifies runName).
         gpMethod : str (optional)
             scipy.optimize.minimize method used when optimized GP hyperparameters.
             Defaults to None, which is powell, and it usually works.
@@ -530,7 +537,7 @@ class ApproxPosterior(object):
             number of the point selection is not working well.
         runName : str (optional)
             Filename for hdf5 file where mcmc chains are saved.  Defaults to
-            apRun and will be saved as apRunii.h5 for ii in range(nmax).
+            apRun.
         gpHyperPrior : str/callable (optional)
             Prior function for GP hyperparameters. Defaults to the defaultHyperPrior fn.
             This function asserts that the mean must be negative and that each log
@@ -540,7 +547,7 @@ class ApproxPosterior(object):
             forward model. Defaults to None.
         kwargs : dict (optional)
             Keyword arguments for user-specified loglikelihood function that
-            calls the forward model.
+            calls the forward model. Defaults to None.
 
         Returns
         -------
@@ -642,8 +649,8 @@ class ApproxPosterior(object):
                 args=None, **kwargs):
         """
         Given forward model input-output pairs, theta and y, and a trained GP,
-        run an MCMC using the GP to evaluate the logprobability required by
-        MCMC.
+        run an MCMC using the GP to evaluate the logprobability instead of the
+        true, computationally-expensive forward model.
 
         Parameters
         ----------
@@ -677,7 +684,7 @@ class ApproxPosterior(object):
             Estimate burn-in time using integrated autocorrelation time
             heuristic.  Defaults to True. In general, we recommend users
             inspect the chains and calculate the burnin after the fact to ensure
-            convergence.
+            convergence, but this function works pretty well.
         thinChains : bool (optional)
             Whether or not to thin chains before GMM fitting.  Useful if running
             long chains.  Defaults to True.  If true, estimates a thin cadence
@@ -771,7 +778,8 @@ class ApproxPosterior(object):
                 nRestarts=5):
         """
         Find maximum a posteriori (MAP) estimate, given a trained GP. To find
-        the MAP, this function minimizes -mean predicted by the GP.
+        the MAP, this function minimizes -mean predicted by the GP, aka finds
+        what the GP believes is the point of maximum logprobability.
 
         Parameters
         ----------
@@ -789,7 +797,7 @@ class ApproxPosterior(object):
         MAP : iterable
             maximum a posteriori estimate
         fn : float
-            Mean of GP predictive function at MAP
+            Mean of GP predictive function at MAP solution
         """
 
         # Initialize theta0 if not provided. If provided, validate it
@@ -828,6 +836,7 @@ class ApproxPosterior(object):
                 if theta0 is None:
                     t0 = self.theta[np.argmax(self.y)] + 1.0e-3 * np.random.randn()
                 else:
+                    # Perturb user-supplied guess
                     t0 = np.array(theta0) + np.min(theta0) * 1.0e-3 * np.random.randn(len(theta0))
 
                 tmp = minimize(fn, t0, method=method, options=options,

@@ -16,6 +16,10 @@ def test_import():
     """
 
     import approxposterior
+    import emcee
+    version = emcee.__version__
+    errMsg = "approxposterior is only compatible with emcee versions >= 3"
+    assert int(version.split(".")[0]) > 2, errMsg
 # end function
 
 if __name__ == "__main__":
