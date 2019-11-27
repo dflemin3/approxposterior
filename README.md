@@ -43,7 +43,7 @@ Installation
 Using conda:
 
 ```bash
-    conda install -c conda-forge approxposterior
+conda install -c conda-forge approxposterior
 ```
 
 Using pip:
@@ -56,7 +56,7 @@ This step can fail if george (the Python Gaussian Process package) is not proper
 To install george, run
 
 ```bash
-    conda install -c conda-forge george
+conda install -c conda-forge george
 ```
 
 From source:
