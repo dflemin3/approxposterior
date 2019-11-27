@@ -5,11 +5,27 @@
 
 * Major stability improvements to enable more robust GP kernels, including amplitude and white noise terms
 
-* Switched default GP hyperparameter optimization algorithm to l-bfgs-b
-
-* Switched default GP solver to HODLRSolver
+* Switched default GP hyperparameter optimization algorithm to powell
 
 * Removed convergence based on KL-divergence metrics as the numerical integration is slow and noisy in high dimensions
+
+* Added a new utility function option: naive
+
+* Made optGP, a function for optimizing the GP hyperparameters, a class method
+
+* Added ability to pass GP hyperparameter optimization priors
+
+* Added new function to find maximum a posteriori (MAP) estimate given a trained GP
+
+* Added new example, tests for MAP functions
+
+* Added ability to ignore initial training set after 0th iteration (sometimes useful, apparently?)
+
+* Added many new tests for GP optimization, finding next point, etc
+
+* Added ability to toggle whether or not to fit for the GP kernel amplitude
+  (sometimes can be very numerically unstable when the amp is included for high 
+  dimensional cases, even with regularization)
 
 * Many documentation improvements, removal of deprecated code
 
