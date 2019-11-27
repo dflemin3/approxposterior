@@ -172,7 +172,7 @@ class ApproxPosterior(object):
 
 
     def optGP(self, seed=None, method="powell", options=None, p0=None,
-              nGPRestarts=1, gpCV=None, gpHyperPrior=gpUtils.defaultHyperPrior):
+              nGPRestarts=1, gpHyperPrior=gpUtils.defaultHyperPrior):
         """
         Optimize hyperparameters of object's GP
 
@@ -190,12 +190,6 @@ class ApproxPosterior(object):
         p0 : array (optional)
             Initial guess for kernel hyperparameters.  If None, defaults to
             np.random.randn for each parameter
-        gpCV : int (optional)
-            Whether or not to use k-fold cross-validation to select kernel
-            hyperparameters from the nGPRestarts maximum likelihood solutions.
-            This can be useful if the GP is overfitting, but will likely slow down
-            the code. Defaults to None, aka this functionality is not used. If using
-            it, perform gpCV-fold cross-validation.
         gpHyperPrior : str/callable (optional)
             Prior function for GP hyperparameters. Defaults to the defaultHyperPrior fn.
             This function asserts that the mean must be negative and that each log
@@ -209,8 +203,7 @@ class ApproxPosterior(object):
         # Optimize
         self.gp = gpUtils.optimizeGP(self.gp, self.theta, self.y, seed=seed,
                                      method=method, options=options,
-                                     p0=p0, nGPRestarts=nGPRestarts,
-                                     gpCV=gpCV)
+                                     p0=p0, nGPRestarts=nGPRestarts)
     # end function
 
 
@@ -218,7 +211,7 @@ class ApproxPosterior(object):
             mcmcKwargs=None, samplerKwargs=None, estBurnin=False,
             thinChains=False, runName="apRun", cache=True, maxLnLikeRestarts=3,
             gpMethod="powell", gpOptions=None, gpP0=None, optGPEveryN=1,
-            nGPRestarts=1, nMinObjRestarts=5, gpCV=None, onlyLastMCMC=False,
+            nGPRestarts=1, nMinObjRestarts=5, onlyLastMCMC=False,
             initGPOpt=True, gpHyperPrior=gpUtils.defaultHyperPrior,
             dropInitialTraining=False, args=None, **kwargs):
         """
@@ -300,12 +293,6 @@ class ApproxPosterior(object):
             Number of times to restart minimizing -utility function to select
             next point to improve GP performance.  Defaults to 5.  Increase this
             number of the point selection is not working well.
-        gpCV : int (optional)
-            Whether or not to use k-fold cross-validation to select kernel
-            hyperparameters from the nGPRestarts maximum likelihood solutions.
-            Defaults to None. This can be useful if the GP is overfitting, but
-            will likely slow down the code. Defaults to None. If using it, perform
-            gpCV-fold cross-validation.
         onlyLastMCMC : bool (optional)
             Whether or not to only run the MCMC last iteration. Defaults to False.
             If true, bypasses all KL divergence and related calculations.
@@ -360,8 +347,7 @@ class ApproxPosterior(object):
         # Initial optimization of gaussian process?
         if initGPOpt:
             self.optGP(seed=seed, method=gpMethod, options=gpOptions, p0=gpP0,
-                       nGPRestarts=nGPRestarts, gpCV=gpCV,
-                       gpHyperPrior=gpHyperPrior)
+                       nGPRestarts=nGPRestarts, gpHyperPrior=gpHyperPrior)
 
         # Main loop - run for nmax iterations
         for nn in range(nmax):
@@ -403,7 +389,6 @@ class ApproxPosterior(object):
                                    bOptGP=bOptGP,
                                    nGPRestarts=nGPRestarts,
                                    nMinObjRestarts=nMinObjRestarts,
-                                   gpCV=gpCV,
                                    gpHyperPrior=gpHyperPrior,
                                    runName=runName,
                                    args=args,
@@ -424,7 +409,7 @@ class ApproxPosterior(object):
                 self.gp.compute(self.theta)
 
                 self.optGP(seed=seed, method=gpMethod, options=gpOptions,
-                           p0=gpP0, nGPRestarts=nGPRestarts, gpCV=gpCV,
+                           p0=gpP0, nGPRestarts=nGPRestarts,
                            gpHyperPrior=gpHyperPrior)
 
             if timing:
@@ -482,7 +467,7 @@ class ApproxPosterior(object):
     def findNextPoint(self, computeLnLike=True, bounds=None, gpMethod=None,
                       maxLnLikeRestarts=3, seed=None, cache=True, gpOptions=None,
                       gpP0=None, bOptGP=True, args=None, nGPRestarts=1,
-                      nMinObjRestarts=5, gpCV=None, runName="apRun",
+                      nMinObjRestarts=5, runName="apRun",
                       gpHyperPrior=gpUtils.defaultHyperPrior, **kwargs):
         """
         Find new point, thetaT, by maximizing utility function. Note that we
@@ -543,11 +528,6 @@ class ApproxPosterior(object):
             Number of times to restart minimizing -utility function to select
             next point to improve GP performance.  Defaults to 5.  Increase this
             number of the point selection is not working well.
-        gpCV : int (optional)
-            Whether or not to use 5-fold cross-validation to select kernel
-            hyperparameters from the nGPRestarts maximum likelihood solutions.
-            Defaults to None. This can be useful if the GP is overfitting, but
-            will likely slow down the code.
         runName : str (optional)
             Filename for hdf5 file where mcmc chains are saved.  Defaults to
             apRun and will be saved as apRunii.h5 for ii in range(nmax).
@@ -635,7 +615,7 @@ class ApproxPosterior(object):
                 # Now optimize GP given new points?
                 if bOptGP:
                     self.optGP(seed=seed, method=gpMethod, options=gpOptions,
-                               p0=gpP0, nGPRestarts=nGPRestarts, gpCV=gpCV,
+                               p0=gpP0, nGPRestarts=nGPRestarts,
                                gpHyperPrior=gpHyperPrior)
             except ValueError:
                 print("theta:", self.theta)

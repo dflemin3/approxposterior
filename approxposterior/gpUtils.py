@@ -108,7 +108,7 @@ def _grad_nll(p, gp, y):
 # end function
 
 
-def defaultGP(theta, y, order=None, white_noise=-10, fitAmp=True):
+def defaultGP(theta, y, order=None, white_noise=-10, fitAmp=False):
     """
     Basic utility function that initializes a simple GP with an ExpSquaredKernel
     that works well in many applications as it effectively enforces a prior on
@@ -132,7 +132,7 @@ def defaultGP(theta, y, order=None, white_noise=-10, fitAmp=True):
         set the white_noise to a large value for the computation to be
         numerically stable, but this, as always, depends on the application.
     fitAmp : bool (optional)
-        Whether or not to include an amplitude term. Defaults to True.
+        Whether or not to include an amplitude term. Defaults to False.
 
     Returns
     -------
@@ -149,12 +149,12 @@ def defaultGP(theta, y, order=None, white_noise=-10, fitAmp=True):
     kernel = george.kernels.ExpSquaredKernel(metric=initialMetric,
                                              ndim=theta.shape[-1])
 
-    # Include an amplitude term
+    # Include an amplitude term?
     if fitAmp:
         kernel = np.var(y) * kernel
 
     # Add a linear regression kernel of order order?
-    # Use a meh guess for the amplitude and for the scale length (gamma)
+    # Use a meh guess for the amplitude and for the scale length (log(gamma^2))
     if order is not None:
         kernel = kernel + (np.var(y)/10.0) * george.kernels.LinearKernel(log_gamma2=initialMetric[0],
                                                                          order=order,
@@ -171,7 +171,7 @@ def defaultGP(theta, y, order=None, white_noise=-10, fitAmp=True):
 
 
 def optimizeGP(gp, theta, y, seed=None, nGPRestarts=1, method="powell",
-               options=None, p0=None, gpCV=None, gpHyperPrior=defaultHyperPrior):
+               options=None, p0=None, gpHyperPrior=defaultHyperPrior):
     """
     Optimize hyperparameters of an arbitrary george Gaussian Process kernel
     by maximizing the marginal loglikelihood.
@@ -194,12 +194,6 @@ def optimizeGP(gp, theta, y, seed=None, nGPRestarts=1, method="powell",
     p0 : array (optional)
         Initial guess for kernel hyperparameters.  If None, defaults to
         np.random.randn for each parameter
-    gpCV : int (optional)
-        Whether or not to use k-fold cross-validation to select kernel
-        hyperparameters from the nGPRestarts maximum likelihood solutions.
-        This can be useful if the GP is overfitting, but will likely slow down
-        the code. Defaults to None, aka this functionality is not used. If using
-        it, perform gpCV-fold cross-validation.
     gpHyperPrior : str/callable (optional)
         Prior function for GP hyperparameters. Defaults to the defaultHyperPrior fn.
         This function asserts that the mean must be negative and that each log
@@ -241,48 +235,12 @@ def optimizeGP(gp, theta, y, seed=None, nGPRestarts=1, method="powell",
         # Compute marginal log likelihood for this set of kernel hyperparameters
         mll.append(gp.log_likelihood(y, quiet=True))
 
-    # Use CV to select best answer?
-    if gpCV is not None:
-        if isinstance(gpCV, int):
-            mses = np.zeros((gpCV, nGPRestarts))
-
-            # Use gpCV fold cross-validation
-            kfold = KFold(n_splits=gpCV)
-
-            # Train on train, evaluate predictions on test
-            ii = 0
-            for trainInds, testInds in kfold.split(theta, y):
-                # Repeat for each solution
-                for jj in range(len(res)):
-                    # Update the kernel using training set
-                    gp.set_parameter_vector(res[jj])
-                    gp.compute(theta[trainInds])
-
-                    # Compute marginal log likelihood for this set of
-                    # kernel hyperparameters conditioned on the training set
-                    yhat = gp.predict(y[trainInds], theta[testInds],
-                                      return_cov=False, return_var=False)
-                    mses[ii,jj] = mean_squared_error(y[testInds], yhat)
-
-                # End loop over each MLL solution for this cv fold
-                ii = ii + 1
-
-            # Best answer is solution with minimum mean squared error
-            # averaging over the folds
-            ind = np.argmin(np.mean(mses, axis=0))
-        else:
-            raise RuntimeError("gpCV must be an integer. gpCV:", gpCV)
-
     # Pick result with largest marginal log likelihood
-    else:
-        ind = np.argmax(mll)
+    ind = np.argmax(mll)
 
     # Update gp
     gp.set_parameter_vector(res[ind])
-    if gpCV is not None:
-        gp.compute(theta)
-    else:
-        gp.recompute()
+    gp.recompute()
 
     return gp
 # end function

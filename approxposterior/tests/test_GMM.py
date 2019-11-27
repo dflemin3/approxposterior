@@ -7,9 +7,6 @@ Test the GMM fitting procedure.
 
 """
 
-from __future__ import (print_function, division, absolute_import,
-                        unicode_literals)
-
 import numpy as np
 from approxposterior import gmmUtils
 

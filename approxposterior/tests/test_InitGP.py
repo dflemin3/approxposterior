@@ -12,7 +12,7 @@ import george
 from approxposterior import utility as ut, gpUtils, likelihood as lh
 
 
-def testInitGP():
+def testInitGPAmp():
     """
     Test default GP initialization.
 
@@ -37,12 +37,46 @@ def testInitGP():
         y[ii] = lh.rosenbrockLnlike(theta[ii]) + lh.rosenbrockLnprior(theta[ii])
 
     # Set up a gp with a ExpSquaredKernel
-    gp = gpUtils.defaultGP(theta, y)
+    gp = gpUtils.defaultGP(theta, y, fitAmp=True)
 
     errMsg = "ERROR: Default initialization with incorrect parameters!"
     true = [-31.02658091, 9.78479362, -1.0552327 , -1.16092752]
     assert np.allclose(true, gp.get_parameter_vector()), errMsg
 # end function
 
+
+def testInitGPNoAmp():
+    """
+    Test default GP initialization.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+    """
+
+    # For reproducibility
+    m0 = 50
+    seed = 57
+    np.random.seed(seed)
+
+    # Randomly sample initial conditions from the prior
+    theta = np.array(lh.rosenbrockSample(m0))
+
+    # Evaluate forward model log likelihood + lnprior for each theta
+    y = np.zeros(len(theta))
+    for ii in range(len(theta)):
+        y[ii] = lh.rosenbrockLnlike(theta[ii]) + lh.rosenbrockLnprior(theta[ii])
+
+    # Set up a gp with a ExpSquaredKernel
+    gp = gpUtils.defaultGP(theta, y, fitAmp=False)
+
+    errMsg = "ERROR: Default initialization with incorrect parameters!"
+    true = [-31.02658091, -1.0552327, -1.16092752]
+    assert np.allclose(true, gp.get_parameter_vector()), errMsg
+# end function
+
 if __name__ == "__main__":
-    testInitGP()
+    testInitGPAmp()
+    testInitGPNoAmp()
