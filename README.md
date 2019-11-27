@@ -14,6 +14,10 @@
 <img src="http://joss.theoj.org/papers/10.21105/joss.00781/status.svg"></a>
 <a href="https://pypi.python.org/pypi/approxposterior/">
 <img src="https://img.shields.io/pypi/pyversions/ansicolortags.svg"></a>
+<a href="https://conda.anaconda.org/conda-forge">
+<img src="https://anaconda.org/conda-forge/approxposterior/badges/installer/conda.svg"> </a>
+<a href="https://anaconda.org/conda-forge/approxposterior">
+<img src="https://anaconda.org/conda-forge/approxposterior/badges/downloads.svg"> </a>
 </p>
 
 Overview
