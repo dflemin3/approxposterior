@@ -2,46 +2,42 @@
 # -*- coding: utf-8 -*-
 """
 
-Test finding a new design point, thetaT
+Test finding an MAP estimate.
 
-@author: David P. Fleming [University of Washington, Seattle], 2018
+@author: David P. Fleming [University of Washington, Seattle], 2019
 @email: dflemin3 (at) uw (dot) edu
 
 """
 
 from approxposterior import approx, likelihood as lh, gpUtils
 import numpy as np
-import george
 
 
-def testFindAmp():
+def testMAPAmp():
     """
-    Test the findNextPoint function.
+    Test MAP estimation
     """
 
     # Define algorithm parameters
     m0 = 50                           # Initial size of training set
     bounds = ((-5,5), (-5,5))         # Prior bounds
-    algorithm = "bape"
-
-    # For reproducibility
-    seed = 57
+    algorithm = "bape"                # Use the Kandasamy et al. (2015) formalism
+    seed = 57                         # For reproducibility
     np.random.seed(seed)
 
     # Randomly sample initial conditions from the prior
-    # Note: adding corner cases because approxposterior loves corners
-    theta = np.array(list(lh.rosenbrockSample(m0)) + [[-5, 5], [5, 5]])
+    theta = np.array(lh.rosenbrockSample(m0))
 
     # Evaluate forward model log likelihood + lnprior for each theta
     y = np.zeros(len(theta))
     for ii in range(len(theta)):
         y[ii] = lh.rosenbrockLnlike(theta[ii]) + lh.rosenbrockLnprior(theta[ii])
 
-    # Set up a gp
+    # Create the the default GP using an ExpSquaredKernel
     gp = gpUtils.defaultGP(theta, y, fitAmp=True)
 
     # Initialize object using the Wang & Li (2017) Rosenbrock function example
-    # using default ExpSquaredKernel GP
+    # Use default GP initialization: ExpSquaredKernel
     ap = approx.ApproxPosterior(theta=theta,
                                 y=y,
                                 gp=gp,
@@ -51,44 +47,49 @@ def testFindAmp():
                                 bounds=bounds,
                                 algorithm=algorithm)
 
-    # Find new point!
-    thetaT = ap.findNextPoint(computeLnLike=False,
-                              bounds=bounds,
-                              seed=seed)
+    # Optimize the GP hyperparameters
+    ap.optGP(seed=seed, method="powell", nGPRestarts=3)
 
-    err_msg = "findNextPoint selected incorrect thetaT."
-    assert(np.allclose(thetaT, [-2.03449242, -3.07172107], rtol=1.0e-3)), err_msg
+    # Find MAP solution
+    trueMAP = [1.0, 1.0]
+    trueVal = 0.0
+    testMAP, testVal = ap.findMAP(nRestarts=5)
+
+    # Compare estimated MAP to true values
+    errMsg = "True MAP solution is incorrect."
+    # Allow up to 10% error in each parameter
+    assert(np.allclose(trueMAP, testMAP, atol=1.0e-1)), errMsg
+    # All up to 0.1% error in function value
+    errMsg = "True MAP function value is incorrect."
+    assert(np.allclose(trueVal, testVal, atol=1.0e-3)), errMsg
 # end function
 
 
-def testFindNoAmp():
+def testMAPNoAmp():
     """
-    Test the findNextPoint function.
+    Test MAP estimation
     """
 
     # Define algorithm parameters
     m0 = 50                           # Initial size of training set
     bounds = ((-5,5), (-5,5))         # Prior bounds
-    algorithm = "bape"
-
-    # For reproducibility
-    seed = 57
+    algorithm = "bape"                # Use the Kandasamy et al. (2015) formalism
+    seed = 57                         # For reproducibility
     np.random.seed(seed)
 
     # Randomly sample initial conditions from the prior
-    # Note: adding corner cases because approxposterior loves corners
-    theta = np.array(list(lh.rosenbrockSample(m0)) + [[-5, 5], [5, 5]])
+    theta = np.array(lh.rosenbrockSample(m0))
 
     # Evaluate forward model log likelihood + lnprior for each theta
     y = np.zeros(len(theta))
     for ii in range(len(theta)):
         y[ii] = lh.rosenbrockLnlike(theta[ii]) + lh.rosenbrockLnprior(theta[ii])
 
-    # Set up a gp
-    gp = gpUtils.defaultGP(theta, y, fitAmp=False)
+    # Create the the default GP using an ExpSquaredKernel
+    gp = gpUtils.defaultGP(theta, y, fitAmp=True)
 
     # Initialize object using the Wang & Li (2017) Rosenbrock function example
-    # using default ExpSquaredKernel GP
+    # Use default GP initialization: ExpSquaredKernel
     ap = approx.ApproxPosterior(theta=theta,
                                 y=y,
                                 gp=gp,
@@ -98,15 +99,24 @@ def testFindNoAmp():
                                 bounds=bounds,
                                 algorithm=algorithm)
 
-    # Find new point!
-    thetaT = ap.findNextPoint(computeLnLike=False,
-                              bounds=bounds,
-                              seed=seed)
+    # Optimize the GP hyperparameters
+    ap.optGP(seed=seed, method="powell", nGPRestarts=3)
 
-    err_msg = "findNextPoint selected incorrect thetaT."
-    assert(np.allclose(thetaT, [0.79813416, 0.85542199], rtol=1.0e-3)), err_msg
+    # Find MAP solution
+    trueMAP = [1.0, 1.0]
+    trueVal = 0.0
+    testMAP, testVal = ap.findMAP(nRestarts=5)
+
+    # Compare estimated MAP to true values
+    errMsg = "True MAP solution is incorrect."
+    # Allow up to 10% error in each parameter
+    assert(np.allclose(trueMAP, testMAP, atol=1.0e-1)), errMsg
+    # All up to 0.1% error in function value
+    errMsg = "True MAP function value is incorrect."
+    assert(np.allclose(trueVal, testVal, atol=1.0e-3)), errMsg
 # end function
 
+
 if __name__ == "__main__":
-    testFindAmp()
-    testFindNoAmp()
+    testMAPAmp()
+    testMAPNoAmp()

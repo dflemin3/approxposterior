@@ -1,13 +1,17 @@
-Tutorial
-========
+Approximate Bayesian Inference
+==============================
 
-Below is a quick example of how to use :py:obj:`approxposterior` to compute the posterior
-distribution of the Rosenbrock Function example from Wang & Li (2017) using the
-BAPE algorithm. Note that setting verbose = True also outputs additional diagnostic information, such as when
+Below is a quick example of how to use :py:obj:`approxposterior` to estimate an
+accurate approximation to the posterior distribution of the Rosenbrock Function example from Wang & Li (2017) using the
+BAPE algorithm. In many Bayesian inference applications, sampling methods used to derive posterior distributions,
+such as Markov Chain Monte Carlo (MCMC) methods, can require >1,000,000 functions evaluations. In cases where the
+forward model is computationally expensive, such methods quickly become infeasible. The active learning
+approach employed by :py:obj:`approxposterior`, however, requires orders of magnitude fewer simulations to
+train :py:obj:`approxposterior`'s GP, yielding accurate approximate Bayesian posterior distributions.
+
+Note that setting verbose = True also outputs additional diagnostic information, such as when
 the MCMC finishes, what the estimated burn-in is, and other quantities that are useful for tracking the progress of
 your code.  In this example, we set verbose = False for simplicity.
-
-Don't forget to check out the links for example Jupyter Notebooks at the bottom of the page!
 
 1) First, the user must set model parameters.
 
@@ -82,19 +86,11 @@ The final posterior distribution will look something like the following:
 
 .. image:: _figures/final_posterior.png
   :width: 400
-  :alt: Final posterior distribution for approxposterior run of the Wang & Li (2017) example.
 
-Check out the example notebooks to see example use cases, how the code runtime scales
-for different forward model evaluation times, how we compute the Kullback–Leibler (KL) divergence,
-and more.
+Check the notebook below to see MCMC sampling with using the Rosenbrock function and :py:obj:`emcee`.
 
   .. toctree::
      :maxdepth: 1
      :caption: Jupyter Notebook Examples:
 
-     Example <notebooks/example.ipynb>
-     Fitting a Line <notebooks/fittingALine.ipynb>
-     Scaling and Accuracy <notebooks/ScalingAccuracy.ipynb>
-     KL Divergence Estimation <notebooks/KLDivergenceEstimation.ipynb>
-     Posterior Fitting with Gaussian Mixture Models <notebooks/posteriorFittingWithGMM.ipynb>
      Rosenbrock Function Example <notebooks/TrueRosenbrockPosterior.ipynb>

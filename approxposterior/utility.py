@@ -3,79 +3,18 @@
 :py:mod:`utility.py` - Utility Functions
 -----------------------------------
 
-Utility functions ranging from minimizing GP objective functions to function
-wrappers.
-
+Utility functions in terms of usefulness, e.g. minimizing GP utility functions,
+and the GP utility functions, e.g. the BAPE utility.
 """
 
 # Tell module what it's allowed to import
-__all__ = ["logsubexp", "AGPUtility", "BAPEUtility", "minimizeObjective",
-           "functionWrapper", "functionWrapperArgsOnly", "klNumerical",
-           "latinHypercubeSampling"]
+__all__ = ["logsubexp", "AGPUtility", "BAPEUtility", "NaiveUtility",
+           "minimizeObjective", "klNumerical", "latinHypercubeSampling"]
 
 import numpy as np
 from scipy.optimize import minimize
+from scipy.special import erf
 from pyDOE import lhs
-
-
-################################################################################
-#
-# Useful classes
-#
-################################################################################
-
-
-class functionWrapper(object):
-    """
-    Wrapper class for functions.
-    """
-
-    def __init__(self, f, *args, **kwargs):
-        """
-        Initialize!
-        """
-
-        # Need function, optional args and kwargs
-        self.f = f
-        self.args = args
-        self.kwargs = kwargs
-    # end function
-
-
-    def __call__(self, x):
-        """
-        Call the function on some input x.
-        """
-
-        return self.f(x, *self.args, **self.kwargs)
-    # end function
-# end class
-
-
-class functionWrapperArgsOnly(object):
-    """
-    Wrapper class for functions where input are the args.
-    """
-
-    def __init__(self, f, **kwargs):
-        """
-        Initialize!
-        """
-
-        # Need function, optional args and kwargs
-        self.f = f
-        self.kwargs = kwargs
-    # end function
-
-
-    def __call__(self, x):
-        """
-        Call the function on some input x.
-        """
-
-        return self.f(*x, **self.kwargs)
-    # end function
-# end class
 
 
 ################################################################################
@@ -228,7 +167,7 @@ def AGPUtility(theta, y, gp, priorFn):
 
     Returns
     -------
-    u : float
+    util : float
         utility of theta under the gp
     """
 
@@ -275,7 +214,7 @@ def BAPEUtility(theta, y, gp, priorFn):
 
     Returns
     -------
-    u : float
+    util : float
         utility of theta under the gp
     """
 
@@ -291,7 +230,49 @@ def BAPEUtility(theta, y, gp, priorFn):
         raise RuntimeError("ERROR: Need to compute GP before using it!")
 
     try:
-        util = -((2.0*mu + var) + logsubexp(var, 0.0))
+        util = -((2.0 * mu + var) + logsubexp(var, 0.0))
+    except ValueError:
+        print("Invalid util value.  Negative variance or inf mu?")
+        raise ValueError("util: %e. mu: %e. var: %e" % (util, mu, var))
+
+    return util
+# end function
+
+
+def NaiveUtility(theta, y, gp, priorFn):
+    """
+    Naive utility function that is maximized by GP predictions with
+    large loglikelihoods and large uncertainties.
+
+    Parameters
+    ----------
+    theta : array
+        parameters to evaluate
+    y : array
+        y values to condition the gp prediction on.
+    gp : george GP object
+    priorFn : function
+        Function that computes lnPrior probability for a given theta.
+
+    Returns
+    -------
+    util : float
+        utility of theta under the gp
+    """
+
+    # If guess isn't allowed by prior, we don't care what the value of the
+    # utility function is
+    if not np.isfinite(priorFn(theta)):
+        return np.inf
+
+    # Only works if the GP object has been computed, otherwise you messed up
+    if gp.computed:
+        mu, var = gp.predict(y, theta.reshape(1,-1), return_var=True)
+    else:
+        raise RuntimeError("ERROR: Need to compute GP before using it!")
+
+    try:
+        util = -mu * var
     except ValueError:
         print("Invalid util value.  Negative variance or inf mu?")
         raise ValueError("util: %e. mu: %e. var: %e" % (util, mu, var))
@@ -330,7 +311,7 @@ def minimizeObjective(fn, y, gp, sampleFn, priorFn, nMinObjRestarts=5):
         point that minimizes fn
     """
 
-    # Required arguments for the utility function
+    # Arguments for the utility function
     args = (y, gp, priorFn)
 
     # Containers
@@ -340,36 +321,23 @@ def minimizeObjective(fn, y, gp, sampleFn, priorFn, nMinObjRestarts=5):
     # Loop over optimization calls
     for ii in range(nMinObjRestarts):
 
-        # Inputs for each process - guess initial value from prior
-        theta0 = np.array(sampleFn(1)).reshape(1,-1)
-
-        # Solve for theta that maximize fn and is allowed by prior
+        # Keep minimizing until a valid solution is found
         while True:
+            # Guess initial value from prior
+            theta0 = np.array(sampleFn(1)).reshape(1,-1)
 
-            # Mimimze fn, see if prior allows solution
-            try:
-                tmp = minimize(fn, np.array(theta0).reshape(1,-1), args=args,
-                               bounds=None, method="nelder-mead",
-                               options={"adaptive" : True})["x"]
+            tmp = minimize(fn, theta0, args=args, bounds=None,
+                           method="nelder-mead",
+                           options={"adaptive" : True})["x"]
 
-            # ValueError.  Try again.
-            except ValueError:
-                tmp = np.array([np.inf for ii in range(theta0.shape[-1])]).reshape(theta0.shape)
-
-            # Vet answer: must be finite, allowed by prior
-            # Are all values finite?
+            # If solution is finite and allowed by the prior, save!
             if np.all(np.isfinite(tmp)):
-                # Is this point in parameter space allowed by the prior?
                 if np.isfinite(priorFn(tmp)):
+                    # Save solution, function value
+                    res.append(tmp)
+                    objective.append(fn(tmp, *args))
+                    break
 
-                     # Save solution, value of utility fn
-                     res.append(tmp)
-                     objective.append(fn(tmp, *args))
-                     break
-
-            # Optimization failed, try a new theta0 by sampling from the prior
-            theta0 = sampleFn(1)
-
-    # Return minimum value of the objective
+    # Return value that minimizes objective function
     return np.array(res)[np.argmin(objective)]
 # end function

@@ -7,9 +7,6 @@ Test the GMM fitting procedure.
 
 """
 
-from __future__ import (print_function, division, absolute_import,
-                        unicode_literals)
-
 import numpy as np
 from approxposterior import gmmUtils
 
@@ -55,8 +52,6 @@ def testGMMFit():
     errMsg = "ERROR: fitGMM inferred incorrect means!"
     assert(np.allclose(muStetchG, gmm.means_[0]))
     assert(np.allclose(muShiftG, gmm.means_[1]))
-
-    return None
 # end function
 
 if __name__ == "__main__":

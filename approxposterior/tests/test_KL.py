@@ -43,9 +43,9 @@ def testKLApproximation():
     pKwargs = {"loc": 1.2, "scale": 1}
     qKwargs = {"loc" : -1.2, "scale" : 1}
 
-    # Wrap the functions
-    pPdf = ut.functionWrapper(ss.norm.pdf, **pKwargs)
-    qPdf = ut.functionWrapper(ss.norm.pdf, **qKwargs)
+    # Package as lambda functions
+    pPdf = lambda x : ss.norm.pdf(x, **pKwargs)
+    qPdf = lambda x : ss.norm.pdf(x, **qKwargs)
 
     x = ss.norm.rvs(loc=1.2, scale=1, size=10000)
     numerical = ut.klNumerical(x, pPdf, qPdf)
@@ -53,8 +53,6 @@ def testKLApproximation():
     # Answer better be close (small percent difference)
     errMsg = "ERROR: Numerical KL divergence approximation incorrect by >0.5%!"
     assert(100*np.fabs((KLDiff - numerical)/KLDiff) < 0.5), errMsg
-
-    return None
 # end function
 
 if __name__ == "__main__":

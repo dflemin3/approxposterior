@@ -26,7 +26,7 @@ np.random.seed(seed)
 samplerKwargs = {"nwalkers" : 20}        # emcee.EnsembleSampler parameters
 mcmcKwargs = {"iterations" : int(2.0e4)} # emcee.EnsembleSampler.run_mcmc parameters
 
-# Sample initial conditions from prior
+# Sample design points from prior
 theta = lh.rosenbrockSample(m0)
 
 # Evaluate forward model log likelihood + lnprior for each theta
@@ -34,8 +34,8 @@ y = np.zeros(len(theta))
 for ii in range(len(theta)):
     y[ii] = lh.rosenbrockLnlike(theta[ii]) + lh.rosenbrockLnprior(theta[ii])
 
-# Create the the default GP which uses an ExpSquaredKernel
-gp = gpUtils.defaultGP(theta, y)
+# Default gp
+gp = gpUtils.defaultGP(theta, y, white_noise=-10)
 
 # Initialize object using the Wang & Li (2017) Rosenbrock function example
 ap = approx.ApproxPosterior(theta=theta,
@@ -48,8 +48,9 @@ ap = approx.ApproxPosterior(theta=theta,
                             algorithm=algorithm)
 
 # Run!
-ap.run(m=m, nmax=nmax, estBurnin=True, nGPRestarts=5, mcmcKwargs=mcmcKwargs,
-       cache=False, samplerKwargs=samplerKwargs, verbose=True, onlyLastMCMC=True)
+ap.run(m=m, nmax=nmax, estBurnin=True, nGPRestarts=3, mcmcKwargs=mcmcKwargs,
+       cache=False, samplerKwargs=samplerKwargs, verbose=True, thinChains=True,
+       onlyLastMCMC=True)
 
 # Check out the final posterior distribution!
 import corner

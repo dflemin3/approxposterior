@@ -12,7 +12,7 @@ import george
 from approxposterior import utility as ut, gpUtils as gpu, likelihood as lh
 
 
-def testGPOpt():
+def testGPOptAmp():
     """
     Test optimizing the GP hyperparameters.
 
@@ -37,21 +37,61 @@ def testGPOpt():
         y[ii] = lh.rosenbrockLnlike(theta[ii]) + lh.rosenbrockLnprior(theta[ii])
 
     # Set up a gp
-    gp = gpu.defaultGP(theta, y)
+    gp = gpu.defaultGP(theta, y, fitAmp=True)
 
     # Optimize gp using default opt parameters
-    p0 = gp.get_parameter_vector()
-
-    # Try serial computation
-    gp = gpu.optimizeGP(gp, theta, y, seed=seed, nGPRestarts=5, p0=p0)
+    gp = gpu.optimizeGP(gp, theta, y, seed=seed, nGPRestarts=5)
 
     # Extract GP hyperparameters, compare to truth
-    hypeTest = gp.get_parameter_vector()
+    # Ignore mean fit - just focus on scale lengths and amplitude
+    hypeTest = gp.get_parameter_vector()[1:]
 
     errMsg = "ERROR: GP hyperparameters are not close to the true value!"
-    hypeTrue = [-1.58253482, 3.22828608]
-    assert np.allclose(hypeTest, hypeTrue, rtol=1.0e-3), errMsg
+    hypeTrue = [19.99958521, 4.13510287, 10.75990385]
+    assert np.allclose(hypeTest, hypeTrue, rtol=1.0e-2), errMsg
+# end function
+
+
+def testGPOptNoAmp():
+    """
+    Test optimizing the GP hyperparameters.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+    """
+
+    # For reproducibility
+    m0 = 50
+    seed = 57
+    np.random.seed(seed)
+
+    # Randomly sample initial conditions from the prior
+    theta = np.array(lh.rosenbrockSample(m0))
+
+    # Evaluate forward model log likelihood + lnprior for each theta
+    y = np.zeros(len(theta))
+    for ii in range(len(theta)):
+        y[ii] = lh.rosenbrockLnlike(theta[ii]) + lh.rosenbrockLnprior(theta[ii])
+
+    # Set up a gp
+    gp = gpu.defaultGP(theta, y, fitAmp=False)
+
+    # Optimize gp using default opt parameters
+    gp = gpu.optimizeGP(gp, theta, y, seed=seed, nGPRestarts=5)
+
+    # Extract GP hyperparameters, compare to truth
+    # Ignore mean fit - just focus on scale lengths and amplitude
+    hypeTest = gp.get_parameter_vector()[1:]
+    print(hypeTest)
+
+    errMsg = "ERROR: GP hyperparameters are not close to the true value!"
+    hypeTrue = [-1.54256578, 3.24723589]
+    assert np.allclose(hypeTest, hypeTrue, rtol=1.0e-2), errMsg
 # end function
 
 if __name__ == "__main__":
-    testGPOpt()
+    testGPOptAmp()
+    testGPOptNoAmp()
