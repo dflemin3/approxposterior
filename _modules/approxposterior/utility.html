@@ -490,16 +490,22 @@
     <span class="c1"># Loop over optimization calls</span>
     <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nMinObjRestarts</span><span class="p">):</span>
 
-        <span class="c1"># Guess initial value from prior</span>
-        <span class="n">theta0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">sampleFn</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="c1"># Keep minimizing until a valid solution is found</span>
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="c1"># Guess initial value from prior</span>
+            <span class="n">theta0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">sampleFn</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
 
-        <span class="n">tmp</span> <span class="o">=</span> <span class="n">minimize</span><span class="p">(</span><span class="n">fn</span><span class="p">,</span> <span class="n">theta0</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="n">args</span><span class="p">,</span> <span class="n">bounds</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                       <span class="n">method</span><span class="o">=</span><span class="s2">&quot;nelder-mead&quot;</span><span class="p">,</span>
-                       <span class="n">options</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;adaptive&quot;</span> <span class="p">:</span> <span class="kc">True</span><span class="p">})[</span><span class="s2">&quot;x&quot;</span><span class="p">]</span>
+            <span class="n">tmp</span> <span class="o">=</span> <span class="n">minimize</span><span class="p">(</span><span class="n">fn</span><span class="p">,</span> <span class="n">theta0</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="n">args</span><span class="p">,</span> <span class="n">bounds</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                           <span class="n">method</span><span class="o">=</span><span class="s2">&quot;nelder-mead&quot;</span><span class="p">,</span>
+                           <span class="n">options</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;adaptive&quot;</span> <span class="p">:</span> <span class="kc">True</span><span class="p">})[</span><span class="s2">&quot;x&quot;</span><span class="p">]</span>
 
-        <span class="c1"># Save solution, function value</span>
-        <span class="n">res</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tmp</span><span class="p">)</span>
-        <span class="n">objective</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fn</span><span class="p">(</span><span class="n">tmp</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">))</span>
+            <span class="c1"># If solution is finite and allowed by the prior, save!</span>
+            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">tmp</span><span class="p">)):</span>
+                <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">priorFn</span><span class="p">(</span><span class="n">tmp</span><span class="p">)):</span>
+                    <span class="c1"># Save solution, function value</span>
+                    <span class="n">res</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tmp</span><span class="p">)</span>
+                    <span class="n">objective</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fn</span><span class="p">(</span><span class="n">tmp</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">))</span>
+                    <span class="k">break</span>
 
     <span class="c1"># Return value that minimizes objective function</span>
     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">res</span><span class="p">)[</span><span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">objective</span><span class="p">)]</span></div>
