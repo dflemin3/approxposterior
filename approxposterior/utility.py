@@ -13,7 +13,7 @@ __all__ = ["logsubexp", "AGPUtility", "BAPEUtility", "NaiveUtility",
 
 import numpy as np
 from scipy.optimize import minimize
-from scipy.special import erf
+from scipy.stats import norm
 from pyDOE import lhs
 
 
@@ -273,6 +273,67 @@ def NaiveUtility(theta, y, gp, priorFn):
 
     try:
         util = -mu * var
+    except ValueError:
+        print("Invalid util value.  Negative variance or inf mu?")
+        raise ValueError("util: %e. mu: %e. var: %e" % (util, mu, var))
+
+    return util
+# end function
+
+
+def JonesUtility(theta, y, gp, priorFn, zeta=0.01):
+    """
+    Jones utility function - Expected Improvement derived in Jones et al. (1998)
+    EI(x) = E(max(f(theta) - f(thetaBest),0)) where f(thetaBest) is the best
+    value of the function so far and thetaBest is the best design point
+
+    Parameters
+    ----------
+    theta : array
+        parameters to evaluate
+    y : array
+        y values to condition the gp prediction on.
+    gp : george GP object
+    priorFn : function
+        Function that computes lnPrior probability for a given theta.
+    zeta : float (optional)
+        Exploration parameter. Larger zeta leads to more exploration. Defaults
+        to 0.01
+
+    Returns
+    -------
+    util : float
+        utility of theta under the gp
+    """
+
+    # If guess isn't allowed by prior, we don't care what the value of the
+    # utility function is
+    if not np.isfinite(priorFn(theta)):
+        return np.inf
+
+    # Only works if the GP object has been computed, otherwise you messed up
+    if gp.computed:
+        mu, var = gp.predict(y, theta.reshape(1,-1), return_var=True)
+    else:
+        raise RuntimeError("ERROR: Need to compute GP before using it!")
+
+    try:
+        std = np.sqrt(var)
+
+        # Find best value
+        yBest = np.max(y)
+
+        # Intermediate quantity
+        if std > 0:
+            z = (mu - yBest - zeta) / std
+        else:
+            return 0.0
+
+        # Standard normal CDF of z
+        cdf = norm.cdf(z)
+        pdf = norm.pdf(z)
+
+        util = -((mu - yBest - zeta) * cdf + std * pdf)
     except ValueError:
         print("Invalid util value.  Negative variance or inf mu?")
         raise ValueError("util: %e. mu: %e. var: %e" % (util, mu, var))

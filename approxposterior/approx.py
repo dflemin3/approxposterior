@@ -30,10 +30,8 @@ import warnings
 
 class ApproxPosterior(object):
     """
-    Class to approximate Bayesian posterior distributions using the
-    Bayesian Active Posterior Estimation (BAPE) by Kandasamy et al. (2015),
-    the AGP (Adaptive Gaussian Process) by Wang & Li (2017), or a custom
-    naive utility function.
+    Class used to compute approximate Bayesian posterior distributions using a
+    Gaussian process surrogate model
     """
 
     def __init__(self, theta, y, lnprior, lnlike, priorSample, bounds, gp=None,
@@ -111,6 +109,8 @@ class ApproxPosterior(object):
             self.utility = ut.AGPUtility
         elif self.algorithm == "naive":
             self.utility = ut.NaiveUtility
+        elif self.algorithm == "jones":
+            self.utility = ut.JonesUtility
         else:
             errMsg = "Unknown algorithm. Valid options: bape, agp, naive, or alternate."
             raise ValueError(errMsg)
@@ -179,7 +179,7 @@ class ApproxPosterior(object):
     def optGP(self, seed=None, method="powell", options=None, p0=None,
               nGPRestarts=1, gpHyperPrior=gpUtils.defaultHyperPrior):
         """
-        Optimize hyperparameters of object's GP
+        Optimize hyperparameters of approx object's GP
 
         Parameters
         ----------
@@ -213,7 +213,7 @@ class ApproxPosterior(object):
     # end function
 
 
-    def run(self, m=10, nmax=2,seed=None, timing=False, verbose=True,
+    def run(self, m=10, nmax=2, seed=None, timing=False, verbose=True,
             mcmcKwargs=None, samplerKwargs=None, estBurnin=False,
             thinChains=False, runName="apRun", cache=True, gpMethod="powell",
             gpOptions=None, gpP0=None, optGPEveryN=1, nGPRestarts=1,
@@ -360,6 +360,8 @@ class ApproxPosterior(object):
             # 1) Find m new (theta, y) pairs by maximizing utility function,
             # one at a time. Note that computeLnLike = True means new points are
             # saved in self.theta, and self.y, expanding the training set
+            # 2) In this function, GP hyperparameters are reoptimized after every
+            # optGPEveryN new points
             _, _ = self.findNextPoint(computeLnLike=True,
                                       bounds=self.bounds,
                                       seed=seed,
@@ -404,7 +406,7 @@ class ApproxPosterior(object):
                          gpParamNames=self.gp.get_parameter_names(),
                          gpParamValues=self.gp.get_parameter_vector())
 
-            # GP updated: run MCMC sampler to obtain new posterior conditioned
+            # 3) GP updated: run MCMC sampler to obtain new posterior conditioned
             # on {theta_n, log(L_t*prior)}. Use emcee to obtain posterior dist.
 
             # If user only wants to run the MCMC at the end and it's not the
@@ -500,7 +502,8 @@ class ApproxPosterior(object):
             How often to optimize the GP hyperparameters.  Defaults to
             re-optimizing everytime a new design point is found, e.g. every time
             a new (theta, y) pair is added to the training set.  Increase this
-            parameter if approxposterior is running slowly.
+            parameter if approxposterior is running slowly. NB: GP hyperparameters
+            are optimized *only* if computeLnLike == True
         gpMethod : str (optional)
             scipy.optimize.minimize method used when optimized GP hyperparameters.
             Defaults to None, which is powell, and it usually works.
@@ -593,7 +596,7 @@ class ApproxPosterior(object):
                 self.theta = np.vstack([self.theta, np.array(thetaT)])
                 self.y = np.hstack([self.y, yT])
 
-                # 3) Re-optimize GP with new point, optimize
+                # Re-optimize GP with new point, optimize
 
                 # Re-conpute GP's covariance matrix since self.theta's shape changed
                 try:
