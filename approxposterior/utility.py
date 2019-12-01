@@ -342,7 +342,8 @@ def JonesUtility(theta, y, gp, priorFn, zeta=0.01):
 # end function
 
 
-def minimizeObjective(fn, y, gp, sampleFn, priorFn, nMinObjRestarts=5):
+def minimizeObjective(fn, y, gp, sampleFn, priorFn, nMinObjRestarts=5,
+                      method="nelder-mead", options=None):
     """
     Find point that minimizes fn for a gaussian process gp conditioned on y,
     the data, and is allowed by the prior, priorFn.  PriorFn is required as it
@@ -365,6 +366,11 @@ def minimizeObjective(fn, y, gp, sampleFn, priorFn, nMinObjRestarts=5):
         Number of times to restart minimizing -utility function to select
         next point to improve GP performance.  Defaults to 5.  Increase this
         number of the point selection is not working well.
+    method : str (optional)
+        scipy.optimize.minimize method.  Defaults to nelder-mead.
+    options : dict (optional)
+        kwargs for the scipy.optimize.minimize function.  Defaults to None,
+        but if method == "nelder-mead", options = {"adaptive" : True}
 
     Returns
     -------
@@ -374,6 +380,10 @@ def minimizeObjective(fn, y, gp, sampleFn, priorFn, nMinObjRestarts=5):
 
     # Arguments for the utility function
     args = (y, gp, priorFn)
+
+    # Initialize options
+    if str(method).lower() == "nelder-mead" and options is None:
+        options = {"adaptive" : True}
 
     # Containers
     res = []
@@ -388,8 +398,7 @@ def minimizeObjective(fn, y, gp, sampleFn, priorFn, nMinObjRestarts=5):
             theta0 = np.array(sampleFn(1)).reshape(1,-1)
 
             tmp = minimize(fn, theta0, args=args, bounds=None,
-                           method="nelder-mead",
-                           options={"adaptive" : True})["x"]
+                           method=method, options=options)["x"]
 
             # If solution is finite and allowed by the prior, save!
             if np.all(np.isfinite(tmp)):

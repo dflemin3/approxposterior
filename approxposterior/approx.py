@@ -86,9 +86,9 @@ class ApproxPosterior(object):
             raise ValueError("All theta and y values must be finite!")
 
         # Ensure bounds has correct shape
-        if len(bounds) != self.theta.shape[-1]:
+        if len(bounds) != self.theta.ndim:
             err_msg = "ERROR: bounds provided but len(bounds) != ndim.\n"
-            err_msg += "ndim = %d, len(bounds) = %d" % (self.theta.shape[-1], len(bounds))
+            err_msg += "ndim = %d, len(bounds) = %d" % (self.theta.ndim, len(bounds))
             raise ValueError(err_msg)
         else:
             self.bounds = bounds
@@ -219,6 +219,7 @@ class ApproxPosterior(object):
             gpOptions=None, gpP0=None, optGPEveryN=1, nGPRestarts=1,
             nMinObjRestarts=5, onlyLastMCMC=False, initGPOpt=True,
             gpHyperPrior=gpUtils.defaultHyperPrior,
+            minObjMethod="nelder-mead", minObjOptions=None,
             dropInitialTraining=False, args=None, **kwargs):
         """
         Core algorithm to estimate the posterior distribution via Gaussian
@@ -311,6 +312,13 @@ class ApproxPosterior(object):
             training set to identify the high likelihood regions while not needing
             to regress on low-likelihood/useless points in the initial training
             set. Defaults to False.
+        minObjMethod : str (optional)
+            scipy.optimize.minimize method used when optimizing
+            utility functions for point selection.  Defaults to nelder-mead.
+        minObjOptions : dict (optional)
+            kwargs for the scipy.optimize.minimize function used when optimizing
+            utility functions for point selection.  Defaults to None,
+            but if method == "nelder-mead", options = {"adaptive" : True}
         args : iterable (optional)
             Arguments for user-specified loglikelihood function that calls the
             forward model. Defaults to None.
@@ -373,6 +381,8 @@ class ApproxPosterior(object):
                                       optGPEveryN=optGPEveryN,
                                       numNewPoints=m,
                                       gpHyperPrior=gpHyperPrior,
+                                      minObjMethod=minObjMethod,
+                                      minObjOptions=minObjOptions,
                                       runName=runName,
                                       args=args,
                                       **kwargs)
@@ -449,9 +459,10 @@ class ApproxPosterior(object):
     # end function
 
 
-    def findNextPoint(self, computeLnLike=True, bounds=None, gpMethod=None,
+    def findNextPoint(self, computeLnLike=True, bounds=None, gpMethod="powell",
                       seed=None, cache=True, gpOptions=None, gpP0=None,
                       args=None, nGPRestarts=1, nMinObjRestarts=5,
+                      minObjMethod="nelder-mead", minObjOptions=None,
                       runName="apRun", numNewPoints=1, optGPEveryN=1,
                       gpHyperPrior=gpUtils.defaultHyperPrior, **kwargs):
         """
@@ -529,6 +540,13 @@ class ApproxPosterior(object):
             hyperparameter is within the range [-20,20].
         numNewPoints : int (optional)
             Number of new points to find. Defaults to 1.
+        minObjMethod : str (optional)
+            scipy.optimize.minimize method used when optimizing
+            utility functions for point selection.  Defaults to nelder-mead.
+        minObjOptions : dict (optional)
+            kwargs for the scipy.optimize.minimize function used when optimizing
+            utility functions for point selection.  Defaults to None,
+            but if method == "nelder-mead", options = {"adaptive" : True}
         args : iterable (optional)
             Arguments for user-specified loglikelihood function that calls the
             forward model. Defaults to None.
@@ -572,7 +590,9 @@ class ApproxPosterior(object):
             thetaT = ut.minimizeObjective(self.utility, self.y, self.gp,
                                           sampleFn=self.priorSample,
                                           priorFn=self._lnprior,
-                                          nMinObjRestarts=nMinObjRestarts)
+                                          nMinObjRestarts=nMinObjRestarts,
+                                          method=minObjMethod,
+                                          options=minObjOptions)
 
             # Save new thetaT
             newTheta.append(thetaT)
@@ -593,7 +613,10 @@ class ApproxPosterior(object):
                 newY.append(yT)
 
                 # Valid theta, y found. Join theta, y arrays with new points.
-                self.theta = np.vstack([self.theta, np.array(thetaT)])
+                if self.theta.ndim > 1:
+                    self.theta = np.vstack([self.theta, np.array(thetaT)])
+                else:
+                    self.theta = np.hstack([self.theta, thetaT])
                 self.y = np.hstack([self.y, yT])
 
                 # Re-optimize GP with new point, optimize
@@ -643,9 +666,9 @@ class ApproxPosterior(object):
                 newY = newY[0]
 
         if computeLnLike:
-            return newTheta, newY
+            return np.asarray(newTheta), np.asarray(newY)
         else:
-            return newTheta
+            return np.asarray(newTheta)
     # end function
 
 
@@ -808,7 +831,7 @@ class ApproxPosterior(object):
         # Initialize theta0 if not provided. If provided, validate it
         if theta0 is not None:
             theta0 = np.array(theta0).squeeze()
-            assert theta0.shape == theta.shape[-1]
+            assert theta0.ndim == self.theta.ndim
 
         # Figure out if we can supply bounds
         if str(method).lower() in ["l-bfgs-b", "tnc"]:

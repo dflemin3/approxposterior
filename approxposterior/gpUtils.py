@@ -86,7 +86,7 @@ def _nll(p, gp, y, priorFn=None):
 # end function
 
 
-def _grad_nll(p, gp, y):
+def _grad_nll(p, gp, y, priorFn=None):
     """
     Given parameters and data, compute the gradient of the negative log
     likelihood of the data under the george Gaussian process.
@@ -98,12 +98,19 @@ def _grad_nll(p, gp, y):
     gp : george.GP
     y : array
         data to condition GP on
+    priorFn : callable
+        Prior function for the GP hyperparameters, p
 
     Returns
     -------
     gnll : float
         gradient of the negative log-likelihood of y under gp
     """
+
+    # Apply priors on GP hyperparameters
+    if priorFn is not None:
+        if not np.isfinite(priorFn(p)):
+            return np.inf
 
     # Negative gradient of log likelihood
     return -gp.grad_log_likelihood(y, quiet=True)
@@ -143,13 +150,18 @@ def defaultGP(theta, y, order=None, white_noise=-10, fitAmp=False):
         matrix.
     """
 
+    # Tidy up the shapes and determine dimensionality
+    theta = np.array(theta).squeeze()
+    y = np.array(y).squeeze()
+    ndim = theta.ndim
+
     # Guess initial metric, or scale length of the covariances (must be > 0)
-    initialMetric = np.fabs(np.random.randn(theta.shape[-1]))
+    initialMetric = np.fabs(np.random.randn(ndim))
 
     # Create kernel: We'll model coveriances in loglikelihood space using a
     # ndim-dimensional Squared Expoential Kernel
     kernel = george.kernels.ExpSquaredKernel(metric=initialMetric,
-                                             ndim=theta.shape[-1])
+                                             ndim=ndim)
 
     # Include an amplitude term?
     if fitAmp:
@@ -161,7 +173,7 @@ def defaultGP(theta, y, order=None, white_noise=-10, fitAmp=False):
         kernel = kernel + (np.var(y)/10.0) * george.kernels.LinearKernel(log_gamma2=initialMetric[0],
                                                                          order=order,
                                                                          bounds=None,
-                                                                         ndim=theta.shape[-1])
+                                                                         ndim=ndim)
 
     # Create GP and compute the kernel, aka factor the covariance matrix
     gp = george.GP(kernel=kernel, fit_mean=True, mean=np.median(y),
