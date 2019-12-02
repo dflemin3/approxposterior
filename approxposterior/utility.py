@@ -342,14 +342,18 @@ def JonesUtility(theta, y, gp, priorFn, zeta=0.01):
 # end function
 
 
-def minimizeObjective(fn, y, gp, sampleFn, priorFn, nMinObjRestarts=5,
+def minimizeObjective(fn, y, gp, sampleFn, priorFn, nRestarts=5,
                       method="nelder-mead", options=None, bounds=None,
-                      theta0=None, args=None):
+                      theta0=None, args=None, maxIters=100):
     """
-    Find point that minimizes fn for a gaussian process gp conditioned on y,
-    the data, and is allowed by the prior, priorFn.  PriorFn is required as it
-    helps to select against points with non-finite likelihoods, e.g. NaNs or
-    infs.  This is required as the GP can only train on finite values.
+    Minimize some arbitrary function, fn. This function is most useful when
+    evaluating fn requires a Gaussian process model, gp. For example, this
+    function can be used to find the point that minimizes a utility fn for a gp
+    conditioned on y, the data, and is allowed by the prior, priorFn.
+
+    PriorFn is required as it helps to select against points with non-finite
+    likelihoods, e.g. NaNs or infs.  This is required as the GP can only train
+    on finite values.
 
     Parameters
     ----------
@@ -378,6 +382,10 @@ def minimizeObjective(fn, y, gp, sampleFn, priorFn, nMinObjRestarts=5,
     args : iterable (optional)
         Arguments for user-specified function that this function will minimize.
         Defaults to None.
+    maxIters (int) (optional)
+        Maximum number of iterations to try restarting optimization if the
+        solution isn't finite and/nor allowed by the prior function. Defaults to
+        100.
 
     Returns
     -------
@@ -406,7 +414,7 @@ def minimizeObjective(fn, y, gp, sampleFn, priorFn, nMinObjRestarts=5,
     objective = []
 
     # Loop over optimization calls
-    for ii in range(nMinObjRestarts):
+    for ii in range(nRestarts):
 
         # Guess initial value from prior
         if theta0 is None:
@@ -416,7 +424,15 @@ def minimizeObjective(fn, y, gp, sampleFn, priorFn, nMinObjRestarts=5,
             t0 = np.asarray(theta0) + np.min(theta0) * 1.0e-3 * np.random.randn(len(theta0))
 
         # Keep minimizing until a valid solution is found
+        ii = 0
         while True:
+
+            # Too many iterations
+            if ii >= maxIters:
+                errMsg = "ERROR: Cannot find a valid solution. Current iterations: %d\n" % ii
+                errMsg += "Maximum iterations: %d\n" % maxIters
+                raise RuntimeError(errMsg)
+
             # Minimize the function
             tmp = minimize(fn, t0, args=args, bounds=bounds,
                            method=method, options=options)["x"]
@@ -432,6 +448,8 @@ def minimizeObjective(fn, y, gp, sampleFn, priorFn, nMinObjRestarts=5,
             # If we're here, the solution didn't work. Try again with a new
             # sample from the prior
             t0 = np.array(sampleFn(1)).reshape(1,-1)
+
+            ii += 1
         # end loop
 
     # Return value that minimizes objective function out of all minimizations

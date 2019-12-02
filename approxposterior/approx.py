@@ -590,7 +590,7 @@ class ApproxPosterior(object):
             thetaT, uT = ut.minimizeObjective(self.utility, self.y, self.gp,
                                               sampleFn=self.priorSample,
                                               priorFn=self._lnprior,
-                                              nMinObjRestarts=nMinObjRestarts,
+                                              nRestarts=nMinObjRestarts,
                                               method=minObjMethod,
                                               options=minObjOptions,
                                               bounds=bounds,
@@ -827,7 +827,7 @@ class ApproxPosterior(object):
         -------
         MAP : iterable
             maximum a posteriori estimate
-        fn : float
+        MAPVal : float
             Mean of GP predictive function at MAP solution
         """
 
@@ -839,14 +839,8 @@ class ApproxPosterior(object):
             # Guess current minimum of negative y
             theta0 = self.theta[np.argmin(-self.y)]
 
-        # Figure out if we can supply bounds
-        if str(method).lower() in ["l-bfgs-b", "tnc"]:
-            bounds = self.bounds
-        else:
-            bounds = None
-
         # Initialize option if method is nelder-mead and options not provided
-        if str(method.lower()) == "nelder-mead":
+        if str(method).lower() == "nelder-mead":
             if options is None:
                 options = {"adaptive" : True}
 
@@ -864,13 +858,12 @@ class ApproxPosterior(object):
 
         # Minimize values predicted by GP, i.e. find minimum of mean of GP's
         # conditional posterior distribution
-        bestTheta, bestVal = ut.minimizeObjective(fn, self.y, self.gp,
-                                                  self.priorSample, self._lnprior,
-                                                  nMinObjRestarts=nRestarts,
-                                                  method=method, options=options,
-                                                  bounds=bounds, theta0=theta0,
-                                                  args=None)
+        MAP, MAPVal = ut.minimizeObjective(fn, self.y, self.gp,
+                                           self.priorSample, self._lnprior,
+                                           nRestarts=nRestarts, args=None,
+                                           method=method, options=options,
+                                           bounds=self.bounds, theta0=theta0)
 
-        return bestTheta, bestVal
+        return MAP, MAPVal
     # end function
 # end class
