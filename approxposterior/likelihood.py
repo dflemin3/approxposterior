@@ -135,7 +135,7 @@ def testBOFnSample(n=1):
         n x 1 array of floats samples from the prior
     """
 
-    return np.random.uniform(low=-2, high=1, size=(n,1)).squeeze()
+    return np.random.uniform(low=-1, high=2, size=(n,1)).squeeze()
 # end function
 
 
@@ -153,8 +153,8 @@ def testBOFnLnPrior(theta):
     l : float
         log prior
     """
-
-    if theta < -2 or theta > 1:
+    
+    if theta < -1 or theta > 2:
         return -np.inf
     else:
         return 0.0

@@ -343,7 +343,8 @@ def JonesUtility(theta, y, gp, priorFn, zeta=0.01):
 
 
 def minimizeObjective(fn, y, gp, sampleFn, priorFn, nMinObjRestarts=5,
-                      method="nelder-mead", options=None):
+                      method="nelder-mead", options=None, bounds=None,
+                      theta0=None, args=None):
     """
     Find point that minimizes fn for a gaussian process gp conditioned on y,
     the data, and is allowed by the prior, priorFn.  PriorFn is required as it
@@ -371,19 +372,34 @@ def minimizeObjective(fn, y, gp, sampleFn, priorFn, nMinObjRestarts=5,
     options : dict (optional)
         kwargs for the scipy.optimize.minimize function.  Defaults to None,
         but if method == "nelder-mead", options = {"adaptive" : True}
+    theta0 : float/iterable (optional)
+        Initial guess for optimization. Defaults to None, which draws a sample
+        from the prior function using sampleFn.
+    args : iterable (optional)
+        Arguments for user-specified function that this function will minimize.
+        Defaults to None.
 
     Returns
     -------
-    theta : (1 x n_dims)
+    thetaBest : (1 x n_dims)
         point that minimizes fn
+    fnBest : float
+        fn(thetaBest)
     """
-
-    # Arguments for the utility function
-    args = (y, gp, priorFn)
 
     # Initialize options
     if str(method).lower() == "nelder-mead" and options is None:
         options = {"adaptive" : True}
+
+    # Minimize GP nll, save result, evaluate marginal likelihood
+    if str(method).lower() in [" l-bfgs-b", "tnc"]:
+        pass
+    # Bounds not allowed
+    else:
+        bounds = None
+
+    if args is None:
+        args = ()
 
     # Containers
     res = []
@@ -392,15 +408,20 @@ def minimizeObjective(fn, y, gp, sampleFn, priorFn, nMinObjRestarts=5,
     # Loop over optimization calls
     for ii in range(nMinObjRestarts):
 
+        # Guess initial value from prior
+        if theta0 is None:
+            #t0 = np.array([1,1]).reshape(1,-1)
+            t0 = np.asarray(sampleFn(1)).reshape(1,-1)
+        else:
+            t0 = np.asarray(theta0) + np.min(theta0) * 1.0e-3 * np.random.randn(len(theta0))
+
         # Keep minimizing until a valid solution is found
         while True:
-            # Guess initial value from prior
-            theta0 = np.array(sampleFn(1)).reshape(1,-1)
-
-            tmp = minimize(fn, theta0, args=args, bounds=None,
+            # Minimize the function
+            tmp = minimize(fn, t0, args=args, bounds=bounds,
                            method=method, options=options)["x"]
 
-            # If solution is finite and allowed by the prior, save!
+            # If solution is finite and allowed by the prior, save
             if np.all(np.isfinite(tmp)):
                 if np.isfinite(priorFn(tmp)):
                     # Save solution, function value
@@ -408,6 +429,12 @@ def minimizeObjective(fn, y, gp, sampleFn, priorFn, nMinObjRestarts=5,
                     objective.append(fn(tmp, *args))
                     break
 
-    # Return value that minimizes objective function
-    return np.array(res)[np.argmin(objective)]
+            # If we're here, the solution didn't work. Try again with a new
+            # sample from the prior
+            t0 = np.array(sampleFn(1)).reshape(1,-1)
+        # end loop
+
+    # Return value that minimizes objective function out of all minimizations
+    bestInd = np.argmin(objective)
+    return np.array(res)[bestInd], objective[bestInd]
 # end function

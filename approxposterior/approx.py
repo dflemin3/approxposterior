@@ -587,12 +587,15 @@ class ApproxPosterior(object):
                     self.utility = ut.BAPEUtility
 
             # Find new theta that produces a valid loglikelihood
-            thetaT = ut.minimizeObjective(self.utility, self.y, self.gp,
-                                          sampleFn=self.priorSample,
-                                          priorFn=self._lnprior,
-                                          nMinObjRestarts=nMinObjRestarts,
-                                          method=minObjMethod,
-                                          options=minObjOptions)
+            thetaT, uT = ut.minimizeObjective(self.utility, self.y, self.gp,
+                                              sampleFn=self.priorSample,
+                                              priorFn=self._lnprior,
+                                              nMinObjRestarts=nMinObjRestarts,
+                                              method=minObjMethod,
+                                              options=minObjOptions,
+                                              bounds=bounds,
+                                              theta0=None,
+                                              args=(self.y,self.gp,self._lnprior))
 
             # Save new thetaT
             newTheta.append(thetaT)
@@ -832,6 +835,9 @@ class ApproxPosterior(object):
         if theta0 is not None:
             theta0 = np.array(theta0).squeeze()
             assert theta0.ndim == self.theta.ndim
+        else:
+            # Guess current minimum of negative y
+            theta0 = self.theta[np.argmin(-self.y)]
 
         # Figure out if we can supply bounds
         if str(method).lower() in ["l-bfgs-b", "tnc"]:
@@ -856,31 +862,15 @@ class ApproxPosterior(object):
             else:
                 return -(self._gpll(x)[0])
 
-        # Loop over optimization calls
-        for ii in range(nRestarts):
-            # Keep minimizing until a valid solution is found
-            while True:
-                # Guess initial point
-                if theta0 is None:
-                    t0 = self.theta[np.argmax(self.y)] + 1.0e-3 * np.random.randn()
-                else:
-                    # Perturb user-supplied guess
-                    t0 = np.array(theta0) + np.min(theta0) * 1.0e-3 * np.random.randn(len(theta0))
+        # Minimize values predicted by GP, i.e. find minimum of mean of GP's
+        # conditional posterior distribution
+        bestTheta, bestVal = ut.minimizeObjective(fn, self.y, self.gp,
+                                                  self.priorSample, self._lnprior,
+                                                  nMinObjRestarts=nRestarts,
+                                                  method=method, options=options,
+                                                  bounds=bounds, theta0=theta0,
+                                                  args=None)
 
-                tmp = minimize(fn, t0, method=method, options=options,
-                               bounds=bounds)["x"]
-
-                # If solution is finite and allowed by the prior, save!
-                if np.all(np.isfinite(tmp)):
-                    if np.isfinite(self._lnprior(tmp)):
-                        # Save solution, function value
-                        res.append(tmp)
-                        vals.append(fn(tmp))
-                        break
-
-        # Return best answer
-        bestInd = np.argmin(vals)
-
-        return res[bestInd], vals[bestInd]
+        return bestTheta, bestVal
     # end function
 # end class
