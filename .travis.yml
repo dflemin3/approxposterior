@@ -33,7 +33,7 @@ install:
 
 script:
   - mkdir -p $TEST_DIR
-  - py.test -v --cov approxposterior
+  - cd $TEST_DIR && python -m pytest --pyargs approxposterior --doctest-modules --cov
 
 after_success:
   - coveralls
