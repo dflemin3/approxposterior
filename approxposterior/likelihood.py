@@ -153,8 +153,8 @@ def testBOFnLnPrior(theta):
     l : float
         log prior
     """
-    
-    if theta < -1 or theta > 2:
+
+    if np.any(theta < -1) or np.any(theta > 2):
         return -np.inf
     else:
         return 0.0

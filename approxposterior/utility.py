@@ -8,7 +8,7 @@ or computing KL divergences, and the GP utility functions, e.g. the bape utility
 """
 
 # Tell module what it's allowed to import
-__all__ = ["logsubexp", "AGPUtility", "BAPEUtility", "NaiveUtility",
+__all__ = ["logsubexp", "AGPUtility", "BAPEUtility", "JonesUtility",
            "minimizeObjective", "klNumerical", "latinHypercubeSampling"]
 
 import numpy as np
@@ -239,48 +239,6 @@ def BAPEUtility(theta, y, gp, priorFn):
 # end function
 
 
-def NaiveUtility(theta, y, gp, priorFn):
-    """
-    Naive utility function that is maximized by GP predictions with
-    large loglikelihoods and large uncertainties.
-
-    Parameters
-    ----------
-    theta : array
-        parameters to evaluate
-    y : array
-        y values to condition the gp prediction on.
-    gp : george GP object
-    priorFn : function
-        Function that computes lnPrior probability for a given theta.
-
-    Returns
-    -------
-    util : float
-        utility of theta under the gp
-    """
-
-    # If guess isn't allowed by prior, we don't care what the value of the
-    # utility function is
-    if not np.isfinite(priorFn(theta)):
-        return np.inf
-
-    # Only works if the GP object has been computed, otherwise you messed up
-    if gp.computed:
-        mu, var = gp.predict(y, theta.reshape(1,-1), return_var=True)
-    else:
-        raise RuntimeError("ERROR: Need to compute GP before using it!")
-
-    try:
-        util = -mu * var
-    except ValueError:
-        print("Invalid util value.  Negative variance or inf mu?")
-        raise ValueError("util: %e. mu: %e. var: %e" % (util, mu, var))
-
-    return util
-# end function
-
-
 def JonesUtility(theta, y, gp, priorFn, zeta=0.01):
     """
     Jones utility function - Expected Improvement derived in Jones et al. (1998)
@@ -409,6 +367,13 @@ def minimizeObjective(fn, y, gp, sampleFn, priorFn, nRestarts=5,
     if args is None:
         args = ()
 
+    # Ensure theta0 is in the proper form, determine its dimensionality
+    if theta0 is not None:
+        theta0 = np.asarray(theta0).squeeze()
+        ndim = theta0.ndim
+        if ndim <= 0:
+            ndim = 1
+
     # Containers
     res = []
     objective = []
@@ -418,10 +383,9 @@ def minimizeObjective(fn, y, gp, sampleFn, priorFn, nRestarts=5,
 
         # Guess initial value from prior
         if theta0 is None:
-            #t0 = np.array([1,1]).reshape(1,-1)
             t0 = np.asarray(sampleFn(1)).reshape(1,-1)
         else:
-            t0 = np.asarray(theta0) + np.min(theta0) * 1.0e-3 * np.random.randn(len(theta0))
+            t0 = theta0 + np.min(theta0) * 1.0e-3 * np.random.randn(ndim)
 
         # Keep minimizing until a valid solution is found
         ii = 0

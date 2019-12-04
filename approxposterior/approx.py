@@ -107,8 +107,6 @@ class ApproxPosterior(object):
         elif self.algorithm == "alternate":
             # If alternate, AGP on even, BAPE on odd
             self.utility = ut.AGPUtility
-        elif self.algorithm == "naive":
-            self.utility = ut.NaiveUtility
         elif self.algorithm == "jones":
             self.utility = ut.JonesUtility
         else:
@@ -219,8 +217,7 @@ class ApproxPosterior(object):
             gpOptions=None, gpP0=None, optGPEveryN=1, nGPRestarts=1,
             nMinObjRestarts=5, onlyLastMCMC=False, initGPOpt=True,
             gpHyperPrior=gpUtils.defaultHyperPrior,
-            minObjMethod="nelder-mead", minObjOptions=None,
-            dropInitialTraining=False, args=None, **kwargs):
+            minObjMethod="nelder-mead", minObjOptions=None, args=None, **kwargs):
         """
         Core algorithm to estimate the posterior distribution via Gaussian
         Process regression to the joint distribution for the forward model
@@ -305,13 +302,6 @@ class ApproxPosterior(object):
             Prior function for GP hyperparameters. Defaults to the defaultHyperPrior fn.
             This function asserts that the mean must be negative and that each log
             hyperparameter is within the range [-20,20].
-        dropInitialTraining : bool (optional)
-            Whether or not to drop the initial training set and only regress
-            the GP on points it chose after learning on the initial training set.
-            This can be useful in cases where approxposterior uses the initial
-            training set to identify the high likelihood regions while not needing
-            to regress on low-likelihood/useless points in the initial training
-            set. Defaults to False.
         minObjMethod : str (optional)
             scipy.optimize.minimize method used when optimizing
             utility functions for point selection.  Defaults to nelder-mead.
@@ -329,11 +319,6 @@ class ApproxPosterior(object):
         Returns
         -------
         """
-
-        # If dropping initial training set after 1st round of point selection,
-        # save length on initial training set
-        if dropInitialTraining:
-            lenToDrop = len(self.y)
 
         # Save forward model input-output pairs since they take forever to
         # calculate and we want them around in case something weird happens.
@@ -386,26 +371,6 @@ class ApproxPosterior(object):
                                       runName=runName,
                                       args=args,
                                       **kwargs)
-
-            # Drop the initial training set after 1st round of point selection?
-            if dropInitialTraining and nn == 0:
-                self.theta = self.theta[lenToDrop:,:]
-                self.y = self.y[lenToDrop:]
-
-                # Create GP using same kernel, but new theta
-                currentHype = self.gp.get_parameter_vector()
-                self.gp = george.GP(kernel=self.gp.kernel, fit_mean=True,
-                                    mean=self.gp.mean,
-                                    white_noise=self.gp.white_noise,
-                                    fit_white_noise=False)
-                self.gp.set_parameter_vector(currentHype)
-                self.gp.compute(self.theta)
-
-                # Re-optimize GP hyperparameters since the training set just
-                # dramatically changed
-                self.optGP(seed=seed, method=gpMethod, options=gpOptions,
-                           p0=gpP0, nGPRestarts=nGPRestarts,
-                           gpHyperPrior=gpHyperPrior)
 
             if timing:
                 self.trainingTime.append(time.time() - start)
@@ -638,7 +603,7 @@ class ApproxPosterior(object):
                     self.gp.compute(self.theta)
 
                     # Reoptimize GP hyperparameters?
-                    if ii % optGPEveryN == 0 and ii > 0:
+                    if ii % optGPEveryN == 0:
                         self.optGP(seed=seed, method=gpMethod, options=gpOptions,
                                    p0=gpP0, nGPRestarts=nGPRestarts,
                                    gpHyperPrior=gpHyperPrior)
@@ -848,7 +813,7 @@ class ApproxPosterior(object):
         res = []
         vals = []
 
-        # Set optimization fn for MAP
+        # Set optimization fn for MAP (note - because we're minimizing)
         def fn(x):
             # If not allowed by the prior, reject!
             if not np.isfinite(self._lnprior(x)):
@@ -864,6 +829,7 @@ class ApproxPosterior(object):
                                            method=method, options=options,
                                            bounds=self.bounds, theta0=theta0)
 
-        return MAP, MAPVal
+        # Note: return -MAPVal since we minimized function
+        return MAP, -MAPVal
     # end function
 # end class

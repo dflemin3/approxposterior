@@ -45,7 +45,7 @@ ap = approx.ApproxPosterior(theta=theta,
 ap.optGP(seed=seed, method="powell", nGPRestarts=1)
 
 # Find MAP solution and function value at MAP
-MAP, val = ap.findMAP(nRestarts=1)
+MAP, val = ap.findMAP(nRestarts=5)
 
 # Plot MAP solution on top of grid of Rosenbrock function evaluations
 import matplotlib.pyplot as plt
@@ -61,8 +61,8 @@ for ii in range(100):
         rosen[ii,jj] = lh.rosenbrockLnlike([arr[ii], arr[jj]])
 
 # Plot Rosenbrock function (rescale because it varies by several orders of magnitude)
-ax.imshow(-np.log(-rosen).T, origin="lower", aspect="auto", interpolation="nearest",
-          extent=[-5, 5, -5, 5], zorder=0)
+ax.imshow(np.log(-rosen).T, origin="lower", aspect="auto", interpolation="nearest",
+          extent=[-5, 5, -5, 5], zorder=0, cmap="viridis_r")
 
 # Plot truth
 ax.axhline(1, lw=2, ls=":", color="white", zorder=1)

@@ -18,6 +18,8 @@
 <img src="https://anaconda.org/conda-forge/approxposterior/badges/installer/conda.svg"> </a>
 <a href="https://anaconda.org/conda-forge/approxposterior">
 <img src="https://anaconda.org/conda-forge/approxposterior/badges/downloads.svg"> </a>
+<a href='https://coveralls.io/github/dflemin3/approxposterior?branch=master'>
+<img src='https://coveralls.io/repos/github/dflemin3/approxposterior/badge.svg?branch=master' alt='Coverage Status' /></a>
 </p>
 
 Overview
