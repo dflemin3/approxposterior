@@ -1,0 +1,8 @@
+[report]
+omit =
+    doc/*
+    dev/*
+    examples/*
+    paper/*
+    approxposterior/tests/*
+    *__init__*
