@@ -8,6 +8,7 @@ Test the GMM fitting procedure.
 """
 
 import numpy as np
+import sys
 from approxposterior import gmmUtils
 
 def testGMMFit():
@@ -47,11 +48,19 @@ def testGMMFit():
     # Did it infer 2 components for data generated from two disjoint dists?
     errMsg = "ERROR: fitGMM did not infer 2 components! n_components = %d" % gmm.n_components
     assert(2 == gmm.n_components), errMsg
-    
+
+    # Behavior is different for diff versions of python - so account for that!
+    if sys.version_info[1] <= 5:
+        stretchInd = 0
+        shiftInd = 1
+    else:
+        stretchInd = 1
+        shiftInd = 0
+
     # Ensure that the true and inferred Gaussian means are the same
     errMsg = "ERROR: fitGMM inferred incorrect means!"
-    assert(np.allclose(muStetchG, gmm.means_[1]))
-    assert(np.allclose(muShiftG, gmm.means_[0]))
+    assert(np.allclose(muStetchG, gmm.means_[stretchInd]))
+    assert(np.allclose(muShiftG, gmm.means_[shiftInd]))
 # end function
 
 if __name__ == "__main__":
