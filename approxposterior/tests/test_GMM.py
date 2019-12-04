@@ -47,11 +47,11 @@ def testGMMFit():
     # Did it infer 2 components for data generated from two disjoint dists?
     errMsg = "ERROR: fitGMM did not infer 2 components! n_components = %d" % gmm.n_components
     assert(2 == gmm.n_components), errMsg
-
+    
     # Ensure that the true and inferred Gaussian means are the same
     errMsg = "ERROR: fitGMM inferred incorrect means!"
-    assert(np.allclose(muStetchG, gmm.means_[0]))
-    assert(np.allclose(muShiftG, gmm.means_[1]))
+    assert(np.allclose(muStetchG, gmm.means_[1]))
+    assert(np.allclose(muShiftG, gmm.means_[0]))
 # end function
 
 if __name__ == "__main__":
