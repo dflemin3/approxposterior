@@ -27,7 +27,7 @@ before_install:
 install:
   - conda create --yes -n test python=$TRAVIS_PYTHON_VERSION
   - source activate test
-  - conda install -c conda-forge --yes numpy scipy scikit-learn corner pytest pybind11 george h5py pyDOE emcee pytest-cov
+  - conda install -c conda-forge --yes numpy scipy scikit-learn corner pytest pybind11 george h5py emcee pytest-cov
   - pip install coveralls
   - python setup.py install
 
