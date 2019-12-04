@@ -1,6 +1,7 @@
 *__pycache__/
 *htmlcov
 *.coverage
+*.coverage.*
 approxposterior.egg-info/*
 build/*
 dist/*
