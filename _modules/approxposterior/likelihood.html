@@ -178,7 +178,7 @@
 
 <span class="c1"># Tell module what it&#39;s allowed to import</span>
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;rosenbrockLnlike&quot;</span><span class="p">,</span> <span class="s2">&quot;rosenbrockLnprior&quot;</span><span class="p">,</span><span class="s2">&quot;rosenbrockSample&quot;</span><span class="p">,</span>
-           <span class="s2">&quot;rosenbrockLnprob&quot;</span><span class="p">]</span>
+           <span class="s2">&quot;rosenbrockLnprob&quot;</span><span class="p">,</span> <span class="s2">&quot;testBOFn&quot;</span><span class="p">]</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">scipy.optimize</span> <span class="k">import</span> <span class="n">rosen</span>
@@ -276,6 +276,58 @@
 
     <span class="k">return</span> <span class="n">lp</span> <span class="o">+</span> <span class="n">rosenbrockLnlike</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span></div>
 <span class="c1">#end function</span>
+
+
+<div class="viewcode-block" id="testBOFn"><a class="viewcode-back" href="../../api/likelihood.html#approxposterior.likelihood.testBOFn">[docs]</a><span class="k">def</span> <span class="nf">testBOFn</span><span class="p">(</span><span class="n">theta</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Simple 1D test Bayesian optimization function adapted from</span>
+<span class="sd">    https://krasserm.github.io/2018/03/21/bayesian-optimization/</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">return</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="mi">3</span><span class="o">*</span><span class="n">theta</span><span class="p">)</span> <span class="o">-</span> <span class="n">theta</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="mf">0.7</span><span class="o">*</span><span class="n">theta</span></div>
+<span class="c1"># end function</span>
+
+
+<span class="k">def</span> <span class="nf">testBOFnSample</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Sample N points from the prior pi(x) is a uniform distribution over</span>
+<span class="sd">    [-2, 1]</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    n : int (optional)</span>
+<span class="sd">        Number of samples. Defaults to 1.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    sample : floats</span>
+<span class="sd">        n x 1 array of floats samples from the prior</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">low</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">high</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="n">n</span><span class="p">,</span><span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span>
+<span class="c1"># end function</span>
+
+
+<span class="k">def</span> <span class="nf">testBOFnLnPrior</span><span class="p">(</span><span class="n">theta</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Log prior distribution for the test Bayesian Optimization function. This</span>
+<span class="sd">    prior is a simple uniform function over [-2, 1]</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    theta : float/array</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    l : float</span>
+<span class="sd">        log prior</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">theta</span> <span class="o">&lt;</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">theta</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">):</span>
+        <span class="k">return</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mf">0.0</span>
+<span class="c1"># end function</span>
 </pre></div>
 
            </div>

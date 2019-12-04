@@ -199,10 +199,8 @@
 
 <div class="viewcode-block" id="ApproxPosterior"><a class="viewcode-back" href="../../api/approx.html#approxposterior.approx.ApproxPosterior">[docs]</a><span class="k">class</span> <span class="nc">ApproxPosterior</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Class to approximate Bayesian posterior distributions using the</span>
-<span class="sd">    Bayesian Active Posterior Estimation (BAPE) by Kandasamy et al. (2015),</span>
-<span class="sd">    the AGP (Adaptive Gaussian Process) by Wang &amp; Li (2017), or a custom</span>
-<span class="sd">    naive utility function.</span>
+<span class="sd">    Class used to compute approximate Bayesian posterior distributions using a</span>
+<span class="sd">    Gaussian process surrogate model</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">theta</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">lnprior</span><span class="p">,</span> <span class="n">lnlike</span><span class="p">,</span> <span class="n">priorSample</span><span class="p">,</span> <span class="n">bounds</span><span class="p">,</span> <span class="n">gp</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -257,9 +255,9 @@
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;All theta and y values must be finite!&quot;</span><span class="p">)</span>
 
         <span class="c1"># Ensure bounds has correct shape</span>
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">bounds</span><span class="p">)</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">theta</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">bounds</span><span class="p">)</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">theta</span><span class="o">.</span><span class="n">ndim</span><span class="p">:</span>
             <span class="n">err_msg</span> <span class="o">=</span> <span class="s2">&quot;ERROR: bounds provided but len(bounds) != ndim.</span><span class="se">\n</span><span class="s2">&quot;</span>
-            <span class="n">err_msg</span> <span class="o">+=</span> <span class="s2">&quot;ndim = </span><span class="si">%d</span><span class="s2">, len(bounds) = </span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">theta</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="nb">len</span><span class="p">(</span><span class="n">bounds</span><span class="p">))</span>
+            <span class="n">err_msg</span> <span class="o">+=</span> <span class="s2">&quot;ndim = </span><span class="si">%d</span><span class="s2">, len(bounds) = </span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">theta</span><span class="o">.</span><span class="n">ndim</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">bounds</span><span class="p">))</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">err_msg</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span> <span class="o">=</span> <span class="n">bounds</span>
@@ -278,8 +276,8 @@
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">algorithm</span> <span class="o">==</span> <span class="s2">&quot;alternate&quot;</span><span class="p">:</span>
             <span class="c1"># If alternate, AGP on even, BAPE on odd</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">utility</span> <span class="o">=</span> <span class="n">ut</span><span class="o">.</span><span class="n">AGPUtility</span>
-        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">algorithm</span> <span class="o">==</span> <span class="s2">&quot;naive&quot;</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">utility</span> <span class="o">=</span> <span class="n">ut</span><span class="o">.</span><span class="n">NaiveUtility</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">algorithm</span> <span class="o">==</span> <span class="s2">&quot;jones&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">utility</span> <span class="o">=</span> <span class="n">ut</span><span class="o">.</span><span class="n">JonesUtility</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">errMsg</span> <span class="o">=</span> <span class="s2">&quot;Unknown algorithm. Valid options: bape, agp, naive, or alternate.&quot;</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">errMsg</span><span class="p">)</span>
@@ -348,7 +346,7 @@
 <div class="viewcode-block" id="ApproxPosterior.optGP"><a class="viewcode-back" href="../../api/approx.html#approxposterior.approx.ApproxPosterior.optGP">[docs]</a>    <span class="k">def</span> <span class="nf">optGP</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;powell&quot;</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">p0</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
               <span class="n">nGPRestarts</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">gpHyperPrior</span><span class="o">=</span><span class="n">gpUtils</span><span class="o">.</span><span class="n">defaultHyperPrior</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Optimize hyperparameters of object&#39;s GP</span>
+<span class="sd">        Optimize hyperparameters of approx object&#39;s GP</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -382,13 +380,13 @@
     <span class="c1"># end function</span>
 
 
-<div class="viewcode-block" id="ApproxPosterior.run"><a class="viewcode-back" href="../../api/approx.html#approxposterior.approx.ApproxPosterior.run">[docs]</a>    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">m</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">nmax</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="n">seed</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">timing</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<div class="viewcode-block" id="ApproxPosterior.run"><a class="viewcode-back" href="../../api/approx.html#approxposterior.approx.ApproxPosterior.run">[docs]</a>    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">m</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">nmax</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">timing</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
             <span class="n">mcmcKwargs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">samplerKwargs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">estBurnin</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-            <span class="n">thinChains</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">runName</span><span class="o">=</span><span class="s2">&quot;apRun&quot;</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">maxLnLikeRestarts</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
-            <span class="n">gpMethod</span><span class="o">=</span><span class="s2">&quot;powell&quot;</span><span class="p">,</span> <span class="n">gpOptions</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">gpP0</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">optGPEveryN</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-            <span class="n">nGPRestarts</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">nMinObjRestarts</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">onlyLastMCMC</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-            <span class="n">initGPOpt</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">gpHyperPrior</span><span class="o">=</span><span class="n">gpUtils</span><span class="o">.</span><span class="n">defaultHyperPrior</span><span class="p">,</span>
-            <span class="n">dropInitialTraining</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+            <span class="n">thinChains</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">runName</span><span class="o">=</span><span class="s2">&quot;apRun&quot;</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">gpMethod</span><span class="o">=</span><span class="s2">&quot;powell&quot;</span><span class="p">,</span>
+            <span class="n">gpOptions</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">gpP0</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">optGPEveryN</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">nGPRestarts</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+            <span class="n">nMinObjRestarts</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">onlyLastMCMC</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">initGPOpt</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">gpHyperPrior</span><span class="o">=</span><span class="n">gpUtils</span><span class="o">.</span><span class="n">defaultHyperPrior</span><span class="p">,</span>
+            <span class="n">minObjMethod</span><span class="o">=</span><span class="s2">&quot;nelder-mead&quot;</span><span class="p">,</span> <span class="n">minObjOptions</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Core algorithm to estimate the posterior distribution via Gaussian</span>
 <span class="sd">        Process regression to the joint distribution for the forward model</span>
@@ -443,12 +441,6 @@
 <span class="sd">            Saves the forward model, results to runNameAPFModelCache.npz,</span>
 <span class="sd">            the chains as runNameii.h5 for each, iteration ii, and the GP</span>
 <span class="sd">            parameters in runNameAPGP.npz in the current working directory, etc.</span>
-<span class="sd">        maxLnLikeRestarts : int (optional)</span>
-<span class="sd">            Number of times to restart loglikelihood function (the one that</span>
-<span class="sd">            calls the forward model) if the lnlike fn returns infs/NaNs. Defaults</span>
-<span class="sd">            to 3. If you find the need to increase this parameter, don&#39;t because</span>
-<span class="sd">            your lnlike or lnprior function is probably at fault or your model</span>
-<span class="sd">            is not properly specified.</span>
 <span class="sd">        gpMethod : str (optional)</span>
 <span class="sd">            scipy.optimize.minimize method used when optimized GP hyperparameters.</span>
 <span class="sd">            Defaults to powell (it usually works)</span>
@@ -479,13 +471,13 @@
 <span class="sd">            Prior function for GP hyperparameters. Defaults to the defaultHyperPrior fn.</span>
 <span class="sd">            This function asserts that the mean must be negative and that each log</span>
 <span class="sd">            hyperparameter is within the range [-20,20].</span>
-<span class="sd">        dropInitialTraining : bool (optional)</span>
-<span class="sd">            Whether or not to drop the initial training set and only regress</span>
-<span class="sd">            the GP on points it chose after learning on the initial training set.</span>
-<span class="sd">            This can be useful in cases where approxposterior uses the initial</span>
-<span class="sd">            training set to identify the high likelihood regions while not needing</span>
-<span class="sd">            to regress on low-likelihood/useless points in the initial training</span>
-<span class="sd">            set. Defaults to False.</span>
+<span class="sd">        minObjMethod : str (optional)</span>
+<span class="sd">            scipy.optimize.minimize method used when optimizing</span>
+<span class="sd">            utility functions for point selection.  Defaults to nelder-mead.</span>
+<span class="sd">        minObjOptions : dict (optional)</span>
+<span class="sd">            kwargs for the scipy.optimize.minimize function used when optimizing</span>
+<span class="sd">            utility functions for point selection.  Defaults to None,</span>
+<span class="sd">            but if method == &quot;nelder-mead&quot;, options = {&quot;adaptive&quot; : True}</span>
 <span class="sd">        args : iterable (optional)</span>
 <span class="sd">            Arguments for user-specified loglikelihood function that calls the</span>
 <span class="sd">            forward model. Defaults to None.</span>
@@ -496,11 +488,6 @@
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-
-        <span class="c1"># If dropping initial training set after 1st round of point selection,</span>
-        <span class="c1"># save length on initial training set</span>
-        <span class="k">if</span> <span class="n">dropInitialTraining</span><span class="p">:</span>
-            <span class="n">lenToDrop</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">)</span>
 
         <span class="c1"># Save forward model input-output pairs since they take forever to</span>
         <span class="c1"># calculate and we want them around in case something weird happens.</span>
@@ -532,60 +519,27 @@
             <span class="k">if</span> <span class="n">timing</span><span class="p">:</span>
                 <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
 
-            <span class="c1"># 1) Find m new points by maximizing utility function, one at a time</span>
-            <span class="c1"># Note that we call a minimizer because minimizing negative of</span>
-            <span class="c1"># utility function is the same as maximizing it</span>
-            <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">m</span><span class="p">):</span>
-
-                <span class="c1"># If alternating utility functions, switch here!</span>
-                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">algorithm</span> <span class="o">==</span> <span class="s2">&quot;alternate&quot;</span><span class="p">:</span>
-                    <span class="c1"># AGP on even, BAPE on odd</span>
-                    <span class="k">if</span> <span class="n">ii</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">utility</span> <span class="o">=</span> <span class="n">ut</span><span class="o">.</span><span class="n">AGPUtility</span>
-                    <span class="k">else</span><span class="p">:</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">utility</span> <span class="o">=</span> <span class="n">ut</span><span class="o">.</span><span class="n">BAPEUtility</span>
-
-                <span class="c1"># Reoptimize GP hyperparameters? Note: always optimize 1st time</span>
-                <span class="k">if</span> <span class="n">ii</span> <span class="o">%</span> <span class="nb">int</span><span class="p">(</span><span class="n">optGPEveryN</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-                    <span class="n">bOptGP</span> <span class="o">=</span> <span class="kc">True</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="n">bOptGP</span> <span class="o">=</span> <span class="kc">False</span>
-
-                <span class="c1"># Find new (theta, y) pair</span>
-                <span class="c1"># ComputeLnLike = True means new points are saved in self.theta,</span>
-                <span class="c1"># and self.y, gradually expanding the training set</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">findNextPoint</span><span class="p">(</span><span class="n">computeLnLike</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-                                   <span class="n">bounds</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">bounds</span><span class="p">,</span>
-                                   <span class="n">maxLnLikeRestarts</span><span class="o">=</span><span class="n">maxLnLikeRestarts</span><span class="p">,</span>
-                                   <span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">,</span>
-                                   <span class="n">cache</span><span class="o">=</span><span class="n">cache</span><span class="p">,</span>
-                                   <span class="n">gpMethod</span><span class="o">=</span><span class="n">gpMethod</span><span class="p">,</span>
-                                   <span class="n">gpOptions</span><span class="o">=</span><span class="n">gpOptions</span><span class="p">,</span>
-                                   <span class="n">bOptGP</span><span class="o">=</span><span class="n">bOptGP</span><span class="p">,</span>
-                                   <span class="n">nGPRestarts</span><span class="o">=</span><span class="n">nGPRestarts</span><span class="p">,</span>
-                                   <span class="n">nMinObjRestarts</span><span class="o">=</span><span class="n">nMinObjRestarts</span><span class="p">,</span>
-                                   <span class="n">gpHyperPrior</span><span class="o">=</span><span class="n">gpHyperPrior</span><span class="p">,</span>
-                                   <span class="n">runName</span><span class="o">=</span><span class="n">runName</span><span class="p">,</span>
-                                   <span class="n">args</span><span class="o">=</span><span class="n">args</span><span class="p">,</span>
-                                   <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-
-            <span class="c1"># Drop the initial training set after 1st round of point selection?</span>
-            <span class="k">if</span> <span class="n">dropInitialTraining</span> <span class="ow">and</span> <span class="n">nn</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">theta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">theta</span><span class="p">[</span><span class="n">lenToDrop</span><span class="p">:,:]</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">[</span><span class="n">lenToDrop</span><span class="p">:]</span>
-
-                <span class="c1"># Create GP using same kernel, updated estimate of the mean, but new theta</span>
-                <span class="n">currentHype</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gp</span><span class="o">.</span><span class="n">get_parameter_vector</span><span class="p">()</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">gp</span> <span class="o">=</span> <span class="n">george</span><span class="o">.</span><span class="n">GP</span><span class="p">(</span><span class="n">kernel</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">gp</span><span class="o">.</span><span class="n">kernel</span><span class="p">,</span> <span class="n">fit_mean</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-                                    <span class="n">mean</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">gp</span><span class="o">.</span><span class="n">mean</span><span class="p">,</span>
-                                    <span class="n">white_noise</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">gp</span><span class="o">.</span><span class="n">white_noise</span><span class="p">,</span>
-                                    <span class="n">fit_white_noise</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">gp</span><span class="o">.</span><span class="n">set_parameter_vector</span><span class="p">(</span><span class="n">currentHype</span><span class="p">)</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">gp</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">theta</span><span class="p">)</span>
-
-                <span class="bp">self</span><span class="o">.</span><span class="n">optGP</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="n">gpMethod</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="n">gpOptions</span><span class="p">,</span>
-                           <span class="n">p0</span><span class="o">=</span><span class="n">gpP0</span><span class="p">,</span> <span class="n">nGPRestarts</span><span class="o">=</span><span class="n">nGPRestarts</span><span class="p">,</span>
-                           <span class="n">gpHyperPrior</span><span class="o">=</span><span class="n">gpHyperPrior</span><span class="p">)</span>
+            <span class="c1"># 1) Find m new (theta, y) pairs by maximizing utility function,</span>
+            <span class="c1"># one at a time. Note that computeLnLike = True means new points are</span>
+            <span class="c1"># saved in self.theta, and self.y, expanding the training set</span>
+            <span class="c1"># 2) In this function, GP hyperparameters are reoptimized after every</span>
+            <span class="c1"># optGPEveryN new points</span>
+            <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">findNextPoint</span><span class="p">(</span><span class="n">computeLnLike</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                                      <span class="n">bounds</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">bounds</span><span class="p">,</span>
+                                      <span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">,</span>
+                                      <span class="n">cache</span><span class="o">=</span><span class="n">cache</span><span class="p">,</span>
+                                      <span class="n">gpMethod</span><span class="o">=</span><span class="n">gpMethod</span><span class="p">,</span>
+                                      <span class="n">gpOptions</span><span class="o">=</span><span class="n">gpOptions</span><span class="p">,</span>
+                                      <span class="n">nGPRestarts</span><span class="o">=</span><span class="n">nGPRestarts</span><span class="p">,</span>
+                                      <span class="n">nMinObjRestarts</span><span class="o">=</span><span class="n">nMinObjRestarts</span><span class="p">,</span>
+                                      <span class="n">optGPEveryN</span><span class="o">=</span><span class="n">optGPEveryN</span><span class="p">,</span>
+                                      <span class="n">numNewPoints</span><span class="o">=</span><span class="n">m</span><span class="p">,</span>
+                                      <span class="n">gpHyperPrior</span><span class="o">=</span><span class="n">gpHyperPrior</span><span class="p">,</span>
+                                      <span class="n">minObjMethod</span><span class="o">=</span><span class="n">minObjMethod</span><span class="p">,</span>
+                                      <span class="n">minObjOptions</span><span class="o">=</span><span class="n">minObjOptions</span><span class="p">,</span>
+                                      <span class="n">runName</span><span class="o">=</span><span class="n">runName</span><span class="p">,</span>
+                                      <span class="n">args</span><span class="o">=</span><span class="n">args</span><span class="p">,</span>
+                                      <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
             <span class="k">if</span> <span class="n">timing</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">trainingTime</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span><span class="p">)</span>
@@ -596,7 +550,7 @@
                          <span class="n">gpParamNames</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">gp</span><span class="o">.</span><span class="n">get_parameter_names</span><span class="p">(),</span>
                          <span class="n">gpParamValues</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">gp</span><span class="o">.</span><span class="n">get_parameter_vector</span><span class="p">())</span>
 
-            <span class="c1"># GP updated: run MCMC sampler to obtain new posterior conditioned</span>
+            <span class="c1"># 3) GP updated: run MCMC sampler to obtain new posterior conditioned</span>
             <span class="c1"># on {theta_n, log(L_t*prior)}. Use emcee to obtain posterior dist.</span>
 
             <span class="c1"># If user only wants to run the MCMC at the end and it&#39;s not the</span>
@@ -612,7 +566,7 @@
             <span class="k">if</span> <span class="n">timing</span><span class="p">:</span>
                 <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
 
-            <span class="c1"># Run the MCMC</span>
+            <span class="c1"># Run the MCMC using the trained GP to predict the logprobability</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">sampler</span><span class="p">,</span> <span class="n">iburn</span><span class="p">,</span> <span class="n">ithin</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">runMCMC</span><span class="p">(</span><span class="n">samplerKwargs</span><span class="o">=</span><span class="n">samplerKwargs</span><span class="p">,</span>
                                                       <span class="n">mcmcKwargs</span><span class="o">=</span><span class="n">mcmcKwargs</span><span class="p">,</span>
                                                       <span class="n">runName</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">runName</span><span class="p">)</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">nn</span><span class="p">),</span>
@@ -639,18 +593,19 @@
     <span class="c1"># end function</span>
 
 
-<div class="viewcode-block" id="ApproxPosterior.findNextPoint"><a class="viewcode-back" href="../../api/approx.html#approxposterior.approx.ApproxPosterior.findNextPoint">[docs]</a>    <span class="k">def</span> <span class="nf">findNextPoint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">computeLnLike</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">bounds</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">gpMethod</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                      <span class="n">maxLnLikeRestarts</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">gpOptions</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                      <span class="n">gpP0</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">bOptGP</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">nGPRestarts</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-                      <span class="n">nMinObjRestarts</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">runName</span><span class="o">=</span><span class="s2">&quot;apRun&quot;</span><span class="p">,</span>
+<div class="viewcode-block" id="ApproxPosterior.findNextPoint"><a class="viewcode-back" href="../../api/approx.html#approxposterior.approx.ApproxPosterior.findNextPoint">[docs]</a>    <span class="k">def</span> <span class="nf">findNextPoint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">computeLnLike</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">bounds</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">gpMethod</span><span class="o">=</span><span class="s2">&quot;powell&quot;</span><span class="p">,</span>
+                      <span class="n">seed</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">gpOptions</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">gpP0</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                      <span class="n">args</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">nGPRestarts</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">nMinObjRestarts</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+                      <span class="n">minObjMethod</span><span class="o">=</span><span class="s2">&quot;nelder-mead&quot;</span><span class="p">,</span> <span class="n">minObjOptions</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                      <span class="n">runName</span><span class="o">=</span><span class="s2">&quot;apRun&quot;</span><span class="p">,</span> <span class="n">numNewPoints</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">optGPEveryN</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
                       <span class="n">gpHyperPrior</span><span class="o">=</span><span class="n">gpUtils</span><span class="o">.</span><span class="n">defaultHyperPrior</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Find new point, thetaT, by maximizing utility function. Note that we</span>
-<span class="sd">        call a minimizer because minimizing negative of utility function is</span>
-<span class="sd">        the same as maximizing it.</span>
+<span class="sd">        Find numNewPoints new point(s), thetaT, by maximizing utility function.</span>
+<span class="sd">        Note that we call a minimizer because minimizing negative of utility</span>
+<span class="sd">        function is the same as maximizing it.</span>
 
 <span class="sd">        This function can be used in 2 ways:</span>
-<span class="sd">            1) Finding the new point, thetaT, that would maximally improve the</span>
+<span class="sd">            1) Finding the new point(s), thetaT, that would maximally improve the</span>
 <span class="sd">               GP&#39;s predictive ability.  This point could be used to select</span>
 <span class="sd">               where to run a new forward model, for example.</span>
 <span class="sd">            2) Find a new thetaT and evaluate the forward model at this location</span>
@@ -662,19 +617,22 @@
 <span class="sd">        thetaT is returned, as well as yT if computeLnLike is True.  Note that</span>
 <span class="sd">        returning yT requires running the forward model and updating the GP.</span>
 
+<span class="sd">        If numNewPoints &gt; 1, iteratively find numNewPoints. After each new</span>
+<span class="sd">        point is found, re-compute the GP covariance matrix. The GP</span>
+<span class="sd">        hyperparameters are then optionally re-optimized at the specified</span>
+<span class="sd">        cadence.</span>
+
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        computeLnLike : bool (optional)</span>
 <span class="sd">            Whether or not to run the forward model and compute yT, the sum of</span>
-<span class="sd">            the lnlikelihood and lnprior. Defaults to True.</span>
+<span class="sd">            the lnlikelihood and lnprior. Defaults to True. If True, also</span>
+<span class="sd">            appends all new values to self.theta, self.y, in addition to</span>
+<span class="sd">            returning the new values</span>
 <span class="sd">        bounds : tuple/iterable (optional)</span>
 <span class="sd">            Bounds for minimization scheme.  See scipy.optimize.minimize details</span>
 <span class="sd">            for more information.  Defaults to None, but it&#39;s typically good to</span>
 <span class="sd">            provide them to ensure a valid solution.</span>
-<span class="sd">        maxLnLikeRestarts : int (optional)</span>
-<span class="sd">            Number of times to restart loglikelihood function (the one that</span>
-<span class="sd">            calls the forward model) if the lnlike fn returns infs/NaNs. Defaults</span>
-<span class="sd">            to 3.</span>
 <span class="sd">        seed : int (optional)</span>
 <span class="sd">            RNG seed.  Defaults to None.</span>
 <span class="sd">        cache : bool (optional)</span>
@@ -685,6 +643,12 @@
 <span class="sd">            but saving theta and y here doesn&#39;t hurt.  Saves the results to</span>
 <span class="sd">            apFModelCache.npz in the current working directory (name can change</span>
 <span class="sd">            if user specifies runName).</span>
+<span class="sd">        optGPEveryN : int (optional)</span>
+<span class="sd">            How often to optimize the GP hyperparameters.  Defaults to</span>
+<span class="sd">            re-optimizing everytime a new design point is found, e.g. every time</span>
+<span class="sd">            a new (theta, y) pair is added to the training set.  Increase this</span>
+<span class="sd">            parameter if approxposterior is running slowly. NB: GP hyperparameters</span>
+<span class="sd">            are optimized *only* if computeLnLike == True</span>
 <span class="sd">        gpMethod : str (optional)</span>
 <span class="sd">            scipy.optimize.minimize method used when optimized GP hyperparameters.</span>
 <span class="sd">            Defaults to None, which is powell, and it usually works.</span>
@@ -694,9 +658,6 @@
 <span class="sd">        gpP0 : array (optional)</span>
 <span class="sd">            Initial guess for kernel hyperparameters.  If None, defaults to</span>
 <span class="sd">            np.random.randn for each parameter.</span>
-<span class="sd">        bOptGP : bool (optional)</span>
-<span class="sd">            Whether or not to optimize the GP hyperparameters.  Defaults to</span>
-<span class="sd">            True.</span>
 <span class="sd">        nGPRestarts : int (optional)</span>
 <span class="sd">            Number of times to restart GP hyperparameter optimization.  Defaults</span>
 <span class="sd">            to 1. Increase this number if the GP isn&#39;t optimized well.</span>
@@ -711,6 +672,15 @@
 <span class="sd">            Prior function for GP hyperparameters. Defaults to the defaultHyperPrior fn.</span>
 <span class="sd">            This function asserts that the mean must be negative and that each log</span>
 <span class="sd">            hyperparameter is within the range [-20,20].</span>
+<span class="sd">        numNewPoints : int (optional)</span>
+<span class="sd">            Number of new points to find. Defaults to 1.</span>
+<span class="sd">        minObjMethod : str (optional)</span>
+<span class="sd">            scipy.optimize.minimize method used when optimizing</span>
+<span class="sd">            utility functions for point selection.  Defaults to nelder-mead.</span>
+<span class="sd">        minObjOptions : dict (optional)</span>
+<span class="sd">            kwargs for the scipy.optimize.minimize function used when optimizing</span>
+<span class="sd">            utility functions for point selection.  Defaults to None,</span>
+<span class="sd">            but if method == &quot;nelder-mead&quot;, options = {&quot;adaptive&quot; : True}</span>
 <span class="sd">        args : iterable (optional)</span>
 <span class="sd">            Arguments for user-specified loglikelihood function that calls the</span>
 <span class="sd">            forward model. Defaults to None.</span>
@@ -720,38 +690,49 @@
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        None</span>
-<span class="sd">            Returns nothing if computeLnLike is True, as everything is</span>
-<span class="sd">            saved in self.theta, self.y, and potentially cached if cache is True.</span>
-<span class="sd">            Otherwise, returns thetaT and yT.</span>
-<span class="sd">        thetaT : array</span>
-<span class="sd">            New design point selected by maximizing GP utility function.</span>
-<span class="sd">        yT : array</span>
-<span class="sd">            Value of loglikelihood + logprior at thetaT.</span>
+<span class="sd">        thetaT : float or iterable</span>
+<span class="sd">            New design point(s) selected by maximizing GP utility function.</span>
+<span class="sd">        yT : float or iterable (optional)</span>
+<span class="sd">            Value(s) of loglikelihood + logprior at thetaT. Only returned if</span>
+<span class="sd">            computeLnLike == True</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Validate inputs</span>
+        <span class="k">assert</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">numNewPoints</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">numNewPoints</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="k">assert</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">optGPEveryN</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">optGPEveryN</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">))</span>
 
         <span class="k">if</span> <span class="n">args</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">args</span> <span class="o">=</span> <span class="p">()</span>
 
-        <span class="n">yT</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
-        <span class="n">llIters</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="c1"># Containers for new points</span>
+        <span class="n">newTheta</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">computeLnLike</span><span class="p">:</span>
+            <span class="n">newY</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
 
-        <span class="c1"># Find new theta that produces a valid loglikelihood</span>
-        <span class="k">while</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">yT</span><span class="p">):</span>
+        <span class="c1"># Find numNewPoints new design points</span>
+        <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">numNewPoints</span><span class="p">):</span>
 
-            <span class="c1"># If loglikeT isn&#39;t finite after maxLnLikeRestarts tries,</span>
-            <span class="c1"># your likelihood function is not executing properly</span>
-            <span class="k">if</span> <span class="n">llIters</span> <span class="o">&gt;=</span> <span class="n">maxLnLikeRestarts</span><span class="p">:</span>
-                <span class="n">errMsg</span> <span class="o">=</span> <span class="s2">&quot;Non-finite likelihood for </span><span class="si">%d</span><span class="s2"> iterations.&quot;</span> <span class="o">%</span> <span class="n">maxLnLikeRestarts</span>
-                <span class="n">errMsg</span> <span class="o">+=</span> <span class="s2">&quot;Forward model probably returning NaNs.&quot;</span>
-                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Last thetaT, loglikeT, yT:&quot;</span><span class="p">,</span> <span class="n">thetaT</span><span class="p">,</span> <span class="n">loglikeT</span><span class="p">,</span> <span class="n">yT</span><span class="p">)</span>
-                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">errMsg</span><span class="p">)</span>
+            <span class="c1"># If alternating utility functions, switch here!</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">algorithm</span> <span class="o">==</span> <span class="s2">&quot;alternate&quot;</span><span class="p">:</span>
+                <span class="c1"># AGP on even, BAPE on odd</span>
+                <span class="k">if</span> <span class="n">ii</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">utility</span> <span class="o">=</span> <span class="n">ut</span><span class="o">.</span><span class="n">AGPUtility</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">utility</span> <span class="o">=</span> <span class="n">ut</span><span class="o">.</span><span class="n">BAPEUtility</span>
 
-            <span class="c1"># Find new point</span>
-            <span class="n">thetaT</span> <span class="o">=</span> <span class="n">ut</span><span class="o">.</span><span class="n">minimizeObjective</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">utility</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">gp</span><span class="p">,</span>
-                                          <span class="n">sampleFn</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">priorSample</span><span class="p">,</span>
-                                          <span class="n">priorFn</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_lnprior</span><span class="p">,</span>
-                                          <span class="n">nMinObjRestarts</span><span class="o">=</span><span class="n">nMinObjRestarts</span><span class="p">)</span>
+            <span class="c1"># Find new theta that produces a valid loglikelihood</span>
+            <span class="n">thetaT</span><span class="p">,</span> <span class="n">uT</span> <span class="o">=</span> <span class="n">ut</span><span class="o">.</span><span class="n">minimizeObjective</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">utility</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">gp</span><span class="p">,</span>
+                                              <span class="n">sampleFn</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">priorSample</span><span class="p">,</span>
+                                              <span class="n">priorFn</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_lnprior</span><span class="p">,</span>
+                                              <span class="n">nRestarts</span><span class="o">=</span><span class="n">nMinObjRestarts</span><span class="p">,</span>
+                                              <span class="n">method</span><span class="o">=</span><span class="n">minObjMethod</span><span class="p">,</span>
+                                              <span class="n">options</span><span class="o">=</span><span class="n">minObjOptions</span><span class="p">,</span>
+                                              <span class="n">bounds</span><span class="o">=</span><span class="n">bounds</span><span class="p">,</span>
+                                              <span class="n">theta0</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                                              <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">gp</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">_lnprior</span><span class="p">))</span>
+
+            <span class="c1"># Save new thetaT</span>
+            <span class="n">newTheta</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">thetaT</span><span class="p">)</span>
 
             <span class="c1"># Compute lnLikelihood at thetaT?</span>
             <span class="k">if</span> <span class="n">computeLnLike</span><span class="p">:</span>
@@ -765,51 +746,66 @@
                 <span class="k">else</span><span class="p">:</span>
                     <span class="n">yT</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">loglikeT</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lnprior</span><span class="p">(</span><span class="n">thetaT</span><span class="p">)])</span>
 
-            <span class="c1"># Don&#39;t compute lnlikelihood, found point, so we&#39;re done</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="k">break</span>
+                <span class="c1"># Save new logprobability</span>
+                <span class="n">newY</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">yT</span><span class="p">)</span>
 
-            <span class="n">llIters</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="c1"># Valid theta, y found. Join theta, y arrays with new points.</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">theta</span><span class="o">.</span><span class="n">ndim</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">theta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">theta</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">thetaT</span><span class="p">)])</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">theta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">theta</span><span class="p">,</span> <span class="n">thetaT</span><span class="p">])</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">yT</span><span class="p">])</span>
+
+                <span class="c1"># Re-optimize GP with new point, optimize</span>
+
+                <span class="c1"># Re-conpute GP&#39;s covariance matrix since self.theta&#39;s shape changed</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="c1"># Create GP using same kernel, updated estimate of the mean, but new theta</span>
+                    <span class="c1"># Always need to compute the covariance matrix when we find</span>
+                    <span class="c1"># a new theta</span>
+                    <span class="n">currentHype</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gp</span><span class="o">.</span><span class="n">get_parameter_vector</span><span class="p">()</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">gp</span> <span class="o">=</span> <span class="n">george</span><span class="o">.</span><span class="n">GP</span><span class="p">(</span><span class="n">kernel</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">gp</span><span class="o">.</span><span class="n">kernel</span><span class="p">,</span> <span class="n">fit_mean</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                                        <span class="n">mean</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">gp</span><span class="o">.</span><span class="n">mean</span><span class="p">,</span>
+                                        <span class="n">white_noise</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">gp</span><span class="o">.</span><span class="n">white_noise</span><span class="p">,</span>
+                                        <span class="n">fit_white_noise</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">gp</span><span class="o">.</span><span class="n">set_parameter_vector</span><span class="p">(</span><span class="n">currentHype</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">gp</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">theta</span><span class="p">)</span>
+
+                    <span class="c1"># Reoptimize GP hyperparameters?</span>
+                    <span class="k">if</span> <span class="n">ii</span> <span class="o">%</span> <span class="n">optGPEveryN</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">optGP</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="n">gpMethod</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="n">gpOptions</span><span class="p">,</span>
+                                   <span class="n">p0</span><span class="o">=</span><span class="n">gpP0</span><span class="p">,</span> <span class="n">nGPRestarts</span><span class="o">=</span><span class="n">nGPRestarts</span><span class="p">,</span>
+                                   <span class="n">gpHyperPrior</span><span class="o">=</span><span class="n">gpHyperPrior</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="k">pass</span>
+
+                <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;theta:&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">theta</span><span class="p">)</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;y:&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">)</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;gp parameters names:&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">gp</span><span class="o">.</span><span class="n">get_parameter_names</span><span class="p">())</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;gp parameters:&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">gp</span><span class="o">.</span><span class="n">get_parameter_vector</span><span class="p">())</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;GP couldn&#39;t optimize!&quot;</span><span class="p">)</span>
+
+                <span class="c1"># Save forward model input-output pairs since they take forever to</span>
+                <span class="c1"># calculate and we want them around in case something weird happens.</span>
+                <span class="c1"># Users should probably do this in their likelihood function</span>
+                <span class="c1"># anyways, but might as well do it here too.</span>
+                <span class="k">if</span> <span class="n">cache</span><span class="p">:</span>
+                    <span class="c1"># If scaling, save theta in physical units</span>
+                    <span class="n">np</span><span class="o">.</span><span class="n">savez</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">runName</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;APFModelCache.npz&quot;</span><span class="p">,</span>
+                             <span class="n">theta</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">theta</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">)</span>
+        <span class="c1"># end loop</span>
+
+        <span class="c1"># Figure out what to return</span>
+        <span class="k">if</span> <span class="n">numNewPoints</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">newTheta</span> <span class="o">=</span> <span class="n">newTheta</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">computeLnLike</span><span class="p">:</span>
+                <span class="n">newY</span> <span class="o">=</span> <span class="n">newY</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
         <span class="k">if</span> <span class="n">computeLnLike</span><span class="p">:</span>
-            <span class="c1"># Valid theta, y found. Join theta, y arrays with new points.</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">theta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">theta</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">thetaT</span><span class="p">)])</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">yT</span><span class="p">])</span>
-
-            <span class="c1"># 3) Re-optimize GP with new point, optimize</span>
-
-            <span class="c1"># Re-initialize, optimize GP since self.theta&#39;s shape changed</span>
-            <span class="k">try</span><span class="p">:</span>
-                <span class="c1"># Create GP using same kernel, updated estimate of the mean, but new theta</span>
-                <span class="n">currentHype</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gp</span><span class="o">.</span><span class="n">get_parameter_vector</span><span class="p">()</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">gp</span> <span class="o">=</span> <span class="n">george</span><span class="o">.</span><span class="n">GP</span><span class="p">(</span><span class="n">kernel</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">gp</span><span class="o">.</span><span class="n">kernel</span><span class="p">,</span> <span class="n">fit_mean</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-                                    <span class="n">mean</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">gp</span><span class="o">.</span><span class="n">mean</span><span class="p">,</span>
-                                    <span class="n">white_noise</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">gp</span><span class="o">.</span><span class="n">white_noise</span><span class="p">,</span>
-                                    <span class="n">fit_white_noise</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">gp</span><span class="o">.</span><span class="n">set_parameter_vector</span><span class="p">(</span><span class="n">currentHype</span><span class="p">)</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">gp</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">theta</span><span class="p">)</span>
-                <span class="c1"># Now optimize GP given new points?</span>
-                <span class="k">if</span> <span class="n">bOptGP</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">optGP</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="n">gpMethod</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="n">gpOptions</span><span class="p">,</span>
-                               <span class="n">p0</span><span class="o">=</span><span class="n">gpP0</span><span class="p">,</span> <span class="n">nGPRestarts</span><span class="o">=</span><span class="n">nGPRestarts</span><span class="p">,</span>
-                               <span class="n">gpHyperPrior</span><span class="o">=</span><span class="n">gpHyperPrior</span><span class="p">)</span>
-            <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;theta:&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">theta</span><span class="p">)</span>
-                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;y:&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">)</span>
-                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;gp parameters names:&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">gp</span><span class="o">.</span><span class="n">get_parameter_names</span><span class="p">())</span>
-                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;gp parameters:&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">gp</span><span class="o">.</span><span class="n">get_parameter_vector</span><span class="p">())</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;GP couldn&#39;t optimize!&quot;</span><span class="p">)</span>
-
-            <span class="c1"># Save forward model input-output pairs since they take forever to</span>
-            <span class="c1"># calculate and we want them around in case something weird happens.</span>
-            <span class="c1"># Users should probably do this in their likelihood function</span>
-            <span class="c1"># anyways, but might as well do it here too.</span>
-            <span class="k">if</span> <span class="n">cache</span><span class="p">:</span>
-                <span class="c1"># If scaling, save theta in physical units</span>
-                <span class="n">np</span><span class="o">.</span><span class="n">savez</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">runName</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;APFModelCache.npz&quot;</span><span class="p">,</span>
-                         <span class="n">theta</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">theta</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">)</span>
-        <span class="c1"># Don&#39;t care about lnlikelihood, just return thetaT</span>
-        <span class="k">return</span> <span class="n">thetaT</span></div>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">newTheta</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">newY</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">newTheta</span><span class="p">)</span></div>
     <span class="c1"># end function</span>
 
 
@@ -965,23 +961,20 @@
 <span class="sd">        -------</span>
 <span class="sd">        MAP : iterable</span>
 <span class="sd">            maximum a posteriori estimate</span>
-<span class="sd">        fn : float</span>
+<span class="sd">        MAPVal : float</span>
 <span class="sd">            Mean of GP predictive function at MAP solution</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="c1"># Initialize theta0 if not provided. If provided, validate it</span>
         <span class="k">if</span> <span class="n">theta0</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">theta0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">theta0</span><span class="p">)</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span>
-            <span class="k">assert</span> <span class="n">theta0</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="n">theta</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-
-        <span class="c1"># Figure out if we can supply bounds</span>
-        <span class="k">if</span> <span class="nb">str</span><span class="p">(</span><span class="n">method</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;l-bfgs-b&quot;</span><span class="p">,</span> <span class="s2">&quot;tnc&quot;</span><span class="p">]:</span>
-            <span class="n">bounds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span>
+            <span class="k">assert</span> <span class="n">theta0</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">theta</span><span class="o">.</span><span class="n">ndim</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">bounds</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="c1"># Guess current minimum of negative y</span>
+            <span class="n">theta0</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">theta</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">)]</span>
 
         <span class="c1"># Initialize option if method is nelder-mead and options not provided</span>
-        <span class="k">if</span> <span class="nb">str</span><span class="p">(</span><span class="n">method</span><span class="o">.</span><span class="n">lower</span><span class="p">())</span> <span class="o">==</span> <span class="s2">&quot;nelder-mead&quot;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">str</span><span class="p">(</span><span class="n">method</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;nelder-mead&quot;</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">options</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">options</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;adaptive&quot;</span> <span class="p">:</span> <span class="kc">True</span><span class="p">}</span>
 
@@ -989,7 +982,7 @@
         <span class="n">res</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">vals</span> <span class="o">=</span> <span class="p">[]</span>
 
-        <span class="c1"># Set optimization fn for MAP</span>
+        <span class="c1"># Set optimization fn for MAP (note - because we&#39;re minimizing)</span>
         <span class="k">def</span> <span class="nf">fn</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
             <span class="c1"># If not allowed by the prior, reject!</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_lnprior</span><span class="p">(</span><span class="n">x</span><span class="p">)):</span>
@@ -997,32 +990,16 @@
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">return</span> <span class="o">-</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_gpll</span><span class="p">(</span><span class="n">x</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
 
-        <span class="c1"># Loop over optimization calls</span>
-        <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nRestarts</span><span class="p">):</span>
-            <span class="c1"># Keep minimizing until a valid solution is found</span>
-            <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
-                <span class="c1"># Guess initial point</span>
-                <span class="k">if</span> <span class="n">theta0</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                    <span class="n">t0</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">theta</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">)]</span> <span class="o">+</span> <span class="mf">1.0e-3</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">()</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="c1"># Perturb user-supplied guess</span>
-                    <span class="n">t0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">theta0</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">theta0</span><span class="p">)</span> <span class="o">*</span> <span class="mf">1.0e-3</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">theta0</span><span class="p">))</span>
+        <span class="c1"># Minimize values predicted by GP, i.e. find minimum of mean of GP&#39;s</span>
+        <span class="c1"># conditional posterior distribution</span>
+        <span class="n">MAP</span><span class="p">,</span> <span class="n">MAPVal</span> <span class="o">=</span> <span class="n">ut</span><span class="o">.</span><span class="n">minimizeObjective</span><span class="p">(</span><span class="n">fn</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">gp</span><span class="p">,</span>
+                                           <span class="bp">self</span><span class="o">.</span><span class="n">priorSample</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lnprior</span><span class="p">,</span>
+                                           <span class="n">nRestarts</span><span class="o">=</span><span class="n">nRestarts</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                                           <span class="n">method</span><span class="o">=</span><span class="n">method</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="n">options</span><span class="p">,</span>
+                                           <span class="n">bounds</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">bounds</span><span class="p">,</span> <span class="n">theta0</span><span class="o">=</span><span class="n">theta0</span><span class="p">)</span>
 
-                <span class="n">tmp</span> <span class="o">=</span> <span class="n">minimize</span><span class="p">(</span><span class="n">fn</span><span class="p">,</span> <span class="n">t0</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="n">method</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="n">options</span><span class="p">,</span>
-                               <span class="n">bounds</span><span class="o">=</span><span class="n">bounds</span><span class="p">)[</span><span class="s2">&quot;x&quot;</span><span class="p">]</span>
-
-                <span class="c1"># If solution is finite and allowed by the prior, save!</span>
-                <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">tmp</span><span class="p">)):</span>
-                    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_lnprior</span><span class="p">(</span><span class="n">tmp</span><span class="p">)):</span>
-                        <span class="c1"># Save solution, function value</span>
-                        <span class="n">res</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tmp</span><span class="p">)</span>
-                        <span class="n">vals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fn</span><span class="p">(</span><span class="n">tmp</span><span class="p">))</span>
-                        <span class="k">break</span>
-
-        <span class="c1"># Return best answer</span>
-        <span class="n">bestInd</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">vals</span><span class="p">)</span>
-
-        <span class="k">return</span> <span class="n">res</span><span class="p">[</span><span class="n">bestInd</span><span class="p">],</span> <span class="n">vals</span><span class="p">[</span><span class="n">bestInd</span><span class="p">]</span></div></div>
+        <span class="c1"># Note: return -MAPVal since we minimized function</span>
+        <span class="k">return</span> <span class="n">MAP</span><span class="p">,</span> <span class="o">-</span><span class="n">MAPVal</span></div></div>
     <span class="c1"># end function</span>
 <span class="c1"># end class</span>
 </pre></div>

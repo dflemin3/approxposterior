@@ -305,12 +305,13 @@ so that what we hope to recover!</p>
 </pre></div>
 </div>
 <a class="reference internal image-reference" href="_images/rosenbrockMAP.png"><img alt="_images/rosenbrockMAP.png" src="_images/rosenbrockMAP.png" style="width: 400px;" /></a>
-<p><code class="xref py py-obj docutils literal notranslate"><span class="pre">approxposterior</span></code> MAP solution: (0.973, 0.943), -2.553785e-4 (red point)
+<p><code class="xref py py-obj docutils literal notranslate"><span class="pre">approxposterior</span></code> MAP solution: (1.021, 1.041), 3.506784e-4 (red point),
 compared to the truth (1,1), 0 (white dashed lines).
 Our answer is pretty close to the truth, and better yet, <code class="xref py py-obj docutils literal notranslate"><span class="pre">approxposterior</span></code>
-only required 50 Rosenbrock function evaluations to train its GP used to estimate
-the MAP solution. For computationally-expensive forward models, this method can
-be used for efficient (approximate) Bayesian optimization of functions.</p>
+only required 50 randomly-distributed Rosenbrock function evaluations to train
+its GP used to estimate the MAP solution. For computationally-expensive
+forward models, this method can be used for efficient (approximate) Bayesian
+optimization of functions.</p>
 </div>
 
 

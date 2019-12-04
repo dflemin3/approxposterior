@@ -317,10 +317,11 @@ function as the log is monotonic so the minima are equivalent.</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="approxposterior.utility.NaiveUtility">
-<code class="descclassname">approxposterior.utility.</code><code class="descname">NaiveUtility</code><span class="sig-paren">(</span><em>theta</em>, <em>y</em>, <em>gp</em>, <em>priorFn</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/utility.html#NaiveUtility"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.utility.NaiveUtility" title="Permalink to this definition">¶</a></dt>
-<dd><p>Naive utility function that is maximized by GP predictions with
-large loglikelihoods and large uncertainties.</p>
+<dt id="approxposterior.utility.JonesUtility">
+<code class="descclassname">approxposterior.utility.</code><code class="descname">JonesUtility</code><span class="sig-paren">(</span><em>theta</em>, <em>y</em>, <em>gp</em>, <em>priorFn</em>, <em>zeta=0.01</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/utility.html#JonesUtility"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.utility.JonesUtility" title="Permalink to this definition">¶</a></dt>
+<dd><p>Jones utility function - Expected Improvement derived in Jones et al. (1998)
+EI(x) = E(max(f(theta) - f(thetaBest),0)) where f(thetaBest) is the best
+value of the function so far and thetaBest is the best design point</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -338,6 +339,11 @@ large loglikelihoods and large uncertainties.</p>
 <blockquote>
 <div><p>Function that computes lnPrior probability for a given theta.</p>
 </div></blockquote>
+<p><strong>zeta</strong> : float (optional)</p>
+<blockquote>
+<div><p>Exploration parameter. Larger zeta leads to more exploration. Defaults
+to 0.01</p>
+</div></blockquote>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>util</strong> : float</p>
@@ -352,11 +358,14 @@ large loglikelihoods and large uncertainties.</p>
 
 <dl class="function">
 <dt id="approxposterior.utility.minimizeObjective">
-<code class="descclassname">approxposterior.utility.</code><code class="descname">minimizeObjective</code><span class="sig-paren">(</span><em>fn</em>, <em>y</em>, <em>gp</em>, <em>sampleFn</em>, <em>priorFn</em>, <em>nMinObjRestarts=5</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/utility.html#minimizeObjective"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.utility.minimizeObjective" title="Permalink to this definition">¶</a></dt>
-<dd><p>Find point that minimizes fn for a gaussian process gp conditioned on y,
-the data, and is allowed by the prior, priorFn.  PriorFn is required as it
-helps to select against points with non-finite likelihoods, e.g. NaNs or
-infs.  This is required as the GP can only train on finite values.</p>
+<code class="descclassname">approxposterior.utility.</code><code class="descname">minimizeObjective</code><span class="sig-paren">(</span><em>fn</em>, <em>y</em>, <em>gp</em>, <em>sampleFn</em>, <em>priorFn</em>, <em>nRestarts=5</em>, <em>method='nelder-mead'</em>, <em>options=None</em>, <em>bounds=None</em>, <em>theta0=None</em>, <em>args=None</em>, <em>maxIters=100</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/utility.html#minimizeObjective"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.utility.minimizeObjective" title="Permalink to this definition">¶</a></dt>
+<dd><p>Minimize some arbitrary function, fn. This function is most useful when
+evaluating fn requires a Gaussian process model, gp. For example, this
+function can be used to find the point that minimizes a utility fn for a gp
+conditioned on y, the data, and is allowed by the prior, priorFn.</p>
+<p>PriorFn is required as it helps to select against points with non-finite
+likelihoods, e.g. NaNs or infs.  This is required as the GP can only train
+on finite values.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -385,11 +394,40 @@ like fn_name(x, y, gp).  See <a href="#id1"><span class="problematic" id="id2">*
 next point to improve GP performance.  Defaults to 5.  Increase this
 number of the point selection is not working well.</p>
 </div></blockquote>
+<p><strong>method</strong> : str (optional)</p>
+<blockquote>
+<div><p>scipy.optimize.minimize method.  Defaults to nelder-mead.</p>
+</div></blockquote>
+<p><strong>options</strong> : dict (optional)</p>
+<blockquote>
+<div><p>kwargs for the scipy.optimize.minimize function.  Defaults to None,
+but if method == “nelder-mead”, options = {“adaptive” : True}</p>
+</div></blockquote>
+<p><strong>theta0</strong> : float/iterable (optional)</p>
+<blockquote>
+<div><p>Initial guess for optimization. Defaults to None, which draws a sample
+from the prior function using sampleFn.</p>
+</div></blockquote>
+<p><strong>args</strong> : iterable (optional)</p>
+<blockquote>
+<div><p>Arguments for user-specified function that this function will minimize.
+Defaults to None.</p>
+</div></blockquote>
+<p><strong>maxIters (int) (optional)</strong></p>
+<blockquote>
+<div><p>Maximum number of iterations to try restarting optimization if the
+solution isn’t finite and/nor allowed by the prior function. Defaults to
+100.</p>
+</div></blockquote>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>theta</strong> : (1 x n_dims)</p>
-<blockquote class="last">
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>thetaBest</strong> : (1 x n_dims)</p>
+<blockquote>
 <div><p>point that minimizes fn</p>
+</div></blockquote>
+<p><strong>fnBest</strong> : float</p>
+<blockquote class="last">
+<div><p>fn(thetaBest)</p>
 </div></blockquote>
 </td>
 </tr>
@@ -433,47 +471,6 @@ Also, this method is shown to have the lowest error, on average
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>kl</strong> : float</p>
 <blockquote class="last">
 <div><p>KL divergence</p>
-</div></blockquote>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="approxposterior.utility.latinHypercubeSampling">
-<code class="descclassname">approxposterior.utility.</code><code class="descname">latinHypercubeSampling</code><span class="sig-paren">(</span><em>n</em>, <em>bounds</em>, <em>criterion='maximin'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/utility.html#latinHypercubeSampling"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.utility.latinHypercubeSampling" title="Permalink to this definition">¶</a></dt>
-<dd><p>Initialize a data set of size n via latin hypercube sampling over bounds
-using pyDOE.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>n</strong> : int</p>
-<blockquote>
-<div><p>Number of samples in training set</p>
-</div></blockquote>
-<p><strong>bounds</strong> : tuple/iterable</p>
-<blockquote>
-<div><p>Parameter bounds</p>
-</div></blockquote>
-<p><strong>criterion</strong> : str (optional)</p>
-<blockquote>
-<div><p>From the pyDOE docs:
-criterion: a string that tells lhs how to sample the points
-“center” or “c”: center the points within the sampling intervals
-“maximin” or “m”: maximize the minimum distance between points,
-but place the point in a randomized location within its interval
-“centermaximin” or “cm”: same as “maximin” but centered within the
-intervals
-“correlation” or “corr”: minimize the maximum correlation coefficient
-Defaults to “maximin”</p>
-</div></blockquote>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>samps</strong> : numpy array</p>
-<blockquote class="last">
-<div><p>n x ndim array of initial conditions</p>
 </div></blockquote>
 </td>
 </tr>

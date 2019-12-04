@@ -177,62 +177,12 @@
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="c1"># Tell module what it&#39;s allowed to import</span>
-<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;logsubexp&quot;</span><span class="p">,</span> <span class="s2">&quot;AGPUtility&quot;</span><span class="p">,</span> <span class="s2">&quot;BAPEUtility&quot;</span><span class="p">,</span> <span class="s2">&quot;NaiveUtility&quot;</span><span class="p">,</span>
-           <span class="s2">&quot;minimizeObjective&quot;</span><span class="p">,</span> <span class="s2">&quot;klNumerical&quot;</span><span class="p">,</span> <span class="s2">&quot;latinHypercubeSampling&quot;</span><span class="p">]</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;logsubexp&quot;</span><span class="p">,</span> <span class="s2">&quot;AGPUtility&quot;</span><span class="p">,</span> <span class="s2">&quot;BAPEUtility&quot;</span><span class="p">,</span> <span class="s2">&quot;JonesUtility&quot;</span><span class="p">,</span>
+           <span class="s2">&quot;minimizeObjective&quot;</span><span class="p">,</span> <span class="s2">&quot;klNumerical&quot;</span><span class="p">]</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">scipy.optimize</span> <span class="k">import</span> <span class="n">minimize</span>
-<span class="kn">from</span> <span class="nn">scipy.special</span> <span class="k">import</span> <span class="n">erf</span>
-<span class="kn">from</span> <span class="nn">pyDOE</span> <span class="k">import</span> <span class="n">lhs</span>
-
-
-<span class="c1">################################################################################</span>
-<span class="c1">#</span>
-<span class="c1"># Data set initialization functions</span>
-<span class="c1">#</span>
-<span class="c1">################################################################################</span>
-
-
-<div class="viewcode-block" id="latinHypercubeSampling"><a class="viewcode-back" href="../../api/utility.html#approxposterior.utility.latinHypercubeSampling">[docs]</a><span class="k">def</span> <span class="nf">latinHypercubeSampling</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">bounds</span><span class="p">,</span> <span class="n">criterion</span><span class="o">=</span><span class="s2">&quot;maximin&quot;</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Initialize a data set of size n via latin hypercube sampling over bounds</span>
-<span class="sd">    using pyDOE.</span>
-
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    n : int</span>
-<span class="sd">        Number of samples in training set</span>
-<span class="sd">    bounds : tuple/iterable</span>
-<span class="sd">        Parameter bounds</span>
-<span class="sd">    criterion : str (optional)</span>
-<span class="sd">        From the pyDOE docs:</span>
-<span class="sd">        criterion: a string that tells lhs how to sample the points</span>
-<span class="sd">        “center” or “c”: center the points within the sampling intervals</span>
-<span class="sd">        “maximin” or “m”: maximize the minimum distance between points,</span>
-<span class="sd">        but place the point in a randomized location within its interval</span>
-<span class="sd">        “centermaximin” or “cm”: same as “maximin” but centered within the</span>
-<span class="sd">        intervals</span>
-<span class="sd">        “correlation” or “corr”: minimize the maximum correlation coefficient</span>
-<span class="sd">        Defaults to &quot;maximin&quot;</span>
-
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    samps : numpy array</span>
-<span class="sd">        n x ndim array of initial conditions</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="c1"># Extract dimensionality</span>
-    <span class="n">ndim</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">bounds</span><span class="p">)</span>
-
-    <span class="c1"># Generate latin hypercube in each dimension over [0,1]</span>
-    <span class="n">samps</span> <span class="o">=</span> <span class="n">lhs</span><span class="p">(</span><span class="n">ndim</span><span class="p">,</span> <span class="n">samples</span><span class="o">=</span><span class="n">n</span><span class="p">,</span> <span class="n">criterion</span><span class="o">=</span><span class="n">criterion</span><span class="p">)</span>
-
-    <span class="c1"># Scale to bounds of each dimension, return</span>
-    <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ndim</span><span class="p">):</span>
-        <span class="n">samps</span><span class="p">[:,</span><span class="n">ii</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">bounds</span><span class="p">[</span><span class="n">ii</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">bounds</span><span class="p">[</span><span class="n">ii</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span> <span class="o">*</span> <span class="n">samps</span><span class="p">[:,</span><span class="n">ii</span><span class="p">]</span> <span class="o">+</span> <span class="n">bounds</span><span class="p">[</span><span class="n">ii</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
-
-    <span class="k">return</span> <span class="n">samps</span></div>
-<span class="c1"># end function</span>
+<span class="kn">from</span> <span class="nn">scipy.stats</span> <span class="k">import</span> <span class="n">norm</span>
 
 
 <span class="c1">################################################################################</span>
@@ -408,10 +358,11 @@
 <span class="c1"># end function</span>
 
 
-<div class="viewcode-block" id="NaiveUtility"><a class="viewcode-back" href="../../api/utility.html#approxposterior.utility.NaiveUtility">[docs]</a><span class="k">def</span> <span class="nf">NaiveUtility</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">gp</span><span class="p">,</span> <span class="n">priorFn</span><span class="p">):</span>
+<div class="viewcode-block" id="JonesUtility"><a class="viewcode-back" href="../../api/utility.html#approxposterior.utility.JonesUtility">[docs]</a><span class="k">def</span> <span class="nf">JonesUtility</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">gp</span><span class="p">,</span> <span class="n">priorFn</span><span class="p">,</span> <span class="n">zeta</span><span class="o">=</span><span class="mf">0.01</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Naive utility function that is maximized by GP predictions with</span>
-<span class="sd">    large loglikelihoods and large uncertainties.</span>
+<span class="sd">    Jones utility function - Expected Improvement derived in Jones et al. (1998)</span>
+<span class="sd">    EI(x) = E(max(f(theta) - f(thetaBest),0)) where f(thetaBest) is the best</span>
+<span class="sd">    value of the function so far and thetaBest is the best design point</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -422,6 +373,9 @@
 <span class="sd">    gp : george GP object</span>
 <span class="sd">    priorFn : function</span>
 <span class="sd">        Function that computes lnPrior probability for a given theta.</span>
+<span class="sd">    zeta : float (optional)</span>
+<span class="sd">        Exploration parameter. Larger zeta leads to more exploration. Defaults</span>
+<span class="sd">        to 0.01</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -441,7 +395,22 @@
         <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;ERROR: Need to compute GP before using it!&quot;</span><span class="p">)</span>
 
     <span class="k">try</span><span class="p">:</span>
-        <span class="n">util</span> <span class="o">=</span> <span class="o">-</span><span class="n">mu</span> <span class="o">*</span> <span class="n">var</span>
+        <span class="n">std</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">var</span><span class="p">)</span>
+
+        <span class="c1"># Find best value</span>
+        <span class="n">yBest</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+
+        <span class="c1"># Intermediate quantity</span>
+        <span class="k">if</span> <span class="n">std</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">z</span> <span class="o">=</span> <span class="p">(</span><span class="n">mu</span> <span class="o">-</span> <span class="n">yBest</span> <span class="o">-</span> <span class="n">zeta</span><span class="p">)</span> <span class="o">/</span> <span class="n">std</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mf">0.0</span>
+
+        <span class="c1"># Standard normal CDF of z</span>
+        <span class="n">cdf</span> <span class="o">=</span> <span class="n">norm</span><span class="o">.</span><span class="n">cdf</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>
+        <span class="n">pdf</span> <span class="o">=</span> <span class="n">norm</span><span class="o">.</span><span class="n">pdf</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>
+
+        <span class="n">util</span> <span class="o">=</span> <span class="o">-</span><span class="p">((</span><span class="n">mu</span> <span class="o">-</span> <span class="n">yBest</span> <span class="o">-</span> <span class="n">zeta</span><span class="p">)</span> <span class="o">*</span> <span class="n">cdf</span> <span class="o">+</span> <span class="n">std</span> <span class="o">*</span> <span class="n">pdf</span><span class="p">)</span>
     <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Invalid util value.  Negative variance or inf mu?&quot;</span><span class="p">)</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;util: </span><span class="si">%e</span><span class="s2">. mu: </span><span class="si">%e</span><span class="s2">. var: </span><span class="si">%e</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">util</span><span class="p">,</span> <span class="n">mu</span><span class="p">,</span> <span class="n">var</span><span class="p">))</span>
@@ -450,12 +419,18 @@
 <span class="c1"># end function</span>
 
 
-<div class="viewcode-block" id="minimizeObjective"><a class="viewcode-back" href="../../api/utility.html#approxposterior.utility.minimizeObjective">[docs]</a><span class="k">def</span> <span class="nf">minimizeObjective</span><span class="p">(</span><span class="n">fn</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">gp</span><span class="p">,</span> <span class="n">sampleFn</span><span class="p">,</span> <span class="n">priorFn</span><span class="p">,</span> <span class="n">nMinObjRestarts</span><span class="o">=</span><span class="mi">5</span><span class="p">):</span>
+<div class="viewcode-block" id="minimizeObjective"><a class="viewcode-back" href="../../api/utility.html#approxposterior.utility.minimizeObjective">[docs]</a><span class="k">def</span> <span class="nf">minimizeObjective</span><span class="p">(</span><span class="n">fn</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">gp</span><span class="p">,</span> <span class="n">sampleFn</span><span class="p">,</span> <span class="n">priorFn</span><span class="p">,</span> <span class="n">nRestarts</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+                      <span class="n">method</span><span class="o">=</span><span class="s2">&quot;nelder-mead&quot;</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">bounds</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                      <span class="n">theta0</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">maxIters</span><span class="o">=</span><span class="mi">100</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Find point that minimizes fn for a gaussian process gp conditioned on y,</span>
-<span class="sd">    the data, and is allowed by the prior, priorFn.  PriorFn is required as it</span>
-<span class="sd">    helps to select against points with non-finite likelihoods, e.g. NaNs or</span>
-<span class="sd">    infs.  This is required as the GP can only train on finite values.</span>
+<span class="sd">    Minimize some arbitrary function, fn. This function is most useful when</span>
+<span class="sd">    evaluating fn requires a Gaussian process model, gp. For example, this</span>
+<span class="sd">    function can be used to find the point that minimizes a utility fn for a gp</span>
+<span class="sd">    conditioned on y, the data, and is allowed by the prior, priorFn.</span>
+
+<span class="sd">    PriorFn is required as it helps to select against points with non-finite</span>
+<span class="sd">    likelihoods, e.g. NaNs or infs.  This is required as the GP can only train</span>
+<span class="sd">    on finite values.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -473,33 +448,79 @@
 <span class="sd">        Number of times to restart minimizing -utility function to select</span>
 <span class="sd">        next point to improve GP performance.  Defaults to 5.  Increase this</span>
 <span class="sd">        number of the point selection is not working well.</span>
+<span class="sd">    method : str (optional)</span>
+<span class="sd">        scipy.optimize.minimize method.  Defaults to nelder-mead.</span>
+<span class="sd">    options : dict (optional)</span>
+<span class="sd">        kwargs for the scipy.optimize.minimize function.  Defaults to None,</span>
+<span class="sd">        but if method == &quot;nelder-mead&quot;, options = {&quot;adaptive&quot; : True}</span>
+<span class="sd">    theta0 : float/iterable (optional)</span>
+<span class="sd">        Initial guess for optimization. Defaults to None, which draws a sample</span>
+<span class="sd">        from the prior function using sampleFn.</span>
+<span class="sd">    args : iterable (optional)</span>
+<span class="sd">        Arguments for user-specified function that this function will minimize.</span>
+<span class="sd">        Defaults to None.</span>
+<span class="sd">    maxIters (int) (optional)</span>
+<span class="sd">        Maximum number of iterations to try restarting optimization if the</span>
+<span class="sd">        solution isn&#39;t finite and/nor allowed by the prior function. Defaults to</span>
+<span class="sd">        100.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    theta : (1 x n_dims)</span>
+<span class="sd">    thetaBest : (1 x n_dims)</span>
 <span class="sd">        point that minimizes fn</span>
+<span class="sd">    fnBest : float</span>
+<span class="sd">        fn(thetaBest)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="c1"># Arguments for the utility function</span>
-    <span class="n">args</span> <span class="o">=</span> <span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">gp</span><span class="p">,</span> <span class="n">priorFn</span><span class="p">)</span>
+    <span class="c1"># Initialize options</span>
+    <span class="k">if</span> <span class="nb">str</span><span class="p">(</span><span class="n">method</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;nelder-mead&quot;</span> <span class="ow">and</span> <span class="n">options</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">options</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;adaptive&quot;</span> <span class="p">:</span> <span class="kc">True</span><span class="p">}</span>
+
+    <span class="c1"># Minimize GP nll, save result, evaluate marginal likelihood</span>
+    <span class="k">if</span> <span class="nb">str</span><span class="p">(</span><span class="n">method</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot; l-bfgs-b&quot;</span><span class="p">,</span> <span class="s2">&quot;tnc&quot;</span><span class="p">]:</span>
+        <span class="k">pass</span>
+    <span class="c1"># Bounds not allowed</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">bounds</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">if</span> <span class="n">args</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">args</span> <span class="o">=</span> <span class="p">()</span>
+
+    <span class="c1"># Ensure theta0 is in the proper form, determine its dimensionality</span>
+    <span class="k">if</span> <span class="n">theta0</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">theta0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">theta0</span><span class="p">)</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span>
+        <span class="n">ndim</span> <span class="o">=</span> <span class="n">theta0</span><span class="o">.</span><span class="n">ndim</span>
+        <span class="k">if</span> <span class="n">ndim</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">ndim</span> <span class="o">=</span> <span class="mi">1</span>
 
     <span class="c1"># Containers</span>
     <span class="n">res</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">objective</span> <span class="o">=</span> <span class="p">[]</span>
 
     <span class="c1"># Loop over optimization calls</span>
-    <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nMinObjRestarts</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nRestarts</span><span class="p">):</span>
+
+        <span class="c1"># Guess initial value from prior</span>
+        <span class="k">if</span> <span class="n">theta0</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">t0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">sampleFn</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">t0</span> <span class="o">=</span> <span class="n">theta0</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">theta0</span><span class="p">)</span> <span class="o">*</span> <span class="mf">1.0e-3</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">ndim</span><span class="p">)</span>
 
         <span class="c1"># Keep minimizing until a valid solution is found</span>
+        <span class="n">ii</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
-            <span class="c1"># Guess initial value from prior</span>
-            <span class="n">theta0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">sampleFn</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
 
-            <span class="n">tmp</span> <span class="o">=</span> <span class="n">minimize</span><span class="p">(</span><span class="n">fn</span><span class="p">,</span> <span class="n">theta0</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="n">args</span><span class="p">,</span> <span class="n">bounds</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                           <span class="n">method</span><span class="o">=</span><span class="s2">&quot;nelder-mead&quot;</span><span class="p">,</span>
-                           <span class="n">options</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;adaptive&quot;</span> <span class="p">:</span> <span class="kc">True</span><span class="p">})[</span><span class="s2">&quot;x&quot;</span><span class="p">]</span>
+            <span class="c1"># Too many iterations</span>
+            <span class="k">if</span> <span class="n">ii</span> <span class="o">&gt;=</span> <span class="n">maxIters</span><span class="p">:</span>
+                <span class="n">errMsg</span> <span class="o">=</span> <span class="s2">&quot;ERROR: Cannot find a valid solution. Current iterations: </span><span class="si">%d</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">ii</span>
+                <span class="n">errMsg</span> <span class="o">+=</span> <span class="s2">&quot;Maximum iterations: </span><span class="si">%d</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">maxIters</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">errMsg</span><span class="p">)</span>
 
-            <span class="c1"># If solution is finite and allowed by the prior, save!</span>
+            <span class="c1"># Minimize the function</span>
+            <span class="n">tmp</span> <span class="o">=</span> <span class="n">minimize</span><span class="p">(</span><span class="n">fn</span><span class="p">,</span> <span class="n">t0</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="n">args</span><span class="p">,</span> <span class="n">bounds</span><span class="o">=</span><span class="n">bounds</span><span class="p">,</span>
+                           <span class="n">method</span><span class="o">=</span><span class="n">method</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="n">options</span><span class="p">)[</span><span class="s2">&quot;x&quot;</span><span class="p">]</span>
+
+            <span class="c1"># If solution is finite and allowed by the prior, save</span>
             <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">tmp</span><span class="p">)):</span>
                 <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">priorFn</span><span class="p">(</span><span class="n">tmp</span><span class="p">)):</span>
                     <span class="c1"># Save solution, function value</span>
@@ -507,8 +528,16 @@
                     <span class="n">objective</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fn</span><span class="p">(</span><span class="n">tmp</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">))</span>
                     <span class="k">break</span>
 
-    <span class="c1"># Return value that minimizes objective function</span>
-    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">res</span><span class="p">)[</span><span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">objective</span><span class="p">)]</span></div>
+            <span class="c1"># If we&#39;re here, the solution didn&#39;t work. Try again with a new</span>
+            <span class="c1"># sample from the prior</span>
+            <span class="n">t0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">sampleFn</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+
+            <span class="n">ii</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="c1"># end loop</span>
+
+    <span class="c1"># Return value that minimizes objective function out of all minimizations</span>
+    <span class="n">bestInd</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">objective</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">res</span><span class="p">)[</span><span class="n">bestInd</span><span class="p">],</span> <span class="n">objective</span><span class="p">[</span><span class="n">bestInd</span><span class="p">]</span></div>
 <span class="c1"># end function</span>
 </pre></div>
 
