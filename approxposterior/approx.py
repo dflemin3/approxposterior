@@ -30,10 +30,8 @@ import warnings
 
 class ApproxPosterior(object):
     """
-    Class to approximate Bayesian posterior distributions using the
-    Bayesian Active Posterior Estimation (BAPE) by Kandasamy et al. (2015),
-    the AGP (Adaptive Gaussian Process) by Wang & Li (2017), or a custom
-    naive utility function.
+    Class used to compute approximate Bayesian posterior distributions using a
+    Gaussian process surrogate model
     """
 
     def __init__(self, theta, y, lnprior, lnlike, priorSample, bounds, gp=None,
@@ -88,9 +86,9 @@ class ApproxPosterior(object):
             raise ValueError("All theta and y values must be finite!")
 
         # Ensure bounds has correct shape
-        if len(bounds) != self.theta.shape[-1]:
+        if len(bounds) != self.theta.ndim:
             err_msg = "ERROR: bounds provided but len(bounds) != ndim.\n"
-            err_msg += "ndim = %d, len(bounds) = %d" % (self.theta.shape[-1], len(bounds))
+            err_msg += "ndim = %d, len(bounds) = %d" % (self.theta.ndim, len(bounds))
             raise ValueError(err_msg)
         else:
             self.bounds = bounds
@@ -109,8 +107,8 @@ class ApproxPosterior(object):
         elif self.algorithm == "alternate":
             # If alternate, AGP on even, BAPE on odd
             self.utility = ut.AGPUtility
-        elif self.algorithm == "naive":
-            self.utility = ut.NaiveUtility
+        elif self.algorithm == "jones":
+            self.utility = ut.JonesUtility
         else:
             errMsg = "Unknown algorithm. Valid options: bape, agp, naive, or alternate."
             raise ValueError(errMsg)
@@ -179,7 +177,7 @@ class ApproxPosterior(object):
     def optGP(self, seed=None, method="powell", options=None, p0=None,
               nGPRestarts=1, gpHyperPrior=gpUtils.defaultHyperPrior):
         """
-        Optimize hyperparameters of object's GP
+        Optimize hyperparameters of approx object's GP
 
         Parameters
         ----------
@@ -213,13 +211,13 @@ class ApproxPosterior(object):
     # end function
 
 
-    def run(self, m=10, nmax=2,seed=None, timing=False, verbose=True,
+    def run(self, m=10, nmax=2, seed=None, timing=False, verbose=True,
             mcmcKwargs=None, samplerKwargs=None, estBurnin=False,
-            thinChains=False, runName="apRun", cache=True, maxLnLikeRestarts=3,
-            gpMethod="powell", gpOptions=None, gpP0=None, optGPEveryN=1,
-            nGPRestarts=1, nMinObjRestarts=5, onlyLastMCMC=False,
-            initGPOpt=True, gpHyperPrior=gpUtils.defaultHyperPrior,
-            dropInitialTraining=False, args=None, **kwargs):
+            thinChains=False, runName="apRun", cache=True, gpMethod="powell",
+            gpOptions=None, gpP0=None, optGPEveryN=1, nGPRestarts=1,
+            nMinObjRestarts=5, onlyLastMCMC=False, initGPOpt=True,
+            gpHyperPrior=gpUtils.defaultHyperPrior,
+            minObjMethod="nelder-mead", minObjOptions=None, args=None, **kwargs):
         """
         Core algorithm to estimate the posterior distribution via Gaussian
         Process regression to the joint distribution for the forward model
@@ -274,12 +272,6 @@ class ApproxPosterior(object):
             Saves the forward model, results to runNameAPFModelCache.npz,
             the chains as runNameii.h5 for each, iteration ii, and the GP
             parameters in runNameAPGP.npz in the current working directory, etc.
-        maxLnLikeRestarts : int (optional)
-            Number of times to restart loglikelihood function (the one that
-            calls the forward model) if the lnlike fn returns infs/NaNs. Defaults
-            to 3. If you find the need to increase this parameter, don't because
-            your lnlike or lnprior function is probably at fault or your model
-            is not properly specified.
         gpMethod : str (optional)
             scipy.optimize.minimize method used when optimized GP hyperparameters.
             Defaults to powell (it usually works)
@@ -310,13 +302,13 @@ class ApproxPosterior(object):
             Prior function for GP hyperparameters. Defaults to the defaultHyperPrior fn.
             This function asserts that the mean must be negative and that each log
             hyperparameter is within the range [-20,20].
-        dropInitialTraining : bool (optional)
-            Whether or not to drop the initial training set and only regress
-            the GP on points it chose after learning on the initial training set.
-            This can be useful in cases where approxposterior uses the initial
-            training set to identify the high likelihood regions while not needing
-            to regress on low-likelihood/useless points in the initial training
-            set. Defaults to False.
+        minObjMethod : str (optional)
+            scipy.optimize.minimize method used when optimizing
+            utility functions for point selection.  Defaults to nelder-mead.
+        minObjOptions : dict (optional)
+            kwargs for the scipy.optimize.minimize function used when optimizing
+            utility functions for point selection.  Defaults to None,
+            but if method == "nelder-mead", options = {"adaptive" : True}
         args : iterable (optional)
             Arguments for user-specified loglikelihood function that calls the
             forward model. Defaults to None.
@@ -327,11 +319,6 @@ class ApproxPosterior(object):
         Returns
         -------
         """
-
-        # If dropping initial training set after 1st round of point selection,
-        # save length on initial training set
-        if dropInitialTraining:
-            lenToDrop = len(self.y)
 
         # Save forward model input-output pairs since they take forever to
         # calculate and we want them around in case something weird happens.
@@ -363,60 +350,27 @@ class ApproxPosterior(object):
             if timing:
                 start = time.time()
 
-            # 1) Find m new points by maximizing utility function, one at a time
-            # Note that we call a minimizer because minimizing negative of
-            # utility function is the same as maximizing it
-            for ii in range(m):
-
-                # If alternating utility functions, switch here!
-                if self.algorithm == "alternate":
-                    # AGP on even, BAPE on odd
-                    if ii % 2 == 0:
-                        self.utility = ut.AGPUtility
-                    else:
-                        self.utility = ut.BAPEUtility
-
-                # Reoptimize GP hyperparameters? Note: always optimize 1st time
-                if ii % int(optGPEveryN) == 0:
-                    bOptGP = True
-                else:
-                    bOptGP = False
-
-                # Find new (theta, y) pair
-                # ComputeLnLike = True means new points are saved in self.theta,
-                # and self.y, gradually expanding the training set
-                self.findNextPoint(computeLnLike=True,
-                                   bounds=self.bounds,
-                                   maxLnLikeRestarts=maxLnLikeRestarts,
-                                   seed=seed,
-                                   cache=cache,
-                                   gpMethod=gpMethod,
-                                   gpOptions=gpOptions,
-                                   bOptGP=bOptGP,
-                                   nGPRestarts=nGPRestarts,
-                                   nMinObjRestarts=nMinObjRestarts,
-                                   gpHyperPrior=gpHyperPrior,
-                                   runName=runName,
-                                   args=args,
-                                   **kwargs)
-
-            # Drop the initial training set after 1st round of point selection?
-            if dropInitialTraining and nn == 0:
-                self.theta = self.theta[lenToDrop:,:]
-                self.y = self.y[lenToDrop:]
-
-                # Create GP using same kernel, updated estimate of the mean, but new theta
-                currentHype = self.gp.get_parameter_vector()
-                self.gp = george.GP(kernel=self.gp.kernel, fit_mean=True,
-                                    mean=self.gp.mean,
-                                    white_noise=self.gp.white_noise,
-                                    fit_white_noise=False)
-                self.gp.set_parameter_vector(currentHype)
-                self.gp.compute(self.theta)
-
-                self.optGP(seed=seed, method=gpMethod, options=gpOptions,
-                           p0=gpP0, nGPRestarts=nGPRestarts,
-                           gpHyperPrior=gpHyperPrior)
+            # 1) Find m new (theta, y) pairs by maximizing utility function,
+            # one at a time. Note that computeLnLike = True means new points are
+            # saved in self.theta, and self.y, expanding the training set
+            # 2) In this function, GP hyperparameters are reoptimized after every
+            # optGPEveryN new points
+            _, _ = self.findNextPoint(computeLnLike=True,
+                                      bounds=self.bounds,
+                                      seed=seed,
+                                      cache=cache,
+                                      gpMethod=gpMethod,
+                                      gpOptions=gpOptions,
+                                      nGPRestarts=nGPRestarts,
+                                      nMinObjRestarts=nMinObjRestarts,
+                                      optGPEveryN=optGPEveryN,
+                                      numNewPoints=m,
+                                      gpHyperPrior=gpHyperPrior,
+                                      minObjMethod=minObjMethod,
+                                      minObjOptions=minObjOptions,
+                                      runName=runName,
+                                      args=args,
+                                      **kwargs)
 
             if timing:
                 self.trainingTime.append(time.time() - start)
@@ -427,7 +381,7 @@ class ApproxPosterior(object):
                          gpParamNames=self.gp.get_parameter_names(),
                          gpParamValues=self.gp.get_parameter_vector())
 
-            # GP updated: run MCMC sampler to obtain new posterior conditioned
+            # 3) GP updated: run MCMC sampler to obtain new posterior conditioned
             # on {theta_n, log(L_t*prior)}. Use emcee to obtain posterior dist.
 
             # If user only wants to run the MCMC at the end and it's not the
@@ -443,7 +397,7 @@ class ApproxPosterior(object):
             if timing:
                 start = time.time()
 
-            # Run the MCMC
+            # Run the MCMC using the trained GP to predict the logprobability
             self.sampler, iburn, ithin = self.runMCMC(samplerKwargs=samplerKwargs,
                                                       mcmcKwargs=mcmcKwargs,
                                                       runName=str(runName) + str(nn),
@@ -470,18 +424,19 @@ class ApproxPosterior(object):
     # end function
 
 
-    def findNextPoint(self, computeLnLike=True, bounds=None, gpMethod=None,
-                      maxLnLikeRestarts=3, seed=None, cache=True, gpOptions=None,
-                      gpP0=None, bOptGP=True, args=None, nGPRestarts=1,
-                      nMinObjRestarts=5, runName="apRun",
+    def findNextPoint(self, computeLnLike=True, bounds=None, gpMethod="powell",
+                      seed=None, cache=True, gpOptions=None, gpP0=None,
+                      args=None, nGPRestarts=1, nMinObjRestarts=5,
+                      minObjMethod="nelder-mead", minObjOptions=None,
+                      runName="apRun", numNewPoints=1, optGPEveryN=1,
                       gpHyperPrior=gpUtils.defaultHyperPrior, **kwargs):
         """
-        Find new point, thetaT, by maximizing utility function. Note that we
-        call a minimizer because minimizing negative of utility function is
-        the same as maximizing it.
+        Find numNewPoints new point(s), thetaT, by maximizing utility function.
+        Note that we call a minimizer because minimizing negative of utility
+        function is the same as maximizing it.
 
         This function can be used in 2 ways:
-            1) Finding the new point, thetaT, that would maximally improve the
+            1) Finding the new point(s), thetaT, that would maximally improve the
                GP's predictive ability.  This point could be used to select
                where to run a new forward model, for example.
             2) Find a new thetaT and evaluate the forward model at this location
@@ -493,19 +448,22 @@ class ApproxPosterior(object):
         thetaT is returned, as well as yT if computeLnLike is True.  Note that
         returning yT requires running the forward model and updating the GP.
 
+        If numNewPoints > 1, iteratively find numNewPoints. After each new
+        point is found, re-compute the GP covariance matrix. The GP
+        hyperparameters are then optionally re-optimized at the specified
+        cadence.
+
         Parameters
         ----------
         computeLnLike : bool (optional)
             Whether or not to run the forward model and compute yT, the sum of
-            the lnlikelihood and lnprior. Defaults to True.
+            the lnlikelihood and lnprior. Defaults to True. If True, also
+            appends all new values to self.theta, self.y, in addition to
+            returning the new values
         bounds : tuple/iterable (optional)
             Bounds for minimization scheme.  See scipy.optimize.minimize details
             for more information.  Defaults to None, but it's typically good to
             provide them to ensure a valid solution.
-        maxLnLikeRestarts : int (optional)
-            Number of times to restart loglikelihood function (the one that
-            calls the forward model) if the lnlike fn returns infs/NaNs. Defaults
-            to 3.
         seed : int (optional)
             RNG seed.  Defaults to None.
         cache : bool (optional)
@@ -516,6 +474,12 @@ class ApproxPosterior(object):
             but saving theta and y here doesn't hurt.  Saves the results to
             apFModelCache.npz in the current working directory (name can change
             if user specifies runName).
+        optGPEveryN : int (optional)
+            How often to optimize the GP hyperparameters.  Defaults to
+            re-optimizing everytime a new design point is found, e.g. every time
+            a new (theta, y) pair is added to the training set.  Increase this
+            parameter if approxposterior is running slowly. NB: GP hyperparameters
+            are optimized *only* if computeLnLike == True
         gpMethod : str (optional)
             scipy.optimize.minimize method used when optimized GP hyperparameters.
             Defaults to None, which is powell, and it usually works.
@@ -525,9 +489,6 @@ class ApproxPosterior(object):
         gpP0 : array (optional)
             Initial guess for kernel hyperparameters.  If None, defaults to
             np.random.randn for each parameter.
-        bOptGP : bool (optional)
-            Whether or not to optimize the GP hyperparameters.  Defaults to
-            True.
         nGPRestarts : int (optional)
             Number of times to restart GP hyperparameter optimization.  Defaults
             to 1. Increase this number if the GP isn't optimized well.
@@ -542,6 +503,15 @@ class ApproxPosterior(object):
             Prior function for GP hyperparameters. Defaults to the defaultHyperPrior fn.
             This function asserts that the mean must be negative and that each log
             hyperparameter is within the range [-20,20].
+        numNewPoints : int (optional)
+            Number of new points to find. Defaults to 1.
+        minObjMethod : str (optional)
+            scipy.optimize.minimize method used when optimizing
+            utility functions for point selection.  Defaults to nelder-mead.
+        minObjOptions : dict (optional)
+            kwargs for the scipy.optimize.minimize function used when optimizing
+            utility functions for point selection.  Defaults to None,
+            but if method == "nelder-mead", options = {"adaptive" : True}
         args : iterable (optional)
             Arguments for user-specified loglikelihood function that calls the
             forward model. Defaults to None.
@@ -551,38 +521,49 @@ class ApproxPosterior(object):
 
         Returns
         -------
-        None
-            Returns nothing if computeLnLike is True, as everything is
-            saved in self.theta, self.y, and potentially cached if cache is True.
-            Otherwise, returns thetaT and yT.
-        thetaT : array
-            New design point selected by maximizing GP utility function.
-        yT : array
-            Value of loglikelihood + logprior at thetaT.
+        thetaT : float or iterable
+            New design point(s) selected by maximizing GP utility function.
+        yT : float or iterable (optional)
+            Value(s) of loglikelihood + logprior at thetaT. Only returned if
+            computeLnLike == True
         """
+
+        # Validate inputs
+        assert (isinstance(numNewPoints, int) and (numNewPoints >= 1))
+        assert (isinstance(optGPEveryN, int) and (optGPEveryN >= 1))
 
         if args is None:
             args = ()
 
-        yT = np.nan
-        llIters = 0
+        # Containers for new points
+        newTheta = list()
+        if computeLnLike:
+            newY = list()
 
-        # Find new theta that produces a valid loglikelihood
-        while not np.isfinite(yT):
+        # Find numNewPoints new design points
+        for ii in range(numNewPoints):
 
-            # If loglikeT isn't finite after maxLnLikeRestarts tries,
-            # your likelihood function is not executing properly
-            if llIters >= maxLnLikeRestarts:
-                errMsg = "Non-finite likelihood for %d iterations." % maxLnLikeRestarts
-                errMsg += "Forward model probably returning NaNs."
-                print("Last thetaT, loglikeT, yT:", thetaT, loglikeT, yT)
-                raise RuntimeError(errMsg)
+            # If alternating utility functions, switch here!
+            if self.algorithm == "alternate":
+                # AGP on even, BAPE on odd
+                if ii % 2 == 0:
+                    self.utility = ut.AGPUtility
+                else:
+                    self.utility = ut.BAPEUtility
 
-            # Find new point
-            thetaT = ut.minimizeObjective(self.utility, self.y, self.gp,
-                                          sampleFn=self.priorSample,
-                                          priorFn=self._lnprior,
-                                          nMinObjRestarts=nMinObjRestarts)
+            # Find new theta that produces a valid loglikelihood
+            thetaT, uT = ut.minimizeObjective(self.utility, self.y, self.gp,
+                                              sampleFn=self.priorSample,
+                                              priorFn=self._lnprior,
+                                              nRestarts=nMinObjRestarts,
+                                              method=minObjMethod,
+                                              options=minObjOptions,
+                                              bounds=bounds,
+                                              theta0=None,
+                                              args=(self.y,self.gp,self._lnprior))
+
+            # Save new thetaT
+            newTheta.append(thetaT)
 
             # Compute lnLikelihood at thetaT?
             if computeLnLike:
@@ -596,51 +577,66 @@ class ApproxPosterior(object):
                 else:
                     yT = np.array([loglikeT + self._lnprior(thetaT)])
 
-            # Don't compute lnlikelihood, found point, so we're done
-            else:
-                break
+                # Save new logprobability
+                newY.append(yT)
 
-            llIters += 1
+                # Valid theta, y found. Join theta, y arrays with new points.
+                if self.theta.ndim > 1:
+                    self.theta = np.vstack([self.theta, np.array(thetaT)])
+                else:
+                    self.theta = np.hstack([self.theta, thetaT])
+                self.y = np.hstack([self.y, yT])
+
+                # Re-optimize GP with new point, optimize
+
+                # Re-conpute GP's covariance matrix since self.theta's shape changed
+                try:
+                    # Create GP using same kernel, updated estimate of the mean, but new theta
+                    # Always need to compute the covariance matrix when we find
+                    # a new theta
+                    currentHype = self.gp.get_parameter_vector()
+                    self.gp = george.GP(kernel=self.gp.kernel, fit_mean=True,
+                                        mean=self.gp.mean,
+                                        white_noise=self.gp.white_noise,
+                                        fit_white_noise=False)
+                    self.gp.set_parameter_vector(currentHype)
+                    self.gp.compute(self.theta)
+
+                    # Reoptimize GP hyperparameters?
+                    if ii % optGPEveryN == 0:
+                        self.optGP(seed=seed, method=gpMethod, options=gpOptions,
+                                   p0=gpP0, nGPRestarts=nGPRestarts,
+                                   gpHyperPrior=gpHyperPrior)
+                    else:
+                        pass
+
+                except ValueError:
+                    print("theta:", self.theta)
+                    print("y:", self.y)
+                    print("gp parameters names:", self.gp.get_parameter_names())
+                    print("gp parameters:", self.gp.get_parameter_vector())
+                    raise ValueError("GP couldn't optimize!")
+
+                # Save forward model input-output pairs since they take forever to
+                # calculate and we want them around in case something weird happens.
+                # Users should probably do this in their likelihood function
+                # anyways, but might as well do it here too.
+                if cache:
+                    # If scaling, save theta in physical units
+                    np.savez(str(runName)+"APFModelCache.npz",
+                             theta=self.theta, y=self.y)
+        # end loop
+
+        # Figure out what to return
+        if numNewPoints == 1:
+            newTheta = newTheta[0]
+            if computeLnLike:
+                newY = newY[0]
 
         if computeLnLike:
-            # Valid theta, y found. Join theta, y arrays with new points.
-            self.theta = np.vstack([self.theta, np.array(thetaT)])
-            self.y = np.hstack([self.y, yT])
-
-            # 3) Re-optimize GP with new point, optimize
-
-            # Re-initialize, optimize GP since self.theta's shape changed
-            try:
-                # Create GP using same kernel, updated estimate of the mean, but new theta
-                currentHype = self.gp.get_parameter_vector()
-                self.gp = george.GP(kernel=self.gp.kernel, fit_mean=True,
-                                    mean=self.gp.mean,
-                                    white_noise=self.gp.white_noise,
-                                    fit_white_noise=False)
-                self.gp.set_parameter_vector(currentHype)
-                self.gp.compute(self.theta)
-                # Now optimize GP given new points?
-                if bOptGP:
-                    self.optGP(seed=seed, method=gpMethod, options=gpOptions,
-                               p0=gpP0, nGPRestarts=nGPRestarts,
-                               gpHyperPrior=gpHyperPrior)
-            except ValueError:
-                print("theta:", self.theta)
-                print("y:", self.y)
-                print("gp parameters names:", self.gp.get_parameter_names())
-                print("gp parameters:", self.gp.get_parameter_vector())
-                raise ValueError("GP couldn't optimize!")
-
-            # Save forward model input-output pairs since they take forever to
-            # calculate and we want them around in case something weird happens.
-            # Users should probably do this in their likelihood function
-            # anyways, but might as well do it here too.
-            if cache:
-                # If scaling, save theta in physical units
-                np.savez(str(runName)+"APFModelCache.npz",
-                         theta=self.theta, y=self.y)
-        # Don't care about lnlikelihood, just return thetaT
-        return thetaT
+            return np.asarray(newTheta), np.asarray(newY)
+        else:
+            return np.asarray(newTheta)
     # end function
 
 
@@ -796,23 +792,20 @@ class ApproxPosterior(object):
         -------
         MAP : iterable
             maximum a posteriori estimate
-        fn : float
+        MAPVal : float
             Mean of GP predictive function at MAP solution
         """
 
         # Initialize theta0 if not provided. If provided, validate it
         if theta0 is not None:
             theta0 = np.array(theta0).squeeze()
-            assert theta0.shape == theta.shape[-1]
-
-        # Figure out if we can supply bounds
-        if str(method).lower() in ["l-bfgs-b", "tnc"]:
-            bounds = self.bounds
+            assert theta0.ndim == self.theta.ndim
         else:
-            bounds = None
+            # Guess current minimum of negative y
+            theta0 = self.theta[np.argmin(-self.y)]
 
         # Initialize option if method is nelder-mead and options not provided
-        if str(method.lower()) == "nelder-mead":
+        if str(method).lower() == "nelder-mead":
             if options is None:
                 options = {"adaptive" : True}
 
@@ -820,7 +813,7 @@ class ApproxPosterior(object):
         res = []
         vals = []
 
-        # Set optimization fn for MAP
+        # Set optimization fn for MAP (note - because we're minimizing)
         def fn(x):
             # If not allowed by the prior, reject!
             if not np.isfinite(self._lnprior(x)):
@@ -828,31 +821,15 @@ class ApproxPosterior(object):
             else:
                 return -(self._gpll(x)[0])
 
-        # Loop over optimization calls
-        for ii in range(nRestarts):
-            # Keep minimizing until a valid solution is found
-            while True:
-                # Guess initial point
-                if theta0 is None:
-                    t0 = self.theta[np.argmax(self.y)] + 1.0e-3 * np.random.randn()
-                else:
-                    # Perturb user-supplied guess
-                    t0 = np.array(theta0) + np.min(theta0) * 1.0e-3 * np.random.randn(len(theta0))
+        # Minimize values predicted by GP, i.e. find minimum of mean of GP's
+        # conditional posterior distribution
+        MAP, MAPVal = ut.minimizeObjective(fn, self.y, self.gp,
+                                           self.priorSample, self._lnprior,
+                                           nRestarts=nRestarts, args=None,
+                                           method=method, options=options,
+                                           bounds=self.bounds, theta0=theta0)
 
-                tmp = minimize(fn, t0, method=method, options=options,
-                               bounds=bounds)["x"]
-
-                # If solution is finite and allowed by the prior, save!
-                if np.all(np.isfinite(tmp)):
-                    if np.isfinite(self._lnprior(tmp)):
-                        # Save solution, function value
-                        res.append(tmp)
-                        vals.append(fn(tmp))
-                        break
-
-        # Return best answer
-        bestInd = np.argmin(vals)
-
-        return res[bestInd], vals[bestInd]
+        # Note: return -MAPVal since we minimized function
+        return MAP, -MAPVal
     # end function
 # end class

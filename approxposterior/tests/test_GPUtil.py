@@ -55,11 +55,11 @@ def testUtilsGPAmp():
     errMsg = "ERROR: BAPE util fn bug.  Did you change gp_utils.setup_gp?"
     assert np.allclose(testUtil, -114623.57332731, rtol=1.0e-4), errMsg
 
-    # Now do the same using the naive utility function
-    testUtil = ut.NaiveUtility(thetaTest, y, gp, lh.rosenbrockLnprior)
+    # Now do the same using the Jones+1998 utility function
+    testUtil = ut.JonesUtility(thetaTest, y, gp, lh.rosenbrockLnprior)
 
     errMsg = "ERROR: naive util fn bug.  Did you change gp_utils.setup_gp?"
-    assert np.allclose(testUtil, 2226233.22000008, rtol=1.0e-4), errMsg
+    assert np.allclose(testUtil, -77.37826545, rtol=1.0e-4), errMsg
 # end function
 
 
@@ -106,11 +106,11 @@ def testUtilsGPNoAmp():
     errMsg = "ERROR: BAPE util fn bug.  Did you change gp_utils.setup_gp?"
     assert np.allclose(testUtil, 76.26762099, rtol=1.0e-4), errMsg
 
-    # Now do the same using the naive utility function
-    testUtil = ut.NaiveUtility(thetaTest, y, gp, lh.rosenbrockLnprior)
+    # Now do the same using the Jones+1998 utility function
+    testUtil = ut.JonesUtility(thetaTest, y, gp, lh.rosenbrockLnprior)
 
-    errMsg = "ERROR: naive util fn bug.  Did you change gp_utils.setup_gp?"
-    assert np.allclose(testUtil, 38.28476014, rtol=1.0e-4), errMsg
+    errMsg = "ERROR: Jones util fn bug.  Did you change gp_utils.setup_gp?"
+    assert np.allclose(testUtil, 0, rtol=1.0e-4), errMsg
 # end function
 
 if __name__ == "__main__":

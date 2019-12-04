@@ -11,8 +11,6 @@ Installation
 
 **Using pip**
 
-Using :py:obj:`pip`:
-
 First install george
 
 .. code-block:: bash

@@ -16,7 +16,7 @@ import numpy as np
 m0 = 50                           # Initial size of training set
 m = 20                            # Number of new points to find each iteration
 nmax = 2                          # Maximum number of iterations
-bounds = ((-5,5), (-5,5))         # Prior bounds
+bounds = [(-5,5), (-5,5)]         # Prior bounds
 algorithm = "bape"                # Use the Kandasamy et al. (2015) formalism
 seed = 57                         # RNG seed
 
@@ -49,7 +49,7 @@ ap = approx.ApproxPosterior(theta=theta,
 
 # Run!
 ap.run(m=m, nmax=nmax, estBurnin=True, nGPRestarts=3, mcmcKwargs=mcmcKwargs,
-       cache=False, samplerKwargs=samplerKwargs, verbose=True, thinChains=True,
+       cache=False, samplerKwargs=samplerKwargs, verbose=True, thinChains=False,
        onlyLastMCMC=True)
 
 # Check out the final posterior distribution!

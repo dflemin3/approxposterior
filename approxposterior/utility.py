@@ -8,12 +8,12 @@ or computing KL divergences, and the GP utility functions, e.g. the bape utility
 """
 
 # Tell module what it's allowed to import
-__all__ = ["logsubexp", "AGPUtility", "BAPEUtility", "NaiveUtility",
+__all__ = ["logsubexp", "AGPUtility", "BAPEUtility", "JonesUtility",
            "minimizeObjective", "klNumerical", "latinHypercubeSampling"]
 
 import numpy as np
 from scipy.optimize import minimize
-from scipy.special import erf
+from scipy.stats import norm
 from pyDOE import lhs
 
 
@@ -239,10 +239,11 @@ def BAPEUtility(theta, y, gp, priorFn):
 # end function
 
 
-def NaiveUtility(theta, y, gp, priorFn):
+def JonesUtility(theta, y, gp, priorFn, zeta=0.01):
     """
-    Naive utility function that is maximized by GP predictions with
-    large loglikelihoods and large uncertainties.
+    Jones utility function - Expected Improvement derived in Jones et al. (1998)
+    EI(x) = E(max(f(theta) - f(thetaBest),0)) where f(thetaBest) is the best
+    value of the function so far and thetaBest is the best design point
 
     Parameters
     ----------
@@ -253,6 +254,9 @@ def NaiveUtility(theta, y, gp, priorFn):
     gp : george GP object
     priorFn : function
         Function that computes lnPrior probability for a given theta.
+    zeta : float (optional)
+        Exploration parameter. Larger zeta leads to more exploration. Defaults
+        to 0.01
 
     Returns
     -------
@@ -272,7 +276,22 @@ def NaiveUtility(theta, y, gp, priorFn):
         raise RuntimeError("ERROR: Need to compute GP before using it!")
 
     try:
-        util = -mu * var
+        std = np.sqrt(var)
+
+        # Find best value
+        yBest = np.max(y)
+
+        # Intermediate quantity
+        if std > 0:
+            z = (mu - yBest - zeta) / std
+        else:
+            return 0.0
+
+        # Standard normal CDF of z
+        cdf = norm.cdf(z)
+        pdf = norm.pdf(z)
+
+        util = -((mu - yBest - zeta) * cdf + std * pdf)
     except ValueError:
         print("Invalid util value.  Negative variance or inf mu?")
         raise ValueError("util: %e. mu: %e. var: %e" % (util, mu, var))
@@ -281,12 +300,18 @@ def NaiveUtility(theta, y, gp, priorFn):
 # end function
 
 
-def minimizeObjective(fn, y, gp, sampleFn, priorFn, nMinObjRestarts=5):
+def minimizeObjective(fn, y, gp, sampleFn, priorFn, nRestarts=5,
+                      method="nelder-mead", options=None, bounds=None,
+                      theta0=None, args=None, maxIters=100):
     """
-    Find point that minimizes fn for a gaussian process gp conditioned on y,
-    the data, and is allowed by the prior, priorFn.  PriorFn is required as it
-    helps to select against points with non-finite likelihoods, e.g. NaNs or
-    infs.  This is required as the GP can only train on finite values.
+    Minimize some arbitrary function, fn. This function is most useful when
+    evaluating fn requires a Gaussian process model, gp. For example, this
+    function can be used to find the point that minimizes a utility fn for a gp
+    conditioned on y, the data, and is allowed by the prior, priorFn.
+
+    PriorFn is required as it helps to select against points with non-finite
+    likelihoods, e.g. NaNs or infs.  This is required as the GP can only train
+    on finite values.
 
     Parameters
     ----------
@@ -304,33 +329,79 @@ def minimizeObjective(fn, y, gp, sampleFn, priorFn, nMinObjRestarts=5):
         Number of times to restart minimizing -utility function to select
         next point to improve GP performance.  Defaults to 5.  Increase this
         number of the point selection is not working well.
+    method : str (optional)
+        scipy.optimize.minimize method.  Defaults to nelder-mead.
+    options : dict (optional)
+        kwargs for the scipy.optimize.minimize function.  Defaults to None,
+        but if method == "nelder-mead", options = {"adaptive" : True}
+    theta0 : float/iterable (optional)
+        Initial guess for optimization. Defaults to None, which draws a sample
+        from the prior function using sampleFn.
+    args : iterable (optional)
+        Arguments for user-specified function that this function will minimize.
+        Defaults to None.
+    maxIters (int) (optional)
+        Maximum number of iterations to try restarting optimization if the
+        solution isn't finite and/nor allowed by the prior function. Defaults to
+        100.
 
     Returns
     -------
-    theta : (1 x n_dims)
+    thetaBest : (1 x n_dims)
         point that minimizes fn
+    fnBest : float
+        fn(thetaBest)
     """
 
-    # Arguments for the utility function
-    args = (y, gp, priorFn)
+    # Initialize options
+    if str(method).lower() == "nelder-mead" and options is None:
+        options = {"adaptive" : True}
+
+    # Minimize GP nll, save result, evaluate marginal likelihood
+    if str(method).lower() in [" l-bfgs-b", "tnc"]:
+        pass
+    # Bounds not allowed
+    else:
+        bounds = None
+
+    if args is None:
+        args = ()
+
+    # Ensure theta0 is in the proper form, determine its dimensionality
+    if theta0 is not None:
+        theta0 = np.asarray(theta0).squeeze()
+        ndim = theta0.ndim
+        if ndim <= 0:
+            ndim = 1
 
     # Containers
     res = []
     objective = []
 
     # Loop over optimization calls
-    for ii in range(nMinObjRestarts):
+    for ii in range(nRestarts):
+
+        # Guess initial value from prior
+        if theta0 is None:
+            t0 = np.asarray(sampleFn(1)).reshape(1,-1)
+        else:
+            t0 = theta0 + np.min(theta0) * 1.0e-3 * np.random.randn(ndim)
 
         # Keep minimizing until a valid solution is found
+        ii = 0
         while True:
-            # Guess initial value from prior
-            theta0 = np.array(sampleFn(1)).reshape(1,-1)
 
-            tmp = minimize(fn, theta0, args=args, bounds=None,
-                           method="nelder-mead",
-                           options={"adaptive" : True})["x"]
+            # Too many iterations
+            if ii >= maxIters:
+                errMsg = "ERROR: Cannot find a valid solution. Current iterations: %d\n" % ii
+                errMsg += "Maximum iterations: %d\n" % maxIters
+                raise RuntimeError(errMsg)
 
-            # If solution is finite and allowed by the prior, save!
+            # Minimize the function
+            tmp = minimize(fn, t0, args=args, bounds=bounds,
+                           method=method, options=options)["x"]
+
+            # If solution is finite and allowed by the prior, save
             if np.all(np.isfinite(tmp)):
                 if np.isfinite(priorFn(tmp)):
                     # Save solution, function value
@@ -338,6 +409,14 @@ def minimizeObjective(fn, y, gp, sampleFn, priorFn, nMinObjRestarts=5):
                     objective.append(fn(tmp, *args))
                     break
 
-    # Return value that minimizes objective function
-    return np.array(res)[np.argmin(objective)]
+            # If we're here, the solution didn't work. Try again with a new
+            # sample from the prior
+            t0 = np.array(sampleFn(1)).reshape(1,-1)
+
+            ii += 1
+        # end loop
+
+    # Return value that minimizes objective function out of all minimizations
+    bestInd = np.argmin(objective)
+    return np.array(res)[bestInd], objective[bestInd]
 # end function

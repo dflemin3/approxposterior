@@ -55,9 +55,9 @@ def test_run():
                                 algorithm=algorithm)
 
     # Run!
-    ap.run(m=m, nmax=nmax, cache=False, mcmcKwargs=mcmcKwargs,
-           samplerKwargs=samplerKwargs, verbose=False, nGPRestarts=3, seed=seed,
-           onlyLastMCMC=True)
+    ap.run(m=m, nmax=nmax, estBurnin=True, nGPRestarts=3, mcmcKwargs=mcmcKwargs,
+           cache=False, samplerKwargs=samplerKwargs, verbose=False,
+           thinChains=False, onlyLastMCMC=True)
 
     # Ensure medians of chains are consistent with the true values
     samples = ap.sampler.get_chain(discard=ap.iburns[-1], flat=True, thin=ap.ithins[-1])
@@ -70,7 +70,7 @@ def test_run():
     # perfect because we've using a small number of samples to make this test
     # quick enough
     errMsg = "Medians of marginal posteriors are incosistent with true values."
-    assert((diffX1 < 0.5) & (diffX2 < 0.5)), errMsg
+    assert((diffX1 < 0.1) & (diffX2 < 0.1)), errMsg
 
 # end function
 

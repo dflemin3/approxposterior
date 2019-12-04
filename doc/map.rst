@@ -108,9 +108,10 @@ so that what we hope to recover!
 .. image:: _figures/rosenbrockMAP.png
   :width: 400
 
-:py:obj:`approxposterior` MAP solution: (0.973, 0.943), -2.553785e-4 (red point)
+:py:obj:`approxposterior` MAP solution: (1.021, 1.041), 3.506784e-4 (red point),
 compared to the truth (1,1), 0 (white dashed lines).
 Our answer is pretty close to the truth, and better yet, :py:obj:`approxposterior`
-only required 50 Rosenbrock function evaluations to train its GP used to estimate
-the MAP solution. For computationally-expensive forward models, this method can
-be used for efficient (approximate) Bayesian optimization of functions.
+only required 50 randomly-distributed Rosenbrock function evaluations to train
+its GP used to estimate the MAP solution. For computationally-expensive
+forward models, this method can be used for efficient (approximate) Bayesian
+optimization of functions.
