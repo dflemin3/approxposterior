@@ -1,5 +1,5 @@
 [report]
 omit =
     doc/*
-    approxposterior/tests/*
+    tests/*
     *__init__*
