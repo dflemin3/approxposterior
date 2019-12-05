@@ -80,15 +80,21 @@ class ApproxPosterior(object):
         self.theta = np.array(theta).squeeze()
         self.y = np.array(y).squeeze()
 
+        # Determine dimensionality
+        if self.theta.ndim <= 0:
+            ndim = 1
+        else:
+            ndim = theta.shape[-1]
+
         # Make sure y, theta are valid floats
         if np.any(~np.isfinite(self.theta)) or np.any(~np.isfinite(self.y)):
             print("theta, y:", theta, y)
             raise ValueError("All theta and y values must be finite!")
 
         # Ensure bounds has correct shape
-        if len(bounds) != self.theta.ndim:
+        if len(bounds) != ndim:
             err_msg = "ERROR: bounds provided but len(bounds) != ndim.\n"
-            err_msg += "ndim = %d, len(bounds) = %d" % (self.theta.ndim, len(bounds))
+            err_msg += "ndim = %d, len(bounds) = %d" % (ndim, len(bounds))
             raise ValueError(err_msg)
         else:
             self.bounds = bounds
@@ -799,7 +805,11 @@ class ApproxPosterior(object):
         # Initialize theta0 if not provided. If provided, validate it
         if theta0 is not None:
             theta0 = np.array(theta0).squeeze()
-            assert theta0.ndim == self.theta.ndim
+            if theta0.ndim <= 0:
+                ndim = 1
+            else:
+                ndim = theta0.shape[-1]
+            assert ndim == self.theta.shape[-1]
         else:
             # Guess current minimum of negative y
             theta0 = self.theta[np.argmin(-self.y)]

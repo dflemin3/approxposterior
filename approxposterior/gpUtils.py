@@ -153,9 +153,10 @@ def defaultGP(theta, y, order=None, white_noise=-10, fitAmp=False):
     # Tidy up the shapes and determine dimensionality
     theta = np.asarray(theta).squeeze()
     y = np.asarray(y).squeeze()
-    ndim = theta.ndim
-    if ndim <= 0:
+    if theta.ndim <= 0:
         ndim = 1
+    else:
+        ndim = theta.shape[-1]
 
     # Guess initial metric, or scale length of the covariances (must be > 0)
     initialMetric = np.fabs(np.random.randn(ndim))
