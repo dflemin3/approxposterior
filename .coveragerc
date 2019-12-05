@@ -1,5 +1,6 @@
 [report]
 omit =
     doc/*
-    tests/*
+    approxposterior/tests/*
+    approxposterior/mcmcUtils.py
     *__init__*
