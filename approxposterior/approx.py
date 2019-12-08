@@ -794,6 +794,9 @@ class ApproxPosterior(object):
         what the GP believes is the point of maximum of whatever function is
         definded by self._lnlike + self._lnprior.
 
+        Note: MAP estimation typically work better when fitAmp = True, that is
+        the GP kernel has an amplitude term
+
         Parameters
         ----------
         theta0 : iterable
@@ -884,6 +887,9 @@ class ApproxPosterior(object):
 
         Note 2: For this function, it is recommended to keep optGPEveryN = 1 to
         ensure the GP properly learns the underlying function.
+
+        Note 3: Bayesian optimization and MAP estimation typically work better
+        when fitAmp = True, that is the GP kernel has an amplitude term
 
         Parameters
         ----------
@@ -1058,7 +1064,7 @@ class ApproxPosterior(object):
         # OptimizerSolution object
         soln = {"thetaBest" : thetas[-1], "valBest" : vals[-1],
                 "thetas" : np.asarray(thetas).squeeze(),
-                "vals" : np.asarray(vals).squeeze(), "nev" : nn}
+                "vals" : np.asarray(vals).squeeze(), "nev" : nn+1}
 
         return soln
     # end function
