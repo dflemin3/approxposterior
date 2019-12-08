@@ -21,11 +21,9 @@ from sklearn.metrics import mean_squared_error
 
 def defaultHyperPrior(p):
     """
-    Default prior function for GP hyperparameters. Ensures the mean is negative,
-    which makes sense since we hope to regress on the negative loglikelihood.
-    This prior also keeps the hyperparameters within a reasonable huge range,
-    [-20, 20]. Note that george operates on the *log* hyperparameters, except
-    for the mean function.
+    Default prior function for GP hyperparameters. This prior also keeps the
+    hyperparameters within a reasonable huge range, [-20, 20]. Note that george
+    operates on the *log* hyperparameters, except for the mean function.
 
     Parameters
     ----------
@@ -36,10 +34,6 @@ def defaultHyperPrior(p):
     -------
     prior : float
     """
-
-    # Mean must be < 0
-    if p[0] > 0:
-        return -np.inf
 
     # Restrict range of hyperparameters (ignoring mean term)
     if np.any(np.fabs(p)[1:] > 20):
@@ -153,7 +147,7 @@ def defaultGP(theta, y, order=None, white_noise=-10, fitAmp=False):
     # Tidy up the shapes and determine dimensionality
     theta = np.asarray(theta).squeeze()
     y = np.asarray(y).squeeze()
-    if theta.ndim <= 0:
+    if theta.ndim <= 1:
         ndim = 1
     else:
         ndim = theta.shape[-1]
