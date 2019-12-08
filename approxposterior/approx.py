@@ -789,9 +789,10 @@ class ApproxPosterior(object):
     def findMAP(self, theta0=None, method="nelder-mead", options=None,
                 nRestarts=5):
         """
-        Find maximum a posteriori (MAP) estimate, given a trained GP. To find
+        Find the maximum a posteriori (MAP) estimate, given a trained GP. To find
         the MAP, this function minimizes -mean predicted by the GP, aka finds
-        what the GP believes is the point of maximum logprobability.
+        what the GP believes is the point of maximum of whatever function is
+        definded by self._lnlike + self._lnprior.
 
         Parameters
         ----------
@@ -866,8 +867,8 @@ class ApproxPosterior(object):
         thetaBest = argmax(fn(theta))
 
         given a GP trained on (theta, y). In this case, fn is the function
-        specified by self._lnlike + self._lnprior. Note that in practice, this
-        function *minimizes* the objective, so if performing a maximization,
+        specified by self._lnlike + self._lnprior. Note that this function
+        *maximizes* the objective, so if performing a minimization,
         define the objective as the negative of your function. See Brochu et al.
         (2009) or Frazier (2018) for good reviews of Bayesian optimization.
 
@@ -1041,7 +1042,7 @@ class ApproxPosterior(object):
             vals.append(valN)
 
             # Convergence check
-            if nn !=0:
+            if nn > 0:
                 if np.fabs(vals[-1] - vals[-2]) < tol:
                     kk = kk + 1
                 # Not close enough: reset counter
@@ -1056,7 +1057,8 @@ class ApproxPosterior(object):
         # Create solution dictionary that is sort of like minimizer's
         # OptimizerSolution object
         soln = {"thetaBest" : thetas[-1], "valBest" : vals[-1],
-                "thetas" : thetas, "vals" : vals, "nev" : nn}
+                "thetas" : np.asarray(thetas).squeeze(),
+                "vals" : np.asarray(vals).squeeze(), "nev" : nn}
 
         return soln
     # end function
