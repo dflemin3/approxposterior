@@ -18,10 +18,10 @@ matplotlib.rcParams.update({"font.size": 15})
 
 
 # Define algorithm parameters
-m0 = 2                           # Size of initial training set
+m0 = 3                           # Size of initial training set
 bounds = [[-1, 2]]               # Prior bounds
 algorithm = "jones"              # Expected Utility from Jones et al. (1998)
-numNewPoints = 10                # Number of new design points to find
+numNewPoints = 20                # Number of new design points to find
 seed = 57                        # RNG seed
 np.random.seed(seed)
 
@@ -51,7 +51,7 @@ ap = approx.ApproxPosterior(theta=theta,
                             algorithm=algorithm)
 
 # Run the Bayesian optimization!
-soln = ap.bayesOpt(nmax=numNewPoints, tol=1.0e-3, seed=seed, verbose=False,
+soln = ap.bayesOpt(nmax=numNewPoints, tol=1.0e-5, seed=seed, verbose=True,
                    cache=False, gpMethod="powell", optGPEveryN=1, nGPRestarts=2,
                    nMinObjRestarts=5, initGPOpt=True, minObjMethod="nelder-mead",
                    gpHyperPrior=gpUtils.defaultHyperPrior)
