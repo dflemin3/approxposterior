@@ -211,5 +211,4 @@ year = {2018},
 doi = {10.1162/neco\_a\_01127},
 URL = { https://doi.org/10.1162/neco_a_01127},
 eprint = {https://doi.org/10.1162/neco_a_01127}}
-}
 ```
