@@ -33,11 +33,11 @@ and employs an active learning approach to iteratively improve the GPs predictiv
 performance while minimizing the number of calls to the expensive model required
 to generate the GP's training set.
 
-`approxposterior` implements both the [Bayesian Active Learning for Posterior Estimation (BAPE, Kandasamy et al. (2015))](https://www.cs.cmu.edu/~kkandasa/pubs/kandasamyIJCAI15activePostEst.pdf) and [Adaptive Gaussian process approximation for Bayesian inference with expensive likelihood functions (AGP, Wang & Li (2017))](https://arxiv.org/abs/1703.09930) algorithms for estimating posterior probability distributions for use with inference problems with computationally-expensive models. In such situations,
-the goal is to infer posterior probability distributions for model parameters, given some data, with the additional constraint of minimizing the number of forward model evaluations given the model's assumed large computational cost.  `approxposterior` trains a Gaussian Process (GP) surrogate model for the likelihood evaluation by modeling the covariances in logprobability (logprior + loglikelihood) space. `approxposterior` then uses this GP within an MCMC sampler for each likelihood evaluation to perform the inference. `approxposterior` iteratively improves the GP's predictive performance by leveraging the inherent uncertainty in the GP's predictions to identify high-likelihood regions in parameter space where the GP is uncertain.  `approxposterior` then evaluates the forward model at these points to expand the training set in relevant regions of parameter space, re-training the GP to maximize its predictive ability while minimizing the size of the training set.  Check out [the BAPE paper](https://www.cs.cmu.edu/~kkandasa/pubs/kandasamyIJCAI15activePostEst.pdf) by Kandasamy et al. (2015) and [the AGP paper](https://arxiv.org/abs/1703.09930) by Wang & Li (2017) for in-depth descriptions of the respective algorithms.
+`approxposterior` implements both the [Bayesian Active Learning for Posterior Estimation (BAPE, Kandasamy et al. (2017))](https://www.sciencedirect.com/science/article/abs/pii/S0004370216301394) and [Adaptive Gaussian process approximation for Bayesian inference with expensive likelihood functions (AGP, Wang & Li (2018))](https://www.semanticscholar.org/paper/Adaptive-Gaussian-Process-Approximation-for-with-Wang-Li/a11e3a4144898920835ccff7ef0ed0b159b94bc6) algorithms for estimating posterior probability distributions for use with inference problems with computationally-expensive models. In such situations,
+the goal is to infer posterior probability distributions for model parameters, given some data, with the additional constraint of minimizing the number of forward model evaluations given the model's assumed large computational cost.  `approxposterior` trains a Gaussian Process (GP) surrogate model for the likelihood evaluation by modeling the covariances in logprobability (logprior + loglikelihood) space. `approxposterior` then uses this GP within an MCMC sampler for each likelihood evaluation to perform the inference. `approxposterior` iteratively improves the GP's predictive performance by leveraging the inherent uncertainty in the GP's predictions to identify high-likelihood regions in parameter space where the GP is uncertain.  `approxposterior` then evaluates the forward model at these points to expand the training set in relevant regions of parameter space, re-training the GP to maximize its predictive ability while minimizing the size of the training set.  Check out [the BAPE paper](https://www.sciencedirect.com/science/article/abs/pii/S0004370216301394) by Kandasamy et al. (2017) and [the AGP paper](https://www.semanticscholar.org/paper/Adaptive-Gaussian-Process-Approximation-for-with-Wang-Li/a11e3a4144898920835ccff7ef0ed0b159b94bc6) by Wang & Li (2018) for in-depth descriptions of the respective algorithms.
 
 In practice, we find that `approxposterior` can estimate posterior probability distributions that are accurate
-approximations to the true, underlying distributions with only of order 100s-1000s model evaluations to train the GP, compared to 1,000,000, often more, required by MCMC methods, depending on the inference problem. The estimated marginal posterior distributions have medians that are all typically within a few percent of the true values, with similar uncertainties to the true distributions.  We have validated `approxposterior` for 2-5 dimensional problems, while Kandasamy et al. (2015) found in an 9-dimensional case that the BAPE algorithm significantly outperformed MCMC methods in terms of both accuracy and speed. See their paper for details and check out the examples for more information and example use cases.
+approximations to the true, underlying distributions with only of order 100s-1000s model evaluations to train the GP, compared to 1,000,000, often more, required by MCMC methods, depending on the inference problem. The estimated marginal posterior distributions have medians that are all typically within a few percent of the true values, with similar uncertainties to the true distributions.  We have validated `approxposterior` for 2-5 dimensional problems, while Kandasamy et al. (2017) found in an 9-dimensional case that the BAPE algorithm significantly outperformed MCMC methods in terms of both accuracy and speed. See their paper for details and check out the examples for more information and example use cases.
 
 Documentation
 =============
@@ -181,31 +181,35 @@ Fleming and VanderPlas (2018):
 }
 ```
 
-Kandasamy et al. (2015):
+Kandasamy et al. (2017):
 
 ```bash
-@misc{Kandasamy2015,
-	author = {Kirthevasan Kandasamy and Jeff Schneider and Barnabas Poczos},
-	title = "{Bayesian Active Learning for Posterior Estimation}",
-	note = {International Joint Conference on Artificial Intelligence},
-	year = {2015},
-	}
+@article{Kandasamy2017,
+title = "Query efficient posterior estimation in scientific experiments via Bayesian active learning",
+journal = "Artificial Intelligence",
+volume = "243",
+pages = "45 - 56",
+year = "2017",
+issn = "0004-3702",
+doi = "https://doi.org/10.1016/j.artint.2016.11.002",
+url = "http://www.sciencedirect.com/science/article/pii/S0004370216301394",
+author = "Kirthevasan Kandasamy and Jeff Schneider and Barnabás Póczos",
+keywords = "Posterior estimation, Active learning, Gaussian processes"}
 ```
 
-Wang & Li (2017):
+Wang & Li (2018):
 
 ```bash
-@ARTICLE{Wang2017,
-   author = {{Wang}, H. and {Li}, J.},
-    title = "{Adaptive Gaussian process approximation for Bayesian inference with expensive likelihood functions}",
-  journal = {ArXiv e-prints},
-archivePrefix = "arXiv",
-   eprint = {1703.09930},
- primaryClass = "stat.CO",
- keywords = {Statistics - Computation, Statistics - Machine Learning},
-     year = 2017,
-    month = mar,
-   adsurl = {http://adsabs.harvard.edu/abs/2017arXiv170309930W},
-  adsnote = {Provided by the SAO/NASA Astrophysics Data System}
+@article{Wang2018,
+author = {Wang, Hongqiao and Li, Jinglai},
+title = {Adaptive Gaussian Process Approximation for Bayesian Inference with Expensive Likelihood Functions},
+journal = {Neural Computation},
+volume = {30},
+number = {11},
+pages = {3072-3094},
+year = {2018},
+doi = {10.1162/neco\_a\_01127},
+URL = { https://doi.org/10.1162/neco_a_01127},
+eprint = {https://doi.org/10.1162/neco_a_01127}}
 }
 ```
