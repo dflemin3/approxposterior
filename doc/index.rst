@@ -1,7 +1,5 @@
 .. approxposterior documentation master file, created by
    sphinx-quickstart on Thu Feb 22 12:07:36 2018.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
 
 approxposterior
 ===============
@@ -16,8 +14,8 @@ performance while minimizing the number of calls to the expensive model required
 to generate the GP's training set.
 
 :py:obj:`approxposterior` implements variants of `Bayesian Active Learning for Posterior Estimation` (BAPE_)
-by Kandasamy et al. (2015) and `Adaptive Gaussian process approximation for
-Bayesian inference with expensive likelihood functions` (AGP_) by Wang & Li (2017).
+by Kandasamy et al. (2017) and `Adaptive Gaussian process approximation for
+Bayesian inference with expensive likelihood functions` (AGP_) by Wang & Li (2018).
 These active learning algorithms outline schemes for GP active learning that :py:obj:`approxposterior`
 uses for its Bayesian inference and/or optimization.
 
@@ -31,10 +29,10 @@ Introduction
 the goal is to infer posterior probability distributions for model parameters, given some data, with the additional constraint of minimizing the number of forward model evaluations given the model's assumed large computational cost.  :py:obj:`approxposterior` trains a Gaussian Process (GP) surrogate model for the likelihood evaluation by modeling the covariances in logprobability (logprior + loglikelihood) space. :py:obj:`approxposterior` then uses this GP within an MCMC sampler for each likelihood evaluation to perform the inference. :py:obj:`approxposterior` iteratively improves the GP's predictive performance by leveraging the inherent uncertainty in the GP's predictions to identify high-likelihood regions in parameter space where the GP is uncertain.  :py:obj:`approxposterior` then evaluates the forward model at these points to expand the training set in relevant regions of parameter space, re-training the GP to maximize its predictive ability while minimizing the size of the training set.  Check out (AGP_) and (BAPE_) for in-depth descriptions of the respective algorithms.
 
 In practice, we find that :py:obj:`approxposterior` can estimate posterior probability distributions that are accurate
-approximations to the true, underlying distributions with only of order 100s-1000s model evaluations to train the GP, compared to 1,000,000, often more, required by MCMC methods, depending on the inference problem. The estimated marginal posterior distributions have medians that are all typically within a few percent of the true values, with similar uncertainties to the true distributions.  We have validated :py:obj:`approxposterior` for 2-5 dimensional problems, while Kandasamy et al. (2015) found in an 9-dimensional case that the BAPE algorithm significantly outperformed MCMC methods in terms of both accuracy and speed. See their paper for details and check out the examples for more information and example use cases.
+approximations to the true, underlying distributions with only of order 100s-1000s model evaluations to train the GP, compared to 1,000,000, often more, required by MCMC methods, depending on the inference problem. The estimated marginal posterior distributions have medians that are all typically within a few percent of the true values, with similar uncertainties to the true distributions.  We have validated :py:obj:`approxposterior` for 2-5 dimensional problems, while Kandasamy et al. (2017) found in an 9-dimensional case that the BAPE algorithm significantly outperformed MCMC methods in terms of both accuracy and speed. See their paper for details and check out the examples for more information and example use cases.
 
-.. _BAPE: https://www.cs.cmu.edu/~kkandasa/pubs/kandasamyIJCAI15activePostEst.pdf
-.. _AGP: https://arxiv.org/abs/1703.09930
+.. _BAPE: http://www.sciencedirect.com/science/article/pii/S0004370216301394
+.. _AGP: https://www.semanticscholar.org/paper/Adaptive-Gaussian-Process-Approximation-for-with-Wang-Li/a11e3a4144898920835ccff7ef0ed0b159b94bc6
 
 .. toctree::
    :maxdepth: 2

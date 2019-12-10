@@ -17,7 +17,7 @@ m0 = 50                           # Initial size of training set
 m = 20                            # Number of new points to find each iteration
 nmax = 2                          # Maximum number of iterations
 bounds = [(-5,5), (-5,5)]         # Prior bounds
-algorithm = "bape"                # Use the Kandasamy et al. (2015) formalism
+algorithm = "bape"                # Use the Kandasamy et al. (2017) formalism
 seed = 57                         # RNG seed
 
 np.random.seed(seed)
@@ -37,7 +37,7 @@ for ii in range(len(theta)):
 # Default gp
 gp = gpUtils.defaultGP(theta, y, white_noise=-10)
 
-# Initialize object using the Wang & Li (2017) Rosenbrock function example
+# Initialize object using the Wang & Li (2018) Rosenbrock function example
 ap = approx.ApproxPosterior(theta=theta,
                             y=y,
                             gp=gp,
