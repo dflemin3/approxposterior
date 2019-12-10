@@ -224,11 +224,9 @@ hyperparameters.</p>
 <dl class="function">
 <dt id="approxposterior.gpUtils.defaultHyperPrior">
 <code class="descclassname">approxposterior.gpUtils.</code><code class="descname">defaultHyperPrior</code><span class="sig-paren">(</span><em>p</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/gpUtils.html#defaultHyperPrior"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.gpUtils.defaultHyperPrior" title="Permalink to this definition">¶</a></dt>
-<dd><p>Default prior function for GP hyperparameters. Ensures the mean is negative,
-which makes sense since we hope to regress on the negative loglikelihood.
-This prior also keeps the hyperparameters within a reasonable huge range,
-[-20, 20]. Note that george operates on the <em>log</em> hyperparameters, except
-for the mean function.</p>
+<dd><p>Default prior function for GP hyperparameters. This prior also keeps the
+hyperparameters within a reasonable huge range, [-20, 20]. Note that george
+operates on the <em>log</em> hyperparameters, except for the mean function.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />

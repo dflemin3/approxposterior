@@ -220,17 +220,15 @@
 <span id="approxposterior-class"></span><h1>ApproxPosterior Class<a class="headerlink" href="#module-approxposterior.approx" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="approx-py-approxposterior">
 <h2><code class="xref py py-mod docutils literal notranslate"><span class="pre">approx.py</span></code> - ApproxPosterior<a class="headerlink" href="#approx-py-approxposterior" title="Permalink to this headline">¶</a></h2>
-<p>Bayesian Posterior estimation using Dan Forman-Mackey’s Gaussian Process
-implementation, george, to learn the logprobability of points and the
+<p>Approximate Bayesian Posterior estimation and Bayesian optimzation. approxposterior
+uses Dan Forman-Mackey’s Gaussian Process implementation, george, and the
 Metropolis-Hastings MCMC ensemble sampler, emcee, to infer the approximate
-posterior distributions given the GP model. approxposterior uses both
-Wang &amp; Li (2017) and Kandasamy et al. (2015) utility functions for point
-selection to optimially expand the GP’s training set.</p>
+posterior distributions given the GP model.</p>
 <dl class="class">
 <dt id="approxposterior.approx.ApproxPosterior">
 <em class="property">class </em><code class="descclassname">approxposterior.approx.</code><code class="descname">ApproxPosterior</code><span class="sig-paren">(</span><em>theta</em>, <em>y</em>, <em>lnprior</em>, <em>lnlike</em>, <em>priorSample</em>, <em>bounds</em>, <em>gp=None</em>, <em>algorithm='bape'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/approx.html#ApproxPosterior"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.approx.ApproxPosterior" title="Permalink to this definition">¶</a></dt>
-<dd><p>Class used to compute approximate Bayesian posterior distributions using a
-Gaussian process surrogate model</p>
+<dd><p>Class used to estimate approximate Bayesian posterior distributions or
+perform Bayesian optimization using a Gaussian process surrogate model</p>
 <p class="rubric">Methods</p>
 <table border="1" class="longtable docutils">
 <colgroup>
@@ -238,29 +236,185 @@ Gaussian process surrogate model</p>
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="#approxposterior.approx.ApproxPosterior.findMAP" title="approxposterior.approx.ApproxPosterior.findMAP"><code class="xref py py-obj docutils literal notranslate"><span class="pre">findMAP</span></code></a>([theta0,&nbsp;method,&nbsp;options,&nbsp;nRestarts])</td>
-<td>Find maximum a posteriori (MAP) estimate, given a trained GP.</td>
+<tr class="row-odd"><td><a class="reference internal" href="#approxposterior.approx.ApproxPosterior.bayesOpt" title="approxposterior.approx.ApproxPosterior.bayesOpt"><code class="xref py py-obj docutils literal notranslate"><span class="pre">bayesOpt</span></code></a>(nmax[,&nbsp;theta0,&nbsp;tol,&nbsp;kmax,&nbsp;seed,&nbsp;…])</td>
+<td>Perform Bayesian optimization given a GP surrogate model to estimate</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#approxposterior.approx.ApproxPosterior.findNextPoint" title="approxposterior.approx.ApproxPosterior.findNextPoint"><code class="xref py py-obj docutils literal notranslate"><span class="pre">findNextPoint</span></code></a>([computeLnLike,&nbsp;bounds,&nbsp;…])</td>
+<tr class="row-even"><td><a class="reference internal" href="#approxposterior.approx.ApproxPosterior.findMAP" title="approxposterior.approx.ApproxPosterior.findMAP"><code class="xref py py-obj docutils literal notranslate"><span class="pre">findMAP</span></code></a>([theta0,&nbsp;method,&nbsp;options,&nbsp;nRestarts])</td>
+<td>Find the maximum a posteriori (MAP) estimate, given a trained GP.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#approxposterior.approx.ApproxPosterior.findNextPoint" title="approxposterior.approx.ApproxPosterior.findNextPoint"><code class="xref py py-obj docutils literal notranslate"><span class="pre">findNextPoint</span></code></a>([theta0,&nbsp;computeLnLike,&nbsp;…])</td>
 <td>Find numNewPoints new point(s), thetaT, by maximizing utility function.</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#approxposterior.approx.ApproxPosterior.optGP" title="approxposterior.approx.ApproxPosterior.optGP"><code class="xref py py-obj docutils literal notranslate"><span class="pre">optGP</span></code></a>([seed,&nbsp;method,&nbsp;options,&nbsp;p0,&nbsp;…])</td>
+<tr class="row-even"><td><a class="reference internal" href="#approxposterior.approx.ApproxPosterior.optGP" title="approxposterior.approx.ApproxPosterior.optGP"><code class="xref py py-obj docutils literal notranslate"><span class="pre">optGP</span></code></a>([seed,&nbsp;method,&nbsp;options,&nbsp;p0,&nbsp;…])</td>
 <td>Optimize hyperparameters of approx object’s GP</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#approxposterior.approx.ApproxPosterior.run" title="approxposterior.approx.ApproxPosterior.run"><code class="xref py py-obj docutils literal notranslate"><span class="pre">run</span></code></a>([m,&nbsp;nmax,&nbsp;seed,&nbsp;timing,&nbsp;verbose,&nbsp;…])</td>
-<td>Core algorithm to estimate the posterior distribution via Gaussian Process regression to the joint distribution for the forward model input/output pairs</td>
+<tr class="row-odd"><td><a class="reference internal" href="#approxposterior.approx.ApproxPosterior.run" title="approxposterior.approx.ApproxPosterior.run"><code class="xref py py-obj docutils literal notranslate"><span class="pre">run</span></code></a>([m,&nbsp;nmax,&nbsp;seed,&nbsp;timing,&nbsp;verbose,&nbsp;…])</td>
+<td>Core method to estimate the approximate posterior distribution via Gaussian Process regression</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#approxposterior.approx.ApproxPosterior.runMCMC" title="approxposterior.approx.ApproxPosterior.runMCMC"><code class="xref py py-obj docutils literal notranslate"><span class="pre">runMCMC</span></code></a>([samplerKwargs,&nbsp;mcmcKwargs,&nbsp;…])</td>
+<tr class="row-even"><td><a class="reference internal" href="#approxposterior.approx.ApproxPosterior.runMCMC" title="approxposterior.approx.ApproxPosterior.runMCMC"><code class="xref py py-obj docutils literal notranslate"><span class="pre">runMCMC</span></code></a>([samplerKwargs,&nbsp;mcmcKwargs,&nbsp;…])</td>
 <td>Given forward model input-output pairs, theta and y, and a trained GP, run an MCMC using the GP to evaluate the logprobability instead of the true, computationally-expensive forward model.</td>
 </tr>
 </tbody>
 </table>
 <dl class="method">
+<dt id="approxposterior.approx.ApproxPosterior.bayesOpt">
+<code class="descname">bayesOpt</code><span class="sig-paren">(</span><em>nmax</em>, <em>theta0=None</em>, <em>tol=0.001</em>, <em>kmax=3</em>, <em>seed=None</em>, <em>verbose=True</em>, <em>runName='apRun'</em>, <em>cache=True</em>, <em>gpMethod='powell'</em>, <em>gpOptions=None</em>, <em>gpP0=None</em>, <em>optGPEveryN=1</em>, <em>nGPRestarts=1</em>, <em>nMinObjRestarts=5</em>, <em>initGPOpt=True</em>, <em>minObjMethod='nelder-mead'</em>, <em>gpHyperPrior=&lt;function defaultHyperPrior&gt;</em>, <em>minObjOptions=None</em>, <em>args=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/approx.html#ApproxPosterior.bayesOpt"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.approx.ApproxPosterior.bayesOpt" title="Permalink to this definition">¶</a></dt>
+<dd><p>Perform Bayesian optimization given a GP surrogate model to estimate</p>
+<p>thetaBest = argmax(fn(theta))</p>
+<p>given a GP trained on (theta, y). In this case, fn is the function
+specified by self._lnlike + self._lnprior. Note that this function
+<em>maximizes</em> the objective, so if performing a minimization,
+define the objective as the negative of your function. See Brochu et al.
+(2009) or Frazier (2018) for good reviews of Bayesian optimization.</p>
+<p>This function terminates once nmax points have been selected or when
+the function value changes by less than tol over consecutive iterations,
+whichever one happens first.</p>
+<p>Note 1: lnlike does not have to be a log likelihood, but rather can be any
+continous function one wishes to optimize. The function lnprior is used
+to place priors on parameters of the function, theta. The typical use
+of lnprior is to ensure the solution remains within a hypercube or
+simplex, i.e., bounding the possible values of theta.</p>
+<p>Note 2: For this function, it is recommended to keep optGPEveryN = 1 to
+ensure the GP properly learns the underlying function.</p>
+<p>Note 3: Bayesian optimization and MAP estimation typically work better
+when fitAmp = True, that is the GP kernel has an amplitude term</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>nmax</strong> : int</p>
+<blockquote>
+<div><p>Maximum number of new design points to find. These are the
+points that are selected by maximizing the utility function, e.g.
+the expected improvement, and sequentially added to the GP training
+set.</p>
+</div></blockquote>
+<p><strong>theta0</strong> : iterable</p>
+<blockquote>
+<div><p>Initial guess. Defaults to a sample from the prior function.</p>
+</div></blockquote>
+<p><strong>tol</strong> : float (optional)</p>
+<blockquote>
+<div><p>Convergence tolerance. This function will terminate if the function
+value at the estimated extremum changes by less than tol over
+kmax consecutive iterations. Defaults to 1.0e-3.</p>
+</div></blockquote>
+<p><strong>kmax</strong> : int (optional)</p>
+<blockquote>
+<div><p>Number of iterations required for the difference in estimated
+extremum functions values &lt; tol required for convergence. Defaults
+to 3.</p>
+</div></blockquote>
+<p><strong>seed</strong> : int (optional)</p>
+<blockquote>
+<div><p>RNG seed.  Defaults to None.</p>
+</div></blockquote>
+<p><strong>verbose</strong> : bool (optional)</p>
+<blockquote>
+<div><p>Output all the diagnostics? Defaults to True.</p>
+</div></blockquote>
+<p><strong>runName</strong> : str (optional)</p>
+<blockquote>
+<div><p>Filename to prepend to cache files where model input-output pairs
+and the current GP hyperparameter values are saved. Defaults to
+apRun.</p>
+</div></blockquote>
+<p><strong>cache</strong> : bool (optional)</p>
+<blockquote>
+<div><p>Whether or not to cache forward model input-output pairs, and GP
+kernel parameters.  Defaults to True since they’re
+expensive to evaluate. In practice, users should cache forward model
+inputs, outputs, ancillary parameters, etc in each likelihood
+function evaluation, but saving theta and y here doesn’t hurt.</p>
+</div></blockquote>
+<p><strong>gpMethod</strong> : str (optional)</p>
+<blockquote>
+<div><p>scipy.optimize.minimize method used when optimized GP hyperparameters.
+Defaults to powell (it usually works)</p>
+</div></blockquote>
+<p><strong>gpOptions</strong> : dict (optional)</p>
+<blockquote>
+<div><p>kwargs for the scipy.optimize.minimize function used to optimize GP
+hyperparameters.  Defaults to None.</p>
+</div></blockquote>
+<p><strong>gpP0</strong> : array (optional)</p>
+<blockquote>
+<div><p>Initial guess for kernel hyperparameters.  If None, defaults to
+np.random.randn for each parameter.</p>
+</div></blockquote>
+<p><strong>optGPEveryN</strong> : int (optional)</p>
+<blockquote>
+<div><p>How often to optimize the GP hyperparameters.  Defaults to
+re-optimizing everytime a new design point is found, e.g. every time
+a new (theta, y) pair is added to the training set.</p>
+</div></blockquote>
+<p><strong>nGPRestarts</strong> : int (optional)</p>
+<blockquote>
+<div><p>Number of times to restart GP hyperparameter optimization.  Defaults
+to 1. Increase this number if the GP is not well-optimized.</p>
+</div></blockquote>
+<p><strong>nMinObjRestarts</strong> : int (optional)</p>
+<blockquote>
+<div><p>Number of times to restart minimizing -utility function to select
+next point to improve GP performance.  Defaults to 5.  Increase this
+number of the point selection is not working well.</p>
+</div></blockquote>
+<p><strong>initGPOpt</strong> : bool (optional)</p>
+<blockquote>
+<div><p>Whether or not to optimize GP hyperparameters before 0th iteration.
+Defaults to True (aka assume user didn’t optimize GP hyperparameters)</p>
+</div></blockquote>
+<p><strong>gpHyperPrior</strong> : str/callable (optional)</p>
+<blockquote>
+<div><p>Prior function for GP hyperparameters. Defaults to the defaultHyperPrior fn.
+This function asserts that the mean must be negative and that each log
+hyperparameter is within the range [-20,20].</p>
+</div></blockquote>
+<p><strong>minObjMethod</strong> : str (optional)</p>
+<blockquote>
+<div><p>scipy.optimize.minimize method used when optimizing
+utility functions for point selection.  Defaults to nelder-mead.</p>
+</div></blockquote>
+<p><strong>minObjOptions</strong> : dict (optional)</p>
+<blockquote>
+<div><p>kwargs for the scipy.optimize.minimize function used when optimizing
+utility functions for point selection.  Defaults to None,
+but if method == “nelder-mead”, options = {“adaptive” : True}</p>
+</div></blockquote>
+<p><strong>args</strong> : iterable (optional)</p>
+<blockquote>
+<div><p>Arguments for user-specified loglikelihood function that calls the
+forward model. Defaults to None.</p>
+</div></blockquote>
+<p><strong>kwargs</strong> : dict (optional)</p>
+<blockquote>
+<div><p>Keyword arguments for user-specified loglikelihood function that
+calls the forward model.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>soln</strong> : dict</p>
+<blockquote class="last">
+<div><p>Dictionary that contains the following keys: “thetaBest” : Best fit
+solution, “valBest” : function value at best fit solution, thetas :
+solution vector, vals : function values along solution, “nev” :
+number of forward model evaluations, aka number of iterations</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
 <dt id="approxposterior.approx.ApproxPosterior.findMAP">
 <code class="descname">findMAP</code><span class="sig-paren">(</span><em>theta0=None</em>, <em>method='nelder-mead'</em>, <em>options=None</em>, <em>nRestarts=5</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/approx.html#ApproxPosterior.findMAP"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.approx.ApproxPosterior.findMAP" title="Permalink to this definition">¶</a></dt>
-<dd><p>Find maximum a posteriori (MAP) estimate, given a trained GP. To find
+<dd><p>Find the maximum a posteriori (MAP) estimate, given a trained GP. To find
 the MAP, this function minimizes -mean predicted by the GP, aka finds
-what the GP believes is the point of maximum logprobability.</p>
+what the GP believes is the point of maximum of whatever function is
+definded by self._lnlike + self._lnprior.</p>
+<p>Note: MAP estimation typically work better when fitAmp = True, that is
+the GP kernel has an amplitude term</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -299,7 +453,7 @@ what the GP believes is the point of maximum logprobability.</p>
 
 <dl class="method">
 <dt id="approxposterior.approx.ApproxPosterior.findNextPoint">
-<code class="descname">findNextPoint</code><span class="sig-paren">(</span><em>computeLnLike=True</em>, <em>bounds=None</em>, <em>gpMethod='powell'</em>, <em>seed=None</em>, <em>cache=True</em>, <em>gpOptions=None</em>, <em>gpP0=None</em>, <em>args=None</em>, <em>nGPRestarts=1</em>, <em>nMinObjRestarts=5</em>, <em>minObjMethod='nelder-mead'</em>, <em>minObjOptions=None</em>, <em>runName='apRun'</em>, <em>numNewPoints=1</em>, <em>optGPEveryN=1</em>, <em>gpHyperPrior=&lt;function defaultHyperPrior&gt;</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/approx.html#ApproxPosterior.findNextPoint"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.approx.ApproxPosterior.findNextPoint" title="Permalink to this definition">¶</a></dt>
+<code class="descname">findNextPoint</code><span class="sig-paren">(</span><em>theta0=None</em>, <em>computeLnLike=True</em>, <em>bounds=None</em>, <em>seed=None</em>, <em>cache=True</em>, <em>gpOptions=None</em>, <em>gpP0=None</em>, <em>args=None</em>, <em>nGPRestarts=1</em>, <em>nMinObjRestarts=5</em>, <em>gpMethod='powell'</em>, <em>minObjMethod='nelder-mead'</em>, <em>minObjOptions=None</em>, <em>runName='apRun'</em>, <em>numNewPoints=1</em>, <em>optGPEveryN=1</em>, <em>gpHyperPrior=&lt;function defaultHyperPrior&gt;</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/approx.html#ApproxPosterior.findNextPoint"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.approx.ApproxPosterior.findNextPoint" title="Permalink to this definition">¶</a></dt>
 <dd><p>Find numNewPoints new point(s), thetaT, by maximizing utility function.
 Note that we call a minimizer because minimizing negative of utility
 function is the same as maximizing it.</p>
@@ -327,7 +481,12 @@ cadence.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>computeLnLike</strong> : bool (optional)</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>theta0</strong> : float/iterable (optional)</p>
+<blockquote>
+<div><p>Initial guess for optimization. Defaults to None, which draws a sample
+from the prior function using sampleFn.</p>
+</div></blockquote>
+<p><strong>computeLnLike</strong> : bool (optional)</p>
 <blockquote>
 <div><p>Whether or not to run the forward model and compute yT, the sum of
 the lnlikelihood and lnprior. Defaults to True. If True, also
@@ -380,7 +539,7 @@ np.random.randn for each parameter.</p>
 <p><strong>nGPRestarts</strong> : int (optional)</p>
 <blockquote>
 <div><p>Number of times to restart GP hyperparameter optimization.  Defaults
-to 1. Increase this number if the GP isn’t optimized well.</p>
+to 1. Increase this number if the GP is not well-optimized.</p>
 </div></blockquote>
 <p><strong>nMinObjRestarts</strong> : int (optional)</p>
 <blockquote>
@@ -455,8 +614,8 @@ computeLnLike == True</p>
 </div></blockquote>
 <p><strong>nGPRestarts</strong> : int (optional)</p>
 <blockquote>
-<div><p>Number of times to restart the optimization.  Defaults to 1. Increase
-this number if the GP isn’t optimized well.</p>
+<div><p>Number of times to restart GP hyperparameter optimization.  Defaults
+to 1. Increase this number if the GP is not well-optimized.</p>
 </div></blockquote>
 <p><strong>method</strong> : str (optional)</p>
 <blockquote>
@@ -489,17 +648,16 @@ hyperparameter is within the range [-20,20].</p>
 <dl class="method">
 <dt id="approxposterior.approx.ApproxPosterior.run">
 <code class="descname">run</code><span class="sig-paren">(</span><em>m=10</em>, <em>nmax=2</em>, <em>seed=None</em>, <em>timing=False</em>, <em>verbose=True</em>, <em>mcmcKwargs=None</em>, <em>samplerKwargs=None</em>, <em>estBurnin=False</em>, <em>thinChains=False</em>, <em>runName='apRun'</em>, <em>cache=True</em>, <em>gpMethod='powell'</em>, <em>gpOptions=None</em>, <em>gpP0=None</em>, <em>optGPEveryN=1</em>, <em>nGPRestarts=1</em>, <em>nMinObjRestarts=5</em>, <em>onlyLastMCMC=False</em>, <em>initGPOpt=True</em>, <em>gpHyperPrior=&lt;function defaultHyperPrior&gt;</em>, <em>minObjMethod='nelder-mead'</em>, <em>minObjOptions=None</em>, <em>args=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/approx.html#ApproxPosterior.run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.approx.ApproxPosterior.run" title="Permalink to this definition">¶</a></dt>
-<dd><p>Core algorithm to estimate the posterior distribution via Gaussian
-Process regression to the joint distribution for the forward model
-input/output pairs</p>
+<dd><p>Core method to estimate the approximate posterior distribution via
+Gaussian Process regression</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>m</strong> : int (optional)</p>
-<blockquote>
-<div><p>Number of new input features to find each iteration.  Defaults to 10.</p>
-</div></blockquote>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>Number of new design points to find each iteration. These are the</strong></p>
+<p><strong>points that are selected by maximizing the utility function, e.g.</strong></p>
+<p><strong>bape or agp, and sequentially added to the GP training set.  Defaults</strong></p>
+<p><strong>to 10.</strong></p>
 <p><strong>nmax</strong> : int (optional)</p>
 <blockquote>
 <div><p>Maximum number of iterations.  Defaults to 2.</p>
@@ -601,7 +759,7 @@ parameter if approxposterior is running slowly.</p>
 <p><strong>nGPRestarts</strong> : int (optional)</p>
 <blockquote>
 <div><p>Number of times to restart GP hyperparameter optimization.  Defaults
-to 1. Increase this number if the GP isn’t optimized well.</p>
+to 1. Increase this number if the GP is not well-optimized.</p>
 </div></blockquote>
 <p><strong>nMinObjRestarts</strong> : int (optional)</p>
 <blockquote>

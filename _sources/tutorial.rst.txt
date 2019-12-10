@@ -2,7 +2,7 @@ Approximate Bayesian Inference
 ==============================
 
 Below is a quick example of how to use :py:obj:`approxposterior` to estimate an
-accurate approximation to the posterior distribution of the Rosenbrock Function example from Wang & Li (2017) using the
+accurate approximation to the posterior distribution of the Rosenbrock Function example from Wang & Li (2018) using the
 BAPE algorithm. In many Bayesian inference applications, sampling methods used to derive posterior distributions,
 such as Markov Chain Monte Carlo (MCMC) methods, can require >1,000,000 functions evaluations. In cases where the
 forward model is computationally expensive, such methods quickly become infeasible. The active learning
@@ -22,7 +22,7 @@ your code.  In this example, we set verbose = False for simplicity.
   m = 20                            # Number of new points to find each iteration
   nmax = 2                          # Maximum number of iterations
   bounds = ((-5,5), (-5,5))         # Prior bounds
-  algorithm = "BAPE"                # Use the Kandasamy et al. (2015) formalism
+  algorithm = "bape"                # Use the Kandasamy et al. (2017) formalism
 
   # emcee MCMC parameters
   samplerKwargs = {"nwalkers" : 20}        # emcee.EnsembleSampler parameters
@@ -48,7 +48,7 @@ your code.  In this example, we set verbose = False for simplicity.
 
 .. code-block:: python
 
-  # Initialize object using the Wang & Li (2017) Rosenbrock function example
+  # Initialize object using the Wang & Li (2018) Rosenbrock function example
   ap = approx.ApproxPosterior(theta=theta,                     # Initial model parameters for inputs
                               y=y,                             # Logprobability of each input
                               gp=gp,                           # Initialize Gaussian Process
