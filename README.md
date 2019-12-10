@@ -20,7 +20,8 @@
 <img src="https://anaconda.org/conda-forge/approxposterior/badges/downloads.svg"></a>
 <a href="https://coveralls.io/github/dflemin3/approxposterior?branch=master">
 <img src="https://coveralls.io/repos/github/dflemin3/approxposterior/badge.svg?branch=master"></a>
-
+<a href="https://dflemin3.github.io/approxposterior/">
+<img src="https://img.shields.io/badge/<Docs>-<Read the docs>-<informational>"></a>
 </p>
 
 Overview
