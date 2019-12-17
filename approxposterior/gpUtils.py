@@ -111,7 +111,7 @@ def _grad_nll(p, gp, y, priorFn=None):
 # end function
 
 
-def defaultGP(theta, y, order=None, white_noise=-10, fitAmp=False):
+def defaultGP(theta, y, order=None, white_noise=-12, fitAmp=False):
     """
     Basic utility function that initializes a simple GP with an ExpSquaredKernel.
     This kernel  works well in many applications as it effectively enforces a
@@ -131,7 +131,7 @@ def defaultGP(theta, y, order=None, white_noise=-10, fitAmp=False):
     white_noise : float (optional)
         From george docs: "A description of the logarithm of the white noise
         variance added to the diagonal of the covariance matrix". Defaults to
-        log(white_noise) = -10. Note: if order is not None, you might need to
+        ln(white_noise) = -12. Note: if order is not None, you might need to
         set the white_noise to a larger value for the computation to be
         numerically stable, but this, as always, depends on the application.
     fitAmp : bool (optional)

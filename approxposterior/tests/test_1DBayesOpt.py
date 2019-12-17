@@ -39,7 +39,7 @@ def test_1DBO():
         y[ii] = lh.testBOFn(theta[ii]) + lh.testBOFnLnPrior(theta[ii])
 
     # Initialize default gp with an ExpSquaredKernel
-    gp = gpUtils.defaultGP(theta, y, white_noise=-10, fitAmp=True)
+    gp = gpUtils.defaultGP(theta, y, fitAmp=True)
 
     # Initialize object using the Wang & Li (2017) Rosenbrock function example
     ap = approx.ApproxPosterior(theta=theta,

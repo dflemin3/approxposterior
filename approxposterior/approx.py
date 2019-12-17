@@ -235,10 +235,11 @@ class ApproxPosterior(object):
 
         Parameters
         ----------
-        Number of new design points to find each iteration. These are the
-        points that are selected by maximizing the utility function, e.g.
-        bape or agp, and sequentially added to the GP training set.  Defaults
-        to 10.
+        m : int (optional)
+            Number of new design points to find each iteration. These are the
+            points that are selected by maximizing the utility function, e.g.
+            bape or agp, and sequentially added to the GP training set.  Defaults
+            to 10.
         nmax : int (optional)
             Maximum number of iterations.  Defaults to 2.
         seed : int (optional)
@@ -437,9 +438,9 @@ class ApproxPosterior(object):
     # end function
 
 
-    def findNextPoint(self, theta0=None, computeLnLike=True, bounds=None,
-                      seed=None, cache=True, gpOptions=None, gpP0=None,
-                      args=None, nGPRestarts=1, nMinObjRestarts=5, gpMethod="powell",
+    def findNextPoint(self, theta0=None, computeLnLike=True, seed=None,
+                      cache=True, gpOptions=None, gpP0=None, args=None,
+                      nGPRestarts=1, nMinObjRestarts=5, gpMethod="powell",
                       minObjMethod="nelder-mead", minObjOptions=None,
                       runName="apRun", numNewPoints=1, optGPEveryN=1,
                       gpHyperPrior=gpUtils.defaultHyperPrior, **kwargs):
@@ -476,10 +477,6 @@ class ApproxPosterior(object):
             the lnlikelihood and lnprior. Defaults to True. If True, also
             appends all new values to self.theta, self.y, in addition to
             returning the new values
-        bounds : tuple/iterable (optional)
-            Bounds for minimization scheme.  See scipy.optimize.minimize details
-            for more information.  Defaults to None, but it's typically good to
-            provide them to ensure a valid solution.
         seed : int (optional)
             RNG seed.  Defaults to None.
         cache : bool (optional)
@@ -574,7 +571,7 @@ class ApproxPosterior(object):
                                               nRestarts=nMinObjRestarts,
                                               method=minObjMethod,
                                               options=minObjOptions,
-                                              bounds=bounds,
+                                              bounds=self.bounds,
                                               theta0=theta0,
                                               args=(self.y,self.gp,self._lnprior))
 

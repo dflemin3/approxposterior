@@ -39,7 +39,7 @@ def test_2DBO():
         y[ii] = lh.rosenbrockLnlike(theta[ii]) + lh.rosenbrockLnprior(theta[ii])
 
     # Initialize default gp with an ExpSquaredKernel
-    gp = gpUtils.defaultGP(theta, y, white_noise=-10, fitAmp=True)
+    gp = gpUtils.defaultGP(theta, y, fitAmp=True)
 
     # Initialize object using the Wang & Li (2017) Rosenbrock function example
     ap = approx.ApproxPosterior(theta=theta,
@@ -52,7 +52,7 @@ def test_2DBO():
                                 algorithm=algorithm)
 
     # Run the Bayesian optimization!
-    soln = ap.bayesOpt(nmax=numNewPoints, tol=1.0e-5, seed=seed, verbose=False,
+    soln = ap.bayesOpt(nmax=numNewPoints, tol=1.0e-5, seed=seed, verbose=True,
                        cache=False, gpMethod="powell", optGPEveryN=1,
                        nGPRestarts=3, nMinObjRestarts=5, initGPOpt=True,
                        minObjMethod="nelder-mead",

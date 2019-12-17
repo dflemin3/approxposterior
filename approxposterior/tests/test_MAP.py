@@ -19,10 +19,10 @@ def testMAPAmp():
     """
 
     # Define algorithm parameters
-    m0 = 50                           # Initial size of training set
-    bounds = ((-5,5), (-5,5))         # Prior bounds
+    m0 = 25                           # Initial size of training set
+    bounds = [(-5,5), (-5,5)]         # Prior bounds
     algorithm = "bape"                # Use the Kandasamy et al. (2015) formalism
-    seed = 57                         # For reproducibility
+    seed = 27                         # For reproducibility
     np.random.seed(seed)
 
     # Randomly sample initial conditions from the prior
@@ -50,15 +50,19 @@ def testMAPAmp():
     # Optimize the GP hyperparameters
     ap.optGP(seed=seed, method="powell", nGPRestarts=3)
 
+    # Find some points to add to GP training set
+    ap.findNextPoint(numNewPoints=25, nGPRestarts=3)
+
     # Find MAP solution
     trueMAP = [1.0, 1.0]
     trueVal = 0.0
     testMAP, testVal = ap.findMAP(nRestarts=5)
+    print(testMAP, testVal)
 
     # Compare estimated MAP to true values
     errMsg = "True MAP solution is incorrect."
     # Allow up to 10% error in each parameter
-    assert(np.allclose(trueMAP, testMAP, atol=1.0e-1)), errMsg
+    assert(np.allclose(trueMAP, testMAP, rtol=1.0e-1)), errMsg
     # All up to 0.1% error in function value
     errMsg = "True MAP function value is incorrect."
     assert(np.allclose(trueVal, testVal, atol=1.0e-3)), errMsg
@@ -71,10 +75,10 @@ def testMAPNoAmp():
     """
 
     # Define algorithm parameters
-    m0 = 50                           # Initial size of training set
-    bounds = ((-5,5), (-5,5))         # Prior bounds
+    m0 = 25                           # Initial size of training set
+    bounds = [(-5,5), (-5,5)]         # Prior bounds
     algorithm = "bape"                # Use the Kandasamy et al. (2015) formalism
-    seed = 57                         # For reproducibility
+    seed = 27                         # For reproducibility
     np.random.seed(seed)
 
     # Randomly sample initial conditions from the prior
@@ -99,6 +103,9 @@ def testMAPNoAmp():
                                 bounds=bounds,
                                 algorithm=algorithm)
 
+    # Find some points to add to GP training set
+    ap.findNextPoint(numNewPoints=25, nGPRestarts=3)
+
     # Optimize the GP hyperparameters
     ap.optGP(seed=seed, method="powell", nGPRestarts=3)
 
@@ -106,11 +113,12 @@ def testMAPNoAmp():
     trueMAP = [1.0, 1.0]
     trueVal = 0.0
     testMAP, testVal = ap.findMAP(nRestarts=5)
+    print(testMAP, testVal)
 
     # Compare estimated MAP to true values
     errMsg = "True MAP solution is incorrect."
     # Allow up to 10% error in each parameter
-    assert(np.allclose(trueMAP, testMAP, atol=1.0e-1)), errMsg
+    assert(np.allclose(trueMAP, testMAP, rtol=1.0e-1)), errMsg
     # All up to 0.1% error in function value
     errMsg = "True MAP function value is incorrect."
     assert(np.allclose(trueVal, testVal, atol=1.0e-3)), errMsg

@@ -35,7 +35,7 @@ for ii in range(len(theta)):
     y[ii] = lh.rosenbrockLnlike(theta[ii]) + lh.rosenbrockLnprior(theta[ii])
 
 # Default gp
-gp = gpUtils.defaultGP(theta, y, white_noise=-10)
+gp = gpUtils.defaultGP(theta, y, white_noise=-12)
 
 # Initialize object using the Wang & Li (2018) Rosenbrock function example
 ap = approx.ApproxPosterior(theta=theta,

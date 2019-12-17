@@ -40,7 +40,7 @@ hyperparameter optimization should be restarted.
 Furthermore, :py:obj:`approxposterior` reoptimizes the GP hyperparameters each time
 a new point is selected and added to the training set.  In practice, this is likely
 overkill for some applications, so the user can set optGPEveryN in the run method
-to instead only reoptimize the GP every N new points. 
+to instead only reoptimize the GP every N new points.
 
 .. _george: https://george.readthedocs.io/en/latest/tutorials/hyper/
 
