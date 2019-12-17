@@ -21,7 +21,7 @@ matplotlib.rcParams.update({"font.size": 15})
 m0 = 3                           # Size of initial training set
 bounds = [[-1, 2]]               # Prior bounds
 algorithm = "jones"              # Expected Utility from Jones et al. (1998)
-numNewPoints = 20                # Number of new design points to find
+numNewPoints = 5                 # Number of new design points to find
 seed = 57                        # RNG seed
 np.random.seed(seed)
 
@@ -51,10 +51,16 @@ ap = approx.ApproxPosterior(theta=theta,
                             algorithm=algorithm)
 
 # Run the Bayesian optimization!
-soln = ap.bayesOpt(nmax=numNewPoints, tol=1.0e-5, seed=seed, verbose=True,
+soln = ap.bayesOpt(nmax=numNewPoints, tol=1.0e-5, seed=seed, verbose=False,
                    cache=False, gpMethod="powell", optGPEveryN=1, nGPRestarts=2,
                    nMinObjRestarts=5, initGPOpt=True, minObjMethod="nelder-mead",
                    gpHyperPrior=gpUtils.defaultHyperPrior)
+
+# Compare truth to approximate Bayesian optimization solution
+print("True maximum:", trueSoln["x"])
+print("True function value at maximum:", trueSoln["fun"])
+print("Approximate BayesOpt maximum:", soln["thetaBest"])
+print("True function value at maximum:", soln["valBest"])
 
 # Plot objective function
 fig, ax = plt.subplots(figsize=(6,5))
@@ -73,7 +79,7 @@ ax.spines["top"].set_visible(False)
 ax.yaxis.set_ticks_position("left")
 ax.xaxis.set_ticks_position("bottom")
 
-fig.savefig("objFn.png", dpi=200)
+fig.savefig("objFn.png", bbox_inches="tight", dpi=200)
 
 # Plot the solution path and function value convergence
 fig, axes = plt.subplots(ncols=2, figsize=(12,6))
