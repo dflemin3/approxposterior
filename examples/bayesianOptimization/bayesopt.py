@@ -71,7 +71,7 @@ ax.plot(x, lh.testBOFn(x), lw=2.5, color="k")
 # Format
 ax.set_xlim(-1.1, 2.1)
 ax.set_xlabel(r"$\theta$")
-ax.set_ylabel(r"fn($\theta$)")
+ax.set_ylabel(r"f($\theta$)")
 
 # Hide top, right axes
 ax.spines["right"].set_visible(False)
