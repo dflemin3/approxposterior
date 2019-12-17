@@ -386,7 +386,7 @@ warranted.</p>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
 <span></span><span class="o">%</span><span class="k">matplotlib</span> inline
 
-<span class="kn">from</span> <span class="nn">approxposterior</span> <span class="kn">import</span> <span class="n">approx</span><span class="p">,</span> <span class="n">likelihood</span> <span class="k">as</span> <span class="n">lh</span><span class="p">,</span> <span class="n">gpUtils</span> <span class="k">as</span> <span class="n">gpu</span><span class="p">,</span> <span class="n">utility</span> <span class="k">as</span> <span class="n">ut</span>
+<span class="kn">from</span> <span class="nn">approxposterior</span> <span class="kn">import</span> <span class="n">approx</span><span class="p">,</span> <span class="n">likelihood</span> <span class="k">as</span> <span class="n">lh</span><span class="p">,</span> <span class="n">gpUtils</span> <span class="k">as</span> <span class="n">gpu</span>
 
 <span class="kn">import</span> <span class="nn">george</span>
 <span class="kn">import</span> <span class="nn">corner</span>
@@ -420,8 +420,8 @@ warranted.</p>
 <span class="n">m0</span> <span class="o">=</span> <span class="mi">50</span>                           <span class="c1"># Initial size of training set</span>
 <span class="n">m</span> <span class="o">=</span> <span class="mi">20</span>                            <span class="c1"># Number of new points to find each iteration</span>
 <span class="n">nmax</span> <span class="o">=</span> <span class="mi">3</span>                          <span class="c1"># Maximum number of iterations</span>
-<span class="n">bounds</span> <span class="o">=</span> <span class="p">((</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">),</span> <span class="p">(</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">))</span>         <span class="c1"># Prior bounds</span>
-<span class="n">algorithm</span> <span class="o">=</span> <span class="s2">&quot;BAPE&quot;</span>                <span class="c1"># Use the Kandasamy et al. (2015) formalism</span>
+<span class="n">bounds</span> <span class="o">=</span> <span class="p">[(</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">),</span> <span class="p">(</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">)]</span>         <span class="c1"># Prior bounds</span>
+<span class="n">algorithm</span> <span class="o">=</span> <span class="s2">&quot;bape&quot;</span>                <span class="c1"># Use the Kandasamy et al. (2015) formalism</span>
 
 <span class="c1"># emcee MCMC parameters</span>
 <span class="n">samplerKwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;nwalkers&quot;</span> <span class="p">:</span> <span class="mi">20</span><span class="p">}</span>        <span class="c1"># emcee.EnsembleSampler parameters</span>
@@ -435,8 +435,8 @@ warranted.</p>
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="c1"># Generate initial conditions using Latin Hypercube sampling over parameter bounds</span>
-<span class="n">theta</span> <span class="o">=</span> <span class="n">ut</span><span class="o">.</span><span class="n">latinHypercubeSampling</span><span class="p">(</span><span class="n">m0</span><span class="p">,</span> <span class="n">bounds</span><span class="p">,</span> <span class="n">criterion</span><span class="o">=</span><span class="s2">&quot;maximin&quot;</span><span class="p">)</span>
+<span></span><span class="c1"># Sample initial conditions from the prior</span>
+<span class="n">theta</span> <span class="o">=</span> <span class="n">lh</span><span class="o">.</span><span class="n">rosenbrockSample</span><span class="p">(</span><span class="n">m0</span><span class="p">)</span>
 
 <span class="c1"># Evaluate forward model log likelihood + lnprior for each theta</span>
 <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">theta</span><span class="p">))</span>
@@ -493,14 +493,8 @@ previous joint posterior distributions.</p>
 </div>
 <div class="stderr output_area docutils container">
 <div class="highlight"><pre>
-/Users/dflemin3/anaconda3/lib/python3.6/site-packages/scipy/optimize/_minimize.py:518: RuntimeWarning: Method nelder-mead cannot handle constraints nor bounds.
-  RuntimeWarning)
-/Users/dflemin3/anaconda3/lib/python3.6/site-packages/scipy/optimize/optimize.py:563: RuntimeWarning: invalid value encountered in subtract
-  numpy.max(numpy.abs(fsim[0] - fsim[1:])) &lt;= fatol):
-/Users/dflemin3/anaconda3/lib/python3.6/site-packages/numpy/core/_methods.py:26: RuntimeWarning: invalid value encountered in reduce
-  return umr_maximum(a, axis, None, out, keepdims)
-/Users/dflemin3/anaconda3/lib/python3.6/site-packages/george/gp.py:410: RuntimeWarning: invalid value encountered in subtract
-  A = np.einsum(&#34;i,j&#34;, alpha, alpha) - K_inv
+/Users/dflemin3/anaconda3/lib/python3.6/site-packages/scipy/optimize/optimize.py:1927: RuntimeWarning: invalid value encountered in double_scalars
+  tmp2 = (x - v) * (fx - fw)
 </pre></div></div>
 </div>
 <p><strong>Estimate Time Scaling as a Function of Forward Model Time</strong></p>
@@ -600,7 +594,7 @@ axis).</p>
 </pre></div>
 </div>
 <div class="output_area highlight-none notranslate"><div class="highlight"><pre>
-<span></span>&lt;matplotlib.legend.Legend at 0x116639c50&gt;
+<span></span>&lt;matplotlib.legend.Legend at 0x116339da0&gt;
 </pre></div>
 </div>
 </div>
@@ -730,61 +724,14 @@ the approximate method is.</p>
 <div class="highlight"><pre>
 x0
 True     [-2.4136162  -2.32461971 -2.27654002]
-Approx   [-2.42715194 -2.34798697 -2.28754319]
+Approx   [-2.43107842 -2.32830656 -2.27902648]
 
 x1
 True     [-1.70102134 -1.40117241 -1.25195281]
-Approx   [-1.68863509 -1.38795925 -1.24683386]
+Approx   [-1.64094004 -1.35814525 -1.20686775]
 </pre></div></div>
 </div>
-<p>Looks good, but let’s visualize this instead…</p>
-<div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>In [13]:
-</pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">9</span><span class="p">,</span><span class="mi">8</span><span class="p">))</span>
-
-<span class="c1"># True, approx x0</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">errorbar</span><span class="p">([</span><span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="n">trueX0</span><span class="p">[</span><span class="mi">1</span><span class="p">]],</span> <span class="n">yerr</span><span class="o">=</span><span class="p">[(</span><span class="n">trueX0</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">trueX0</span><span class="p">[</span><span class="mi">0</span><span class="p">])],</span> <span class="n">fmt</span><span class="o">=</span><span class="s1">&#39;-o&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;C0&quot;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;True&quot;</span><span class="p">)</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">errorbar</span><span class="p">([</span><span class="mf">0.1</span><span class="p">],</span> <span class="p">[</span><span class="n">approxX0</span><span class="p">[</span><span class="mi">1</span><span class="p">]],</span> <span class="n">yerr</span><span class="o">=</span><span class="p">[(</span><span class="n">approxX0</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">approxX0</span><span class="p">[</span><span class="mi">0</span><span class="p">])],</span> <span class="n">fmt</span><span class="o">=</span><span class="s1">&#39;-o&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;C1&quot;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Approx&quot;</span><span class="p">)</span>
-
-<span class="c1"># True, approx x1</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">errorbar</span><span class="p">([</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="n">trueX1</span><span class="p">[</span><span class="mi">1</span><span class="p">]],</span> <span class="n">yerr</span><span class="o">=</span><span class="p">[(</span><span class="n">trueX1</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">trueX1</span><span class="p">[</span><span class="mi">2</span><span class="p">])],</span> <span class="n">fmt</span><span class="o">=</span><span class="s1">&#39;-o&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;C0&quot;</span><span class="p">)</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">errorbar</span><span class="p">([</span><span class="mf">1.1</span><span class="p">],</span> <span class="p">[</span><span class="n">approxX1</span><span class="p">[</span><span class="mi">1</span><span class="p">]],</span> <span class="n">yerr</span><span class="o">=</span><span class="p">[(</span><span class="n">approxX1</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">approxX1</span><span class="p">[</span><span class="mi">2</span><span class="p">])],</span> <span class="n">fmt</span><span class="o">=</span><span class="s1">&#39;-o&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;C1&quot;</span><span class="p">)</span>
-
-<span class="c1"># Format</span>
-<span class="n">xticks</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
-<span class="n">labels</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;x0&quot;</span><span class="p">,</span> <span class="s2">&quot;x1&quot;</span><span class="p">]</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">set_xticks</span><span class="p">(</span><span class="n">xticks</span><span class="p">)</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">set_xticklabels</span><span class="p">(</span><span class="n">labels</span><span class="p">)</span>
-
-<span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;Parameter Value&quot;</span><span class="p">)</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s2">&quot;best&quot;</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="nboutput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>Out[13]:
-</pre></div>
-</div>
-<div class="output_area highlight-none notranslate"><div class="highlight"><pre>
-<span></span>&lt;matplotlib.legend.Legend at 0x116c42c88&gt;
-</pre></div>
-</div>
-</div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<img alt="../_images/notebooks_ScalingAccuracy_21_1.png" src="../_images/notebooks_ScalingAccuracy_21_1.png" />
-</div>
-</div>
-<p>The answers are consistent and nearly identical - great!</p>
+<p>The answers are consistent - great!</p>
 <p><strong>Plot them together</strong></p>
 <hr class="docutils" />
 <p>Good for posters and stuff.</p>
@@ -853,7 +800,7 @@ Approx   [-1.68863509 -1.38795925 -1.24683386]
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_ScalingAccuracy_24_0.png" src="../_images/notebooks_ScalingAccuracy_24_0.png" />
+<img alt="../_images/notebooks_ScalingAccuracy_22_0.png" src="../_images/notebooks_ScalingAccuracy_22_0.png" />
 </div>
 </div>
 </div>

@@ -246,7 +246,7 @@ operates on the <em>log</em> hyperparameters, except for the mean function.</p>
 
 <dl class="function">
 <dt id="approxposterior.gpUtils.defaultGP">
-<code class="descclassname">approxposterior.gpUtils.</code><code class="descname">defaultGP</code><span class="sig-paren">(</span><em>theta</em>, <em>y</em>, <em>order=None</em>, <em>white_noise=-10</em>, <em>fitAmp=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/gpUtils.html#defaultGP"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.gpUtils.defaultGP" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">approxposterior.gpUtils.</code><code class="descname">defaultGP</code><span class="sig-paren">(</span><em>theta</em>, <em>y</em>, <em>order=None</em>, <em>white_noise=-12</em>, <em>fitAmp=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/gpUtils.html#defaultGP"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.gpUtils.defaultGP" title="Permalink to this definition">¶</a></dt>
 <dd><p>Basic utility function that initializes a simple GP with an ExpSquaredKernel.
 This kernel  works well in many applications as it effectively enforces a
 prior on the smoothness of the function and is infinitely differentiable.</p>
@@ -273,7 +273,7 @@ ExpSquaredKernel</p>
 <blockquote>
 <div><p>From george docs: “A description of the logarithm of the white noise
 variance added to the diagonal of the covariance matrix”. Defaults to
-log(white_noise) = -10. Note: if order is not None, you might need to
+ln(white_noise) = -12. Note: if order is not None, you might need to
 set the white_noise to a larger value for the computation to be
 numerically stable, but this, as always, depends on the application.</p>
 </div></blockquote>

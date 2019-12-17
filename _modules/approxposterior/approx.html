@@ -233,7 +233,7 @@
 <span class="sd">            referred to as acquisition) function to use.  Defaults to bape.</span>
 <span class="sd">            Options are bape (Bayesian Active Learning for Posterior Estimation,</span>
 <span class="sd">            Kandasamy et al. (2015)), agp (Adapted Gaussian Process Approximation,</span>
-<span class="sd">            Wang &amp; Li (2017)), alternate (between bape and agp), and jones</span>
+<span class="sd">            Wang &amp; Li (2017)), alternate (between AGP and BAPE), and jones</span>
 <span class="sd">            (Jones et al. (1998) expected improvement).</span>
 <span class="sd">            Case doesn&#39;t matter. If alternate, runs agp on even numbers and bape</span>
 <span class="sd">            on odd.</span>
@@ -404,10 +404,11 @@
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        Number of new design points to find each iteration. These are the</span>
-<span class="sd">        points that are selected by maximizing the utility function, e.g.</span>
-<span class="sd">        bape or agp, and sequentially added to the GP training set.  Defaults</span>
-<span class="sd">        to 10.</span>
+<span class="sd">        m : int (optional)</span>
+<span class="sd">            Number of new design points to find each iteration. These are the</span>
+<span class="sd">            points that are selected by maximizing the utility function, e.g.</span>
+<span class="sd">            bape or agp, and sequentially added to the GP training set.  Defaults</span>
+<span class="sd">            to 10.</span>
 <span class="sd">        nmax : int (optional)</span>
 <span class="sd">            Maximum number of iterations.  Defaults to 2.</span>
 <span class="sd">        seed : int (optional)</span>

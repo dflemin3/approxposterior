@@ -389,10 +389,6 @@ uncertainties.</p>
 <span class="kn">import</span> <span class="nn">george</span>
 
 <span class="kn">from</span> <span class="nn">approxposterior</span> <span class="kn">import</span> <span class="n">approx</span><span class="p">,</span> <span class="n">gpUtils</span> <span class="k">as</span> <span class="n">gpu</span>
-
-<span class="c1"># Tidy up the notebook (I&#39;m not sweeping errors under the rug, I swear!)</span>
-<span class="kn">import</span> <span class="nn">warnings</span>
-<span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s1">&#39;ignore&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -511,6 +507,7 @@ details of this procedure.</p>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
 <span></span><span class="c1"># Define logprobability function: l(D|theta) * p(theta)</span>
+<span class="c1"># Note: use this for emcee, not approxposterior!</span>
 <span class="k">def</span> <span class="nf">logProbability</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">obs</span><span class="p">,</span> <span class="n">obserr</span><span class="p">):</span>
 
     <span class="n">lp</span> <span class="o">=</span> <span class="n">logPrior</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
@@ -523,7 +520,7 @@ details of this procedure.</p>
 <p>Now that we’ve set up the required functions, we initialize our MCMC
 sampler in emcee, pick an initial state for the walkers, and run the
 MCMC!</p>
-<div class="nbinput nblast docutils container">
+<div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre>
 <span></span>In [6]:
 </pre></div>
@@ -533,13 +530,22 @@ MCMC!</p>
 <span class="n">p0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">32</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
 <span class="n">nwalkers</span><span class="p">,</span> <span class="n">ndim</span> <span class="o">=</span> <span class="n">p0</span><span class="o">.</span><span class="n">shape</span>
 
-<span class="c1"># Set up MCMC sample object</span>
+<span class="c1"># Set up MCMC sample object - give it the logprobability function</span>
 <span class="n">sampler</span> <span class="o">=</span> <span class="n">emcee</span><span class="o">.</span><span class="n">EnsembleSampler</span><span class="p">(</span><span class="n">nwalkers</span><span class="p">,</span> <span class="n">ndim</span><span class="p">,</span> <span class="n">logProbability</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">obs</span><span class="p">,</span> <span class="n">obserr</span><span class="p">))</span>
 
 <span class="c1"># Run the MCMC for 5000 iteratios</span>
 <span class="n">sampler</span><span class="o">.</span><span class="n">run_mcmc</span><span class="p">(</span><span class="n">p0</span><span class="p">,</span> <span class="mi">5000</span><span class="p">);</span>
 </pre></div>
 </div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="stderr output_area docutils container">
+<div class="highlight"><pre>
+/Users/dflemin3/anaconda3/lib/python3.6/site-packages/emcee/moves/red_blue.py:97: RuntimeWarning: invalid value encountered in double_scalars
+  lnpdiff = f + nlp - state.log_prob[j]
+</pre></div></div>
 </div>
 <p>The MCMC is complete, so let’s examine the joint and marginal posterior
 probability distributions it derived for the model parameters.</p>
@@ -612,14 +618,14 @@ parameters from the prior distributions.</p>
 <span class="n">m0</span> <span class="o">=</span> <span class="mi">20</span>                           <span class="c1"># Initial size of training set</span>
 <span class="n">m</span> <span class="o">=</span> <span class="mi">10</span>                            <span class="c1"># Number of new points to find each iteration</span>
 <span class="n">nmax</span> <span class="o">=</span> <span class="mi">5</span>                          <span class="c1"># Maximum number of iterations</span>
-<span class="n">bounds</span> <span class="o">=</span> <span class="p">((</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span><span class="mf">0.5</span><span class="p">),</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">10.0</span><span class="p">))</span>   <span class="c1"># Prior bounds</span>
-<span class="n">algorithm</span> <span class="o">=</span> <span class="s2">&quot;alternate&quot;</span>                <span class="c1"># Use the Kandasamy et al. (2015) formalism</span>
+<span class="n">bounds</span> <span class="o">=</span> <span class="p">[(</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span><span class="mf">0.5</span><span class="p">),(</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">10.0</span><span class="p">)]</span>    <span class="c1"># Prior bounds</span>
+<span class="n">algorithm</span> <span class="o">=</span> <span class="s2">&quot;bape&quot;</span>                <span class="c1"># Use the Kandasamy et al. (2017) formalism</span>
 
 <span class="c1"># emcee MCMC parameters: Use the same MCMC parameters as the emcee-only analysis</span>
-<span class="n">samplerKwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;nwalkers&quot;</span> <span class="p">:</span> <span class="mi">32</span><span class="p">}</span>        <span class="c1"># emcee.EnsembleSampler parameters</span>
+<span class="n">samplerKwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;nwalkers&quot;</span> <span class="p">:</span> <span class="mi">32</span><span class="p">}</span>  <span class="c1"># emcee.EnsembleSampler parameters</span>
 <span class="n">mcmcKwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;iterations&quot;</span> <span class="p">:</span> <span class="mi">5000</span><span class="p">}</span> <span class="c1"># emcee.EnsembleSampler.run_mcmc parameters</span>
 
-<span class="c1"># Data and uncertainties that we&#39;ll condition approxposterior on</span>
+<span class="c1"># Data and uncertainties that we use to condition our model</span>
 <span class="n">args</span> <span class="o">=</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">obs</span><span class="p">,</span> <span class="n">obserr</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -635,7 +641,7 @@ performance, iteratively improving the posterior distribution estimate.</p>
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="c1">#Create a training set to condition the GP</span>
+<span></span><span class="c1"># Create a training set to condition the GP</span>
 
 <span class="c1"># Randomly sample initial conditions from the prior</span>
 <span class="n">theta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">sampleFunction</span><span class="p">(</span><span class="n">m0</span><span class="p">))</span>
@@ -665,7 +671,7 @@ performance, iteratively improving the posterior distribution estimate.</p>
                             <span class="n">lnprior</span><span class="o">=</span><span class="n">logPrior</span><span class="p">,</span>              <span class="c1"># logprior function</span>
                             <span class="n">lnlike</span><span class="o">=</span><span class="n">logLikelihood</span><span class="p">,</span>          <span class="c1"># loglikelihood function</span>
                             <span class="n">priorSample</span><span class="o">=</span><span class="n">sampleFunction</span><span class="p">,</span>    <span class="c1"># Prior sample function</span>
-                            <span class="n">algorithm</span><span class="o">=</span><span class="n">algorithm</span><span class="p">,</span>           <span class="c1"># BAPE, AGP, or ALTERNATE</span>
+                            <span class="n">algorithm</span><span class="o">=</span><span class="n">algorithm</span><span class="p">,</span>           <span class="c1"># bape, agp, or alternate</span>
                             <span class="n">bounds</span><span class="o">=</span><span class="n">bounds</span><span class="p">)</span>                 <span class="c1"># Parameter bounds</span>
 </pre></div>
 </div>
@@ -717,7 +723,7 @@ likelihood regions of parameter space!</p>
 <img alt="../_images/notebooks_fittingALine_24_0.png" src="../_images/notebooks_fittingALine_24_0.png" />
 </div>
 </div>
-<p>The predictions are nearly identical to the true MCMC!</p>
+<p>The predictions are close to the true MCMC!</p>
 </div>
 
 

@@ -654,10 +654,13 @@ Gaussian Process regression</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>Number of new design points to find each iteration. These are the</strong></p>
-<p><strong>points that are selected by maximizing the utility function, e.g.</strong></p>
-<p><strong>bape or agp, and sequentially added to the GP training set.  Defaults</strong></p>
-<p><strong>to 10.</strong></p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>m</strong> : int (optional)</p>
+<blockquote>
+<div><p>Number of new design points to find each iteration. These are the
+points that are selected by maximizing the utility function, e.g.
+bape or agp, and sequentially added to the GP training set.  Defaults
+to 10.</p>
+</div></blockquote>
 <p><strong>nmax</strong> : int (optional)</p>
 <blockquote>
 <div><p>Maximum number of iterations.  Defaults to 2.</p>

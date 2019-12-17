@@ -280,7 +280,7 @@
 <span class="c1"># end function</span>
 
 
-<div class="viewcode-block" id="defaultGP"><a class="viewcode-back" href="../../api/gpUtils.html#approxposterior.gpUtils.defaultGP">[docs]</a><span class="k">def</span> <span class="nf">defaultGP</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">white_noise</span><span class="o">=-</span><span class="mi">10</span><span class="p">,</span> <span class="n">fitAmp</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="defaultGP"><a class="viewcode-back" href="../../api/gpUtils.html#approxposterior.gpUtils.defaultGP">[docs]</a><span class="k">def</span> <span class="nf">defaultGP</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">white_noise</span><span class="o">=-</span><span class="mi">12</span><span class="p">,</span> <span class="n">fitAmp</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Basic utility function that initializes a simple GP with an ExpSquaredKernel.</span>
 <span class="sd">    This kernel  works well in many applications as it effectively enforces a</span>
@@ -300,7 +300,7 @@
 <span class="sd">    white_noise : float (optional)</span>
 <span class="sd">        From george docs: &quot;A description of the logarithm of the white noise</span>
 <span class="sd">        variance added to the diagonal of the covariance matrix&quot;. Defaults to</span>
-<span class="sd">        log(white_noise) = -10. Note: if order is not None, you might need to</span>
+<span class="sd">        ln(white_noise) = -12. Note: if order is not None, you might need to</span>
 <span class="sd">        set the white_noise to a larger value for the computation to be</span>
 <span class="sd">        numerically stable, but this, as always, depends on the application.</span>
 <span class="sd">    fitAmp : bool (optional)</span>
