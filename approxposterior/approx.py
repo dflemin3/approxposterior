@@ -64,7 +64,7 @@ class ApproxPosterior(object):
             referred to as acquisition) function to use.  Defaults to bape.
             Options are bape (Bayesian Active Learning for Posterior Estimation,
             Kandasamy et al. (2015)), agp (Adapted Gaussian Process Approximation,
-            Wang & Li (2017)), alternate (between bape and agp), and jones
+            Wang & Li (2017)), alternate (between AGP and BAPE), and jones
             (Jones et al. (1998) expected improvement).
             Case doesn't matter. If alternate, runs agp on even numbers and bape
             on odd.
