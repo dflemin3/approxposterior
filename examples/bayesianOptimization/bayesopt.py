@@ -89,24 +89,32 @@ iters = [ii for ii in range(soln["nev"])]
 # Left: solution
 axes[0].plot(iters, soln["thetas"], "o-", color="C0", lw=3)
 axes[0].axhline(trueSoln["x"], ls="--", color="k", lw=2)
-axes[0].text(0, trueSoln["x"] + 0.025, r"$\theta_{\mathrm{max}}$", color="k",
-             fontsize=18)
-st = "true thetaMax: %.3e, \nestimated thetaMax : %.3e" % (trueSoln["x"], soln["thetaBest"])
-axes[0].text(1, -0.3, st, color="k", fontsize=12)
+axes[0].text(0.02, 0.92, r"$\theta_{\mathrm{max}}$", color="k",
+             fontsize=18, transform=axes[0].transAxes)
+
+# Annotate with true, approximate solution
+stTrue = r"$\theta_{\mathrm{max}}=$ %.3e" % trueSoln["x"]
+stAp = r"$\hat{\theta}_{\mathrm{max}}=$ %.3e" % soln["thetaBest"]
+axes[0].text(0.5, 0.6, stTrue, color="k", fontsize=12, transform=axes[0].transAxes)
+axes[0].text(0.5, 0.55, stAp, color="k", fontsize=12, transform=axes[0].transAxes)
 
 # Format
-axes[0].set_ylabel("Theta")
+axes[0].set_ylabel(r"$\theta$")
 
 # Right: solution value (- true soln since we minimized -fn)
 axes[1].plot(iters, soln["vals"], "o-", color="C0", lw=3)
 axes[1].axhline(-trueSoln["fun"], ls="--", color="k", lw=2)
-axes[1].text(0, -trueSoln["fun"] + 0.005, "Global Maximum", color="k",
+axes[1].text(0.6, 0.12, "Global Maximum", color="k", transform=axes[1].transAxes,
              fontsize=13)
-st = "true Maximum: %.3e,\nestimated maximum : %.3e" % (-trueSoln["fun"], soln["valBest"])
-axes[1].text(2, 0.1, st, color="k", fontsize=12)
+
+# Annotate with function value at true, approximate solution
+stTrue = r"$f(\theta_{\mathrm{max}}) =$ %.3e" % (-trueSoln["fun"])
+stAp = r"$\hat{f}(\hat{\theta}_{\mathrm{max}})$: %.3e" % soln["valBest"]
+axes[1].text(0.4, 0.6, stTrue, color="k", fontsize=12, transform=axes[1].transAxes)
+axes[1].text(0.4, 0.55, stAp, color="k", fontsize=12, transform=axes[1].transAxes)
 
 # Format
-axes[1].set_ylabel("fn(theta)")
+axes[1].set_ylabel(r"$f(\theta)$")
 
 # Format both axes
 for ax in axes:
