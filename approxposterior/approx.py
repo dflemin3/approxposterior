@@ -369,7 +369,6 @@ class ApproxPosterior(object):
             # 2) In this function, GP hyperparameters are reoptimized after every
             # optGPEveryN new points
             _, _ = self.findNextPoint(computeLnLike=True,
-                                      bounds=self.bounds,
                                       seed=seed,
                                       cache=cache,
                                       gpMethod=gpMethod,
@@ -784,7 +783,7 @@ class ApproxPosterior(object):
 
 
     def findMAP(self, theta0=None, method="nelder-mead", options=None,
-                nRestarts=5):
+                nRestarts=15):
         """
         Find the maximum a posteriori (MAP) estimate, given a trained GP. To find
         the MAP, this function minimizes -mean predicted by the GP, aka finds
@@ -792,7 +791,7 @@ class ApproxPosterior(object):
         definded by self._lnlike + self._lnprior.
 
         Note: MAP estimation typically work better when fitAmp = True, that is
-        the GP kernel has an amplitude term
+        the GP kernel fits for an amplitude term
 
         Parameters
         ----------
@@ -803,7 +802,7 @@ class ApproxPosterior(object):
         options : dict (optional)
             kwargs for the scipy.optimize.minimize function.  Defaults to None.
         nRestarts : int (optional)
-            Number of times to restart the optimization. Defaults to 5.
+            Number of times to restart the optimization. Defaults to 15.
 
         Returns
         -------
@@ -815,15 +814,10 @@ class ApproxPosterior(object):
 
         # Initialize theta0 if not provided. If provided, validate it
         if theta0 is not None:
-            theta0 = np.array(theta0).squeeze()
-            if theta0.ndim <= 1:
-                ndim = 1
-            else:
-                ndim = theta0.shape[-1]
-            assert ndim == self.theta.shape[-1]
+            theta0 = np.array(theta0).reshape(1,self.theta.shape[-1])
         else:
-            # Guess current minimum of negative y
-            theta0 = self.theta[np.argmin(-self.y)]
+            # Guess current max of y
+            theta0 = self.theta[np.argmax(self.y)]
 
         # Initialize option if method is nelder-mead and options not provided
         if str(method).lower() == "nelder-mead":
@@ -850,7 +844,7 @@ class ApproxPosterior(object):
                                            method=method, options=options,
                                            bounds=self.bounds, theta0=theta0)
 
-        # Note: return -MAPVal since we minimized function
+        # Return best answer (-MAPVal since we minimized function)
         return MAP, -MAPVal
     # end function
 
@@ -1007,7 +1001,6 @@ class ApproxPosterior(object):
             # function, Note that computeLnLike = True means new points are
             # saved in self.theta, and self.y, expanding the training set
             thetaT, yT = self.findNextPoint(computeLnLike=True,
-                                            bounds=self.bounds,
                                             seed=seed,
                                             cache=cache,
                                             gpMethod=gpMethod,

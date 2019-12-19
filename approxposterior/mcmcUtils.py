@@ -7,7 +7,7 @@ MCMC utility functions for validating emcee MCMC runs within approxposterior.
 """
 
 # Tell module what it's allowed to import
-__all__ = ["validateMCMCKwargs"]
+__all__ = ["validateMCMCKwargs", "batchMeansMCSE"]
 
 import numpy as np
 
@@ -101,4 +101,57 @@ def validateMCMCKwargs(ap, samplerKwargs, mcmcKwargs, verbose=False):
                 print("Defaulting to nwalkers samples from priorSample.")
 
     return samplerKwargs, mcmcKwargs
+# end function
+
+
+def batchMeansMCSE(samples, num=None, fn=None):
+    """
+    Estimate the Monte Carlo Standard Error of MCMC samples using the
+    non-overlapping batch means methods. See Flegal, Haran, & Jones (2008) for
+    more info: https://arxiv.org/pdf/math/0703746.pdf
+
+    Parameters
+    ----------
+    samples : array
+        nsamples x ndim array of MCMC samples
+    num : int (optional)
+        Number of chunks. Defaults to int(sqrt(len(samples)))
+    fn : function (optional)
+        Function used to compute posterior summary statistic on each chunk.
+        Defaults to None to compute the simple expected value, aka the mean.
+
+    Returns
+    -------
+    RMSE : float/array
+        RMSE for each dimension of the chain
+    """
+
+    # Initialize function if None provided
+    if fn is None:
+        fn = lambda x : x
+
+    # Initialize number of chunks
+    if num is None:
+        num = int(np.sqrt(len(samples)))
+
+    # num MUST be an interger
+    assert isinstance(num, int), "num must be an interger"
+
+    # Compute b, init holder
+    b = int(len(samples) / num)
+    y = np.zeros(num)
+
+    # Estimate summary statistic using entire chain
+    mu = np.mean(fn(samples), axis=0)
+
+    # Estimate batch means
+    for jj in range(num):
+        # Select current chunk, compute!
+        lower = int((jj-1) * b + 1)
+        upper = int(jj*b)
+        y[jj] = np.sum(fn(samples[lower:upper]), axis=0) / b
+
+    # Estimate, return MCSE
+    mcse = b / (num - 1) * np.sum((y - mu)**2, axis=0)
+    return np.sqrt(mcse / len(samples))
 # end function
