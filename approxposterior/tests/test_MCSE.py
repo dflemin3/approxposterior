@@ -27,12 +27,13 @@ def testMCSE():
 
     for ii in range(1,num):
         samples[ii] = 0.4 * samples[ii-1] + np.random.randn()
-    mcse = mcmcUtils.batchMeansMCSE(samples, num=5)
+    mcse = mcmcUtils.batchMeansMCSE(samples)
 
     # Compare estimated MCSE to the known value
     errMsg = "MCSE is incorrect"
     trueMCSE = 0.00494
-    assert(np.allclose(trueMCSE, mcse, atol=5.0e-3)), errMsg
+    print(trueMCSE, mcse)
+    assert np.allclose(trueMCSE, mcse, atol=2.5e-3), errMsg
 # end function
 
 

@@ -9,7 +9,7 @@ Example script
 
 """
 
-from approxposterior import approx, gpUtils, likelihood as lh, utility as ut
+from approxposterior import approx, gpUtils, likelihood as lh, utility as ut, mcmcUtils
 import numpy as np
 
 # Define algorithm parameters
