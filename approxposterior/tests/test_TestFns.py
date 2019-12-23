@@ -33,13 +33,13 @@ def testTestFns():
     # Check Goldstein-Price function, compare to the known global minimum
     test = lh.goldsteinPriceFn([0, -1])
     errMsg = "Goldstein-Price function is incorrect"
-    truth = 3
+    truth = -3
     assert np.allclose(test, truth), errMsg
 
     # Check 1D BayesOpt test function, compare to the known global maximum
     test = lh.testBOFn(-0.359)
     errMsg = "1D test BayesOpt function is incorrect"
-    truth = 0.5003589
+    truth = -0.5003589
     assert np.allclose(test, truth), errMsg
 # end function
 
