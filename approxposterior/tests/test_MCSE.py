@@ -32,7 +32,6 @@ def testMCSE():
     # Compare estimated MCSE to the known value
     errMsg = "MCSE is incorrect"
     trueMCSE = 0.00494
-    print(trueMCSE, mcse)
     assert np.allclose(trueMCSE, mcse, atol=2.5e-3), errMsg
 # end function
 

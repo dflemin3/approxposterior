@@ -132,17 +132,19 @@ def batchMeansMCSE(samples, bins=None, fn=None):
 
     # Initialize number of chunks
     if bins is None:
-        bins = int(np.sqrt(len(samples)))
+        bins = max(int(np.sqrt(len(samples))),2)
 
     # num MUST be an interger
     assert isinstance(bins, int), "num must be an interger"
 
     # Figure out dimensionality
-    ndim = np.asarray(samples).ndim
+    samples = np.asarray(samples)
+    ndim = samples.ndim
 
     # Compute b, init holder
     b = int(len(samples) / bins)
     if ndim > 1:
+        ndim = samples.shape[-1]
         y = np.zeros((bins, ndim))
     else:
         y = np.zeros(bins)
@@ -156,6 +158,8 @@ def batchMeansMCSE(samples, bins=None, fn=None):
         lower = ii * b
         upper = (ii + 1) * b
         y[ii] = np.sum(fn(samples[lower:upper]), axis=0) / b
+
+    print(b, bins, len(samples))
 
     # Estimate batch means (MCSE) as empirical standard deviation, return MCSE
     mcse = b / (bins - 1) * np.sum((y - mu)**2, axis=0)

@@ -1,0 +1,42 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+"""
+
+Test implementation of test functions.
+
+@author: David P. Fleming [University of Washington, Seattle], 2019
+@email: dflemin3 (at) uw (dot) edu
+
+"""
+
+from approxposterior import likelihood as lh
+import numpy as np
+
+
+def testTestFns():
+    """
+    Test test likelihood and optimization functions from likelihood.py.
+    """
+
+    # Check 2D Rosenbrock function, compare to the known global minimum
+    test = lh.rosenbrockLnlike([1, 1])
+    errMsg = "2D Rosenbrock function is incorrect"
+    truth = 0
+    assert np.allclose(test, truth), errMsg
+
+    # Check 5D Rosenbrock function, compare to the known global minimum
+    test = lh.rosenbrockLnlike([1, 1, 1, 1, 1])
+    errMsg = "5D Rosenbrock function is incorrect"
+    truth = 0
+    assert np.allclose(test, truth), errMsg
+
+    # Check Goldstein-Price function, compare to the known global minimum
+    test = lh.goldsteinPriceFn([0, -1])
+    errMsg = "Goldstein-Price function is incorrect"
+    truth = 3
+    assert np.allclose(test, truth), errMsg
+# end function
+
+
+if __name__ == "__main__":
+    testTestFns()

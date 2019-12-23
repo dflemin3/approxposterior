@@ -3,13 +3,14 @@
 :py:mod:`likelihood.py` - Example Likelihood Functions
 ------------------------------------------------------
 
-This file contains routines for simple loglikelihood and prior functions for
-test cases, like the Wang & Li (2017) Rosenbrock function example.
+This file contains routines for simple test, likelihood, prior, and sampling
+functions for cases like the Wang & Li (2017) Rosenbrock function example.
 """
 
 # Tell module what it's allowed to import
 __all__ = ["rosenbrockLnlike", "rosenbrockLnprior","rosenbrockSample",
-           "rosenbrockLnprob", "testBOFn"]
+           "rosenbrockLnprob", "testBOFn", "testBOFnSample", "testBOFnLnPrior",
+           "goldsteinPriceFn", "goldsteinPriceFnSample", "goldsteinPriceFnLnPrior"]
 
 import numpy as np
 from scipy.optimize import rosen
@@ -22,13 +23,13 @@ from scipy.optimize import rosen
 ################################################################################
 
 
-def rosenbrockLnlike(x):
+def rosenbrockLnlike(theta):
     """
     Rosenbrock function as a loglikelihood following Wang & Li (2017)
 
     Parameters
     ----------
-    x : array
+    theta : array
 
     Returns
     -------
@@ -36,11 +37,11 @@ def rosenbrockLnlike(x):
         likelihood
     """
 
-    return -rosen(x)/100.0
+    return -rosen(theta)/100.0
 # end function
 
 
-def rosenbrockLnprior(x):
+def rosenbrockLnprior(theta):
     """
     Uniform log prior for the 2D Rosenbrock likelihood following Wang & Li (2017)
     where the prior pi(x) is a uniform distribution over [-5, 5] x [-5, 5] x ...
@@ -48,7 +49,7 @@ def rosenbrockLnprior(x):
 
     Parameters
     ----------
-    x : array
+    theta : array
 
     Returns
     -------
@@ -56,7 +57,7 @@ def rosenbrockLnprior(x):
         log prior
     """
 
-    if np.any(np.fabs(x) > 5):
+    if np.any(np.fabs(theta) > 5):
         return -np.inf
     else:
         return 0.0
@@ -109,6 +110,13 @@ def rosenbrockLnprob(theta):
 #end function
 
 
+################################################################################
+#
+# 1D Test Function for Bayesian Optimization
+#
+################################################################################
+
+
 def testBOFn(theta):
     """
     Simple 1D test Bayesian optimization function adapted from
@@ -155,6 +163,78 @@ def testBOFnLnPrior(theta):
     """
 
     if np.any(theta < -1) or np.any(theta > 2):
+        return -np.inf
+    else:
+        return 0.0
+# end function
+
+
+################################################################################
+#
+# 2D Test Function for Bayesian Optimization
+#
+################################################################################
+
+
+def goldsteinPriceFn(theta):
+    """
+    Goldstein-Price test 2D optimization function. Taken from:
+    https://en.wikipedia.org/wiki/Test_functions_for_optimization
+    Parameters
+    ----------
+    theta : array
+        theta[0] = x, theta[1] = y
+
+    Returns
+    -------
+    val : float
+        Function value at theta
+    """
+
+    x, y = theta
+
+    val = 1 + ((x + y + 1)**2) * (19 - 14*x + 3*x*x - 14*y + 6*x*y + 3*y*y)
+    val *= 30 + ((2*x - 3*y)**2) * (18 - 32*x + 12*x*x + 48*y - 36*x*y + 27*y*y)
+    return val
+# end function
+
+
+def goldsteinPriceFnSample(n=1):
+    """
+    Sample N points from the prior pi(theta) is a uniform distribution over
+    [-2, 2]
+
+    Parameters
+    ----------
+    n : int (optional)
+        Number of samples. Defaults to 1.
+
+    Returns
+    -------
+    sample : floats
+        n x 1 array of floats samples from the prior
+    """
+
+    return np.random.uniform(low=-2, high=2, size=(n,2)).squeeze()
+# end function
+
+
+def goldsteinPriceFnLnPrior(theta):
+    """
+    Log prior distribution for the Goldstein-Price test optimization function.
+    This prior is a simple uniform function over [-2, 2] for each dimension.
+
+    Parameters
+    ----------
+    theta : float/array
+
+    Returns
+    -------
+    l : float
+        log prior
+    """
+
+    if np.any(np.fabs(x) > 2):
         return -np.inf
     else:
         return 0.0
