@@ -65,10 +65,6 @@ def validateMCMCKwargs(ap, samplerKwargs, mcmcKwargs, verbose=False):
 
         # Handle case when user supplies own loglikelihood function
         if "log_prob_fn" in samplerKwargs.keys():
-            if verbose:
-                print("WARNING: log_prob_fn in samplerKwargs. approxposterior only uses the GP surrogate model for the lnlikelihood!")
-                print("Disregarding log_prob_fn...")
-
             # Remove any other log_prob_fn
             samplerKwargs.pop("log_prob_fn", None)
 
