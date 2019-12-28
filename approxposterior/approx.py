@@ -785,10 +785,10 @@ class ApproxPosterior(object):
     def findMAP(self, theta0=None, method="nelder-mead", options=None,
                 nRestarts=15):
         """
-        Find the maximum a posteriori (MAP) estimate, given a trained GP. To find
-        the MAP, this function minimizes -mean predicted by the GP, aka finds
-        what the GP believes is the point of maximum of whatever function is
-        definded by self._lnlike + self._lnprior.
+        Find the maximum a posteriori (MAP) estimate of the function learned
+        by the GP. To find the MAP, this function minimizes -mean predicted by
+        the GP, aka finds what the GP believes is the point of maximum of
+        whatever function is definded by self._lnlike + self._lnprior.
 
         Note: MAP estimation typically work better when fitAmp = True, that is
         the GP kernel fits for an amplitude term
@@ -828,7 +828,7 @@ class ApproxPosterior(object):
         res = []
         vals = []
 
-        # Set optimization fn for MAP (note - because we're minimizing)
+        # Set optimization fn for MAP
         def fn(x):
             # If not allowed by the prior, reject!
             if not np.isfinite(self._lnprior(x)):

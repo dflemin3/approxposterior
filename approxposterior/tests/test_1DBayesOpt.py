@@ -26,7 +26,7 @@ def test_1DBO():
     seed = 57                        # RNG seed
     np.random.seed(seed)
 
-    # First, directly minimize the objective
+    # First, directly minimize the objective to find the "true minimum"
     fn = lambda x : lh.testBOFn(x) + lh.testBOFnLnPrior(x)
     trueSoln = minimize(fn, lh.testBOFnSample(1), method="nelder-mead")
 
@@ -57,6 +57,8 @@ def test_1DBO():
                        nGPRestarts=3, nMinObjRestarts=5, initGPOpt=True,
                        minObjMethod="nelder-mead",
                        gpHyperPrior=gpUtils.defaultHyperPrior)
+
+    print(ap.theta[np.argmin(ap.y)], ap.y[np.argmin(y)])
 
     # Ensure estimated maximum and value are within 5% of the truth
     errMsg = "thetaMax is incorrect."
