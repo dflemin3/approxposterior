@@ -226,8 +226,8 @@ class ApproxPosterior(object):
             mcmcKwargs=None, samplerKwargs=None, estBurnin=False,
             thinChains=False, runName="apRun", cache=True, gpMethod="powell",
             gpOptions=None, gpP0=None, optGPEveryN=1, nGPRestarts=1,
-            nMinObjRestarts=5, onlyLastMCMC=False, initGPOpt=True,
-            gpHyperPrior=gpUtils.defaultHyperPrior,
+            nMinObjRestarts=5, onlyLastMCMC=False, initGPOpt=True, kmax=3,
+            gpHyperPrior=gpUtils.defaultHyperPrior, eps=0.25, convergenceCheck=False,
             minObjMethod="nelder-mead", minObjOptions=None, args=None, **kwargs):
         """
         Core method to estimate the approximate posterior distribution via
@@ -241,7 +241,9 @@ class ApproxPosterior(object):
             bape or agp, and sequentially added to the GP training set.  Defaults
             to 10.
         nmax : int (optional)
-            Maximum number of iterations.  Defaults to 2.
+            Maximum number of iterations.  Defaults to 2. Algorithm will terminate
+            if either nmax iterations is met or the convergence criterion is met
+            if convergenceCheck is True.
         seed : int (optional)
             RNG seed.  Defaults to None.
         timing : bool (optional)
@@ -315,6 +317,19 @@ class ApproxPosterior(object):
             Prior function for GP hyperparameters. Defaults to the defaultHyperPrior fn.
             This function asserts that the mean must be negative and that each log
             hyperparameter is within the range [-20,20].
+        eps : float (optional)
+            Fractional change in the median of the approximate marginal posterior
+            distributions for kmax iterations required for convergence. Default
+            to 0.25.
+        kmax : int (optional)
+            Number of consecutive iterations for convergence check to pass before
+            successfully ending algorithm. Defaults to 3.
+        convergenceCheck : bool (optional)
+            Whether or not to terminate the execution if the change in
+            the median of the approximate marginal posterior distributions changes
+            by less than eps for kmax consecutive iterations. Defaults to False. Note:
+            if using this, make sure you're confortable with the burnin and thinning
+            applied to the MCMC chains. See estBurnin and thinChains parameters.
         minObjMethod : str (optional)
             scipy.optimize.minimize method used when optimizing
             utility functions for point selection.  Defaults to nelder-mead.
@@ -354,6 +369,15 @@ class ApproxPosterior(object):
         if initGPOpt:
             self.optGP(seed=seed, method=gpMethod, options=gpOptions, p0=gpP0,
                        nGPRestarts=nGPRestarts, gpHyperPrior=gpHyperPrior)
+
+        # Initialize convergence check counter
+        kk = 0
+
+        # If checking for convergence, must run the MCMC each iteration
+        if convergenceCheck and onlyLastMCMC:
+            errMsg = "If convergenceCheck is True, must run an MCMC each iteration.\n"
+            errMsg += "convergenceCheck = %d onlyLastMCMC = %d" % (convergenceCheck, onlyLastMCMC)
+            raise RuntimeError(errMsg)
 
         # Main loop - run for nmax iterations
         for nn in range(nmax):
@@ -434,6 +458,38 @@ class ApproxPosterior(object):
                     np.savez(str(runName) + "APTiming.npz",
                              trainingTime=self.trainingTime,
                              mcmcTime=self.mcmcTime)
+
+            # Convergence check?
+            if convergenceCheck:
+
+                # Extract current posterior marginal medians
+                samples = self.sampler.get_chain(discard=self.iburns[-1],
+                                                 flat=True,
+                                                 thin=self.ithins[-1])
+                medsNN = np.median(samples, axis=0)
+
+                # Cannot converge after just one iteration (unless nmax=1, I suppose)
+                if nn == 0:
+                    medsPrev = medsNN.copy()
+                else:
+                    absDiff = np.fabs(medsNN - medsPrev)
+                    print(absDiff)
+                    if np.all(absDiff < eps):
+                        kk += 1
+                    else:
+                        kk = 0
+
+                    # Reset previous medians
+                    medsPrev = medsNN.copy()
+
+                # If close for kmax consecutive iterations, converged!
+                if kk >= kmax:
+                    if verbose:
+                        print("Posterior marginal medians converged.")
+                        print("eps: %e" % eps)
+                        print("kk, kmax: %d, %d" % (kk, kmax))
+                        print("Final abs(difference):", absDiff)
+                        break
     # end function
 
 
