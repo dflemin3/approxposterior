@@ -222,7 +222,7 @@ class ApproxPosterior(object):
             thinChains=False, runName="apRun", cache=True, gpMethod="powell",
             gpOptions=None, gpP0=None, optGPEveryN=1, nGPRestarts=1,
             nMinObjRestarts=5, onlyLastMCMC=False, initGPOpt=True, kmax=3,
-            gpHyperPrior=gpUtils.defaultHyperPrior, eps=0.25, convergenceCheck=True,
+            gpHyperPrior=gpUtils.defaultHyperPrior, eps=0.25, convergenceCheck=False,
             minObjMethod="nelder-mead", minObjOptions=None, args=None, **kwargs):
         """
         Core algorithm to estimate the posterior distribution via Gaussian
@@ -320,7 +320,7 @@ class ApproxPosterior(object):
         convergenceCheck : bool (optional)
             Whether or not to terminate the execution if the change in
             the median of the approximate marginal posterior distributions changes
-            by less than eps for kmax consecutive iterations. Defaults True. Note:
+            by less than eps for kmax consecutive iterations. Defaults to False. Note:
             if using this, make sure you're confortable with the burnin and thinning
             applied to the MCMC chains. See estBurnin and thinChains parameters.
         minObjMethod : str (optional)
