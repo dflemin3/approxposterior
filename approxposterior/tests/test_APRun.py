@@ -14,22 +14,22 @@ import numpy as np
 import george
 import emcee
 
-def test_run():
+def testRun():
     """
-    Test the core approxposterior algorithm for 2 iterations.
+    Test the core approxposterior algorithm for several iterations until convergence.
     """
 
     # Define algorithm parameters
     m0 = 50                           # Initial size of training set
     m = 20                            # Number of new points to find each iteration
-    nmax = 2                          # Maximum number of iterations
+    nmax = 5                          # Maximum number of iterations
     bounds = [(-5,5), (-5,5)]         # Prior bounds
     algorithm = "bape"                # Use the Kandasamy et al. (2015) formalism
     seed = 57                         # For reproducibility
     np.random.seed(seed)
 
     # emcee MCMC parameters
-    mcmcKwargs = {"iterations" : int(2.0e4)} # Number of MCMC steps
+    mcmcKwargs = {"iterations" : int(5.0e3)} # Number of MCMC steps
     samplerKwargs = {"nwalkers" : 20}        # emcee.EnsembleSampler parameters
 
     # Randomly sample initial conditions from the prior
@@ -57,22 +57,22 @@ def test_run():
     # Run!
     ap.run(m=m, nmax=nmax, estBurnin=True, nGPRestarts=3, mcmcKwargs=mcmcKwargs,
            cache=False, samplerKwargs=samplerKwargs, verbose=False,
-           thinChains=False, onlyLastMCMC=True)
+           thinChains=False, onlyLastMCMC=False, kmax=2, eps=1,
+           convergenceCheck=True)
 
     # Ensure medians of chains are consistent with the true values
-    samples = ap.sampler.get_chain(discard=ap.iburns[-1], flat=True, thin=ap.ithins[-1])
-    x1Med, x2Med = np.median(samples, axis=0)
+    samples = ap.sampler.get_chain(discard=ap.iburns[-1], flat=True,
+                                   thin=ap.ithins[-1])
+    means = np.mean(samples, axis=0)
+    trueMeans = np.array([0.0, 1.31])
+    trueStds = np.array([1.5, 1.75])
+    zScore = np.fabs((means - trueMeans)/trueStds)
 
-    diffX1 = np.fabs(0.0 - x1Med)
-    diffX2 = np.fabs(1.31 - x2Med)
-
-    # Differences between estimated and true medians must be close-ish, but not
-    # perfect because we've using a small number of samples to make this test
-    # quick enough
+    # Relative zScore must be close enough
     errMsg = "Medians of marginal posteriors are incosistent with true values."
-    assert((diffX1 < 0.1) & (diffX2 < 0.1)), errMsg
+    assert np.all(zScore < 1), errMsg
 
 # end function
 
 if __name__ == "__main__":
-    test_run()
+    testRun()

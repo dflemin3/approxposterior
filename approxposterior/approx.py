@@ -227,7 +227,7 @@ class ApproxPosterior(object):
             thinChains=False, runName="apRun", cache=True, gpMethod="powell",
             gpOptions=None, gpP0=None, optGPEveryN=1, nGPRestarts=1,
             nMinObjRestarts=5, onlyLastMCMC=False, initGPOpt=True, kmax=3,
-            gpHyperPrior=gpUtils.defaultHyperPrior, eps=0.25, convergenceCheck=False,
+            gpHyperPrior=gpUtils.defaultHyperPrior, eps=1.0, convergenceCheck=False,
             minObjMethod="nelder-mead", minObjOptions=None, args=None, **kwargs):
         """
         Core method to estimate the approximate posterior distribution via
@@ -319,8 +319,8 @@ class ApproxPosterior(object):
             hyperparameter is within the range [-20,20].
         eps : float (optional)
             Fractional change in the median of the approximate marginal posterior
-            distributions for kmax iterations required for convergence. Default
-            to 0.25.
+            distributions for kmax iterations required for convergence. Defaults
+            to 1.0.
         kmax : int (optional)
             Number of consecutive iterations for convergence check to pass before
             successfully ending algorithm. Defaults to 3.
@@ -462,33 +462,37 @@ class ApproxPosterior(object):
             # Convergence check?
             if convergenceCheck:
 
-                # Extract current posterior marginal medians
+                # Extract current posterior marginal means, stds
                 samples = self.sampler.get_chain(discard=self.iburns[-1],
                                                  flat=True,
                                                  thin=self.ithins[-1])
-                medsNN = np.median(samples, axis=0)
+                meanNN = np.mean(samples, axis=0)
+                stdNN = np.std(samples, axis=0)
 
-                # Cannot converge after just one iteration (unless nmax=1, I suppose)
+                # Cannot converge after just one iteration
                 if nn == 0:
-                    medsPrev = medsNN.copy()
+                    meanPrev = meanNN
+                    stdPrev = stdNN
                 else:
-                    absDiff = np.fabs(medsNN - medsPrev)
-                    print(absDiff)
-                    if np.all(absDiff < eps):
+                    # Compute z score for each parameter mean relative to
+                    # previous approximate marginal posterior distribution quantities
+                    zScore = np.fabs((meanNN - meanPrev)/stdPrev)
+                    if np.all(zScore < eps):
                         kk += 1
                     else:
                         kk = 0
 
-                    # Reset previous medians
-                    medsPrev = medsNN.copy()
+                    # Save previous values
+                    meanPrev = meanNN
+                    stdPrev = stdNN
 
                 # If close for kmax consecutive iterations, converged!
                 if kk >= kmax:
                     if verbose:
-                        print("Posterior marginal medians converged.")
-                        print("eps: %e" % eps)
+                        print("Approximate marginal posterior distributions converged.")
+                        print("Delta zScore threshold, eps: %e" % eps)
                         print("kk, kmax: %d, %d" % (kk, kmax))
-                        print("Final abs(difference):", absDiff)
+                        print("Final abs(zScore):", zScore)
                         break
     # end function
 
