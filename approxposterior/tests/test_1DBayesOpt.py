@@ -27,7 +27,7 @@ def test_1DBO():
     np.random.seed(seed)
 
     # First, directly minimize the objective to find the "true minimum"
-    fn = lambda x : lh.testBOFn(x) + lh.testBOFnLnPrior(x)
+    fn = lambda x : -(lh.testBOFn(x) + lh.testBOFnLnPrior(x))
     trueSoln = minimize(fn, lh.testBOFnSample(1), method="nelder-mead")
 
     # Sample design points from prior to create initial training set
@@ -58,14 +58,12 @@ def test_1DBO():
                        minObjMethod="nelder-mead",
                        gpHyperPrior=gpUtils.defaultHyperPrior)
 
-    print(ap.theta[np.argmin(ap.y)], ap.y[np.argmin(y)])
-
     # Ensure estimated maximum and value are within 5% of the truth
     errMsg = "thetaMax is incorrect."
     assert(np.allclose(soln["thetaBest"], trueSoln["x"], rtol=5.0e-2)), errMsg
 
     errMsg = "Maximum function value is incorrect."
-    assert(np.allclose(soln["valBest"], trueSoln["fun"], rtol=5.0e-2)), errMsg
+    assert(np.allclose(soln["valBest"], -trueSoln["fun"], rtol=5.0e-2)), errMsg
 
 # end function
 

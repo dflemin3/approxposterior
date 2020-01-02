@@ -10,7 +10,7 @@ functions for cases like the Wang & Li (2017) Rosenbrock function example.
 # Tell module what it's allowed to import
 __all__ = ["rosenbrockLnlike", "rosenbrockLnprior","rosenbrockSample",
            "rosenbrockLnprob", "testBOFn", "testBOFnSample", "testBOFnLnPrior",
-           "goldsteinPriceFn", "goldsteinPriceFnSample", "goldsteinPriceFnLnPrior"]
+           "sphereLnlike", "sphereSample", "sphereLnprior"]
 
 import numpy as np
 from scipy.optimize import rosen
@@ -123,7 +123,8 @@ def testBOFn(theta):
     https://krasserm.github.io/2018/03/21/bayesian-optimization/
     """
 
-    return np.sin(3*theta) + theta**2 - 0.7*theta
+    theta = np.asarray(theta)
+    return -np.sin(3*theta) - theta**2 + 0.7*theta
 # end function
 
 
@@ -176,17 +177,15 @@ def testBOFnLnPrior(theta):
 ################################################################################
 
 
-def goldsteinPriceFn(theta):
+def sphereLnlike(theta):
     """
-    Goldstein-Price test 2D optimization function. Note: This is actually the
-    negative of the Goldstein-Price function. Taken from:
-    https://en.wikipedia.org/wiki/Test_functions_for_optimization
-
+    Sphere test 2D optimization function. Note: This is actually the
+    negative of the sphere function and it's just a 0 mean, unit std Gaussian.
+    Taken from: https://en.wikipedia.org/wiki/Test_functions_for_optimization
 
     Parameters
     ----------
     theta : array
-        theta[0] = x, theta[1] = y
 
     Returns
     -------
@@ -194,15 +193,12 @@ def goldsteinPriceFn(theta):
         Function value at theta
     """
 
-    x, y = theta
-
-    val = 1 + ((x + y + 1)**2) * (19 - 14*x + 3*x*x - 14*y + 6*x*y + 3*y*y)
-    val *= 30 + ((2*x - 3*y)**2) * (18 - 32*x + 12*x*x + 48*y - 36*x*y + 27*y*y)
-    return -val
+    theta = np.asarray(theta)
+    return -np.sum(theta**2)
 # end function
 
 
-def goldsteinPriceFnSample(n=1):
+def sphereSample(n=1):
     """
     Sample N points from the prior pi(theta) is a uniform distribution over
     [-2, 2]
@@ -222,9 +218,9 @@ def goldsteinPriceFnSample(n=1):
 # end function
 
 
-def goldsteinPriceFnLnPrior(theta):
+def sphereLnprior(theta):
     """
-    Log prior distribution for the Goldstein-Price test optimization function.
+    Log prior distribution for the sphere test optimization function.
     This prior is a simple uniform function over [-2, 2] for each dimension.
 
     Parameters

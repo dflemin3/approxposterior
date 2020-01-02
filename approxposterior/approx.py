@@ -318,18 +318,21 @@ class ApproxPosterior(object):
             This function asserts that the mean must be negative and that each log
             hyperparameter is within the range [-20,20].
         eps : float (optional)
-            Fractional change in the median of the approximate marginal posterior
-            distributions for kmax iterations required for convergence. Defaults
-            to 1.0.
+            Change in the mean of the approximate marginal posterior
+            distributions, relative to the previous marginal posterior distribution's
+            standard deviation (aka relative z score), for kmax iterations
+            required for convergence. Defaults to 1.0.
         kmax : int (optional)
             Number of consecutive iterations for convergence check to pass before
             successfully ending algorithm. Defaults to 3.
         convergenceCheck : bool (optional)
-            Whether or not to terminate the execution if the change in
-            the median of the approximate marginal posterior distributions changes
-            by less than eps for kmax consecutive iterations. Defaults to False. Note:
-            if using this, make sure you're confortable with the burnin and thinning
-            applied to the MCMC chains. See estBurnin and thinChains parameters.
+            Whether or not to terminate the execution if the change in the mean
+            of the approximate marginal posterior distributions, relative to the
+            previous marginal posterior distribution's standard deviation
+            (aka relative z score) varies by less than eps for kmax consecutive
+            iterations. Defaults to False. Note: if using this, make sure you're
+            confortable with the burnin and thinning applied to the MCMC chains.
+            See estBurnin and thinChains parameters.
         minObjMethod : str (optional)
             scipy.optimize.minimize method used when optimizing
             utility functions for point selection.  Defaults to nelder-mead.
@@ -847,11 +850,11 @@ class ApproxPosterior(object):
         """
         Find the maximum a posteriori (MAP) estimate of the function learned
         by the GP. To find the MAP, this function minimizes -mean predicted by
-        the GP, aka finds what the GP believes is the point of maximum of
-        whatever function is definded by self._lnlike + self._lnprior.
+        the GP, aka finds what the GP believes is the maximum of whatever
+        function is definded by self._lnlike + self._lnprior.
 
         Note: MAP estimation typically work better when fitAmp = True, that is
-        the GP kernel fits for an amplitude term
+        the GP kernel fits for an amplitude term.
 
         Parameters
         ----------

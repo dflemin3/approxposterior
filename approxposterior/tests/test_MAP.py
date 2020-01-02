@@ -26,12 +26,12 @@ def testMAPAmp():
     np.random.seed(seed)
 
     # Randomly sample initial conditions from the prior
-    theta = np.array(lh.rosenbrockSample(m0))
+    theta = np.array(lh.sphereSample(m0))
 
     # Evaluate forward model log likelihood + lnprior for each theta
     y = np.zeros(len(theta))
     for ii in range(len(theta)):
-        y[ii] = lh.rosenbrockLnlike(theta[ii]) + lh.rosenbrockLnprior(theta[ii])
+        y[ii] = lh.sphereLnlike(theta[ii]) + lh.sphereLnprior(theta[ii])
 
     # Create the the default GP using an ExpSquaredKernel
     gp = gpUtils.defaultGP(theta, y, fitAmp=True)
@@ -41,9 +41,9 @@ def testMAPAmp():
     ap = approx.ApproxPosterior(theta=theta,
                                 y=y,
                                 gp=gp,
-                                lnprior=lh.rosenbrockLnprior,
-                                lnlike=lh.rosenbrockLnlike,
-                                priorSample=lh.rosenbrockSample,
+                                lnprior=lh.sphereLnprior,
+                                lnlike=lh.sphereLnlike,
+                                priorSample=lh.sphereSample,
                                 bounds=bounds,
                                 algorithm=algorithm)
 
@@ -51,18 +51,16 @@ def testMAPAmp():
     ap.optGP(seed=seed, method="powell", nGPRestarts=3)
 
     # Find some points to add to GP training set
-    ap.findNextPoint(numNewPoints=20, nGPRestarts=3)
+    ap.findNextPoint(numNewPoints=5, nGPRestarts=3, cache=False)
 
     # Find MAP solution
-    trueMAP = [1.0, 1.0]
+    trueMAP = [0.0, 0.0]
     trueVal = 0.0
     testMAP, testVal = ap.findMAP(nRestarts=15)
 
-    # Compare estimated MAP to true values
+    # Compare estimated MAP to true values, given some tolerance
     errMsg = "True MAP solution is incorrect."
-    # Allow up to 10% error in each parameter
-    assert(np.allclose(trueMAP, testMAP, rtol=1.0e-1)), errMsg
-    # All up to 0.1% error in function value
+    assert(np.allclose(trueMAP, testMAP, atol=1.0e-3)), errMsg
     errMsg = "True MAP function value is incorrect."
     assert(np.allclose(trueVal, testVal, atol=1.0e-3)), errMsg
 # end function
