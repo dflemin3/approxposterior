@@ -47,7 +47,7 @@ def testUtilsGPAmp():
     testUtil = ut.AGPUtility(thetaTest, y, gp, lh.rosenbrockLnprior)
 
     errMsg = "ERROR: AGP util fn bug.  Did you change gp_utils.setup_gp?"
-    assert np.allclose(testUtil, 38.74563838, rtol=1.0e-4), errMsg
+    assert np.allclose(testUtil, 31.92055252, rtol=1.0e-4), errMsg
 
     # Now do the same using the BAPE utility function
     testUtil = ut.BAPEUtility(thetaTest, y, gp, lh.rosenbrockLnprior)
@@ -98,13 +98,13 @@ def testUtilsGPNoAmp():
     testUtil = ut.AGPUtility(thetaTest, y, gp, lh.rosenbrockLnprior)
 
     errMsg = "ERROR: AGP util fn bug.  Did you change gp_utils.setup_gp?"
-    assert np.allclose(testUtil, 38.53018886, rtol=1.0e-4), errMsg
+    assert np.allclose(testUtil, 37.41585067, rtol=1.0e-4), errMsg
 
     # Now do the same using the BAPE utility function
     testUtil = ut.BAPEUtility(thetaTest, y, gp, lh.rosenbrockLnprior)
 
     errMsg = "ERROR: BAPE util fn bug.  Did you change gp_utils.setup_gp?"
-    assert np.allclose(testUtil, 76.26762099, rtol=1.0e-4), errMsg
+    assert np.allclose(testUtil, 76.15271103, rtol=1.0e-4), errMsg
 
     # Now do the same using the Jones+1998 utility function
     testUtil = ut.JonesUtility(thetaTest, y, gp, lh.rosenbrockLnprior)

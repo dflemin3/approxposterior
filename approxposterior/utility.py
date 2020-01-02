@@ -133,7 +133,7 @@ def AGPUtility(theta, y, gp, priorFn):
         raise RuntimeError("ERROR: Need to compute GP before using it!")
 
     try:
-        util = -(mu + 1.0/np.log(2.0*np.pi*np.e*var))
+        util = -(mu + 0.5*np.log(2.0*np.pi*np.e*var))
     except ValueError:
         print("Invalid util value.  Negative variance or inf mu?")
         raise ValueError("util: %e. mu: %e. var: %e" % (util, mu, var))

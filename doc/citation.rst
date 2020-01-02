@@ -20,31 +20,34 @@ If you use :py:obj:`approxposterior`, please cite the following:
     adsnote = {Provided by the SAO/NASA Astrophysics Data System}
   }
 
-*Kandasamy et al. (2015)*
+*Kandasamy et al. (2017)*
 
 .. code-block:: bash
 
-  @misc{Kandasamy2015,
-  	author = {Kirthevasan Kandasamy and Jeff Schneider and Barnabas Poczos},
-  	title = "{Bayesian Active Learning for Posterior Estimation}",
-  	note = {International Joint Conference on Artificial Intelligence},
-  	year = {2015},
-  	}
+  @article{Kandasamy2017,
+  title = "Query efficient posterior estimation in scientific experiments via Bayesian active learning",
+  journal = "Artificial Intelligence",
+  volume = "243",
+  pages = "45 - 56",
+  year = "2017",
+  issn = "0004-3702",
+  doi = "https://doi.org/10.1016/j.artint.2016.11.002",
+  url = "http://www.sciencedirect.com/science/article/pii/S0004370216301394",
+  author = "Kirthevasan Kandasamy and Jeff Schneider and Barnabás Póczos",
+  keywords = "Posterior estimation, Active learning, Gaussian processes"}
 
-*Wang & Li (2017)*
+*Wang & Li (2018)*
 
 .. code-block:: bash
 
-  @ARTICLE{Wang2017,
-     author = {{Wang}, H. and {Li}, J.},
-      title = "{Adaptive Gaussian process approximation for Bayesian inference with expensive likelihood functions}",
-    journal = {ArXiv e-prints},
-  archivePrefix = "arXiv",
-     eprint = {1703.09930},
-   primaryClass = "stat.CO",
-   keywords = {Statistics - Computation, Statistics - Machine Learning},
-       year = 2017,
-      month = mar,
-     adsurl = {http://adsabs.harvard.edu/abs/2017arXiv170309930W},
-    adsnote = {Provided by the SAO/NASA Astrophysics Data System}
-  }
+  @article{Wang2018,
+  author = {Wang, Hongqiao and Li, Jinglai},
+  title = {Adaptive Gaussian Process Approximation for Bayesian Inference with Expensive Likelihood Functions},
+  journal = {Neural Computation},
+  volume = {30},
+  number = {11},
+  pages = {3072-3094},
+  year = {2018},
+  doi = {10.1162/neco\_a\_01127},
+  URL = { https://doi.org/10.1162/neco_a_01127},
+  eprint = {https://doi.org/10.1162/neco_a_01127}}

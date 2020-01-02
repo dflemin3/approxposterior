@@ -2,5 +2,4 @@
 omit =
     doc/*
     approxposterior/tests/*
-    approxposterior/mcmcUtils.py
     *__init__*

@@ -7,7 +7,7 @@ MCMC utility functions for validating emcee MCMC runs within approxposterior.
 """
 
 # Tell module what it's allowed to import
-__all__ = ["validateMCMCKwargs"]
+__all__ = ["validateMCMCKwargs", "batchMeansMCSE"]
 
 import numpy as np
 
@@ -97,4 +97,67 @@ def validateMCMCKwargs(ap, samplerKwargs, mcmcKwargs, verbose=False):
                 print("Defaulting to nwalkers samples from priorSample.")
 
     return samplerKwargs, mcmcKwargs
+# end function
+
+
+def batchMeansMCSE(samples, bins=None, fn=None):
+    """
+    Estimate the Monte Carlo Standard Error of MCMC samples using the
+    non-overlapping batch means methods. See Flegal, Haran, & Jones (2008) for
+    more info: https://arxiv.org/pdf/math/0703746.pdf
+
+    Parameters
+    ----------
+    samples : array
+        nsamples x ndim array of MCMC samples
+    bins : int (optional)
+        Number of bins. Defaults to int(sqrt(len(samples)))
+    fn : function (optional)
+        Function used to compute posterior summary statistic on each chunk.
+        Defaults to None to compute the simple expected value, aka the mean.
+
+    Returns
+    -------
+    RMSE : float/array
+        RMSE for each dimension of the chain
+    """
+
+    # Initialize function if None provided
+    if fn is None:
+        fn = lambda x : x
+
+    # Initialize number of chunks
+    if bins is None:
+        bins = max(int(np.sqrt(len(samples))),2)
+
+    # num MUST be an interger
+    assert isinstance(bins, int), "num must be an interger"
+
+    # Figure out dimensionality
+    samples = np.asarray(samples)
+    ndim = samples.ndim
+
+    # Compute b, init holder
+    b = int(len(samples) / bins)
+    if ndim > 1:
+        ndim = samples.shape[-1]
+        y = np.zeros((bins, ndim))
+    else:
+        y = np.zeros(bins)
+
+    # Estimate summary statistic using entire chain
+    mu = np.mean(fn(samples), axis=0)
+
+    # Compute summary statistic for each bin in the chain
+    for ii in range(bins):
+        # Select current chunk, compute!
+        lower = ii * b
+        upper = (ii + 1) * b
+        y[ii] = np.sum(fn(samples[lower:upper]), axis=0) / b
+
+    print(b, bins, len(samples))
+
+    # Estimate batch means (MCSE) as empirical standard deviation, return MCSE
+    mcse = b / (bins - 1) * np.sum((y - mu)**2, axis=0)
+    return np.sqrt(mcse / len(samples))
 # end function

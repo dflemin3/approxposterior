@@ -47,6 +47,10 @@ ap.optGP(seed=seed, method="powell", nGPRestarts=1)
 # Find MAP solution and function value at MAP
 MAP, val = ap.findMAP(nRestarts=5)
 
+print("Approximate MAP:", MAP)
+print("GP mean function value at MAP:", val)
+print("True minimum: (1,1), True function value at minimum: 0")
+
 # Plot MAP solution on top of grid of Rosenbrock function evaluations
 import matplotlib.pyplot as plt
 
