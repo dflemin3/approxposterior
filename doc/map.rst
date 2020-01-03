@@ -72,7 +72,7 @@ points to make our training set for the GP.
   # Find MAP solution and function value at MAP
   MAP, val = ap.findMAP(nRestarts=5)
 
-5) Compare :py:obj:`approxposterior` MAP solution to truth: 0 at (1,1)
+5) Compare :py:obj:`approxposterior` MAP solution to truth: 0 at (0,0)
 
 .. code-block:: python
 

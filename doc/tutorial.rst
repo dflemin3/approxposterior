@@ -90,7 +90,7 @@ your code.  In this example, we set verbose = False for simplicity.
 
 The final posterior distribution will look something like the following:
 
-.. image:: _figures/final_posterior.png
+.. image:: _figures/finalPosterior.png
   :width: 400
 
 Check the notebook below to see MCMC sampling with using the Rosenbrock function and :py:obj:`emcee`.
