@@ -55,7 +55,7 @@ def test_2DBO():
     soln = ap.bayesOpt(nmax=numNewPoints, tol=1.0e-3, kmax=3, seed=seed,
                        cache=False, gpMethod="powell", optGPEveryN=1,
                        nGPRestarts=3, nMinObjRestarts=5, initGPOpt=True,
-                       minObjMethod="nelder-mead", verbose=False,
+                       minObjMethod="nelder-mead", verbose=False, findMAP=True,
                        gpHyperPrior=gpUtils.defaultHyperPrior)
 
     # Ensure estimated maximum and value are within small value of the truth

@@ -55,15 +55,22 @@ def test_1DBO():
     soln = ap.bayesOpt(nmax=numNewPoints, tol=1.0e-3, seed=seed, verbose=False,
                        cache=False, gpMethod="powell", optGPEveryN=1,
                        nGPRestarts=3, nMinObjRestarts=5, initGPOpt=True,
-                       minObjMethod="nelder-mead",
+                       minObjMethod="nelder-mead", findMAP=True,
                        gpHyperPrior=gpUtils.defaultHyperPrior)
 
     # Ensure estimated maximum and value are within 5% of the truth
-    errMsg = "thetaMax is incorrect."
+    errMsg = "thetaBest is incorrect."
     assert(np.allclose(soln["thetaBest"], trueSoln["x"], rtol=5.0e-2)), errMsg
 
     errMsg = "Maximum function value is incorrect."
     assert(np.allclose(soln["valBest"], -trueSoln["fun"], rtol=5.0e-2)), errMsg
+
+    # Same as above, but for MAP solution
+    errMsg = "thetaBest is incorrect."
+    assert(np.allclose(soln["thetaMAPBest"], trueSoln["x"], rtol=5.0e-2)), errMsg
+
+    errMsg = "Maximum function value is incorrect."
+    assert(np.allclose(soln["valMAPBest"], -trueSoln["fun"], rtol=5.0e-2)), errMsg
 
 # end function
 
