@@ -917,7 +917,7 @@ class ApproxPosterior(object):
                  gpOptions=None, gpP0=None, optGPEveryN=1, nGPRestarts=1,
                  nMinObjRestarts=5, initGPOpt=True, minObjMethod="nelder-mead",
                  gpHyperPrior=gpUtils.defaultHyperPrior,  minObjOptions=None,
-                 args=None, **kwargs):
+                 findMAP=True, args=None, **kwargs):
         """
         Perform Bayesian optimization given a GP surrogate model to estimate
 
@@ -1029,6 +1029,9 @@ class ApproxPosterior(object):
         # Define holders for solutions
         thetas = list()
         vals = list()
+        if findMAP:
+            thetasMAP = list()
+            valsMAP = list()
 
         # Save forward model input-output pairs since they take forever to
         # calculate and we want them around in case something weird happens.
@@ -1088,17 +1091,22 @@ class ApproxPosterior(object):
                          gpParamNames=self.gp.get_parameter_names(),
                          gpParamValues=self.gp.get_parameter_vector())
 
-            # 3) Find current MAP solution
-            thetaN, valN = self.findMAP(theta0=theta0, method=minObjMethod,
-                                        options=minObjOptions,
-                                        nRestarts=nMinObjRestarts)
+            # 3a) Cache current best forward model run
+            thetas.append(self.theta[np.argmax(self.y)])
+            vals.append(self.y[np.argmax(self.y)])
 
-            if verbose:
-                print("Current solution: ", thetaN, valN)
+            # 3b) Find current MAP solution?
+            if findMAP:
+                thetaN, valN = self.findMAP(theta0=theta0, method=minObjMethod,
+                                            options=minObjOptions,
+                                            nRestarts=nMinObjRestarts)
 
-            # Save point
-            thetas.append(thetaN)
-            vals.append(valN)
+                if verbose:
+                    print("Current MAP solution: ", thetaN, valN)
+
+                # Save point
+                thetasMAP.append(thetaN)
+                valsMAP.append(valN)
 
             # Convergence check
             if nn > 0:
@@ -1118,6 +1126,12 @@ class ApproxPosterior(object):
         soln = {"thetaBest" : thetas[-1], "valBest" : vals[-1],
                 "thetas" : np.asarray(thetas).squeeze(),
                 "vals" : np.asarray(vals).squeeze(), "nev" : nn+1}
+
+        if findMAP:
+            soln["thetasMAP"] = np.asarray(thetasMAP).squeeze()
+            soln["valsMAP"] = np.asarray(valsMAP).squeeze()
+            soln["thetaMAPBest"] = soln["thetasMAP"][np.argmax(soln["valsMAP"])]
+            soln["valMAPBest"] = soln["valsMAP"][np.argmax(soln["valsMAP"])]
 
         return soln
     # end function
