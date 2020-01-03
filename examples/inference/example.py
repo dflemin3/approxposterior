@@ -9,7 +9,7 @@ Example script
 
 """
 
-from approxposterior import approx, gpUtils, likelihood as lh, utility as ut, mcmcUtils
+from approxposterior import approx, gpUtils, likelihood as lh, utility as ut
 import numpy as np
 
 # Define algorithm parameters
@@ -19,8 +19,7 @@ nmax = 2                          # Maximum number of iterations
 bounds = [(-5,5), (-5,5)]         # Prior bounds
 algorithm = "bape"                # Use the Kandasamy et al. (2017) formalism
 seed = 57                         # RNG seed
-
-#np.random.seed(seed)
+np.random.seed(seed)
 
 # emcee MCMC parameters
 samplerKwargs = {"nwalkers" : 20}        # emcee.EnsembleSampler parameters
@@ -34,7 +33,7 @@ y = np.zeros(len(theta))
 for ii in range(len(theta)):
     y[ii] = lh.rosenbrockLnlike(theta[ii]) + lh.rosenbrockLnprior(theta[ii])
 
-# Default gp
+# Default GP with an ExpSquaredKernel
 gp = gpUtils.defaultGP(theta, y, white_noise=-12)
 
 # Initialize object using the Wang & Li (2018) Rosenbrock function example

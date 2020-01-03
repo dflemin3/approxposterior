@@ -17,12 +17,17 @@ your code.  In this example, we set verbose = False for simplicity.
 
 .. code-block:: python
 
+  from approxposterior import approx, gpUtils, likelihood as lh, utility as ut
+  import numpy as np
+
   # Define algorithm parameters
   m0 = 50                           # Initial size of training set
   m = 20                            # Number of new points to find each iteration
   nmax = 2                          # Maximum number of iterations
-  bounds = ((-5,5), (-5,5))         # Prior bounds
+  bounds = [(-5,5), (-5,5)]         # Prior bounds
   algorithm = "bape"                # Use the Kandasamy et al. (2017) formalism
+  seed = 57                         # RNG seed
+  np.random.seed(seed)
 
   # emcee MCMC parameters
   samplerKwargs = {"nwalkers" : 20}        # emcee.EnsembleSampler parameters
@@ -33,7 +38,7 @@ your code.  In this example, we set verbose = False for simplicity.
 
 .. code-block:: python
 
-  # Sample initial conditions from the prior
+  # Sample design points from prior
   theta = lh.rosenbrockSample(m0)
 
   # Evaluate forward model log likelihood + lnprior for each theta
@@ -41,8 +46,8 @@ your code.  In this example, we set verbose = False for simplicity.
   for ii in range(len(theta)):
       y[ii] = lh.rosenbrockLnlike(theta[ii]) + lh.rosenbrockLnprior(theta[ii])
 
-  # Create the the default GP which uses an ExpSquaredKernel
-  gp = gpUtils.defaultGP(theta, y)
+  # Default GP with an ExpSquaredKernel
+  gp = gpUtils.defaultGP(theta, y, white_noise=-12)
 
 3) Initialize the :py:obj:`approxposterior` object.
 
@@ -55,7 +60,7 @@ your code.  In this example, we set verbose = False for simplicity.
                               lnprior=lh.rosenbrockLnprior,    # logprior function
                               lnlike=lh.rosenbrockLnlike,      # loglikelihood function
                               priorSample=lh.rosenbrockSample, # Prior sample function
-                              algorithm=algorithm,             # BAPE, AGP, or ALTERNATE
+                              algorithm=algorithm,             # bape, agp, jones, or alternate
                               bounds=bounds)                   # Parameter bounds
 
 4) Run!
@@ -63,10 +68,11 @@ your code.  In this example, we set verbose = False for simplicity.
 .. code-block:: python
 
   # Run!
-  ap.run(m=m, nmax=nmax, estBurnin=True, nGPRestarts=1, mcmcKwargs=mcmcKwargs,
-         cache=False, samplerKwargs=samplerKwargs, verbose=True, onlyLastMCMC=True)
+  ap.run(m=m, nmax=nmax, estBurnin=True, nGPRestarts=3, mcmcKwargs=mcmcKwargs,
+         cache=False, samplerKwargs=samplerKwargs, verbose=True, thinChains=False,
+         onlyLastMCMC=True)
 
-5) Examine the final posterior distributions!
+5) Examine the final posterior distributions
 
 .. code-block:: python
 
