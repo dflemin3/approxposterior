@@ -2,12 +2,25 @@
 # -*- coding: utf-8 -*-
 """
 
-Example script for Bayesian optimization of a synthetic function
+Example script for Bayesian optimization of a simple 1D function
 
 @author: David P. Fleming [University of Washington, Seattle], 2019
 @email: dflemin3 (at) uw (dot) edu
 
+Script output:
 
+Truth:
+True maximum: -0.35938378827726025
+True function value at maximum: 0.5003596270970391
+
+BayesOpt solution using GP surrogate model:
+BayesOpt theta at maximum: -0.3669552120074001
+BayesOpt function value at  MAP: 0.5000748992277798
+BayesOpt forward model evaluations: 9
+
+GP MAP solution:
+Theta at approximate MAP: -0.3595239194690403
+GP predictive conditional function value at approximate MAP: 0.5003486365408749
 
 """
 
@@ -53,7 +66,7 @@ ap = approx.ApproxPosterior(theta=theta,
                             algorithm=algorithm)
 
 # Run the Bayesian optimization!
-soln = ap.bayesOpt(nmax=numNewPoints, tol=1.0e-3, seed=seed, verbose=False,
+soln = ap.bayesOpt(nmax=numNewPoints, tol=1.0e-3, kmax=3, seed=seed, verbose=False,
                    cache=False, gpMethod="powell", optGPEveryN=1, nGPRestarts=2,
                    nMinObjRestarts=5, initGPOpt=True, minObjMethod="nelder-mead",
                    gpHyperPrior=gpUtils.defaultHyperPrior, findMAP=True)
@@ -99,8 +112,8 @@ iters = [ii for ii in range(soln["nev"])]
 
 # Left: solution
 axes[0].axhline(trueSoln["x"], ls="--", color="k", lw=2)
-axes[0].plot(iters, soln["thetas"], "o-", color="C0", lw=2.5, label="GP BayesOpt")
-axes[0].plot(iters, soln["thetasMAP"], "o-", color="C1", lw=2.5, label="GP approximate MAP")
+axes[0].plot(iters, soln["thetas"], "o-", color="C0", lw=2.5, label="BayesOpt")
+axes[0].plot(iters, soln["thetasMAP"], "o-", color="C1", lw=2.5, label="GP MAP")
 
 # Format
 axes[0].set_ylabel(r"$\theta$")
