@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>ApproxPosterior Class &mdash; approxposterior 0.3 documentation</title>
+  <title>ApproxPosterior Class &mdash; approxposterior 0.4 documentation</title>
   
 
   
@@ -37,7 +37,7 @@
         <link rel="index" title="Index"
               href="../genindex.html"/>
         <link rel="search" title="Search" href="../search.html"/>
-    <link rel="top" title="approxposterior 0.3 documentation" href="../index.html"/>
+    <link rel="top" title="approxposterior 0.4 documentation" href="../index.html"/>
         <link rel="up" title="API" href="../api.html"/>
         <link rel="prev" title="API" href="../api.html"/> 
 
@@ -68,7 +68,7 @@
             
             
               <div class="version">
-                0.3
+                0.4
               </div>
             
           
@@ -95,6 +95,7 @@
               <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../tutorial.html">Approximate Bayesian Inference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../bayesopt.html">Bayesian Optimization</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../map.html">MAP Estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../notebooks/fittingALine.html">Fitting a Line</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../notebooks/ScalingAccuracy.html">Scaling and Accuracy</a></li>
@@ -113,7 +114,7 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../install.html">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../performance.html">Improving Performance</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../faq.html">FAQs</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../citation.html">Citation</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://github.com/dflemin3/approxposterior">Github</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://github.com/dflemin3/approxposterior/issues">Submit an Issue</a></li>
@@ -240,9 +241,9 @@ perform Bayesian optimization using a Gaussian process surrogate model</p>
 <td>Perform Bayesian optimization given a GP surrogate model to estimate</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#approxposterior.approx.ApproxPosterior.findMAP" title="approxposterior.approx.ApproxPosterior.findMAP"><code class="xref py py-obj docutils literal notranslate"><span class="pre">findMAP</span></code></a>([theta0,&nbsp;method,&nbsp;options,&nbsp;nRestarts])</td>
-<td>Find the maximum a posteriori (MAP) estimate, given a trained GP.</td>
+<td>Find the maximum a posteriori (MAP) estimate of the function learned by the GP.</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#approxposterior.approx.ApproxPosterior.findNextPoint" title="approxposterior.approx.ApproxPosterior.findNextPoint"><code class="xref py py-obj docutils literal notranslate"><span class="pre">findNextPoint</span></code></a>([theta0,&nbsp;computeLnLike,&nbsp;…])</td>
+<tr class="row-odd"><td><a class="reference internal" href="#approxposterior.approx.ApproxPosterior.findNextPoint" title="approxposterior.approx.ApproxPosterior.findNextPoint"><code class="xref py py-obj docutils literal notranslate"><span class="pre">findNextPoint</span></code></a>([theta0,&nbsp;computeLnLike,&nbsp;seed,&nbsp;…])</td>
 <td>Find numNewPoints new point(s), thetaT, by maximizing utility function.</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#approxposterior.approx.ApproxPosterior.optGP" title="approxposterior.approx.ApproxPosterior.optGP"><code class="xref py py-obj docutils literal notranslate"><span class="pre">optGP</span></code></a>([seed,&nbsp;method,&nbsp;options,&nbsp;p0,&nbsp;…])</td>
@@ -258,7 +259,7 @@ perform Bayesian optimization using a Gaussian process surrogate model</p>
 </table>
 <dl class="method">
 <dt id="approxposterior.approx.ApproxPosterior.bayesOpt">
-<code class="descname">bayesOpt</code><span class="sig-paren">(</span><em>nmax</em>, <em>theta0=None</em>, <em>tol=0.001</em>, <em>kmax=3</em>, <em>seed=None</em>, <em>verbose=True</em>, <em>runName='apRun'</em>, <em>cache=True</em>, <em>gpMethod='powell'</em>, <em>gpOptions=None</em>, <em>gpP0=None</em>, <em>optGPEveryN=1</em>, <em>nGPRestarts=1</em>, <em>nMinObjRestarts=5</em>, <em>initGPOpt=True</em>, <em>minObjMethod='nelder-mead'</em>, <em>gpHyperPrior=&lt;function defaultHyperPrior&gt;</em>, <em>minObjOptions=None</em>, <em>args=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/approx.html#ApproxPosterior.bayesOpt"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.approx.ApproxPosterior.bayesOpt" title="Permalink to this definition">¶</a></dt>
+<code class="descname">bayesOpt</code><span class="sig-paren">(</span><em>nmax</em>, <em>theta0=None</em>, <em>tol=0.001</em>, <em>kmax=3</em>, <em>seed=None</em>, <em>verbose=True</em>, <em>runName='apRun'</em>, <em>cache=True</em>, <em>gpMethod='powell'</em>, <em>gpOptions=None</em>, <em>gpP0=None</em>, <em>optGPEveryN=1</em>, <em>nGPRestarts=1</em>, <em>nMinObjRestarts=5</em>, <em>initGPOpt=True</em>, <em>minObjMethod='nelder-mead'</em>, <em>gpHyperPrior=&lt;function defaultHyperPrior&gt;</em>, <em>minObjOptions=None</em>, <em>findMAP=True</em>, <em>args=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/approx.html#ApproxPosterior.bayesOpt"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.approx.ApproxPosterior.bayesOpt" title="Permalink to this definition">¶</a></dt>
 <dd><p>Perform Bayesian optimization given a GP surrogate model to estimate</p>
 <p>thetaBest = argmax(fn(theta))</p>
 <p>given a GP trained on (theta, y). In this case, fn is the function
@@ -408,13 +409,13 @@ number of forward model evaluations, aka number of iterations</p>
 
 <dl class="method">
 <dt id="approxposterior.approx.ApproxPosterior.findMAP">
-<code class="descname">findMAP</code><span class="sig-paren">(</span><em>theta0=None</em>, <em>method='nelder-mead'</em>, <em>options=None</em>, <em>nRestarts=5</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/approx.html#ApproxPosterior.findMAP"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.approx.ApproxPosterior.findMAP" title="Permalink to this definition">¶</a></dt>
-<dd><p>Find the maximum a posteriori (MAP) estimate, given a trained GP. To find
-the MAP, this function minimizes -mean predicted by the GP, aka finds
-what the GP believes is the point of maximum of whatever function is
-definded by self._lnlike + self._lnprior.</p>
+<code class="descname">findMAP</code><span class="sig-paren">(</span><em>theta0=None</em>, <em>method='nelder-mead'</em>, <em>options=None</em>, <em>nRestarts=15</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/approx.html#ApproxPosterior.findMAP"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.approx.ApproxPosterior.findMAP" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find the maximum a posteriori (MAP) estimate of the function learned
+by the GP. To find the MAP, this function minimizes -mean predicted by
+the GP, aka finds what the GP believes is the maximum of whatever
+function is definded by self._lnlike + self._lnprior.</p>
 <p>Note: MAP estimation typically work better when fitAmp = True, that is
-the GP kernel has an amplitude term</p>
+the GP kernel fits for an amplitude term.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -433,7 +434,7 @@ the GP kernel has an amplitude term</p>
 </div></blockquote>
 <p><strong>nRestarts</strong> : int (optional)</p>
 <blockquote>
-<div><p>Number of times to restart the optimization. Defaults to 5.</p>
+<div><p>Number of times to restart the optimization. Defaults to 15.</p>
 </div></blockquote>
 </td>
 </tr>
@@ -453,7 +454,7 @@ the GP kernel has an amplitude term</p>
 
 <dl class="method">
 <dt id="approxposterior.approx.ApproxPosterior.findNextPoint">
-<code class="descname">findNextPoint</code><span class="sig-paren">(</span><em>theta0=None</em>, <em>computeLnLike=True</em>, <em>bounds=None</em>, <em>seed=None</em>, <em>cache=True</em>, <em>gpOptions=None</em>, <em>gpP0=None</em>, <em>args=None</em>, <em>nGPRestarts=1</em>, <em>nMinObjRestarts=5</em>, <em>gpMethod='powell'</em>, <em>minObjMethod='nelder-mead'</em>, <em>minObjOptions=None</em>, <em>runName='apRun'</em>, <em>numNewPoints=1</em>, <em>optGPEveryN=1</em>, <em>gpHyperPrior=&lt;function defaultHyperPrior&gt;</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/approx.html#ApproxPosterior.findNextPoint"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.approx.ApproxPosterior.findNextPoint" title="Permalink to this definition">¶</a></dt>
+<code class="descname">findNextPoint</code><span class="sig-paren">(</span><em>theta0=None</em>, <em>computeLnLike=True</em>, <em>seed=None</em>, <em>cache=True</em>, <em>gpOptions=None</em>, <em>gpP0=None</em>, <em>args=None</em>, <em>nGPRestarts=1</em>, <em>nMinObjRestarts=5</em>, <em>gpMethod='powell'</em>, <em>minObjMethod='nelder-mead'</em>, <em>minObjOptions=None</em>, <em>runName='apRun'</em>, <em>numNewPoints=1</em>, <em>optGPEveryN=1</em>, <em>gpHyperPrior=&lt;function defaultHyperPrior&gt;</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/approx.html#ApproxPosterior.findNextPoint"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.approx.ApproxPosterior.findNextPoint" title="Permalink to this definition">¶</a></dt>
 <dd><p>Find numNewPoints new point(s), thetaT, by maximizing utility function.
 Note that we call a minimizer because minimizing negative of utility
 function is the same as maximizing it.</p>
@@ -492,12 +493,6 @@ from the prior function using sampleFn.</p>
 the lnlikelihood and lnprior. Defaults to True. If True, also
 appends all new values to self.theta, self.y, in addition to
 returning the new values</p>
-</div></blockquote>
-<p><strong>bounds</strong> : tuple/iterable (optional)</p>
-<blockquote>
-<div><p>Bounds for minimization scheme.  See scipy.optimize.minimize details
-for more information.  Defaults to None, but it’s typically good to
-provide them to ensure a valid solution.</p>
 </div></blockquote>
 <p><strong>seed</strong> : int (optional)</p>
 <blockquote>
@@ -647,7 +642,7 @@ hyperparameter is within the range [-20,20].</p>
 
 <dl class="method">
 <dt id="approxposterior.approx.ApproxPosterior.run">
-<code class="descname">run</code><span class="sig-paren">(</span><em>m=10</em>, <em>nmax=2</em>, <em>seed=None</em>, <em>timing=False</em>, <em>verbose=True</em>, <em>mcmcKwargs=None</em>, <em>samplerKwargs=None</em>, <em>estBurnin=False</em>, <em>thinChains=False</em>, <em>runName='apRun'</em>, <em>cache=True</em>, <em>gpMethod='powell'</em>, <em>gpOptions=None</em>, <em>gpP0=None</em>, <em>optGPEveryN=1</em>, <em>nGPRestarts=1</em>, <em>nMinObjRestarts=5</em>, <em>onlyLastMCMC=False</em>, <em>initGPOpt=True</em>, <em>gpHyperPrior=&lt;function defaultHyperPrior&gt;</em>, <em>minObjMethod='nelder-mead'</em>, <em>minObjOptions=None</em>, <em>args=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/approx.html#ApproxPosterior.run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.approx.ApproxPosterior.run" title="Permalink to this definition">¶</a></dt>
+<code class="descname">run</code><span class="sig-paren">(</span><em>m=10</em>, <em>nmax=2</em>, <em>seed=None</em>, <em>timing=False</em>, <em>verbose=True</em>, <em>mcmcKwargs=None</em>, <em>samplerKwargs=None</em>, <em>estBurnin=False</em>, <em>thinChains=False</em>, <em>runName='apRun'</em>, <em>cache=True</em>, <em>gpMethod='powell'</em>, <em>gpOptions=None</em>, <em>gpP0=None</em>, <em>optGPEveryN=1</em>, <em>nGPRestarts=1</em>, <em>nMinObjRestarts=5</em>, <em>onlyLastMCMC=False</em>, <em>initGPOpt=True</em>, <em>kmax=3</em>, <em>gpHyperPrior=&lt;function defaultHyperPrior&gt;</em>, <em>eps=1.0</em>, <em>convergenceCheck=False</em>, <em>minObjMethod='nelder-mead'</em>, <em>minObjOptions=None</em>, <em>args=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/approx.html#ApproxPosterior.run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.approx.ApproxPosterior.run" title="Permalink to this definition">¶</a></dt>
 <dd><p>Core method to estimate the approximate posterior distribution via
 Gaussian Process regression</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -663,7 +658,9 @@ to 10.</p>
 </div></blockquote>
 <p><strong>nmax</strong> : int (optional)</p>
 <blockquote>
-<div><p>Maximum number of iterations.  Defaults to 2.</p>
+<div><p>Maximum number of iterations.  Defaults to 2. Algorithm will terminate
+if either nmax iterations is met or the convergence criterion is met
+if convergenceCheck is True.</p>
 </div></blockquote>
 <p><strong>seed</strong> : int (optional)</p>
 <blockquote>
@@ -784,6 +781,28 @@ Defaults to True (aka assume user didn’t optimize GP hyperparameters)</p>
 <div><p>Prior function for GP hyperparameters. Defaults to the defaultHyperPrior fn.
 This function asserts that the mean must be negative and that each log
 hyperparameter is within the range [-20,20].</p>
+</div></blockquote>
+<p><strong>eps</strong> : float (optional)</p>
+<blockquote>
+<div><p>Change in the mean of the approximate marginal posterior
+distributions, relative to the previous marginal posterior distribution’s
+standard deviation (aka relative z score), for kmax iterations
+required for convergence. Defaults to 1.0.</p>
+</div></blockquote>
+<p><strong>kmax</strong> : int (optional)</p>
+<blockquote>
+<div><p>Number of consecutive iterations for convergence check to pass before
+successfully ending algorithm. Defaults to 3.</p>
+</div></blockquote>
+<p><strong>convergenceCheck</strong> : bool (optional)</p>
+<blockquote>
+<div><p>Whether or not to terminate the execution if the change in the mean
+of the approximate marginal posterior distributions, relative to the
+previous marginal posterior distribution’s standard deviation
+(aka relative z score) varies by less than eps for kmax consecutive
+iterations. Defaults to False. Note: if using this, make sure you’re
+confortable with the burnin and thinning applied to the MCMC chains.
+See estBurnin and thinChains parameters.</p>
 </div></blockquote>
 <p><strong>minObjMethod</strong> : str (optional)</p>
 <blockquote>
@@ -962,7 +981,7 @@ calls the forward model.</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../',
-            VERSION:'0.3',
+            VERSION:'0.4',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,

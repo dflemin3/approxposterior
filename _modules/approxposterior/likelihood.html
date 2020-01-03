@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>approxposterior.likelihood &mdash; approxposterior 0.3 documentation</title>
+  <title>approxposterior.likelihood &mdash; approxposterior 0.4 documentation</title>
   
 
   
@@ -37,7 +37,7 @@
         <link rel="index" title="Index"
               href="../../genindex.html"/>
         <link rel="search" title="Search" href="../../search.html"/>
-    <link rel="top" title="approxposterior 0.3 documentation" href="../../index.html"/>
+    <link rel="top" title="approxposterior 0.4 documentation" href="../../index.html"/>
         <link rel="up" title="Module code" href="../index.html"/> 
 
   
@@ -67,7 +67,7 @@
             
             
               <div class="version">
-                0.3
+                0.4
               </div>
             
           
@@ -94,12 +94,13 @@
               <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../tutorial.html">Approximate Bayesian Inference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../bayesopt.html">Bayesian Optimization</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../map.html">MAP Estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../notebooks/fittingALine.html">Fitting a Line</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../notebooks/ScalingAccuracy.html">Scaling and Accuracy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../api.html">API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../install.html">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../performance.html">Improving Performance</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../faq.html">FAQs</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../citation.html">Citation</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://github.com/dflemin3/approxposterior">Github</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://github.com/dflemin3/approxposterior/issues">Submit an Issue</a></li>
@@ -172,13 +173,14 @@
 <span class="sd">:py:mod:`likelihood.py` - Example Likelihood Functions</span>
 <span class="sd">------------------------------------------------------</span>
 
-<span class="sd">This file contains routines for simple loglikelihood and prior functions for</span>
-<span class="sd">test cases, like the Wang &amp; Li (2017) Rosenbrock function example.</span>
+<span class="sd">This file contains routines for simple test, likelihood, prior, and sampling</span>
+<span class="sd">functions for cases like the Wang &amp; Li (2017) Rosenbrock function example.</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="c1"># Tell module what it&#39;s allowed to import</span>
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;rosenbrockLnlike&quot;</span><span class="p">,</span> <span class="s2">&quot;rosenbrockLnprior&quot;</span><span class="p">,</span><span class="s2">&quot;rosenbrockSample&quot;</span><span class="p">,</span>
-           <span class="s2">&quot;rosenbrockLnprob&quot;</span><span class="p">,</span> <span class="s2">&quot;testBOFn&quot;</span><span class="p">]</span>
+           <span class="s2">&quot;rosenbrockLnprob&quot;</span><span class="p">,</span> <span class="s2">&quot;testBOFn&quot;</span><span class="p">,</span> <span class="s2">&quot;testBOFnSample&quot;</span><span class="p">,</span> <span class="s2">&quot;testBOFnLnPrior&quot;</span><span class="p">,</span>
+           <span class="s2">&quot;sphereLnlike&quot;</span><span class="p">,</span> <span class="s2">&quot;sphereSample&quot;</span><span class="p">,</span> <span class="s2">&quot;sphereLnprior&quot;</span><span class="p">]</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">scipy.optimize</span> <span class="k">import</span> <span class="n">rosen</span>
@@ -191,13 +193,13 @@
 <span class="c1">################################################################################</span>
 
 
-<div class="viewcode-block" id="rosenbrockLnlike"><a class="viewcode-back" href="../../api/likelihood.html#approxposterior.likelihood.rosenbrockLnlike">[docs]</a><span class="k">def</span> <span class="nf">rosenbrockLnlike</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+<div class="viewcode-block" id="rosenbrockLnlike"><a class="viewcode-back" href="../../api/likelihood.html#approxposterior.likelihood.rosenbrockLnlike">[docs]</a><span class="k">def</span> <span class="nf">rosenbrockLnlike</span><span class="p">(</span><span class="n">theta</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Rosenbrock function as a loglikelihood following Wang &amp; Li (2017)</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    x : array</span>
+<span class="sd">    theta : array</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -205,11 +207,11 @@
 <span class="sd">        likelihood</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">return</span> <span class="o">-</span><span class="n">rosen</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">/</span><span class="mf">100.0</span></div>
+    <span class="k">return</span> <span class="o">-</span><span class="n">rosen</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span><span class="o">/</span><span class="mf">100.0</span></div>
 <span class="c1"># end function</span>
 
 
-<div class="viewcode-block" id="rosenbrockLnprior"><a class="viewcode-back" href="../../api/likelihood.html#approxposterior.likelihood.rosenbrockLnprior">[docs]</a><span class="k">def</span> <span class="nf">rosenbrockLnprior</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+<div class="viewcode-block" id="rosenbrockLnprior"><a class="viewcode-back" href="../../api/likelihood.html#approxposterior.likelihood.rosenbrockLnprior">[docs]</a><span class="k">def</span> <span class="nf">rosenbrockLnprior</span><span class="p">(</span><span class="n">theta</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Uniform log prior for the 2D Rosenbrock likelihood following Wang &amp; Li (2017)</span>
 <span class="sd">    where the prior pi(x) is a uniform distribution over [-5, 5] x [-5, 5] x ...</span>
@@ -217,7 +219,7 @@
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    x : array</span>
+<span class="sd">    theta : array</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -225,7 +227,7 @@
 <span class="sd">        log prior</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">5</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">5</span><span class="p">):</span>
         <span class="k">return</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">return</span> <span class="mf">0.0</span></div>
@@ -278,17 +280,25 @@
 <span class="c1">#end function</span>
 
 
+<span class="c1">################################################################################</span>
+<span class="c1">#</span>
+<span class="c1"># 1D Test Function for Bayesian Optimization</span>
+<span class="c1">#</span>
+<span class="c1">################################################################################</span>
+
+
 <div class="viewcode-block" id="testBOFn"><a class="viewcode-back" href="../../api/likelihood.html#approxposterior.likelihood.testBOFn">[docs]</a><span class="k">def</span> <span class="nf">testBOFn</span><span class="p">(</span><span class="n">theta</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Simple 1D test Bayesian optimization function adapted from</span>
 <span class="sd">    https://krasserm.github.io/2018/03/21/bayesian-optimization/</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
+    <span class="n">theta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
     <span class="k">return</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="mi">3</span><span class="o">*</span><span class="n">theta</span><span class="p">)</span> <span class="o">-</span> <span class="n">theta</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="mf">0.7</span><span class="o">*</span><span class="n">theta</span></div>
 <span class="c1"># end function</span>
 
 
-<span class="k">def</span> <span class="nf">testBOFnSample</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+<div class="viewcode-block" id="testBOFnSample"><a class="viewcode-back" href="../../api/likelihood.html#approxposterior.likelihood.testBOFnSample">[docs]</a><span class="k">def</span> <span class="nf">testBOFnSample</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Sample N points from the prior pi(x) is a uniform distribution over</span>
 <span class="sd">    [-2, 1]</span>
@@ -304,11 +314,11 @@
 <span class="sd">        n x 1 array of floats samples from the prior</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">low</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">high</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="n">n</span><span class="p">,</span><span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">low</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">high</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="n">n</span><span class="p">,</span><span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span></div>
 <span class="c1"># end function</span>
 
 
-<span class="k">def</span> <span class="nf">testBOFnLnPrior</span><span class="p">(</span><span class="n">theta</span><span class="p">):</span>
+<div class="viewcode-block" id="testBOFnLnPrior"><a class="viewcode-back" href="../../api/likelihood.html#approxposterior.likelihood.testBOFnLnPrior">[docs]</a><span class="k">def</span> <span class="nf">testBOFnLnPrior</span><span class="p">(</span><span class="n">theta</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Log prior distribution for the test Bayesian Optimization function. This</span>
 <span class="sd">    prior is a simple uniform function over [-2, 1]</span>
@@ -326,7 +336,77 @@
     <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">theta</span> <span class="o">&lt;</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">theta</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">):</span>
         <span class="k">return</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">return</span> <span class="mf">0.0</span>
+        <span class="k">return</span> <span class="mf">0.0</span></div>
+<span class="c1"># end function</span>
+
+
+<span class="c1">################################################################################</span>
+<span class="c1">#</span>
+<span class="c1"># 2D Test Function for Bayesian Optimization</span>
+<span class="c1">#</span>
+<span class="c1">################################################################################</span>
+
+
+<div class="viewcode-block" id="sphereLnlike"><a class="viewcode-back" href="../../api/likelihood.html#approxposterior.likelihood.sphereLnlike">[docs]</a><span class="k">def</span> <span class="nf">sphereLnlike</span><span class="p">(</span><span class="n">theta</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Sphere test 2D optimization function. Note: This is actually the</span>
+<span class="sd">    negative of the sphere function and it&#39;s just a 0 mean, unit std Gaussian.</span>
+<span class="sd">    Taken from: https://en.wikipedia.org/wiki/Test_functions_for_optimization</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    theta : array</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    val : float</span>
+<span class="sd">        Function value at theta</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">theta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
+    <span class="k">return</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">theta</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span></div>
+<span class="c1"># end function</span>
+
+
+<div class="viewcode-block" id="sphereSample"><a class="viewcode-back" href="../../api/likelihood.html#approxposterior.likelihood.sphereSample">[docs]</a><span class="k">def</span> <span class="nf">sphereSample</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Sample N points from the prior pi(theta) is a uniform distribution over</span>
+<span class="sd">    [-2, 2]</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    n : int (optional)</span>
+<span class="sd">        Number of samples. Defaults to 1.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    sample : floats</span>
+<span class="sd">        n x 1 array of floats samples from the prior</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">low</span><span class="o">=-</span><span class="mi">2</span><span class="p">,</span> <span class="n">high</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="n">n</span><span class="p">,</span><span class="mi">2</span><span class="p">))</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span></div>
+<span class="c1"># end function</span>
+
+
+<div class="viewcode-block" id="sphereLnprior"><a class="viewcode-back" href="../../api/likelihood.html#approxposterior.likelihood.sphereLnprior">[docs]</a><span class="k">def</span> <span class="nf">sphereLnprior</span><span class="p">(</span><span class="n">theta</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Log prior distribution for the sphere test optimization function.</span>
+<span class="sd">    This prior is a simple uniform function over [-2, 2] for each dimension.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    theta : float/array</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    l : float</span>
+<span class="sd">        log prior</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">):</span>
+        <span class="k">return</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mf">0.0</span></div>
 <span class="c1"># end function</span>
 </pre></div>
 
@@ -364,7 +444,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../',
-            VERSION:'0.3',
+            VERSION:'0.4',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,

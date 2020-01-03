@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Approximate Bayesian Inference &mdash; approxposterior 0.3 documentation</title>
+  <title>Approximate Bayesian Inference &mdash; approxposterior 0.4 documentation</title>
   
 
   
@@ -37,7 +37,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="approxposterior 0.3 documentation" href="index.html"/>
+    <link rel="top" title="approxposterior 0.4 documentation" href="index.html"/>
         <link rel="next" title="True Rosenbrock Posterior Calculation Using Emcee" href="notebooks/TrueRosenbrockPosterior.html"/>
         <link rel="prev" title="approxposterior" href="index.html"/> 
 
@@ -68,7 +68,7 @@
             
             
               <div class="version">
-                0.3
+                0.4
               </div>
             
           
@@ -98,12 +98,13 @@
 <li class="toctree-l2"><a class="reference internal" href="notebooks/TrueRosenbrockPosterior.html">Rosenbrock Function Example</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="bayesopt.html">Bayesian Optimization</a></li>
 <li class="toctree-l1"><a class="reference internal" href="map.html">MAP Estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="notebooks/fittingALine.html">Fitting a Line</a></li>
 <li class="toctree-l1"><a class="reference internal" href="notebooks/ScalingAccuracy.html">Scaling and Accuracy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api.html">API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="performance.html">Improving Performance</a></li>
+<li class="toctree-l1"><a class="reference internal" href="faq.html">FAQs</a></li>
 <li class="toctree-l1"><a class="reference internal" href="citation.html">Citation</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://github.com/dflemin3/approxposterior">Github</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://github.com/dflemin3/approxposterior/issues">Submit an Issue</a></li>
@@ -219,12 +220,17 @@ your code.  In this example, we set verbose = False for simplicity.</p>
 <ol class="arabic simple">
 <li>First, the user must set model parameters.</li>
 </ol>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Define algorithm parameters</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">approxposterior</span> <span class="kn">import</span> <span class="n">approx</span><span class="p">,</span> <span class="n">gpUtils</span><span class="p">,</span> <span class="n">likelihood</span> <span class="k">as</span> <span class="n">lh</span><span class="p">,</span> <span class="n">utility</span> <span class="k">as</span> <span class="n">ut</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+
+<span class="c1"># Define algorithm parameters</span>
 <span class="n">m0</span> <span class="o">=</span> <span class="mi">50</span>                           <span class="c1"># Initial size of training set</span>
 <span class="n">m</span> <span class="o">=</span> <span class="mi">20</span>                            <span class="c1"># Number of new points to find each iteration</span>
 <span class="n">nmax</span> <span class="o">=</span> <span class="mi">2</span>                          <span class="c1"># Maximum number of iterations</span>
-<span class="n">bounds</span> <span class="o">=</span> <span class="p">((</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">),</span> <span class="p">(</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">))</span>         <span class="c1"># Prior bounds</span>
+<span class="n">bounds</span> <span class="o">=</span> <span class="p">[(</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">),</span> <span class="p">(</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">)]</span>         <span class="c1"># Prior bounds</span>
 <span class="n">algorithm</span> <span class="o">=</span> <span class="s2">&quot;bape&quot;</span>                <span class="c1"># Use the Kandasamy et al. (2017) formalism</span>
+<span class="n">seed</span> <span class="o">=</span> <span class="mi">57</span>                         <span class="c1"># RNG seed</span>
+<span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
 
 <span class="c1"># emcee MCMC parameters</span>
 <span class="n">samplerKwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;nwalkers&quot;</span> <span class="p">:</span> <span class="mi">20</span><span class="p">}</span>        <span class="c1"># emcee.EnsembleSampler parameters</span>
@@ -234,7 +240,7 @@ your code.  In this example, we set verbose = False for simplicity.</p>
 <ol class="arabic simple" start="2">
 <li>Create an initial training set and gaussian process</li>
 </ol>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Sample initial conditions from the prior</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Sample design points from prior</span>
 <span class="n">theta</span> <span class="o">=</span> <span class="n">lh</span><span class="o">.</span><span class="n">rosenbrockSample</span><span class="p">(</span><span class="n">m0</span><span class="p">)</span>
 
 <span class="c1"># Evaluate forward model log likelihood + lnprior for each theta</span>
@@ -242,8 +248,8 @@ your code.  In this example, we set verbose = False for simplicity.</p>
 <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">theta</span><span class="p">)):</span>
     <span class="n">y</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span> <span class="o">=</span> <span class="n">lh</span><span class="o">.</span><span class="n">rosenbrockLnlike</span><span class="p">(</span><span class="n">theta</span><span class="p">[</span><span class="n">ii</span><span class="p">])</span> <span class="o">+</span> <span class="n">lh</span><span class="o">.</span><span class="n">rosenbrockLnprior</span><span class="p">(</span><span class="n">theta</span><span class="p">[</span><span class="n">ii</span><span class="p">])</span>
 
-<span class="c1"># Create the the default GP which uses an ExpSquaredKernel</span>
-<span class="n">gp</span> <span class="o">=</span> <span class="n">gpUtils</span><span class="o">.</span><span class="n">defaultGP</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+<span class="c1"># Default GP with an ExpSquaredKernel</span>
+<span class="n">gp</span> <span class="o">=</span> <span class="n">gpUtils</span><span class="o">.</span><span class="n">defaultGP</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">white_noise</span><span class="o">=-</span><span class="mi">12</span><span class="p">)</span>
 </pre></div>
 </div>
 <ol class="arabic simple" start="3">
@@ -256,7 +262,7 @@ your code.  In this example, we set verbose = False for simplicity.</p>
                             <span class="n">lnprior</span><span class="o">=</span><span class="n">lh</span><span class="o">.</span><span class="n">rosenbrockLnprior</span><span class="p">,</span>    <span class="c1"># logprior function</span>
                             <span class="n">lnlike</span><span class="o">=</span><span class="n">lh</span><span class="o">.</span><span class="n">rosenbrockLnlike</span><span class="p">,</span>      <span class="c1"># loglikelihood function</span>
                             <span class="n">priorSample</span><span class="o">=</span><span class="n">lh</span><span class="o">.</span><span class="n">rosenbrockSample</span><span class="p">,</span> <span class="c1"># Prior sample function</span>
-                            <span class="n">algorithm</span><span class="o">=</span><span class="n">algorithm</span><span class="p">,</span>             <span class="c1"># BAPE, AGP, or ALTERNATE</span>
+                            <span class="n">algorithm</span><span class="o">=</span><span class="n">algorithm</span><span class="p">,</span>             <span class="c1"># bape, agp, jones, or alternate</span>
                             <span class="n">bounds</span><span class="o">=</span><span class="n">bounds</span><span class="p">)</span>                   <span class="c1"># Parameter bounds</span>
 </pre></div>
 </div>
@@ -264,12 +270,13 @@ your code.  In this example, we set verbose = False for simplicity.</p>
 <li>Run!</li>
 </ol>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Run!</span>
-<span class="n">ap</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">m</span><span class="o">=</span><span class="n">m</span><span class="p">,</span> <span class="n">nmax</span><span class="o">=</span><span class="n">nmax</span><span class="p">,</span> <span class="n">estBurnin</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">nGPRestarts</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">mcmcKwargs</span><span class="o">=</span><span class="n">mcmcKwargs</span><span class="p">,</span>
-       <span class="n">cache</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">samplerKwargs</span><span class="o">=</span><span class="n">samplerKwargs</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">onlyLastMCMC</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">ap</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">m</span><span class="o">=</span><span class="n">m</span><span class="p">,</span> <span class="n">nmax</span><span class="o">=</span><span class="n">nmax</span><span class="p">,</span> <span class="n">estBurnin</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">nGPRestarts</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">mcmcKwargs</span><span class="o">=</span><span class="n">mcmcKwargs</span><span class="p">,</span>
+       <span class="n">cache</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">samplerKwargs</span><span class="o">=</span><span class="n">samplerKwargs</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">thinChains</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+       <span class="n">onlyLastMCMC</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 </pre></div>
 </div>
 <ol class="arabic simple" start="5">
-<li>Examine the final posterior distributions!</li>
+<li>Examine the final posterior distributions</li>
 </ol>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Check out the final posterior distribution!</span>
 <span class="kn">import</span> <span class="nn">corner</span>
@@ -341,7 +348,7 @@ your code.  In this example, we set verbose = False for simplicity.</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'0.3',
+            VERSION:'0.4',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,

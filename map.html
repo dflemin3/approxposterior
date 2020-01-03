@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>MAP Estimation &mdash; approxposterior 0.3 documentation</title>
+  <title>MAP Estimation &mdash; approxposterior 0.4 documentation</title>
   
 
   
@@ -37,9 +37,9 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="approxposterior 0.3 documentation" href="index.html"/>
+    <link rel="top" title="approxposterior 0.4 documentation" href="index.html"/>
         <link rel="next" title="Fitting a Line" href="notebooks/fittingALine.html"/>
-        <link rel="prev" title="True Rosenbrock Posterior Calculation Using Emcee" href="notebooks/TrueRosenbrockPosterior.html"/> 
+        <link rel="prev" title="Bayesian Optimization" href="bayesopt.html"/> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
@@ -68,7 +68,7 @@
             
             
               <div class="version">
-                0.3
+                0.4
               </div>
             
           
@@ -95,12 +95,13 @@
               <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="tutorial.html">Approximate Bayesian Inference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="bayesopt.html">Bayesian Optimization</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">MAP Estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="notebooks/fittingALine.html">Fitting a Line</a></li>
 <li class="toctree-l1"><a class="reference internal" href="notebooks/ScalingAccuracy.html">Scaling and Accuracy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api.html">API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="performance.html">Improving Performance</a></li>
+<li class="toctree-l1"><a class="reference internal" href="faq.html">FAQs</a></li>
 <li class="toctree-l1"><a class="reference internal" href="citation.html">Citation</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://github.com/dflemin3/approxposterior">Github</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://github.com/dflemin3/approxposterior/issues">Submit an Issue</a></li>
@@ -204,55 +205,61 @@
 <div class="section" id="map-estimation">
 <h1>MAP Estimation<a class="headerlink" href="#map-estimation" title="Permalink to this headline">¶</a></h1>
 <p><code class="xref py py-obj docutils literal notranslate"><span class="pre">approxposterior</span></code> can be used to find an accurate approximation of the
-minimum (or maximum) of a function by estimating an approximate maximum a
-posteriori (MAP) solution for a function after training on a small number of
-function evaluations. This method is particularly useful when the function in
-question is computationally-expensive to evaluate so one wishes to minimizes the
-number of evaluations.</p>
+maximum (or minimum) of a function by estimating the maximum a
+posteriori (MAP) solution for the objective function. To find the MAP, we directly
+maximize the GP surrogate model’s posterior function, that is, the approximation
+to the objective function learned by the GP after conditioning on observations. By design,
+<code class="xref py py-obj docutils literal notranslate"><span class="pre">approxposterior</span></code> trains its Gaussian process (GP) on a small number of
+objective function evaluations. This method is therefore particularly useful
+when the objective function is computationally-expensive to evaluate.</p>
 <p>Below is a quick example of how to use <code class="xref py py-obj docutils literal notranslate"><span class="pre">approxposterior</span></code> to estimate the
-MAP solution of the Rosenbrock Function example from Wang &amp; Li (2017).</p>
-<p>In this case, we are using the Rosenbrock function as our -loglikelihood function.
-The MAP solution we find using <code class="xref py py-obj docutils literal notranslate"><span class="pre">approxposterior</span></code> is therefore the minimum of the
-Rosenbrock function. The 2D Rosenbrock function has a global minimum of 0 at (1,1),
-so that what we hope to recover!</p>
+MAP solution of a simple 2D Gaussian.</p>
+<p>In this case, we are using the -loglikelihood function of a 2D Gaussian with a mean
+vector of 0 and the identity matrix as the covariance matrix. The MAP solution
+we find using <code class="xref py py-obj docutils literal notranslate"><span class="pre">approxposterior</span></code> is therefore the minimum. We hope to
+recover the global minimum of 0 at (0,0), but only using 10 randomly sampled
+points to make our training set for the GP.</p>
 <ol class="arabic simple">
 <li>First, the user must set model parameters.</li>
 </ol>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Define algorithm parameters</span>
-<span class="n">m0</span> <span class="o">=</span> <span class="mi">50</span>                           <span class="c1"># Size of training set</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">approxposterior</span> <span class="kn">import</span> <span class="n">approx</span><span class="p">,</span> <span class="n">gpUtils</span><span class="p">,</span> <span class="n">likelihood</span> <span class="k">as</span> <span class="n">lh</span><span class="p">,</span> <span class="n">utility</span> <span class="k">as</span> <span class="n">ut</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+
+<span class="c1"># Define algorithm parameters</span>
+<span class="n">m0</span> <span class="o">=</span> <span class="mi">10</span>                           <span class="c1"># Size of training set</span>
 <span class="n">bounds</span> <span class="o">=</span> <span class="p">((</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">),</span> <span class="p">(</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">))</span>         <span class="c1"># Prior bounds</span>
-<span class="n">algorithm</span> <span class="o">=</span> <span class="s2">&quot;bape&quot;</span>                <span class="c1"># Use the Kandasamy et al. (2015) formalism</span>
+<span class="n">algorithm</span> <span class="o">=</span> <span class="s2">&quot;bape&quot;</span>                <span class="c1"># Use the Kandasamy et al. (2017) formalism</span>
 <span class="n">seed</span> <span class="o">=</span> <span class="mi">57</span>                         <span class="c1"># RNG seed</span>
 <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
 </pre></div>
 </div>
 <ol class="arabic simple" start="2">
-<li>Create an initial training set and gaussian process</li>
+<li>Create an initial training set and Gaussian process</li>
 </ol>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Sample design points from prior</span>
-<span class="n">theta</span> <span class="o">=</span> <span class="n">lh</span><span class="o">.</span><span class="n">rosenbrockSample</span><span class="p">(</span><span class="n">m0</span><span class="p">)</span>
+<span class="n">theta</span> <span class="o">=</span> <span class="n">lh</span><span class="o">.</span><span class="n">sphereSample</span><span class="p">(</span><span class="n">m0</span><span class="p">)</span>
 
 <span class="c1"># Evaluate forward model log likelihood + lnprior for each point</span>
 <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">theta</span><span class="p">))</span>
 <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">theta</span><span class="p">)):</span>
-    <span class="n">y</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span> <span class="o">=</span> <span class="n">lh</span><span class="o">.</span><span class="n">rosenbrockLnlike</span><span class="p">(</span><span class="n">theta</span><span class="p">[</span><span class="n">ii</span><span class="p">])</span> <span class="o">+</span> <span class="n">lh</span><span class="o">.</span><span class="n">rosenbrockLnprior</span><span class="p">(</span><span class="n">theta</span><span class="p">[</span><span class="n">ii</span><span class="p">])</span>
+    <span class="n">y</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span> <span class="o">=</span> <span class="n">lh</span><span class="o">.</span><span class="n">sphereLnlike</span><span class="p">(</span><span class="n">theta</span><span class="p">[</span><span class="n">ii</span><span class="p">])</span> <span class="o">+</span> <span class="n">lh</span><span class="o">.</span><span class="n">sphereLnprior</span><span class="p">(</span><span class="n">theta</span><span class="p">[</span><span class="n">ii</span><span class="p">])</span>
 
 <span class="c1"># Initialize default gp with an ExpSquaredKernel</span>
-<span class="n">gp</span> <span class="o">=</span> <span class="n">gpUtils</span><span class="o">.</span><span class="n">defaultGP</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">white_noise</span><span class="o">=-</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">gp</span> <span class="o">=</span> <span class="n">gpUtils</span><span class="o">.</span><span class="n">defaultGP</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">white_noise</span><span class="o">=-</span><span class="mi">12</span><span class="p">,</span> <span class="n">fitAmp</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 </pre></div>
 </div>
 <ol class="arabic simple" start="3">
 <li>Initialize the <code class="xref py py-obj docutils literal notranslate"><span class="pre">approxposterior</span></code> object and optimize GP hyperparameters</li>
 </ol>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Initialize object using the Wang &amp; Li (2017) Rosenbrock function example</span>
-<span class="n">ap</span> <span class="o">=</span> <span class="n">approx</span><span class="o">.</span><span class="n">ApproxPosterior</span><span class="p">(</span><span class="n">theta</span><span class="o">=</span><span class="n">theta</span><span class="p">,</span>                     <span class="c1"># Design points</span>
-                            <span class="n">y</span><span class="o">=</span><span class="n">y</span><span class="p">,</span>                             <span class="c1"># Logprobability of each input</span>
-                            <span class="n">gp</span><span class="o">=</span><span class="n">gp</span><span class="p">,</span>                           <span class="c1"># Initialize Gaussian Process</span>
-                            <span class="n">lnprior</span><span class="o">=</span><span class="n">lh</span><span class="o">.</span><span class="n">rosenbrockLnprior</span><span class="p">,</span>    <span class="c1"># logprior function</span>
-                            <span class="n">lnlike</span><span class="o">=</span><span class="n">lh</span><span class="o">.</span><span class="n">rosenbrockLnlike</span><span class="p">,</span>      <span class="c1"># loglikelihood function</span>
-                            <span class="n">priorSample</span><span class="o">=</span><span class="n">lh</span><span class="o">.</span><span class="n">rosenbrockSample</span><span class="p">,</span> <span class="c1"># Prior sample function</span>
-                            <span class="n">algorithm</span><span class="o">=</span><span class="n">algorithm</span><span class="p">,</span>             <span class="c1"># bape, agp, naive, or alternate</span>
-                            <span class="n">bounds</span><span class="o">=</span><span class="n">bounds</span><span class="p">)</span>                   <span class="c1"># Parameter bounds</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Initialize approxposterior object</span>
+<span class="n">ap</span> <span class="o">=</span> <span class="n">approx</span><span class="o">.</span><span class="n">ApproxPosterior</span><span class="p">(</span><span class="n">theta</span><span class="o">=</span><span class="n">theta</span><span class="p">,</span>
+                            <span class="n">y</span><span class="o">=</span><span class="n">y</span><span class="p">,</span>
+                            <span class="n">gp</span><span class="o">=</span><span class="n">gp</span><span class="p">,</span>
+                            <span class="n">lnprior</span><span class="o">=</span><span class="n">lh</span><span class="o">.</span><span class="n">sphereLnprior</span><span class="p">,</span>
+                            <span class="n">lnlike</span><span class="o">=</span><span class="n">lh</span><span class="o">.</span><span class="n">sphereLnlike</span><span class="p">,</span>
+                            <span class="n">priorSample</span><span class="o">=</span><span class="n">lh</span><span class="o">.</span><span class="n">sphereSample</span><span class="p">,</span>
+                            <span class="n">bounds</span><span class="o">=</span><span class="n">bounds</span><span class="p">,</span>
+                            <span class="n">algorithm</span><span class="o">=</span><span class="n">algorithm</span><span class="p">)</span>
 
 <span class="c1"># Optimize the GP hyperparameters</span>
 <span class="n">ap</span><span class="o">.</span><span class="n">optGP</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;powell&quot;</span><span class="p">,</span> <span class="n">nGPRestarts</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
@@ -262,33 +269,32 @@ so that what we hope to recover!</p>
 <li>Find MAP solution</li>
 </ol>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Find MAP solution and function value at MAP</span>
-<span class="n">MAP</span><span class="p">,</span> <span class="n">val</span> <span class="o">=</span> <span class="n">ap</span><span class="o">.</span><span class="n">findMAP</span><span class="p">(</span><span class="n">nRestarts</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">MAP</span><span class="p">,</span> <span class="n">val</span> <span class="o">=</span> <span class="n">ap</span><span class="o">.</span><span class="n">findMAP</span><span class="p">(</span><span class="n">nRestarts</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
 </pre></div>
 </div>
 <ol class="arabic simple" start="5">
-<li>Compare <code class="xref py py-obj docutils literal notranslate"><span class="pre">approxposterior</span></code> MAP solution to truth: 0 at (1,1)</li>
+<li>Compare <code class="xref py py-obj docutils literal notranslate"><span class="pre">approxposterior</span></code> MAP solution to truth: 0 at (0,0)</li>
 </ol>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Plot MAP solution on top of grid of Rosenbrock function evaluations</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Plot MAP solution on top of grid of objective function evaluations</span>
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
 
 <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">7</span><span class="p">,</span><span class="mi">6</span><span class="p">))</span>
 
 <span class="c1"># Generate grid of function values the old fashioned way because this function</span>
 <span class="c1"># is not vectorized...</span>
-<span class="n">arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
-<span class="n">rosen</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">100</span><span class="p">,</span><span class="mi">100</span><span class="p">))</span>
+<span class="n">arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
+<span class="n">sphere</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">100</span><span class="p">,</span><span class="mi">100</span><span class="p">))</span>
 <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">100</span><span class="p">):</span>
     <span class="k">for</span> <span class="n">jj</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">100</span><span class="p">):</span>
-        <span class="n">rosen</span><span class="p">[</span><span class="n">ii</span><span class="p">,</span><span class="n">jj</span><span class="p">]</span> <span class="o">=</span> <span class="n">lh</span><span class="o">.</span><span class="n">rosenbrockLnlike</span><span class="p">([</span><span class="n">arr</span><span class="p">[</span><span class="n">ii</span><span class="p">],</span> <span class="n">arr</span><span class="p">[</span><span class="n">jj</span><span class="p">]])</span>
+        <span class="n">sphere</span><span class="p">[</span><span class="n">ii</span><span class="p">,</span><span class="n">jj</span><span class="p">]</span> <span class="o">=</span> <span class="n">lh</span><span class="o">.</span><span class="n">sphereLnlike</span><span class="p">([</span><span class="n">arr</span><span class="p">[</span><span class="n">ii</span><span class="p">],</span> <span class="n">arr</span><span class="p">[</span><span class="n">jj</span><span class="p">]])</span>
 
-<span class="c1"># Plot Rosenbrock function (rescale because it varies by several orders of</span>
-<span class="c1"># magnitude and is &lt; 0)</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="o">-</span><span class="n">rosen</span><span class="p">)</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">origin</span><span class="o">=</span><span class="s2">&quot;lower&quot;</span><span class="p">,</span> <span class="n">aspect</span><span class="o">=</span><span class="s2">&quot;auto&quot;</span><span class="p">,</span>
-          <span class="n">interpolation</span><span class="o">=</span><span class="s2">&quot;nearest&quot;</span><span class="p">,</span> <span class="n">extent</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="o">-</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">],</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="c1"># Plot objective function (rescale because it varies by several orders of magnitude)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="o">-</span><span class="n">sphere</span><span class="p">)</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">origin</span><span class="o">=</span><span class="s2">&quot;lower&quot;</span><span class="p">,</span> <span class="n">aspect</span><span class="o">=</span><span class="s2">&quot;auto&quot;</span><span class="p">,</span> <span class="n">interpolation</span><span class="o">=</span><span class="s2">&quot;nearest&quot;</span><span class="p">,</span>
+          <span class="n">extent</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s2">&quot;viridis_r&quot;</span><span class="p">)</span>
 
 <span class="c1"># Plot truth</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s2">&quot;:&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;white&quot;</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s2">&quot;:&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;white&quot;</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s2">&quot;:&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;white&quot;</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s2">&quot;:&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;white&quot;</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 
 <span class="c1"># Plot MAP solution</span>
 <span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">MAP</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">MAP</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;red&quot;</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
@@ -297,21 +303,23 @@ so that what we hope to recover!</p>
 <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;x0&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">15</span><span class="p">)</span>
 <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;x1&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">15</span><span class="p">)</span>
 <span class="n">title</span> <span class="o">=</span> <span class="s2">&quot;MAP estimate, value: (</span><span class="si">%0.3lf</span><span class="s2">, </span><span class="si">%0.3lf</span><span class="s2">), </span><span class="si">%e</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">MAP</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">MAP</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">val</span><span class="p">)</span>
-<span class="n">title</span> <span class="o">+=</span> <span class="s2">&quot;Global minimum coords, value: (</span><span class="si">%0.1lf</span><span class="s2">, </span><span class="si">%0.1lf</span><span class="s2">), </span><span class="si">%d</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<span class="n">title</span> <span class="o">+=</span> <span class="s2">&quot;Global minimum coords, value: (</span><span class="si">%0.1lf</span><span class="s2">, </span><span class="si">%0.1lf</span><span class="s2">), </span><span class="si">%d</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
 <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="n">title</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
 
 <span class="c1"># Save figure</span>
-<span class="n">fig</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s2">&quot;rosenbrockMAP.png&quot;</span><span class="p">,</span> <span class="n">bbox_inches</span><span class="o">=</span><span class="s2">&quot;tight&quot;</span><span class="p">)</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s2">&quot;map.png&quot;</span><span class="p">,</span> <span class="n">bbox_inches</span><span class="o">=</span><span class="s2">&quot;tight&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<a class="reference internal image-reference" href="_images/rosenbrockMAP.png"><img alt="_images/rosenbrockMAP.png" src="_images/rosenbrockMAP.png" style="width: 400px;" /></a>
-<p><code class="xref py py-obj docutils literal notranslate"><span class="pre">approxposterior</span></code> MAP solution: (1.021, 1.041), 3.506784e-4 (red point),
-compared to the truth (1,1), 0 (white dashed lines).
+<a class="reference internal image-reference" href="_images/map.png"><img alt="_images/map.png" src="_images/map.png" style="width: 400px;" /></a>
+<p><code class="xref py py-obj docutils literal notranslate"><span class="pre">approxposterior</span></code> MAP solution: (-0.003 -0.001), 0.00198723 (red point),
+compared to the truth (0,0), 0 (white dashed lines).
 Our answer is pretty close to the truth, and better yet, <code class="xref py py-obj docutils literal notranslate"><span class="pre">approxposterior</span></code>
-only required 50 randomly-distributed Rosenbrock function evaluations to train
+only required 10 randomly-distributed objective function evaluations to train
 its GP used to estimate the MAP solution. For computationally-expensive
 forward models, this method can be used for efficient (approximate) Bayesian
-optimization of functions.</p>
+optimization of functions. Better yet, MAP estimation can be ran after intelligently
+expanding the GP’s training set with the run or bayesOpt methods, or after calling
+findNewPoint! See the detailed API for how to use those functions.</p>
 </div>
 
 
@@ -327,7 +335,7 @@ optimization of functions.</p>
         <a href="notebooks/fittingALine.html" class="btn btn-neutral float-right" title="Fitting a Line" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="notebooks/TrueRosenbrockPosterior.html" class="btn btn-neutral" title="True Rosenbrock Posterior Calculation Using Emcee" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="bayesopt.html" class="btn btn-neutral" title="Bayesian Optimization" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
@@ -358,7 +366,7 @@ optimization of functions.</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'0.3',
+            VERSION:'0.4',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,

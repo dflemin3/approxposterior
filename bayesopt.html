@@ -1,0 +1,474 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Bayesian Optimization &mdash; approxposterior 0.4 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+    <link rel="stylesheet" href="_static/graphviz.css" type="text/css" />
+  
+
+  
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
+    <link rel="top" title="approxposterior 0.4 documentation" href="index.html"/>
+        <link rel="next" title="MAP Estimation" href="map.html"/>
+        <link rel="prev" title="True Rosenbrock Posterior Calculation Using Emcee" href="notebooks/TrueRosenbrockPosterior.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> approxposterior
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.4
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Approximate Bayesian Inference</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Bayesian Optimization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="map.html">MAP Estimation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="notebooks/fittingALine.html">Fitting a Line</a></li>
+<li class="toctree-l1"><a class="reference internal" href="notebooks/ScalingAccuracy.html">Scaling and Accuracy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="faq.html">FAQs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="citation.html">Citation</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/dflemin3/approxposterior">Github</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/dflemin3/approxposterior/issues">Submit an Issue</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">approxposterior</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Bayesian Optimization</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/bayesopt.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast,
+.nboutput.nblast {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast + .nbinput {
+    margin-top: -19px;
+}
+
+/* nice headers on first paragraph of info/warning boxes */
+.admonition .first {
+    margin: -12px;
+    padding: 6px 12px;
+    margin-bottom: 12px;
+    color: #fff;
+    line-height: 1;
+    display: block;
+}
+.admonition.warning .first {
+    background: #f0b37e;
+}
+.admonition.note .first {
+    background: #6ab0de;
+}
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+</style>
+<div class="section" id="bayesian-optimization">
+<h1>Bayesian Optimization<a class="headerlink" href="#bayesian-optimization" title="Permalink to this headline">¶</a></h1>
+<p><code class="xref py py-obj docutils literal notranslate"><span class="pre">approxposterior</span></code> can be used to find an accurate approximation to the
+maximum (or minimum) of an expensive objective function using Bayesian optimization.
+As is common in modern Bayesian optimization applications, <code class="xref py py-obj docutils literal notranslate"><span class="pre">approxposterior</span></code>
+trains a Gaussian process (GP) surrogate model for the objective function on
+a small number of function evaluations. <code class="xref py py-obj docutils literal notranslate"><span class="pre">approxposterior</span></code> then maximizes
+a utility function, here Jones et al. (1998)’s “Expected Utility”, to identify
+where to next observe the objective function. In this case, the Expected Utility
+function attempts to strike a balance between “exploration” and “exploitation”,
+as it seeks to find where observing the objective function will improve the
+current estimate of the maximum, or at least improve the surrogate model’s
+estimate of the objective function.</p>
+<p>This method is particularly useful when the objective function in question is
+computationally-expensive to evaluate, so one wishes to minimizes the number of evaluations.
+For some great reviews on the theory of Bayesian Optimization and its implementation,
+check out: <a class="reference external" href="https://krasserm.github.io/2018/03/21/bayesian-optimization/">this great blog post by Martin Krasser</a>
+and this excellent review paper by <a class="reference external" href="https://arxiv.org/abs/1012.2599">Brochu et al. (2010)</a>.</p>
+<p>Below is an example of how to use <code class="xref py py-obj docutils literal notranslate"><span class="pre">approxposterior</span></code> to estimate the
+maximum of a 1D function with Bayesian Optimization and maximum a posteriori
+(MAP) estimation using the function learned by GP surrogate model. For the MAP
+estimation, <code class="xref py py-obj docutils literal notranslate"><span class="pre">approxposterior</span></code> directly maximizes the GP surrogate model’s
+posterior function, that is, the approximation to the objective function learned
+by the GP after conditioning on observations.</p>
+<p>Note that in general, <code class="xref py py-obj docutils literal notranslate"><span class="pre">approxposterior</span></code> wants to maximize functions since
+it is designed for approximate probabilistic inference (e.g., we are interested in
+maximum likelihood solutions), so keep this in mind when coding up your own
+objective functions. If you’re instead interested in minimizing some function,
+throw a <code class="xref py py-obj docutils literal notranslate"><span class="pre">-</span></code> sign in front of your function. Finally, note that in
+<code class="xref py py-obj docutils literal notranslate"><span class="pre">approxposterior</span></code>, we defined objective functions as the sum of a loglikelihood
+function and a logprior function. Typically, the loglikelihood function is simply
+the objective function. The logprior function can encode any prior information the
+user has about the objective, but here we use it to enforce a simple uniform prior
+with hard bounds over the domain [-1,2].</p>
+<p>For this example, we wish to find the maximum of the following objective function:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Plot objective function</span>
+<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span><span class="mi">5</span><span class="p">))</span>
+
+<span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">lh</span><span class="o">.</span><span class="n">testBOFn</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">lw</span><span class="o">=</span><span class="mf">2.5</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;k&quot;</span><span class="p">)</span>
+
+<span class="c1"># Format</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="o">-</span><span class="mf">1.1</span><span class="p">,</span> <span class="mf">2.1</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;$\theta$&quot;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;f($\theta$)&quot;</span><span class="p">)</span>
+
+<span class="c1"># Hide top, right axes</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">spines</span><span class="p">[</span><span class="s2">&quot;right&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">set_visible</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">spines</span><span class="p">[</span><span class="s2">&quot;top&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">set_visible</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">yaxis</span><span class="o">.</span><span class="n">set_ticks_position</span><span class="p">(</span><span class="s2">&quot;left&quot;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">xaxis</span><span class="o">.</span><span class="n">set_ticks_position</span><span class="p">(</span><span class="s2">&quot;bottom&quot;</span><span class="p">)</span>
+
+<span class="n">fig</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s2">&quot;objFn.png&quot;</span><span class="p">,</span> <span class="n">bbox_inches</span><span class="o">=</span><span class="s2">&quot;tight&quot;</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="_images/objFn.png"><img alt="_images/objFn.png" src="_images/objFn.png" style="width: 600px;" /></a>
+<p>This objective function has a clear global maximum, but also a local maximum, so
+it should be a reasonable test. Now to the optimization.</p>
+<ol class="arabic simple">
+<li>First, the user must set model parameters.</li>
+</ol>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Define algorithm parameters</span>
+<span class="n">m0</span> <span class="o">=</span> <span class="mi">3</span>                           <span class="c1"># Size of initial training set</span>
+<span class="n">bounds</span> <span class="o">=</span> <span class="p">[[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]]</span>               <span class="c1"># Prior bounds</span>
+<span class="n">algorithm</span> <span class="o">=</span> <span class="s2">&quot;jones&quot;</span>              <span class="c1"># Expected Utility from Jones et al. (1998)</span>
+<span class="n">numNewPoints</span> <span class="o">=</span> <span class="mi">10</span>                <span class="c1"># Maximum number of new design points to find</span>
+<span class="n">seed</span> <span class="o">=</span> <span class="mi">91</span>                        <span class="c1"># RNG seed</span>
+<span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
+</pre></div>
+</div>
+<ol class="arabic simple" start="2">
+<li>Create an initial training set and Gaussian process</li>
+</ol>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Sample design points from prior to create initial training set</span>
+<span class="n">theta</span> <span class="o">=</span> <span class="n">lh</span><span class="o">.</span><span class="n">testBOFnSample</span><span class="p">(</span><span class="n">m0</span><span class="p">)</span>
+
+<span class="c1"># Evaluate forward model + lnprior for each point</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">theta</span><span class="p">))</span>
+<span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">theta</span><span class="p">)):</span>
+    <span class="n">y</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span> <span class="o">=</span> <span class="n">lh</span><span class="o">.</span><span class="n">testBOFn</span><span class="p">(</span><span class="n">theta</span><span class="p">[</span><span class="n">ii</span><span class="p">])</span> <span class="o">+</span> <span class="n">lh</span><span class="o">.</span><span class="n">testBOFnLnPrior</span><span class="p">(</span><span class="n">theta</span><span class="p">[</span><span class="n">ii</span><span class="p">])</span>
+
+<span class="c1"># Initialize default gp with an ExpSquaredKernel</span>
+<span class="n">gp</span> <span class="o">=</span> <span class="n">gpUtils</span><span class="o">.</span><span class="n">defaultGP</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">white_noise</span><span class="o">=-</span><span class="mi">12</span><span class="p">,</span> <span class="n">fitAmp</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<ol class="arabic simple" start="3">
+<li>Initialize the <code class="xref py py-obj docutils literal notranslate"><span class="pre">approxposterior</span></code> object, optimize GP hyperparameters</li>
+</ol>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Initialize object using a simple 1D test function</span>
+<span class="n">ap</span> <span class="o">=</span> <span class="n">approx</span><span class="o">.</span><span class="n">ApproxPosterior</span><span class="p">(</span><span class="n">theta</span><span class="o">=</span><span class="n">theta</span><span class="p">,</span>
+                            <span class="n">y</span><span class="o">=</span><span class="n">y</span><span class="p">,</span>
+                            <span class="n">gp</span><span class="o">=</span><span class="n">gp</span><span class="p">,</span>
+                            <span class="n">lnprior</span><span class="o">=</span><span class="n">lh</span><span class="o">.</span><span class="n">testBOFnLnPrior</span><span class="p">,</span>
+                            <span class="n">lnlike</span><span class="o">=</span><span class="n">lh</span><span class="o">.</span><span class="n">testBOFn</span><span class="p">,</span>
+                            <span class="n">priorSample</span><span class="o">=</span><span class="n">lh</span><span class="o">.</span><span class="n">testBOFnSample</span><span class="p">,</span>
+                            <span class="n">bounds</span><span class="o">=</span><span class="n">bounds</span><span class="p">,</span>
+                            <span class="n">algorithm</span><span class="o">=</span><span class="n">algorithm</span><span class="p">)</span>
+
+<span class="c1"># Optimize the GP hyperparameters</span>
+<span class="n">ap</span><span class="o">.</span><span class="n">optGP</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;powell&quot;</span><span class="p">,</span> <span class="n">nGPRestarts</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+<ol class="arabic simple" start="4">
+<li>Perform Bayesian Optimization</li>
+</ol>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Run the Bayesian optimization!</span>
+<span class="n">soln</span> <span class="o">=</span> <span class="n">ap</span><span class="o">.</span><span class="n">bayesOpt</span><span class="p">(</span><span class="n">nmax</span><span class="o">=</span><span class="n">numNewPoints</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1.0e-3</span><span class="p">,</span> <span class="n">kmax</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                   <span class="n">cache</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">gpMethod</span><span class="o">=</span><span class="s2">&quot;powell&quot;</span><span class="p">,</span> <span class="n">optGPEveryN</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">nGPRestarts</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+                   <span class="n">nMinObjRestarts</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">initGPOpt</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">minObjMethod</span><span class="o">=</span><span class="s2">&quot;nelder-mead&quot;</span><span class="p">,</span>
+                   <span class="n">gpHyperPrior</span><span class="o">=</span><span class="n">gpUtils</span><span class="o">.</span><span class="n">defaultHyperPrior</span><span class="p">,</span> <span class="n">findMAP</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The <code class="xref py py-obj docutils literal notranslate"><span class="pre">soln</span></code> dictionary returned by ap.bayesOpt contains several parameters, including
+the solution path, <code class="xref py py-obj docutils literal notranslate"><span class="pre">soln[&quot;thetas&quot;]</span></code>, and the value of the function at each theta, <code class="xref py py-obj docutils literal notranslate"><span class="pre">soln[&quot;vals&quot;]</span></code>,
+along the solution path. <code class="xref py py-obj docutils literal notranslate"><span class="pre">soln[&quot;thetaBest&quot;]</span></code> and <code class="xref py py-obj docutils literal notranslate"><span class="pre">soln[&quot;valBest&quot;]</span></code>
+give the coordinates and function value as the inferred maximum, respectively.</p>
+<p>This Bayesian optimization routine will run for up to nmax iterations, or
+until the best solution changed by &lt;= tol for kmax consecutive iterations.
+In this case, only 9 iterations were ran, so the solution converged at the
+specified tolerance. Additionally, by setting optGPEveryN = 1, we re-optimized
+the GP hyperparameters each time <code class="xref py py-obj docutils literal notranslate"><span class="pre">approxposterior</span></code> added a new point to
+its training set by maximizing the Expected Utility function. Keeping optGPEveryN
+to low values will tend to produce more accurate solutions as, especially for
+early iterations, the GP’s posterior function can change quickly as it gains
+more information as the training set expands.</p>
+<p>In addition to finding the Bayesian optimization solution, we set <code class="xref py py-obj docutils literal notranslate"><span class="pre">findMAP=True</span></code>
+to have <code class="xref py py-obj docutils literal notranslate"><span class="pre">approxposterior</span></code> also find the maximum a posteriori (MAP) solution.
+That is, the <code class="xref py py-obj docutils literal notranslate"><span class="pre">approxposterior</span></code> identified the maximum of the posterior
+function learned by the GP. This optimization is rather cheap since it does not
+require evaluating the forward model. Since <code class="xref py py-obj docutils literal notranslate"><span class="pre">approxposterior</span></code>’s goal is
+to have its GP actively learn an approximation to the objective function, its
+maximum should be approximately equal to the true maximum. <code class="xref py py-obj docutils literal notranslate"><span class="pre">soln</span></code> contains the MAP solution path,
+<code class="xref py py-obj docutils literal notranslate"><span class="pre">soln[&quot;thetasMAP&quot;]</span></code>, the value of the GP posterior function at each theta along the
+MAP solution path, <code class="xref py py-obj docutils literal notranslate"><span class="pre">soln[&quot;valsMAP&quot;]</span></code>, the MAP solution, <code class="xref py py-obj docutils literal notranslate"><span class="pre">soln[&quot;thetaMAPBest&quot;]</span></code>,
+and the GP posterior function value at the MAP, <code class="xref py py-obj docutils literal notranslate"><span class="pre">soln[&quot;valMAPBest&quot;]</span></code>.</p>
+<p>Below, we’ll compare the Bayesian optimization and MAP solution paths contained
+in <code class="xref py py-obj docutils literal notranslate"><span class="pre">soln</span></code>.</p>
+<ol class="arabic simple" start="5">
+<li>Compare <code class="xref py py-obj docutils literal notranslate"><span class="pre">approxposterior</span></code> BayesOpt, MAP solution to truth:</li>
+</ol>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">matplotlib</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+<span class="n">matplotlib</span><span class="o">.</span><span class="n">rcParams</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;font.size&quot;</span><span class="p">:</span> <span class="mi">15</span><span class="p">})</span>
+
+<span class="c1"># Plot the solution path and function value convergence</span>
+<span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">ncols</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span><span class="mi">6</span><span class="p">))</span>
+
+<span class="c1"># Extract number of iterations ran by bayesopt routine</span>
+<span class="n">iters</span> <span class="o">=</span> <span class="p">[</span><span class="n">ii</span> <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">soln</span><span class="p">[</span><span class="s2">&quot;nev&quot;</span><span class="p">])]</span>
+
+<span class="c1"># Left: solution</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span><span class="n">trueSoln</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">],</span> <span class="n">ls</span><span class="o">=</span><span class="s2">&quot;--&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;k&quot;</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">iters</span><span class="p">,</span> <span class="n">soln</span><span class="p">[</span><span class="s2">&quot;thetas&quot;</span><span class="p">],</span> <span class="s2">&quot;o-&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;C0&quot;</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">2.5</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;GP BayesOpt&quot;</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">iters</span><span class="p">,</span> <span class="n">soln</span><span class="p">[</span><span class="s2">&quot;thetasMAP&quot;</span><span class="p">],</span> <span class="s2">&quot;o-&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;C1&quot;</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">2.5</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;GP approximate MAP&quot;</span><span class="p">)</span>
+
+<span class="c1"># Format</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;$\theta$&quot;</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s2">&quot;best&quot;</span><span class="p">,</span> <span class="n">framealpha</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">14</span><span class="p">)</span>
+
+<span class="c1"># Right: solution value (- true soln since we minimized -fn)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span><span class="o">-</span><span class="n">trueSoln</span><span class="p">[</span><span class="s2">&quot;fun&quot;</span><span class="p">],</span> <span class="n">ls</span><span class="o">=</span><span class="s2">&quot;--&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;k&quot;</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">iters</span><span class="p">,</span> <span class="n">soln</span><span class="p">[</span><span class="s2">&quot;vals&quot;</span><span class="p">],</span> <span class="s2">&quot;o-&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;C0&quot;</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">2.5</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">iters</span><span class="p">,</span> <span class="n">soln</span><span class="p">[</span><span class="s2">&quot;valsMAP&quot;</span><span class="p">],</span> <span class="s2">&quot;o-&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;C1&quot;</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">2.5</span><span class="p">)</span>
+
+<span class="c1"># Format</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;$f(\theta)$&quot;</span><span class="p">)</span>
+
+<span class="c1"># Format both axes</span>
+<span class="k">for</span> <span class="n">ax</span> <span class="ow">in</span> <span class="n">axes</span><span class="p">:</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;Iteration&quot;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="o">-</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">soln</span><span class="p">[</span><span class="s2">&quot;nev&quot;</span><span class="p">]</span><span class="o">-</span><span class="mf">0.8</span><span class="p">)</span>
+
+    <span class="c1"># Hide top, right axes</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">spines</span><span class="p">[</span><span class="s2">&quot;right&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">set_visible</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">spines</span><span class="p">[</span><span class="s2">&quot;top&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">set_visible</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">yaxis</span><span class="o">.</span><span class="n">set_ticks_position</span><span class="p">(</span><span class="s2">&quot;left&quot;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">xaxis</span><span class="o">.</span><span class="n">set_ticks_position</span><span class="p">(</span><span class="s2">&quot;bottom&quot;</span><span class="p">)</span>
+
+<span class="n">fig</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s2">&quot;bo.png&quot;</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span> <span class="n">bbox_inches</span><span class="o">=</span><span class="s2">&quot;tight&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="_images/bo.png"><img alt="_images/bo.png" src="_images/bo.png" style="width: 800px;" /></a>
+<p>Using Bayesian optimization, <code class="xref py py-obj docutils literal notranslate"><span class="pre">approxposterior</span></code> estimated the maximum of
+the objective function to be (-0.367, 0.500), compared to the truth, (-0.359, 0.500),
+represented by the black dashed lines in both panels. Looks pretty good!
+<code class="xref py py-obj docutils literal notranslate"><span class="pre">approxposterior</span></code> found an MAP solution of (-0.360, 0.500),
+slighty better than the Bayesian optimization solution. As seen in the figure
+above, both the Bayesian optimization and GP MAP solutions quickly converge to
+the correct answer. Since <code class="xref py py-obj docutils literal notranslate"><span class="pre">approxposterior</span></code> continues to re-train and
+improve the GP’s posterior predictive ability as the training set expands, its
+MAP solution actually converges to the correct answer more quickly than Bayesian
+optimization. Note that this is not expected in general, but can be used to efficiently
+estimate extrema.</p>
+</div>
+
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="map.html" class="btn btn-neutral float-right" title="MAP Estimation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="notebooks/TrueRosenbrockPosterior.html" class="btn btn-neutral" title="True Rosenbrock Posterior Calculation Using Emcee" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, David P. Fleming.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'0.4',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="_static/language_data.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

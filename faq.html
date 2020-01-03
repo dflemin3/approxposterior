@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>API &mdash; approxposterior 0.4 documentation</title>
+  <title>FAQs &mdash; approxposterior 0.4 documentation</title>
   
 
   
@@ -38,8 +38,8 @@
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
     <link rel="top" title="approxposterior 0.4 documentation" href="index.html"/>
-        <link rel="next" title="ApproxPosterior Class" href="api/approx.html"/>
-        <link rel="prev" title="Scaling, Accuracy Example" href="notebooks/ScalingAccuracy.html"/> 
+        <link rel="next" title="Citation" href="citation.html"/>
+        <link rel="prev" title="Installation" href="install.html"/> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
@@ -99,17 +99,9 @@
 <li class="toctree-l1"><a class="reference internal" href="map.html">MAP Estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="notebooks/fittingALine.html">Fitting a Line</a></li>
 <li class="toctree-l1"><a class="reference internal" href="notebooks/ScalingAccuracy.html">Scaling and Accuracy</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">API</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="api/approx.html">approx.py</a></li>
-<li class="toctree-l2"><a class="reference internal" href="api/gmmUtils.html">gmmUtils.py</a></li>
-<li class="toctree-l2"><a class="reference internal" href="api/gpUtils.html">gpUtils.py</a></li>
-<li class="toctree-l2"><a class="reference internal" href="api/mcmcUtils.html">mcmcUtils.py</a></li>
-<li class="toctree-l2"><a class="reference internal" href="api/likelihood.html">likelihood.py</a></li>
-<li class="toctree-l2"><a class="reference internal" href="api/utility.html">utility.py</a></li>
-</ul>
-</li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="faq.html">FAQs</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">FAQs</a></li>
 <li class="toctree-l1"><a class="reference internal" href="citation.html">Citation</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://github.com/dflemin3/approxposterior">Github</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://github.com/dflemin3/approxposterior/issues">Submit an Issue</a></li>
@@ -157,13 +149,13 @@
     
       <li><a href="index.html">Docs</a> &raquo;</li>
         
-      <li>API</li>
+      <li>FAQs</li>
     
     
       <li class="wy-breadcrumbs-aside">
         
             
-            <a href="_sources/api.rst.txt" rel="nofollow"> View page source</a>
+            <a href="_sources/faq.rst.txt" rel="nofollow"> View page source</a>
           
         
       </li>
@@ -210,21 +202,50 @@
     margin-right: 4px;  /* make room for the exclamation icon */
 }
 </style>
-<div class="section" id="api">
-<h1>API<a class="headerlink" href="#api" title="Permalink to this headline">¶</a></h1>
-<blockquote>
-<div><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">approxposterior</span></code> Python API documentation.</p>
-<div class="toctree-wrapper compound">
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="api/approx.html">approx.py</a></li>
-<li class="toctree-l1"><a class="reference internal" href="api/gmmUtils.html">gmmUtils.py</a></li>
-<li class="toctree-l1"><a class="reference internal" href="api/gpUtils.html">gpUtils.py</a></li>
-<li class="toctree-l1"><a class="reference internal" href="api/mcmcUtils.html">mcmcUtils.py</a></li>
-<li class="toctree-l1"><a class="reference internal" href="api/likelihood.html">likelihood.py</a></li>
-<li class="toctree-l1"><a class="reference internal" href="api/utility.html">utility.py</a></li>
-</ul>
-</div>
-</div></blockquote>
+<div class="section" id="faqs">
+<h1>FAQs<a class="headerlink" href="#faqs" title="Permalink to this headline">¶</a></h1>
+<p><strong>Optimizing GP Hyperparameters</strong></p>
+<p>Not counting likelihood function evaluations, most of the computational time is
+spent optimizing the GP hyperparameters. This task is critical to the accuracy of <code class="xref py py-obj docutils literal notranslate"><span class="pre">approxposterior</span></code> because
+the GP must be able to learn an accurate representation of the model logprobability (loglikelihood + logprior)
+throughout parameter space, particularly in high-likelihood regions, if it is
+to predict an accurate approximate posterior distribution.</p>
+<p>To optimize the GP hyperparameters, <code class="xref py py-obj docutils literal notranslate"><span class="pre">approxposterior</span></code> maximizes the marginal loglikelihood
+of the GP training set. In low-dimensional problems, e.g. 2D problems like the
+Rosenbrock function example, this optimization is relatively easy.  In higher-dimensional
+problems, the GP marginal loglikelihood typically has multiple extrema, making optimization more
+difficult.  In practice, we have found that restarting the minimization procedure
+with random initial guesses results in good performance, however, higher-dimensional
+problems likely require more restarts.</p>
+<p>If <code class="xref py py-obj docutils literal notranslate"><span class="pre">approxposterior</span></code> is running too slowly, or worse, is not able to estimate
+good posterior probability distributions, the algorithm can be tweaked in several ways.</p>
+<p>Note: If you’re interested in how <code class="xref py py-obj docutils literal notranslate"><span class="pre">approxposterior</span></code> scales with forward
+model evaluation time and how accurate it is, check out the Scaling and Accuracy
+example notebook on the Tutorial page.</p>
+<p>By default, <code class="xref py py-obj docutils literal notranslate"><span class="pre">approxposterior</span></code> optimizes the GP hyperparameters by
+maximizing the marginal loglikelihood following the example in the <a class="reference external" href="https://george.readthedocs.io/en/latest/tutorials/hyper/">george</a>
+documentation using the approxposterior.gpUtils.optimizeGP. This function is typically
+used by the approxposterior.ApproxPosterior.optGP method which is a wrapped for
+the aforementioned function.</p>
+<p>optGP has a keyword argument, nGPRestarts, that sets the number of times the GP
+hyperparameter optimization is restarted. Decrease nGPRestarts if
+<code class="xref py py-obj docutils literal notranslate"><span class="pre">approxposterior</span></code> is running too slowly or increase it if the GP’s
+accuracy is lacking.</p>
+<p>Furthermore, <code class="xref py py-obj docutils literal notranslate"><span class="pre">approxposterior</span></code> reoptimizes the GP hyperparameters each time
+a new point is selected and added to the training set.  In practice, this is likely
+overkill as the GP usually quickly learns a reasonable approximation to the
+objective function, and hence we do not expect the hyperparameters to change significantly
+if the training set expands by 1. The user can set optGPEveryN in the run method
+to instead only reoptimize the GP every N new points. We typically reoptimize the
+hyperparameters about twice per iteration.</p>
+<p><strong>Optimizing selecting new points in parameter space</strong></p>
+<p>Similar to the GP hyperparameter optimization, finding where next in parameter space
+to run the model to improve the GP’s performance requires maximizing a utility function.
+In practice, we find that high-dimensional applications require restarting this optimization
+several times, with initial guesses drawn from the prior, to achieve good performance.
+As before, the keyword argument nMinObjRestarts controls the number of optimization
+restarts, with the default value being 5. If good points are not being selected,
+try increasing this parameter.</p>
 </div>
 
 
@@ -237,10 +258,10 @@
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="api/approx.html" class="btn btn-neutral float-right" title="ApproxPosterior Class" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="citation.html" class="btn btn-neutral float-right" title="Citation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="notebooks/ScalingAccuracy.html" class="btn btn-neutral" title="Scaling, Accuracy Example" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="install.html" class="btn btn-neutral" title="Installation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   

@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>approxposterior.mcmcUtils &mdash; approxposterior 0.3 documentation</title>
+  <title>approxposterior.mcmcUtils &mdash; approxposterior 0.4 documentation</title>
   
 
   
@@ -37,7 +37,7 @@
         <link rel="index" title="Index"
               href="../../genindex.html"/>
         <link rel="search" title="Search" href="../../search.html"/>
-    <link rel="top" title="approxposterior 0.3 documentation" href="../../index.html"/>
+    <link rel="top" title="approxposterior 0.4 documentation" href="../../index.html"/>
         <link rel="up" title="Module code" href="../index.html"/> 
 
   
@@ -67,7 +67,7 @@
             
             
               <div class="version">
-                0.3
+                0.4
               </div>
             
           
@@ -94,12 +94,13 @@
               <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../tutorial.html">Approximate Bayesian Inference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../bayesopt.html">Bayesian Optimization</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../map.html">MAP Estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../notebooks/fittingALine.html">Fitting a Line</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../notebooks/ScalingAccuracy.html">Scaling and Accuracy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../api.html">API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../install.html">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../performance.html">Improving Performance</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../faq.html">FAQs</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../citation.html">Citation</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://github.com/dflemin3/approxposterior">Github</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://github.com/dflemin3/approxposterior/issues">Submit an Issue</a></li>
@@ -176,7 +177,7 @@
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="c1"># Tell module what it&#39;s allowed to import</span>
-<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;validateMCMCKwargs&quot;</span><span class="p">]</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;validateMCMCKwargs&quot;</span><span class="p">,</span> <span class="s2">&quot;batchMeansMCSE&quot;</span><span class="p">]</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
@@ -234,10 +235,6 @@
 
         <span class="c1"># Handle case when user supplies own loglikelihood function</span>
         <span class="k">if</span> <span class="s2">&quot;log_prob_fn&quot;</span> <span class="ow">in</span> <span class="n">samplerKwargs</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
-            <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;WARNING: log_prob_fn in samplerKwargs. approxposterior only uses the GP surrogate model for the lnlikelihood!&quot;</span><span class="p">)</span>
-                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Disregarding log_prob_fn...&quot;</span><span class="p">)</span>
-
             <span class="c1"># Remove any other log_prob_fn</span>
             <span class="n">samplerKwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;log_prob_fn&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
 
@@ -270,6 +267,69 @@
                 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Defaulting to nwalkers samples from priorSample.&quot;</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">samplerKwargs</span><span class="p">,</span> <span class="n">mcmcKwargs</span></div>
+<span class="c1"># end function</span>
+
+
+<div class="viewcode-block" id="batchMeansMCSE"><a class="viewcode-back" href="../../api/mcmcUtils.html#approxposterior.mcmcUtils.batchMeansMCSE">[docs]</a><span class="k">def</span> <span class="nf">batchMeansMCSE</span><span class="p">(</span><span class="n">samples</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">fn</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Estimate the Monte Carlo Standard Error of MCMC samples using the</span>
+<span class="sd">    non-overlapping batch means methods. See Flegal, Haran, &amp; Jones (2008) for</span>
+<span class="sd">    more info: https://arxiv.org/pdf/math/0703746.pdf</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    samples : array</span>
+<span class="sd">        nsamples x ndim array of MCMC samples</span>
+<span class="sd">    bins : int (optional)</span>
+<span class="sd">        Number of bins. Defaults to int(sqrt(len(samples)))</span>
+<span class="sd">    fn : function (optional)</span>
+<span class="sd">        Function used to compute posterior summary statistic on each chunk.</span>
+<span class="sd">        Defaults to None to compute the simple expected value, aka the mean.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    RMSE : float/array</span>
+<span class="sd">        RMSE for each dimension of the chain</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Initialize function if None provided</span>
+    <span class="k">if</span> <span class="n">fn</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">fn</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span> <span class="p">:</span> <span class="n">x</span>
+
+    <span class="c1"># Initialize number of chunks</span>
+    <span class="k">if</span> <span class="n">bins</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">bins</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">samples</span><span class="p">))),</span><span class="mi">2</span><span class="p">)</span>
+
+    <span class="c1"># num MUST be an interger</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">bins</span><span class="p">,</span> <span class="nb">int</span><span class="p">),</span> <span class="s2">&quot;num must be an interger&quot;</span>
+
+    <span class="c1"># Figure out dimensionality</span>
+    <span class="n">samples</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">samples</span><span class="p">)</span>
+    <span class="n">ndim</span> <span class="o">=</span> <span class="n">samples</span><span class="o">.</span><span class="n">ndim</span>
+
+    <span class="c1"># Compute b, init holder</span>
+    <span class="n">b</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">samples</span><span class="p">)</span> <span class="o">/</span> <span class="n">bins</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">ndim</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">ndim</span> <span class="o">=</span> <span class="n">samples</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">bins</span><span class="p">,</span> <span class="n">ndim</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">bins</span><span class="p">)</span>
+
+    <span class="c1"># Estimate summary statistic using entire chain</span>
+    <span class="n">mu</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">fn</span><span class="p">(</span><span class="n">samples</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="c1"># Compute summary statistic for each bin in the chain</span>
+    <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">bins</span><span class="p">):</span>
+        <span class="c1"># Select current chunk, compute!</span>
+        <span class="n">lower</span> <span class="o">=</span> <span class="n">ii</span> <span class="o">*</span> <span class="n">b</span>
+        <span class="n">upper</span> <span class="o">=</span> <span class="p">(</span><span class="n">ii</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">b</span>
+        <span class="n">y</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">fn</span><span class="p">(</span><span class="n">samples</span><span class="p">[</span><span class="n">lower</span><span class="p">:</span><span class="n">upper</span><span class="p">]),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="o">/</span> <span class="n">b</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">bins</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">samples</span><span class="p">))</span>
+
+    <span class="c1"># Estimate batch means (MCSE) as empirical standard deviation, return MCSE</span>
+    <span class="n">mcse</span> <span class="o">=</span> <span class="n">b</span> <span class="o">/</span> <span class="p">(</span><span class="n">bins</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="n">y</span> <span class="o">-</span> <span class="n">mu</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">mcse</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">samples</span><span class="p">))</span></div>
 <span class="c1"># end function</span>
 </pre></div>
 
@@ -307,7 +367,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../',
-            VERSION:'0.3',
+            VERSION:'0.4',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,

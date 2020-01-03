@@ -9,7 +9,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Index &mdash; approxposterior 0.3 documentation</title>
+  <title>Index &mdash; approxposterior 0.4 documentation</title>
   
 
   
@@ -38,7 +38,7 @@
         <link rel="index" title="Index"
               href="#"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="approxposterior 0.3 documentation" href="index.html"/> 
+    <link rel="top" title="approxposterior 0.4 documentation" href="index.html"/> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
@@ -67,7 +67,7 @@
             
             
               <div class="version">
-                0.3
+                0.4
               </div>
             
           
@@ -94,12 +94,13 @@
               <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="tutorial.html">Approximate Bayesian Inference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="bayesopt.html">Bayesian Optimization</a></li>
 <li class="toctree-l1"><a class="reference internal" href="map.html">MAP Estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="notebooks/fittingALine.html">Fitting a Line</a></li>
 <li class="toctree-l1"><a class="reference internal" href="notebooks/ScalingAccuracy.html">Scaling and Accuracy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api.html">API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="performance.html">Improving Performance</a></li>
+<li class="toctree-l1"><a class="reference internal" href="faq.html">FAQs</a></li>
 <li class="toctree-l1"><a class="reference internal" href="citation.html">Citation</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://github.com/dflemin3/approxposterior">Github</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://github.com/dflemin3/approxposterior/issues">Submit an Issue</a></li>
@@ -178,6 +179,7 @@
  | <a href="#M"><strong>M</strong></a>
  | <a href="#O"><strong>O</strong></a>
  | <a href="#R"><strong>R</strong></a>
+ | <a href="#S"><strong>S</strong></a>
  | <a href="#T"><strong>T</strong></a>
  | <a href="#V"><strong>V</strong></a>
  
@@ -213,6 +215,8 @@
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/mcmcUtils.html#approxposterior.mcmcUtils.batchMeansMCSE">batchMeansMCSE() (in module approxposterior.mcmcUtils)</a>
+</li>
       <li><a href="api/approx.html#approxposterior.approx.ApproxPosterior.bayesOpt">bayesOpt() (approxposterior.approx.ApproxPosterior method)</a>
 </li>
   </ul></td>
@@ -308,10 +312,30 @@
   </ul></td>
 </tr></table>
 
+<h2 id="S">S</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/likelihood.html#approxposterior.likelihood.sphereLnlike">sphereLnlike() (in module approxposterior.likelihood)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/likelihood.html#approxposterior.likelihood.sphereLnprior">sphereLnprior() (in module approxposterior.likelihood)</a>
+</li>
+      <li><a href="api/likelihood.html#approxposterior.likelihood.sphereSample">sphereSample() (in module approxposterior.likelihood)</a>
+</li>
+  </ul></td>
+</tr></table>
+
 <h2 id="T">T</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/likelihood.html#approxposterior.likelihood.testBOFn">testBOFn() (in module approxposterior.likelihood)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/likelihood.html#approxposterior.likelihood.testBOFnLnPrior">testBOFnLnPrior() (in module approxposterior.likelihood)</a>
+</li>
+      <li><a href="api/likelihood.html#approxposterior.likelihood.testBOFnSample">testBOFnSample() (in module approxposterior.likelihood)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -360,7 +384,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'0.3',
+            VERSION:'0.4',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,

@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>approxposterior &mdash; approxposterior 0.3 documentation</title>
+  <title>approxposterior &mdash; approxposterior 0.4 documentation</title>
   
 
   
@@ -37,7 +37,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="approxposterior 0.3 documentation" href="#"/>
+    <link rel="top" title="approxposterior 0.4 documentation" href="#"/>
         <link rel="next" title="Approximate Bayesian Inference" href="tutorial.html"/> 
 
   
@@ -67,7 +67,7 @@
             
             
               <div class="version">
-                0.3
+                0.4
               </div>
             
           
@@ -94,12 +94,13 @@
               <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="tutorial.html">Approximate Bayesian Inference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="bayesopt.html">Bayesian Optimization</a></li>
 <li class="toctree-l1"><a class="reference internal" href="map.html">MAP Estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="notebooks/fittingALine.html">Fitting a Line</a></li>
 <li class="toctree-l1"><a class="reference internal" href="notebooks/ScalingAccuracy.html">Scaling and Accuracy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api.html">API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="performance.html">Improving Performance</a></li>
+<li class="toctree-l1"><a class="reference internal" href="faq.html">FAQs</a></li>
 <li class="toctree-l1"><a class="reference internal" href="citation.html">Citation</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://github.com/dflemin3/approxposterior">Github</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://github.com/dflemin3/approxposterior/issues">Submit an Issue</a></li>
@@ -203,8 +204,8 @@
 <div class="section" id="approxposterior">
 <h1>approxposterior<a class="headerlink" href="#approxposterior" title="Permalink to this headline">¶</a></h1>
 <p><code class="xref py py-obj docutils literal notranslate"><span class="pre">approxposterior</span></code> is a Python package for efficient approximate Bayesian
-inference and optimization of computationally-expensive models. <code class="xref py py-obj docutils literal notranslate"><span class="pre">approxposterior</span></code>
-trains a Gaussian process (GP) surrogate for the computationally-expensive model
+inference and Bayesian optimization of computationally-expensive models. <code class="xref py py-obj docutils literal notranslate"><span class="pre">approxposterior</span></code>
+trains a Gaussian process (GP) surrogate model for the computationally-expensive model
 and employs an active learning approach to iteratively improve the GPs predictive
 performance while minimizing the number of calls to the expensive model required
 to generate the GP’s training set.</p>
@@ -212,16 +213,10 @@ to generate the GP’s training set.</p>
 by Kandasamy et al. (2017) and <cite>Adaptive Gaussian process approximation for
 Bayesian inference with expensive likelihood functions</cite> (<a class="reference external" href="https://www.semanticscholar.org/paper/Adaptive-Gaussian-Process-Approximation-for-with-Wang-Li/a11e3a4144898920835ccff7ef0ed0b159b94bc6">AGP</a>) by Wang &amp; Li (2018).
 These active learning algorithms outline schemes for GP active learning that <code class="xref py py-obj docutils literal notranslate"><span class="pre">approxposterior</span></code>
-uses for its Bayesian inference and/or optimization.</p>
-<p>For information on how to install <code class="xref py py-obj docutils literal notranslate"><span class="pre">approxposterior</span></code>, numerous example use cases, and detailed API
+uses for its Bayesian posterior inference. <code class="xref py py-obj docutils literal notranslate"><span class="pre">approxposterior</span></code> implemented the Jones et al. (1998)
+<cite>Expected Utility</cite> function for Bayesian optimization.</p>
+<p>For information on how to install <code class="xref py py-obj docutils literal notranslate"><span class="pre">approxposterior</span></code>, numerous examples, and detailed API
 documentation, check out the Table of Contents to the left and below.</p>
-</div>
-<div class="section" id="introduction">
-<h1>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h1>
-<p><code class="xref py py-obj docutils literal notranslate"><span class="pre">approxposterior</span></code> is a Python implementation of both the <cite>Bayesian Active Learning for Posterior Estimation</cite> (<a class="reference external" href="http://www.sciencedirect.com/science/article/pii/S0004370216301394">BAPE</a>) and <cite>Adaptive Gaussian process approximation for Bayesian inference with expensive likelihood functions</cite> (<a class="reference external" href="https://www.semanticscholar.org/paper/Adaptive-Gaussian-Process-Approximation-for-with-Wang-Li/a11e3a4144898920835ccff7ef0ed0b159b94bc6">AGP</a>) algorithms for estimating posterior probability distributions for use with inference problems with computationally-expensive models. In such situations,
-the goal is to infer posterior probability distributions for model parameters, given some data, with the additional constraint of minimizing the number of forward model evaluations given the model’s assumed large computational cost.  <code class="xref py py-obj docutils literal notranslate"><span class="pre">approxposterior</span></code> trains a Gaussian Process (GP) surrogate model for the likelihood evaluation by modeling the covariances in logprobability (logprior + loglikelihood) space. <code class="xref py py-obj docutils literal notranslate"><span class="pre">approxposterior</span></code> then uses this GP within an MCMC sampler for each likelihood evaluation to perform the inference. <code class="xref py py-obj docutils literal notranslate"><span class="pre">approxposterior</span></code> iteratively improves the GP’s predictive performance by leveraging the inherent uncertainty in the GP’s predictions to identify high-likelihood regions in parameter space where the GP is uncertain.  <code class="xref py py-obj docutils literal notranslate"><span class="pre">approxposterior</span></code> then evaluates the forward model at these points to expand the training set in relevant regions of parameter space, re-training the GP to maximize its predictive ability while minimizing the size of the training set.  Check out (<a class="reference external" href="https://www.semanticscholar.org/paper/Adaptive-Gaussian-Process-Approximation-for-with-Wang-Li/a11e3a4144898920835ccff7ef0ed0b159b94bc6">AGP</a>) and (<a class="reference external" href="http://www.sciencedirect.com/science/article/pii/S0004370216301394">BAPE</a>) for in-depth descriptions of the respective algorithms.</p>
-<p>In practice, we find that <code class="xref py py-obj docutils literal notranslate"><span class="pre">approxposterior</span></code> can estimate posterior probability distributions that are accurate
-approximations to the true, underlying distributions with only of order 100s-1000s model evaluations to train the GP, compared to 1,000,000, often more, required by MCMC methods, depending on the inference problem. The estimated marginal posterior distributions have medians that are all typically within a few percent of the true values, with similar uncertainties to the true distributions.  We have validated <code class="xref py py-obj docutils literal notranslate"><span class="pre">approxposterior</span></code> for 2-5 dimensional problems, while Kandasamy et al. (2017) found in an 9-dimensional case that the BAPE algorithm significantly outperformed MCMC methods in terms of both accuracy and speed. See their paper for details and check out the examples for more information and example use cases.</p>
 <div class="toctree-wrapper compound">
 <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul>
@@ -229,6 +224,7 @@ approximations to the true, underlying distributions with only of order 100s-100
 <li class="toctree-l2"><a class="reference internal" href="notebooks/TrueRosenbrockPosterior.html">Rosenbrock Function Example</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="bayesopt.html">Bayesian Optimization</a></li>
 <li class="toctree-l1"><a class="reference internal" href="map.html">MAP Estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="notebooks/fittingALine.html">Fitting a Line</a></li>
 <li class="toctree-l1"><a class="reference internal" href="notebooks/ScalingAccuracy.html">Scaling and Accuracy</a></li>
@@ -242,7 +238,7 @@ approximations to the true, underlying distributions with only of order 100s-100
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="performance.html">Improving Performance</a></li>
+<li class="toctree-l1"><a class="reference internal" href="faq.html">FAQs</a></li>
 <li class="toctree-l1"><a class="reference internal" href="citation.html">Citation</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://github.com/dflemin3/approxposterior">Github</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://github.com/dflemin3/approxposterior/issues">Submit an Issue</a></li>
@@ -299,7 +295,7 @@ approximations to the true, underlying distributions with only of order 100s-100
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'0.3',
+            VERSION:'0.4',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
