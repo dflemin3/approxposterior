@@ -19,17 +19,16 @@ def test_2DBO():
     """
 
     # Define algorithm parameters
-    m0 = 50                          # Size of initial training set
+    m0 = 10                          # Size of initial training set
     bounds = [[-5, 5], [-5, 5]]      # Prior bounds
     algorithm = "jones"              # Expected Utility from Jones et al. (1998)
     numNewPoints = 10                # Number of new design points to find
-    seed = 57                        # RNG seed
+    seed = 91                        # RNG seed
     np.random.seed(seed)
 
     # First, directly minimize the objective
     fn = lambda x : -(lh.sphereLnlike(x) + lh.sphereLnprior(x))
     trueSoln = minimize(fn, lh.sphereSample(1), method="nelder-mead")
-    print(trueSoln)
 
     # Sample design points from prior to create initial training set
     theta = lh.sphereSample(m0)
@@ -53,20 +52,25 @@ def test_2DBO():
                                 algorithm=algorithm)
 
     # Run the Bayesian optimization!
-    soln = ap.bayesOpt(nmax=numNewPoints, tol=1.0e-5, seed=seed, verbose=False,
+    soln = ap.bayesOpt(nmax=numNewPoints, tol=1.0e-3, kmax=3, seed=seed,
                        cache=False, gpMethod="powell", optGPEveryN=1,
                        nGPRestarts=3, nMinObjRestarts=5, initGPOpt=True,
-                       minObjMethod="nelder-mead",
+                       minObjMethod="nelder-mead", verbose=False,
                        gpHyperPrior=gpUtils.defaultHyperPrior)
 
-    print(soln)
-
     # Ensure estimated maximum and value are within small value of the truth
-    errMsg = "thetaMax is incorrect."
-    assert(np.allclose(soln["thetaBest"], trueSoln["x"], atol=1.0e-3)), errMsg
+    errMsg = "thetaBest is incorrect."
+    assert(np.allclose(soln["thetaBest"], trueSoln["x"], atol=1.0e-2)), errMsg
 
     errMsg = "Maximum function value is incorrect."
-    assert(np.allclose(soln["valBest"], trueSoln["fun"], atol=1.0e-3)), errMsg
+    assert(np.allclose(soln["valBest"], trueSoln["fun"], atol=1.0e-2)), errMsg
+
+    # Same as above, but for the MAP solution
+    errMsg = "MAP thetaBest is incorrect."
+    assert(np.allclose(soln["thetaMAPBest"], trueSoln["x"], atol=1.0e-2)), errMsg
+
+    errMsg = "MAP function value is incorrect."
+    assert(np.allclose(soln["valMAPBest"], trueSoln["fun"], atol=1.0e-2)), errMsg
 
 # end function
 
