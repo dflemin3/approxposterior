@@ -74,8 +74,8 @@ print("GP predictive conditional function value at approximate MAP:", soln["valM
 
 # Plot objective function
 fig, ax = plt.subplots(figsize=(6,5))
-x = np.linspace(-1, 2, 100)
 
+x = np.linspace(-1, 2, 100)
 ax.plot(x, lh.testBOFn(x), lw=2.5, color="k")
 
 # Format
@@ -94,6 +94,7 @@ fig.savefig("objFn.png", bbox_inches="tight", dpi=200)
 # Plot the solution path and function value convergence
 fig, axes = plt.subplots(ncols=2, figsize=(12,6))
 
+# Extract number of iterations ran by bayesopt routine
 iters = [ii for ii in range(soln["nev"])]
 
 # Left: solution

@@ -39,6 +39,7 @@ approximations to the true, underlying distributions with only of order 100s-100
    :caption: Contents:
 
    tutorial
+   bayesopt
    map
    Fitting a Line <notebooks/fittingALine.ipynb>
    Scaling and Accuracy <notebooks/ScalingAccuracy.ipynb>
