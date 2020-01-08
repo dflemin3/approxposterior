@@ -17,45 +17,40 @@
   
 
   
+  <script type="text/javascript" src="../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+        <script type="text/javascript" src="../_static/language_data.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
 
-  
-  
     
 
   
-
-  
-  
-    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-  
-
-  
-    <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
-  
-
-  
-        <link rel="index" title="Index"
-              href="../genindex.html"/>
-        <link rel="search" title="Search" href="../search.html"/>
-    <link rel="top" title="approxposterior 0.4 documentation" href="../index.html"/>
-        <link rel="up" title="API" href="../api.html"/>
-        <link rel="next" title="Likelihood Functions" href="likelihood.html"/>
-        <link rel="prev" title="GP Utility Functions" href="gpUtils.html"/> 
-
-  
-  <script src="../_static/js/modernizr.min.js"></script>
-
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Likelihood Functions" href="likelihood.html" />
+    <link rel="prev" title="GP Utility Functions" href="gpUtils.html" /> 
 </head>
 
-<body class="wy-body-for-nav" role="document">
+<body class="wy-body-for-nav">
 
    
   <div class="wy-grid-for-nav">
-
     
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
-        <div class="wy-side-nav-search">
+        <div class="wy-side-nav-search" >
           
 
           
@@ -105,7 +100,7 @@
 <li class="toctree-l2"><a class="reference internal" href="gmmUtils.html">gmmUtils.py</a></li>
 <li class="toctree-l2"><a class="reference internal" href="gpUtils.html">gpUtils.py</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">mcmcUtils.py</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#mcmcutils-py-markov-chain-monte-carlo-utility-functions"><code class="docutils literal notranslate"><span class="pre">mcmcUtils.py</span></code> - Markov Chain Monte Carlo Utility Functions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#mcmcutils-py-markov-chain-monte-carlo-utility-functions"><code class="xref py py-mod docutils literal notranslate"><span class="pre">mcmcUtils.py</span></code> - Markov Chain Monte Carlo Utility Functions</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="likelihood.html">likelihood.py</a></li>
@@ -128,7 +123,7 @@
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
 
       
-      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+      <nav class="wy-nav-top" aria-label="top navigation">
         
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="../index.html">approxposterior</a>
@@ -136,9 +131,10 @@
       </nav>
 
 
-      
       <div class="wy-nav-content">
+        
         <div class="rst-content">
+        
           
 
 
@@ -187,33 +183,23 @@
 /* CSS overrides for sphinx_rtd_theme */
 
 /* 24px margin */
-.nbinput.nblast,
-.nboutput.nblast {
+.nbinput.nblast.container,
+.nboutput.nblast.container {
     margin-bottom: 19px;  /* padding has already 5px */
 }
 
 /* ... except between code cells! */
-.nblast + .nbinput {
+.nblast.container + .nbinput.container {
     margin-top: -19px;
 }
 
-/* nice headers on first paragraph of info/warning boxes */
-.admonition .first {
-    margin: -12px;
-    padding: 6px 12px;
-    margin-bottom: 12px;
-    color: #fff;
-    line-height: 1;
-    display: block;
-}
-.admonition.warning .first {
-    background: #f0b37e;
-}
-.admonition.note .first {
-    background: #6ab0de;
-}
 .admonition > p:before {
     margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
 }
 </style>
 <div class="section" id="module-approxposterior.mcmcUtils">
@@ -223,81 +209,61 @@
 <p>MCMC utility functions for validating emcee MCMC runs within approxposterior.</p>
 <dl class="function">
 <dt id="approxposterior.mcmcUtils.validateMCMCKwargs">
-<code class="descclassname">approxposterior.mcmcUtils.</code><code class="descname">validateMCMCKwargs</code><span class="sig-paren">(</span><em>ap</em>, <em>samplerKwargs</em>, <em>mcmcKwargs</em>, <em>verbose=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/mcmcUtils.html#validateMCMCKwargs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.mcmcUtils.validateMCMCKwargs" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">approxposterior.mcmcUtils.</code><code class="sig-name descname">validateMCMCKwargs</code><span class="sig-paren">(</span><em class="sig-param">ap</em>, <em class="sig-param">samplerKwargs</em>, <em class="sig-param">mcmcKwargs</em>, <em class="sig-param">verbose=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/mcmcUtils.html#validateMCMCKwargs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.mcmcUtils.validateMCMCKwargs" title="Permalink to this definition">¶</a></dt>
 <dd><p>Validates emcee.EnsembleSampler parameters/kwargs.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>ap</strong> : approxposterior.ApproxPosterior</p>
-<blockquote>
-<div><p>Initialized ApproxPosterior object</p>
-</div></blockquote>
-<p><strong>samplerKwargs</strong> : dict</p>
-<blockquote>
-<div><p>dictionary containing parameters intended for emcee.EnsembleSampler
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>ap</strong><span class="classifier">approxposterior.ApproxPosterior</span></dt><dd><p>Initialized ApproxPosterior object</p>
+</dd>
+<dt><strong>samplerKwargs</strong><span class="classifier">dict</span></dt><dd><p>dictionary containing parameters intended for emcee.EnsembleSampler
 object</p>
-</div></blockquote>
-<p><strong>mcmcKwargs</strong> : dict</p>
-<blockquote>
-<div><p>dictionary containing parameters intended for
+</dd>
+<dt><strong>mcmcKwargs</strong><span class="classifier">dict</span></dt><dd><p>dictionary containing parameters intended for
 emcee.EnsembleSampler.run_mcmc/.sample object</p>
-</div></blockquote>
-<p><strong>verbose</strong> : bool (optional)</p>
-<blockquote>
-<div><p>verboisty level. Defaults to False (no output)</p>
-</div></blockquote>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>samplerKwargs</strong> : dict</p>
-<blockquote>
-<div><p>Sanitized dictionary containing parameters intended for
+</dd>
+<dt><strong>verbose</strong><span class="classifier">bool (optional)</span></dt><dd><p>verboisty level. Defaults to False (no output)</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>samplerKwargs</strong><span class="classifier">dict</span></dt><dd><p>Sanitized dictionary containing parameters intended for
 emcee.EnsembleSampler object</p>
-</div></blockquote>
-<p><strong>mcmcKwargs</strong> : dict</p>
-<blockquote class="last">
-<div><p>Sanitized dictionary containing parameters intended for
+</dd>
+<dt><strong>mcmcKwargs</strong><span class="classifier">dict</span></dt><dd><p>Sanitized dictionary containing parameters intended for
 emcee.EnsembleSampler.run_mcmc/.sample object</p>
-</div></blockquote>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="function">
 <dt id="approxposterior.mcmcUtils.batchMeansMCSE">
-<code class="descclassname">approxposterior.mcmcUtils.</code><code class="descname">batchMeansMCSE</code><span class="sig-paren">(</span><em>samples</em>, <em>bins=None</em>, <em>fn=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/mcmcUtils.html#batchMeansMCSE"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.mcmcUtils.batchMeansMCSE" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">approxposterior.mcmcUtils.</code><code class="sig-name descname">batchMeansMCSE</code><span class="sig-paren">(</span><em class="sig-param">samples</em>, <em class="sig-param">bins=None</em>, <em class="sig-param">fn=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/mcmcUtils.html#batchMeansMCSE"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.mcmcUtils.batchMeansMCSE" title="Permalink to this definition">¶</a></dt>
 <dd><p>Estimate the Monte Carlo Standard Error of MCMC samples using the
 non-overlapping batch means methods. See Flegal, Haran, &amp; Jones (2008) for
 more info: <a class="reference external" href="https://arxiv.org/pdf/math/0703746.pdf">https://arxiv.org/pdf/math/0703746.pdf</a></p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>samples</strong> : array</p>
-<blockquote>
-<div><p>nsamples x ndim array of MCMC samples</p>
-</div></blockquote>
-<p><strong>bins</strong> : int (optional)</p>
-<blockquote>
-<div><p>Number of bins. Defaults to int(sqrt(len(samples)))</p>
-</div></blockquote>
-<p><strong>fn</strong> : function (optional)</p>
-<blockquote>
-<div><p>Function used to compute posterior summary statistic on each chunk.
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>samples</strong><span class="classifier">array</span></dt><dd><p>nsamples x ndim array of MCMC samples</p>
+</dd>
+<dt><strong>bins</strong><span class="classifier">int (optional)</span></dt><dd><p>Number of bins. Defaults to int(sqrt(len(samples)))</p>
+</dd>
+<dt><strong>fn</strong><span class="classifier">function (optional)</span></dt><dd><p>Function used to compute posterior summary statistic on each chunk.
 Defaults to None to compute the simple expected value, aka the mean.</p>
-</div></blockquote>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>RMSE</strong> : float/array</p>
-<blockquote class="last">
-<div><p>RMSE for each dimension of the chain</p>
-</div></blockquote>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>RMSE</strong><span class="classifier">float/array</span></dt><dd><p>RMSE for each dimension of the chain</p>
+</dd>
+</dl>
+</dd>
+</dl>
 </dd></dl>
 
 </div>
@@ -305,9 +271,7 @@ Defaults to None to compute the simple expected value, aka the mean.</p>
 
 
            </div>
-           <div class="articleComments">
-            
-           </div>
+           
           </div>
           <footer>
   
@@ -316,7 +280,7 @@ Defaults to None to compute the simple expected value, aka the mean.</p>
         <a href="likelihood.html" class="btn btn-neutral float-right" title="Likelihood Functions" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="gpUtils.html" class="btn btn-neutral" title="GP Utility Functions" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="gpUtils.html" class="btn btn-neutral float-left" title="GP Utility Functions" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
@@ -325,11 +289,11 @@ Defaults to None to compute the simple expected value, aka the mean.</p>
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2019, David P. Fleming.
+        &copy; Copyright 2019, David P. Fleming
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -342,38 +306,15 @@ Defaults to None to compute the simple expected value, aka the mean.</p>
   
 
 
-  
-
-    <script type="text/javascript">
-        var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'../',
-            VERSION:'0.4',
-            COLLAPSE_INDEX:false,
-            FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true,
-            SOURCELINK_SUFFIX: '.txt'
-        };
-    </script>
-      <script type="text/javascript" src="../_static/jquery.js"></script>
-      <script type="text/javascript" src="../_static/underscore.js"></script>
-      <script type="text/javascript" src="../_static/doctools.js"></script>
-      <script type="text/javascript" src="../_static/language_data.js"></script>
-      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
-
-  
-
-  
-  
-    <script type="text/javascript" src="../_static/js/theme.js"></script>
-  
-
-  
-  
   <script type="text/javascript">
       jQuery(function () {
-          SphinxRtdTheme.StickyNav.enable();
+          SphinxRtdTheme.Navigation.enable(true);
       });
   </script>
+
+  
+  
+    
    
 
 </body>

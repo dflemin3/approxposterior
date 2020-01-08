@@ -17,44 +17,40 @@
   
 
   
+  <script type="text/javascript" src="../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+        <script type="text/javascript" src="../_static/language_data.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
 
-  
-  
     
 
   
-
-  
-  
-    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-  
-
-  
-    <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
-  
-
-  
-        <link rel="index" title="Index"
-              href="../genindex.html"/>
-        <link rel="search" title="Search" href="../search.html"/>
-    <link rel="top" title="approxposterior 0.4 documentation" href="../index.html"/>
-        <link rel="up" title="API" href="../api.html"/>
-        <link rel="next" title="GP Utility Functions" href="gpUtils.html"/> 
-
-  
-  <script src="../_static/js/modernizr.min.js"></script>
-
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="GP Utility Functions" href="gpUtils.html" />
+    <link rel="prev" title="ApproxPosterior Class" href="approx.html" /> 
 </head>
 
-<body class="wy-body-for-nav" role="document">
+<body class="wy-body-for-nav">
 
    
   <div class="wy-grid-for-nav">
-
     
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
-        <div class="wy-side-nav-search">
+        <div class="wy-side-nav-search" >
           
 
           
@@ -102,7 +98,7 @@
 <li class="toctree-l1 current"><a class="reference internal" href="../api.html">API</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="approx.html">approx.py</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">gmmUtils.py</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#gmmutils-py-gaussian-mixture-model-utilities"><code class="docutils literal notranslate"><span class="pre">gmmUtils.py</span></code> - Gaussian Mixture Model Utilities</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#gmmutils-py-gaussian-mixture-model-utilities"><code class="xref py py-mod docutils literal notranslate"><span class="pre">gmmUtils.py</span></code> - Gaussian Mixture Model Utilities</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="gpUtils.html">gpUtils.py</a></li>
@@ -127,7 +123,7 @@
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
 
       
-      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+      <nav class="wy-nav-top" aria-label="top navigation">
         
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="../index.html">approxposterior</a>
@@ -135,9 +131,10 @@
       </nav>
 
 
-      
       <div class="wy-nav-content">
+        
         <div class="rst-content">
+        
           
 
 
@@ -186,33 +183,23 @@
 /* CSS overrides for sphinx_rtd_theme */
 
 /* 24px margin */
-.nbinput.nblast,
-.nboutput.nblast {
+.nbinput.nblast.container,
+.nboutput.nblast.container {
     margin-bottom: 19px;  /* padding has already 5px */
 }
 
 /* ... except between code cells! */
-.nblast + .nbinput {
+.nblast.container + .nbinput.container {
     margin-top: -19px;
 }
 
-/* nice headers on first paragraph of info/warning boxes */
-.admonition .first {
-    margin: -12px;
-    padding: 6px 12px;
-    margin-bottom: 12px;
-    color: #fff;
-    line-height: 1;
-    display: block;
-}
-.admonition.warning .first {
-    background: #f0b37e;
-}
-.admonition.note .first {
-    background: #6ab0de;
-}
 .admonition > p:before {
     margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
 }
 </style>
 <div class="section" id="module-approxposterior.gmmUtils">
@@ -223,49 +210,37 @@
 probability distributions.</p>
 <dl class="function">
 <dt id="approxposterior.gmmUtils.fitGMM">
-<code class="descclassname">approxposterior.gmmUtils.</code><code class="descname">fitGMM</code><span class="sig-paren">(</span><em>samples</em>, <em>maxComp=3</em>, <em>covType='full'</em>, <em>useBic=True</em>, <em>gmmKwargs=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/gmmUtils.html#fitGMM"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.gmmUtils.fitGMM" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">approxposterior.gmmUtils.</code><code class="sig-name descname">fitGMM</code><span class="sig-paren">(</span><em class="sig-param">samples</em>, <em class="sig-param">maxComp=3</em>, <em class="sig-param">covType='full'</em>, <em class="sig-param">useBic=True</em>, <em class="sig-param">gmmKwargs=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/gmmUtils.html#fitGMM"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.gmmUtils.fitGMM" title="Permalink to this definition">¶</a></dt>
 <dd><p>Fit a Gaussian Mixture Model to the posterior samples to derive an
 approximation of the posterior density.  Fit for the number of components
 by either minimizing the Bayesian Information Criterior (BIC) or via
 cross-validation.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>samples</strong> : numpy array</p>
-<blockquote>
-<div><p>sampler.flatchain MCMC chain array of dimensions (nwalkers x nsteps, ndim)</p>
-</div></blockquote>
-<p><strong>maxComp</strong> : int (optional)</p>
-<blockquote>
-<div><p>Maximum number of mixture model components to fit for.  Defaults to 3.</p>
-</div></blockquote>
-<p><strong>covType</strong> : str (optional)</p>
-<blockquote>
-<div><p>GMM covariance type.  Defaults to “full”.  See the documentation here:
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>samples</strong><span class="classifier">numpy array</span></dt><dd><p>sampler.flatchain MCMC chain array of dimensions (nwalkers x nsteps, ndim)</p>
+</dd>
+<dt><strong>maxComp</strong><span class="classifier">int (optional)</span></dt><dd><p>Maximum number of mixture model components to fit for.  Defaults to 3.</p>
+</dd>
+<dt><strong>covType</strong><span class="classifier">str (optional)</span></dt><dd><p>GMM covariance type.  Defaults to “full”.  See the documentation here:
 <a class="reference external" href="http://scikit-learn.org/stable/modules/generated/sklearn.mixture.GaussianMixture.html">http://scikit-learn.org/stable/modules/generated/sklearn.mixture.GaussianMixture.html</a>
 for more info</p>
-</div></blockquote>
-<p><strong>useBic</strong> : bool (optional)</p>
-<blockquote>
-<div><p>Minimize the BIC to pick the number of GMM components or use 5-fold
+</dd>
+<dt><strong>useBic</strong><span class="classifier">bool (optional)</span></dt><dd><p>Minimize the BIC to pick the number of GMM components or use 5-fold
 cross validation?  Defaults to True (aka, use the BIC)</p>
-</div></blockquote>
-<p><strong>gmmKwargs</strong> : dict (optional)</p>
-<blockquote>
-<div><p>keyword arguments for sklearn.mixture.GaussianMixture. Defaults to
+</dd>
+<dt><strong>gmmKwargs</strong><span class="classifier">dict (optional)</span></dt><dd><p>keyword arguments for sklearn.mixture.GaussianMixture. Defaults to
 None</p>
-</div></blockquote>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>GMM</strong> : sklearn.mixture.GaussianMixture</p>
-<blockquote class="last">
-<div><p>fitted Gaussian mixture model</p>
-</div></blockquote>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>GMM</strong><span class="classifier">sklearn.mixture.GaussianMixture</span></dt><dd><p>fitted Gaussian mixture model</p>
+</dd>
+</dl>
+</dd>
+</dl>
 </dd></dl>
 
 </div>
@@ -273,9 +248,7 @@ None</p>
 
 
            </div>
-           <div class="articleComments">
-            
-           </div>
+           
           </div>
           <footer>
   
@@ -284,6 +257,8 @@ None</p>
         <a href="gpUtils.html" class="btn btn-neutral float-right" title="GP Utility Functions" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
+        <a href="approx.html" class="btn btn-neutral float-left" title="ApproxPosterior Class" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
     </div>
   
 
@@ -291,11 +266,11 @@ None</p>
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2019, David P. Fleming.
+        &copy; Copyright 2019, David P. Fleming
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -308,38 +283,15 @@ None</p>
   
 
 
-  
-
-    <script type="text/javascript">
-        var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'../',
-            VERSION:'0.4',
-            COLLAPSE_INDEX:false,
-            FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true,
-            SOURCELINK_SUFFIX: '.txt'
-        };
-    </script>
-      <script type="text/javascript" src="../_static/jquery.js"></script>
-      <script type="text/javascript" src="../_static/underscore.js"></script>
-      <script type="text/javascript" src="../_static/doctools.js"></script>
-      <script type="text/javascript" src="../_static/language_data.js"></script>
-      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
-
-  
-
-  
-  
-    <script type="text/javascript" src="../_static/js/theme.js"></script>
-  
-
-  
-  
   <script type="text/javascript">
       jQuery(function () {
-          SphinxRtdTheme.StickyNav.enable();
+          SphinxRtdTheme.Navigation.enable(true);
       });
   </script>
+
+  
+  
+    
    
 
 </body>

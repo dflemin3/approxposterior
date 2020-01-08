@@ -17,45 +17,40 @@
   
 
   
+  <script type="text/javascript" src="../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+        <script type="text/javascript" src="../_static/language_data.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
 
-  
-  
     
 
   
-
-  
-  
-    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-  
-
-  
-    <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
-  
-
-  
-        <link rel="index" title="Index"
-              href="../genindex.html"/>
-        <link rel="search" title="Search" href="../search.html"/>
-    <link rel="top" title="approxposterior 0.4 documentation" href="../index.html"/>
-        <link rel="up" title="API" href="../api.html"/>
-        <link rel="next" title="Utility Functions" href="utility.html"/>
-        <link rel="prev" title="MCMC Utility Functions" href="mcmcUtils.html"/> 
-
-  
-  <script src="../_static/js/modernizr.min.js"></script>
-
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Utility Functions" href="utility.html" />
+    <link rel="prev" title="MCMC Utility Functions" href="mcmcUtils.html" /> 
 </head>
 
-<body class="wy-body-for-nav" role="document">
+<body class="wy-body-for-nav">
 
    
   <div class="wy-grid-for-nav">
-
     
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
-        <div class="wy-side-nav-search">
+        <div class="wy-side-nav-search" >
           
 
           
@@ -106,7 +101,7 @@
 <li class="toctree-l2"><a class="reference internal" href="gpUtils.html">gpUtils.py</a></li>
 <li class="toctree-l2"><a class="reference internal" href="mcmcUtils.html">mcmcUtils.py</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">likelihood.py</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#likelihood-py-example-likelihood-functions"><code class="docutils literal notranslate"><span class="pre">likelihood.py</span></code> - Example Likelihood Functions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#likelihood-py-example-likelihood-functions"><code class="xref py py-mod docutils literal notranslate"><span class="pre">likelihood.py</span></code> - Example Likelihood Functions</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="utility.html">utility.py</a></li>
@@ -128,7 +123,7 @@
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
 
       
-      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+      <nav class="wy-nav-top" aria-label="top navigation">
         
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="../index.html">approxposterior</a>
@@ -136,9 +131,10 @@
       </nav>
 
 
-      
       <div class="wy-nav-content">
+        
         <div class="rst-content">
+        
           
 
 
@@ -187,33 +183,23 @@
 /* CSS overrides for sphinx_rtd_theme */
 
 /* 24px margin */
-.nbinput.nblast,
-.nboutput.nblast {
+.nbinput.nblast.container,
+.nboutput.nblast.container {
     margin-bottom: 19px;  /* padding has already 5px */
 }
 
 /* ... except between code cells! */
-.nblast + .nbinput {
+.nblast.container + .nbinput.container {
     margin-top: -19px;
 }
 
-/* nice headers on first paragraph of info/warning boxes */
-.admonition .first {
-    margin: -12px;
-    padding: 6px 12px;
-    margin-bottom: 12px;
-    color: #fff;
-    line-height: 1;
-    display: block;
-}
-.admonition.warning .first {
-    background: #f0b37e;
-}
-.admonition.note .first {
-    background: #6ab0de;
-}
 .admonition > p:before {
     margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
 }
 </style>
 <div class="section" id="module-approxposterior.likelihood">
@@ -224,220 +210,194 @@
 functions for cases like the Wang &amp; Li (2017) Rosenbrock function example.</p>
 <dl class="function">
 <dt id="approxposterior.likelihood.rosenbrockLnlike">
-<code class="descclassname">approxposterior.likelihood.</code><code class="descname">rosenbrockLnlike</code><span class="sig-paren">(</span><em>theta</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/likelihood.html#rosenbrockLnlike"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.likelihood.rosenbrockLnlike" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">approxposterior.likelihood.</code><code class="sig-name descname">rosenbrockLnlike</code><span class="sig-paren">(</span><em class="sig-param">theta</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/likelihood.html#rosenbrockLnlike"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.likelihood.rosenbrockLnlike" title="Permalink to this definition">¶</a></dt>
 <dd><p>Rosenbrock function as a loglikelihood following Wang &amp; Li (2017)</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>theta</strong> : array</p>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>l</strong> : float</p>
-<blockquote class="last">
-<div><p>likelihood</p>
-</div></blockquote>
-</td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>theta</strong><span class="classifier">array</span></dt><dd></dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>l</strong><span class="classifier">float</span></dt><dd><p>likelihood</p>
+</dd>
+</dl>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="function">
 <dt id="approxposterior.likelihood.rosenbrockLnprior">
-<code class="descclassname">approxposterior.likelihood.</code><code class="descname">rosenbrockLnprior</code><span class="sig-paren">(</span><em>theta</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/likelihood.html#rosenbrockLnprior"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.likelihood.rosenbrockLnprior" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">approxposterior.likelihood.</code><code class="sig-name descname">rosenbrockLnprior</code><span class="sig-paren">(</span><em class="sig-param">theta</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/likelihood.html#rosenbrockLnprior"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.likelihood.rosenbrockLnprior" title="Permalink to this definition">¶</a></dt>
 <dd><p>Uniform log prior for the 2D Rosenbrock likelihood following Wang &amp; Li (2017)
 where the prior pi(x) is a uniform distribution over [-5, 5] x [-5, 5] x …
 for however many dimensions (dim = x.shape[-1])</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>theta</strong> : array</p>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>l</strong> : float</p>
-<blockquote class="last">
-<div><p>log prior</p>
-</div></blockquote>
-</td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>theta</strong><span class="classifier">array</span></dt><dd></dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>l</strong><span class="classifier">float</span></dt><dd><p>log prior</p>
+</dd>
+</dl>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="function">
 <dt id="approxposterior.likelihood.rosenbrockSample">
-<code class="descclassname">approxposterior.likelihood.</code><code class="descname">rosenbrockSample</code><span class="sig-paren">(</span><em>n=1</em>, <em>dim=2</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/likelihood.html#rosenbrockSample"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.likelihood.rosenbrockSample" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">approxposterior.likelihood.</code><code class="sig-name descname">rosenbrockSample</code><span class="sig-paren">(</span><em class="sig-param">n=1</em>, <em class="sig-param">dim=2</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/likelihood.html#rosenbrockSample"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.likelihood.rosenbrockSample" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sample N points from the prior pi(x) is a uniform distribution over
 [-5, 5] x [-5, 5]</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>n</strong> : int (optional)</p>
-<blockquote>
-<div><p>Number of samples. Defaults to 1.</p>
-</div></blockquote>
-<p><strong>dim</strong> : int (optional)</p>
-<blockquote>
-<div><p>Dimensionality. Defaults to 2.</p>
-</div></blockquote>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>sample</strong> : floats</p>
-<blockquote class="last">
-<div><p>n x 2 array of floats samples from the prior</p>
-</div></blockquote>
-</td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>n</strong><span class="classifier">int (optional)</span></dt><dd><p>Number of samples. Defaults to 1.</p>
+</dd>
+<dt><strong>dim</strong><span class="classifier">int (optional)</span></dt><dd><p>Dimensionality. Defaults to 2.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>sample</strong><span class="classifier">floats</span></dt><dd><p>n x 2 array of floats samples from the prior</p>
+</dd>
+</dl>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="function">
 <dt id="approxposterior.likelihood.rosenbrockLnprob">
-<code class="descclassname">approxposterior.likelihood.</code><code class="descname">rosenbrockLnprob</code><span class="sig-paren">(</span><em>theta</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/likelihood.html#rosenbrockLnprob"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.likelihood.rosenbrockLnprob" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">approxposterior.likelihood.</code><code class="sig-name descname">rosenbrockLnprob</code><span class="sig-paren">(</span><em class="sig-param">theta</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/likelihood.html#rosenbrockLnprob"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.likelihood.rosenbrockLnprob" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute the log probability (log posterior) as likelihood * prior</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>theta</strong> : array</p>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>l</strong> : float</p>
-<blockquote class="last">
-<div><p>log probability</p>
-</div></blockquote>
-</td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>theta</strong><span class="classifier">array</span></dt><dd></dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>l</strong><span class="classifier">float</span></dt><dd><p>log probability</p>
+</dd>
+</dl>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="function">
 <dt id="approxposterior.likelihood.testBOFn">
-<code class="descclassname">approxposterior.likelihood.</code><code class="descname">testBOFn</code><span class="sig-paren">(</span><em>theta</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/likelihood.html#testBOFn"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.likelihood.testBOFn" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">approxposterior.likelihood.</code><code class="sig-name descname">testBOFn</code><span class="sig-paren">(</span><em class="sig-param">theta</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/likelihood.html#testBOFn"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.likelihood.testBOFn" title="Permalink to this definition">¶</a></dt>
 <dd><p>Simple 1D test Bayesian optimization function adapted from
 <a class="reference external" href="https://krasserm.github.io/2018/03/21/bayesian-optimization/">https://krasserm.github.io/2018/03/21/bayesian-optimization/</a></p>
 </dd></dl>
 
 <dl class="function">
 <dt id="approxposterior.likelihood.testBOFnSample">
-<code class="descclassname">approxposterior.likelihood.</code><code class="descname">testBOFnSample</code><span class="sig-paren">(</span><em>n=1</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/likelihood.html#testBOFnSample"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.likelihood.testBOFnSample" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">approxposterior.likelihood.</code><code class="sig-name descname">testBOFnSample</code><span class="sig-paren">(</span><em class="sig-param">n=1</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/likelihood.html#testBOFnSample"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.likelihood.testBOFnSample" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sample N points from the prior pi(x) is a uniform distribution over
 [-2, 1]</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>n</strong> : int (optional)</p>
-<blockquote>
-<div><p>Number of samples. Defaults to 1.</p>
-</div></blockquote>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>sample</strong> : floats</p>
-<blockquote class="last">
-<div><p>n x 1 array of floats samples from the prior</p>
-</div></blockquote>
-</td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>n</strong><span class="classifier">int (optional)</span></dt><dd><p>Number of samples. Defaults to 1.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>sample</strong><span class="classifier">floats</span></dt><dd><p>n x 1 array of floats samples from the prior</p>
+</dd>
+</dl>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="function">
 <dt id="approxposterior.likelihood.testBOFnLnPrior">
-<code class="descclassname">approxposterior.likelihood.</code><code class="descname">testBOFnLnPrior</code><span class="sig-paren">(</span><em>theta</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/likelihood.html#testBOFnLnPrior"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.likelihood.testBOFnLnPrior" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">approxposterior.likelihood.</code><code class="sig-name descname">testBOFnLnPrior</code><span class="sig-paren">(</span><em class="sig-param">theta</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/likelihood.html#testBOFnLnPrior"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.likelihood.testBOFnLnPrior" title="Permalink to this definition">¶</a></dt>
 <dd><p>Log prior distribution for the test Bayesian Optimization function. This
 prior is a simple uniform function over [-2, 1]</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>theta</strong> : float/array</p>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>l</strong> : float</p>
-<blockquote class="last">
-<div><p>log prior</p>
-</div></blockquote>
-</td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>theta</strong><span class="classifier">float/array</span></dt><dd></dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>l</strong><span class="classifier">float</span></dt><dd><p>log prior</p>
+</dd>
+</dl>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="function">
 <dt id="approxposterior.likelihood.sphereLnlike">
-<code class="descclassname">approxposterior.likelihood.</code><code class="descname">sphereLnlike</code><span class="sig-paren">(</span><em>theta</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/likelihood.html#sphereLnlike"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.likelihood.sphereLnlike" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">approxposterior.likelihood.</code><code class="sig-name descname">sphereLnlike</code><span class="sig-paren">(</span><em class="sig-param">theta</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/likelihood.html#sphereLnlike"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.likelihood.sphereLnlike" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sphere test 2D optimization function. Note: This is actually the
 negative of the sphere function and it’s just a 0 mean, unit std Gaussian.
 Taken from: <a class="reference external" href="https://en.wikipedia.org/wiki/Test_functions_for_optimization">https://en.wikipedia.org/wiki/Test_functions_for_optimization</a></p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>theta</strong> : array</p>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>val</strong> : float</p>
-<blockquote class="last">
-<div><p>Function value at theta</p>
-</div></blockquote>
-</td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>theta</strong><span class="classifier">array</span></dt><dd></dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>val</strong><span class="classifier">float</span></dt><dd><p>Function value at theta</p>
+</dd>
+</dl>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="function">
 <dt id="approxposterior.likelihood.sphereSample">
-<code class="descclassname">approxposterior.likelihood.</code><code class="descname">sphereSample</code><span class="sig-paren">(</span><em>n=1</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/likelihood.html#sphereSample"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.likelihood.sphereSample" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">approxposterior.likelihood.</code><code class="sig-name descname">sphereSample</code><span class="sig-paren">(</span><em class="sig-param">n=1</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/likelihood.html#sphereSample"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.likelihood.sphereSample" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sample N points from the prior pi(theta) is a uniform distribution over
 [-2, 2]</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>n</strong> : int (optional)</p>
-<blockquote>
-<div><p>Number of samples. Defaults to 1.</p>
-</div></blockquote>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>sample</strong> : floats</p>
-<blockquote class="last">
-<div><p>n x 1 array of floats samples from the prior</p>
-</div></blockquote>
-</td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>n</strong><span class="classifier">int (optional)</span></dt><dd><p>Number of samples. Defaults to 1.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>sample</strong><span class="classifier">floats</span></dt><dd><p>n x 1 array of floats samples from the prior</p>
+</dd>
+</dl>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="function">
 <dt id="approxposterior.likelihood.sphereLnprior">
-<code class="descclassname">approxposterior.likelihood.</code><code class="descname">sphereLnprior</code><span class="sig-paren">(</span><em>theta</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/likelihood.html#sphereLnprior"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.likelihood.sphereLnprior" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">approxposterior.likelihood.</code><code class="sig-name descname">sphereLnprior</code><span class="sig-paren">(</span><em class="sig-param">theta</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/likelihood.html#sphereLnprior"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.likelihood.sphereLnprior" title="Permalink to this definition">¶</a></dt>
 <dd><p>Log prior distribution for the sphere test optimization function.
 This prior is a simple uniform function over [-2, 2] for each dimension.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>theta</strong> : float/array</p>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>l</strong> : float</p>
-<blockquote class="last">
-<div><p>log prior</p>
-</div></blockquote>
-</td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>theta</strong><span class="classifier">float/array</span></dt><dd></dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>l</strong><span class="classifier">float</span></dt><dd><p>log prior</p>
+</dd>
+</dl>
+</dd>
+</dl>
 </dd></dl>
 
 </div>
@@ -445,9 +405,7 @@ This prior is a simple uniform function over [-2, 2] for each dimension.</p>
 
 
            </div>
-           <div class="articleComments">
-            
-           </div>
+           
           </div>
           <footer>
   
@@ -456,7 +414,7 @@ This prior is a simple uniform function over [-2, 2] for each dimension.</p>
         <a href="utility.html" class="btn btn-neutral float-right" title="Utility Functions" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="mcmcUtils.html" class="btn btn-neutral" title="MCMC Utility Functions" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="mcmcUtils.html" class="btn btn-neutral float-left" title="MCMC Utility Functions" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
@@ -465,11 +423,11 @@ This prior is a simple uniform function over [-2, 2] for each dimension.</p>
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2019, David P. Fleming.
+        &copy; Copyright 2019, David P. Fleming
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -482,38 +440,15 @@ This prior is a simple uniform function over [-2, 2] for each dimension.</p>
   
 
 
-  
-
-    <script type="text/javascript">
-        var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'../',
-            VERSION:'0.4',
-            COLLAPSE_INDEX:false,
-            FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true,
-            SOURCELINK_SUFFIX: '.txt'
-        };
-    </script>
-      <script type="text/javascript" src="../_static/jquery.js"></script>
-      <script type="text/javascript" src="../_static/underscore.js"></script>
-      <script type="text/javascript" src="../_static/doctools.js"></script>
-      <script type="text/javascript" src="../_static/language_data.js"></script>
-      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
-
-  
-
-  
-  
-    <script type="text/javascript" src="../_static/js/theme.js"></script>
-  
-
-  
-  
   <script type="text/javascript">
       jQuery(function () {
-          SphinxRtdTheme.StickyNav.enable();
+          SphinxRtdTheme.Navigation.enable(true);
       });
   </script>
+
+  
+  
+    
    
 
 </body>

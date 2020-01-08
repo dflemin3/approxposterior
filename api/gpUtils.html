@@ -17,45 +17,40 @@
   
 
   
+  <script type="text/javascript" src="../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+        <script type="text/javascript" src="../_static/language_data.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
 
-  
-  
     
 
   
-
-  
-  
-    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-  
-
-  
-    <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
-  
-
-  
-        <link rel="index" title="Index"
-              href="../genindex.html"/>
-        <link rel="search" title="Search" href="../search.html"/>
-    <link rel="top" title="approxposterior 0.4 documentation" href="../index.html"/>
-        <link rel="up" title="API" href="../api.html"/>
-        <link rel="next" title="MCMC Utility Functions" href="mcmcUtils.html"/>
-        <link rel="prev" title="GMM Utility Functions" href="gmmUtils.html"/> 
-
-  
-  <script src="../_static/js/modernizr.min.js"></script>
-
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="MCMC Utility Functions" href="mcmcUtils.html" />
+    <link rel="prev" title="GMM Utility Functions" href="gmmUtils.html" /> 
 </head>
 
-<body class="wy-body-for-nav" role="document">
+<body class="wy-body-for-nav">
 
    
   <div class="wy-grid-for-nav">
-
     
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
-        <div class="wy-side-nav-search">
+        <div class="wy-side-nav-search" >
           
 
           
@@ -104,7 +99,7 @@
 <li class="toctree-l2"><a class="reference internal" href="approx.html">approx.py</a></li>
 <li class="toctree-l2"><a class="reference internal" href="gmmUtils.html">gmmUtils.py</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">gpUtils.py</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#gputils-py-gaussian-process-utilities"><code class="docutils literal notranslate"><span class="pre">gpUtils.py</span></code> - Gaussian Process Utilities</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#gputils-py-gaussian-process-utilities"><code class="xref py py-mod docutils literal notranslate"><span class="pre">gpUtils.py</span></code> - Gaussian Process Utilities</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="mcmcUtils.html">mcmcUtils.py</a></li>
@@ -128,7 +123,7 @@
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
 
       
-      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+      <nav class="wy-nav-top" aria-label="top navigation">
         
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="../index.html">approxposterior</a>
@@ -136,9 +131,10 @@
       </nav>
 
 
-      
       <div class="wy-nav-content">
+        
         <div class="rst-content">
+        
           
 
 
@@ -187,33 +183,23 @@
 /* CSS overrides for sphinx_rtd_theme */
 
 /* 24px margin */
-.nbinput.nblast,
-.nboutput.nblast {
+.nbinput.nblast.container,
+.nboutput.nblast.container {
     margin-bottom: 19px;  /* padding has already 5px */
 }
 
 /* ... except between code cells! */
-.nblast + .nbinput {
+.nblast.container + .nbinput.container {
     margin-top: -19px;
 }
 
-/* nice headers on first paragraph of info/warning boxes */
-.admonition .first {
-    margin: -12px;
-    padding: 6px 12px;
-    margin-bottom: 12px;
-    color: #fff;
-    line-height: 1;
-    display: block;
-}
-.admonition.warning .first {
-    background: #f0b37e;
-}
-.admonition.note .first {
-    background: #6ab0de;
-}
 .admonition > p:before {
     margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
 }
 </style>
 <div class="section" id="module-approxposterior.gpUtils">
@@ -224,127 +210,99 @@
 hyperparameters.</p>
 <dl class="function">
 <dt id="approxposterior.gpUtils.defaultHyperPrior">
-<code class="descclassname">approxposterior.gpUtils.</code><code class="descname">defaultHyperPrior</code><span class="sig-paren">(</span><em>p</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/gpUtils.html#defaultHyperPrior"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.gpUtils.defaultHyperPrior" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">approxposterior.gpUtils.</code><code class="sig-name descname">defaultHyperPrior</code><span class="sig-paren">(</span><em class="sig-param">p</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/gpUtils.html#defaultHyperPrior"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.gpUtils.defaultHyperPrior" title="Permalink to this definition">¶</a></dt>
 <dd><p>Default prior function for GP hyperparameters. This prior also keeps the
 hyperparameters within a reasonable huge range, [-20, 20]. Note that george
 operates on the <em>log</em> hyperparameters, except for the mean function.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>p</strong> : array/iterable</p>
-<blockquote>
-<div><p>Array of GP hyperparameters</p>
-</div></blockquote>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>prior</strong> : float</p>
-</td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>p</strong><span class="classifier">array/iterable</span></dt><dd><p>Array of GP hyperparameters</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>prior</strong><span class="classifier">float</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="function">
 <dt id="approxposterior.gpUtils.defaultGP">
-<code class="descclassname">approxposterior.gpUtils.</code><code class="descname">defaultGP</code><span class="sig-paren">(</span><em>theta</em>, <em>y</em>, <em>order=None</em>, <em>white_noise=-12</em>, <em>fitAmp=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/gpUtils.html#defaultGP"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.gpUtils.defaultGP" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">approxposterior.gpUtils.</code><code class="sig-name descname">defaultGP</code><span class="sig-paren">(</span><em class="sig-param">theta</em>, <em class="sig-param">y</em>, <em class="sig-param">order=None</em>, <em class="sig-param">white_noise=-12</em>, <em class="sig-param">fitAmp=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/gpUtils.html#defaultGP"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.gpUtils.defaultGP" title="Permalink to this definition">¶</a></dt>
 <dd><p>Basic utility function that initializes a simple GP with an ExpSquaredKernel.
 This kernel  works well in many applications as it effectively enforces a
 prior on the smoothness of the function and is infinitely differentiable.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>theta</strong> : array</p>
-<blockquote>
-<div><p>Design points</p>
-</div></blockquote>
-<p><strong>y</strong> : array</p>
-<blockquote>
-<div><p>Data to condition GP on, e.g. the lnlike + lnprior at each design point,
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>theta</strong><span class="classifier">array</span></dt><dd><p>Design points</p>
+</dd>
+<dt><strong>y</strong><span class="classifier">array</span></dt><dd><p>Data to condition GP on, e.g. the lnlike + lnprior at each design point,
 theta.</p>
-</div></blockquote>
-<p><strong>order</strong> : int (optional)</p>
-<blockquote>
-<div><p>Order of PolynomialKernel to add to ExpSquaredKernel. Defaults to None,
+</dd>
+<dt><strong>order</strong><span class="classifier">int (optional)</span></dt><dd><p>Order of PolynomialKernel to add to ExpSquaredKernel. Defaults to None,
 that is, no PolynomialKernel is added and the GP only uses the
 ExpSquaredKernel</p>
-</div></blockquote>
-<p><strong>white_noise</strong> : float (optional)</p>
-<blockquote>
-<div><p>From george docs: “A description of the logarithm of the white noise
+</dd>
+<dt><strong>white_noise</strong><span class="classifier">float (optional)</span></dt><dd><p>From george docs: “A description of the logarithm of the white noise
 variance added to the diagonal of the covariance matrix”. Defaults to
 ln(white_noise) = -12. Note: if order is not None, you might need to
 set the white_noise to a larger value for the computation to be
 numerically stable, but this, as always, depends on the application.</p>
-</div></blockquote>
-<p><strong>fitAmp</strong> : bool (optional)</p>
-<blockquote>
-<div><p>Whether or not to include an amplitude term. Defaults to False.</p>
-</div></blockquote>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>gp</strong> : george.GP</p>
-<blockquote class="last">
-<div><p>Gaussian process with initialized kernel and factorized covariance
+</dd>
+<dt><strong>fitAmp</strong><span class="classifier">bool (optional)</span></dt><dd><p>Whether or not to include an amplitude term. Defaults to False.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>gp</strong><span class="classifier">george.GP</span></dt><dd><p>Gaussian process with initialized kernel and factorized covariance
 matrix.</p>
-</div></blockquote>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="function">
 <dt id="approxposterior.gpUtils.optimizeGP">
-<code class="descclassname">approxposterior.gpUtils.</code><code class="descname">optimizeGP</code><span class="sig-paren">(</span><em>gp</em>, <em>theta</em>, <em>y</em>, <em>seed=None</em>, <em>nGPRestarts=1</em>, <em>method='powell'</em>, <em>options=None</em>, <em>p0=None</em>, <em>gpHyperPrior=&lt;function defaultHyperPrior&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/gpUtils.html#optimizeGP"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.gpUtils.optimizeGP" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">approxposterior.gpUtils.</code><code class="sig-name descname">optimizeGP</code><span class="sig-paren">(</span><em class="sig-param">gp</em>, <em class="sig-param">theta</em>, <em class="sig-param">y</em>, <em class="sig-param">seed=None</em>, <em class="sig-param">nGPRestarts=1</em>, <em class="sig-param">method='powell'</em>, <em class="sig-param">options=None</em>, <em class="sig-param">p0=None</em>, <em class="sig-param">gpHyperPrior=&lt;function defaultHyperPrior at 0x181f9b9680&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/gpUtils.html#optimizeGP"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.gpUtils.optimizeGP" title="Permalink to this definition">¶</a></dt>
 <dd><p>Optimize hyperparameters of an arbitrary george Gaussian Process by
 maximizing the marginal loglikelihood.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>gp</strong> : george.GP</p>
-<p><strong>theta</strong> : array</p>
-<p><strong>y</strong> : array</p>
-<blockquote>
-<div><p>data to condition GP on</p>
-</div></blockquote>
-<p><strong>seed</strong> : int (optional)</p>
-<blockquote>
-<div><p>numpy RNG seed.  Defaults to None.</p>
-</div></blockquote>
-<p><strong>nGPRestarts</strong> : int (optional)</p>
-<blockquote>
-<div><p>Number of times to restart the optimization.  Defaults to 1. Increase
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>gp</strong><span class="classifier">george.GP</span></dt><dd></dd>
+<dt><strong>theta</strong><span class="classifier">array</span></dt><dd></dd>
+<dt><strong>y</strong><span class="classifier">array</span></dt><dd><p>data to condition GP on</p>
+</dd>
+<dt><strong>seed</strong><span class="classifier">int (optional)</span></dt><dd><p>numpy RNG seed.  Defaults to None.</p>
+</dd>
+<dt><strong>nGPRestarts</strong><span class="classifier">int (optional)</span></dt><dd><p>Number of times to restart the optimization.  Defaults to 1. Increase
 this number if the GP isn’t optimized well.</p>
-</div></blockquote>
-<p><strong>method</strong> : str (optional)</p>
-<blockquote>
-<div><p>scipy.optimize.minimize method.  Defaults to powell.</p>
-</div></blockquote>
-<p><strong>options</strong> : dict (optional)</p>
-<blockquote>
-<div><p>kwargs for the scipy.optimize.minimize function.  Defaults to None.</p>
-</div></blockquote>
-<p><strong>p0</strong> : array (optional)</p>
-<blockquote>
-<div><p>Initial guess for kernel hyperparameters.  If None, defaults to
+</dd>
+<dt><strong>method</strong><span class="classifier">str (optional)</span></dt><dd><p>scipy.optimize.minimize method.  Defaults to powell.</p>
+</dd>
+<dt><strong>options</strong><span class="classifier">dict (optional)</span></dt><dd><p>kwargs for the scipy.optimize.minimize function.  Defaults to None.</p>
+</dd>
+<dt><strong>p0</strong><span class="classifier">array (optional)</span></dt><dd><p>Initial guess for kernel hyperparameters.  If None, defaults to
 np.random.randn for each parameter</p>
-</div></blockquote>
-<p><strong>gpHyperPrior</strong> : str/callable (optional)</p>
-<blockquote>
-<div><p>Prior function for GP hyperparameters. Defaults to the defaultHyperPrior fn.
+</dd>
+<dt><strong>gpHyperPrior</strong><span class="classifier">str/callable (optional)</span></dt><dd><p>Prior function for GP hyperparameters. Defaults to the defaultHyperPrior fn.
 This function asserts that the mean must be negative and that each log
 hyperparameter is within the range [-20,20].</p>
-</div></blockquote>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>optimizedGP</strong> : george.GP</p>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>optimizedGP</strong><span class="classifier">george.GP</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
 </dd></dl>
 
 </div>
@@ -352,9 +310,7 @@ hyperparameter is within the range [-20,20].</p>
 
 
            </div>
-           <div class="articleComments">
-            
-           </div>
+           
           </div>
           <footer>
   
@@ -363,7 +319,7 @@ hyperparameter is within the range [-20,20].</p>
         <a href="mcmcUtils.html" class="btn btn-neutral float-right" title="MCMC Utility Functions" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="gmmUtils.html" class="btn btn-neutral" title="GMM Utility Functions" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="gmmUtils.html" class="btn btn-neutral float-left" title="GMM Utility Functions" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
@@ -372,11 +328,11 @@ hyperparameter is within the range [-20,20].</p>
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2019, David P. Fleming.
+        &copy; Copyright 2019, David P. Fleming
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -389,38 +345,15 @@ hyperparameter is within the range [-20,20].</p>
   
 
 
-  
-
-    <script type="text/javascript">
-        var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'../',
-            VERSION:'0.4',
-            COLLAPSE_INDEX:false,
-            FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true,
-            SOURCELINK_SUFFIX: '.txt'
-        };
-    </script>
-      <script type="text/javascript" src="../_static/jquery.js"></script>
-      <script type="text/javascript" src="../_static/underscore.js"></script>
-      <script type="text/javascript" src="../_static/doctools.js"></script>
-      <script type="text/javascript" src="../_static/language_data.js"></script>
-      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
-
-  
-
-  
-  
-    <script type="text/javascript" src="../_static/js/theme.js"></script>
-  
-
-  
-  
   <script type="text/javascript">
       jQuery(function () {
-          SphinxRtdTheme.StickyNav.enable();
+          SphinxRtdTheme.Navigation.enable(true);
       });
   </script>
+
+  
+  
+    
    
 
 </body>

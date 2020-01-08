@@ -17,44 +17,40 @@
   
 
   
+  <script type="text/javascript" src="../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+        <script type="text/javascript" src="../_static/language_data.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
 
-  
-  
     
 
   
-
-  
-  
-    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-  
-
-  
-    <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
-  
-
-  
-        <link rel="index" title="Index"
-              href="../genindex.html"/>
-        <link rel="search" title="Search" href="../search.html"/>
-    <link rel="top" title="approxposterior 0.4 documentation" href="../index.html"/>
-        <link rel="next" title="API" href="../api.html"/>
-        <link rel="prev" title="Fitting a Line" href="fittingALine.html"/> 
-
-  
-  <script src="../_static/js/modernizr.min.js"></script>
-
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="API" href="../api.html" />
+    <link rel="prev" title="Fitting a Line" href="fittingALine.html" /> 
 </head>
 
-<body class="wy-body-for-nav" role="document">
+<body class="wy-body-for-nav">
 
    
   <div class="wy-grid-for-nav">
-
     
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
-        <div class="wy-side-nav-search">
+        <div class="wy-side-nav-search" >
           
 
           
@@ -116,7 +112,7 @@
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
 
       
-      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+      <nav class="wy-nav-top" aria-label="top navigation">
         
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="../index.html">approxposterior</a>
@@ -124,9 +120,10 @@
       </nav>
 
 
-      
       <div class="wy-nav-content">
+        
         <div class="rst-content">
+        
           
 
 
@@ -173,16 +170,16 @@
 /* CSS for nbsphinx extension */
 
 /* remove conflicting styling from Sphinx themes */
-div.nbinput,
-div.nbinput div.prompt,
-div.nbinput div.input_area,
-div.nbinput div[class*=highlight],
-div.nbinput div[class*=highlight] pre,
-div.nboutput,
-div.nbinput div.prompt,
-div.nbinput div.output_area,
-div.nboutput div[class*=highlight],
-div.nboutput div[class*=highlight] pre {
+div.nbinput.container,
+div.nbinput.container div.prompt,
+div.nbinput.container div.input_area,
+div.nbinput.container div[class*=highlight],
+div.nbinput.container div[class*=highlight] pre,
+div.nboutput.container,
+div.nboutput.container div.prompt,
+div.nboutput.container div.output_area,
+div.nboutput.container div[class*=highlight],
+div.nboutput.container div[class*=highlight] pre {
     background: none;
     border: none;
     padding: 0 0;
@@ -191,13 +188,13 @@ div.nboutput div[class*=highlight] pre {
 }
 
 /* avoid gaps between output lines */
-div.nboutput div[class*=highlight] pre {
+div.nboutput.container div[class*=highlight] pre {
     line-height: normal;
 }
 
 /* input/output containers */
-div.nbinput,
-div.nboutput {
+div.nbinput.container,
+div.nboutput.container {
     display: -webkit-flex;
     display: flex;
     align-items: flex-start;
@@ -205,35 +202,35 @@ div.nboutput {
     width: 100%;
 }
 @media (max-width: 540px) {
-    div.nbinput,
-    div.nboutput {
+    div.nbinput.container,
+    div.nboutput.container {
         flex-direction: column;
     }
 }
 
 /* input container */
-div.nbinput {
+div.nbinput.container {
     padding-top: 5px;
 }
 
 /* last container */
-div.nblast {
+div.nblast.container {
     padding-bottom: 5px;
 }
 
 /* input prompt */
-div.nbinput div.prompt pre {
-    color: #303F9F;
+div.nbinput.container div.prompt pre {
+    color: #307FC1;
 }
 
 /* output prompt */
-div.nboutput div.prompt pre {
-    color: #D84315;
+div.nboutput.container div.prompt pre {
+    color: #BF5B3D;
 }
 
 /* all prompts */
-div.nbinput div.prompt,
-div.nboutput div.prompt {
+div.nbinput.container div.prompt,
+div.nboutput.container div.prompt {
     min-width: 0;
     padding-top: 0.4em;
     padding-right: 0.4em;
@@ -241,56 +238,56 @@ div.nboutput div.prompt {
     flex: 0;
 }
 @media (max-width: 540px) {
-    div.nbinput div.prompt,
-    div.nboutput div.prompt {
+    div.nbinput.container div.prompt,
+    div.nboutput.container div.prompt {
         text-align: left;
         padding: 0.4em;
     }
-    div.nboutput div.prompt.empty {
+    div.nboutput.container div.prompt.empty {
         padding: 0;
     }
 }
 
 /* disable scrollbars on prompts */
-div.nbinput div.prompt pre,
-div.nboutput div.prompt pre {
+div.nbinput.container div.prompt pre,
+div.nboutput.container div.prompt pre {
     overflow: hidden;
 }
 
 /* input/output area */
-div.nbinput div.input_area,
-div.nboutput div.output_area {
+div.nbinput.container div.input_area,
+div.nboutput.container div.output_area {
     padding: 0.4em;
     -webkit-flex: 1;
     flex: 1;
     overflow: auto;
 }
 @media (max-width: 540px) {
-    div.nbinput div.input_area,
-    div.nboutput div.output_area {
+    div.nbinput.container div.input_area,
+    div.nboutput.container div.output_area {
         width: 100%;
     }
 }
 
 /* input area */
-div.nbinput div.input_area {
-    border: 1px solid #cfcfcf;
+div.nbinput.container div.input_area {
+    border: 1px solid #e0e0e0;
     border-radius: 2px;
-    background: #f7f7f7;
+    background: #f5f5f5;
 }
 
 /* override MathJax center alignment in output cells */
-div.nboutput div[class*=MathJax] {
+div.nboutput.container div[class*=MathJax] {
     text-align: left !important;
 }
 
-/* override sphinx.ext.pngmath center alignment in output cells */
-div.nboutput div.math p {
+/* override sphinx.ext.imgmath center alignment in output cells */
+div.nboutput.container div.math p {
     text-align: left;
 }
 
 /* standard error */
-div.nboutput div.output_area.stderr {
+div.nboutput.container div.output_area.stderr {
     background: #fdd;
 }
 
@@ -334,54 +331,69 @@ div.nboutput div.output_area.stderr {
 .ansi-bold { font-weight: bold; }
 .ansi-underline { text-decoration: underline; }
 
+/* Some additional styling taken form the Jupyter notebook CSS */
+div.rendered_html table {
+  border: none;
+  border-collapse: collapse;
+  border-spacing: 0;
+  color: black;
+  font-size: 12px;
+  table-layout: fixed;
+}
+div.rendered_html thead {
+  border-bottom: 1px solid black;
+  vertical-align: bottom;
+}
+div.rendered_html tr,
+div.rendered_html th,
+div.rendered_html td {
+  text-align: right;
+  vertical-align: middle;
+  padding: 0.5em 0.5em;
+  line-height: normal;
+  white-space: normal;
+  max-width: none;
+  border: none;
+}
+div.rendered_html th {
+  font-weight: bold;
+}
+div.rendered_html tbody tr:nth-child(odd) {
+  background: #f5f5f5;
+}
+div.rendered_html tbody tr:hover {
+  background: rgba(66, 165, 245, 0.2);
+}
+
 /* CSS overrides for sphinx_rtd_theme */
 
 /* 24px margin */
-.nbinput.nblast,
-.nboutput.nblast {
+.nbinput.nblast.container,
+.nboutput.nblast.container {
     margin-bottom: 19px;  /* padding has already 5px */
 }
 
 /* ... except between code cells! */
-.nblast + .nbinput {
+.nblast.container + .nbinput.container {
     margin-top: -19px;
 }
 
-/* nice headers on first paragraph of info/warning boxes */
-.admonition .first {
-    margin: -12px;
-    padding: 6px 12px;
-    margin-bottom: 12px;
-    color: #fff;
-    line-height: 1;
-    display: block;
-}
-.admonition.warning .first {
-    background: #f0b37e;
-}
-.admonition.note .first {
-    background: #6ab0de;
-}
 .admonition > p:before {
     margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
 }
 </style>
 <div class="section" id="Scaling,-Accuracy-Example">
 <h1>Scaling, Accuracy Example<a class="headerlink" href="#Scaling,-Accuracy-Example" title="Permalink to this headline">¶</a></h1>
 <hr class="docutils" />
-<p>In this notebook, speed comparisons between the BAPE algorithm and the
-“brute force” method of just using your forward model for Bayesian
-parameter inference using MCMC (see <a class="reference external" href="https://github.com/dfm/emcee">https://github.com/dfm/emcee</a> for our
-MCMC algorithm). We run the BAPE algorithm on the Wang &amp; Li (2017)
-Rosenbrock function example and consider cases where instead of the
-<span class="math notranslate nohighlight">\({\sim}10\mu\)</span>s runtime of the analytic Rosenbrock function, it
-took anywhere from <span class="math notranslate nohighlight">\(10^{-3}\)</span>s to <span class="math notranslate nohighlight">\(10^{4}\)</span>s. This
-exercise allows to us crudely estimate how slow a forward model must be
-before using approximate methods such as <code class="docutils literal notranslate"><span class="pre">approxposterior</span></code> is
-warranted.</p>
-<div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>In [1]:
+<p>In this notebook, speed comparisons between the BAPE algorithm and the “brute force” method of just using your forward model for Bayesian parameter inference using MCMC (see <a class="reference external" href="https://github.com/dfm/emcee">https://github.com/dfm/emcee</a> for our MCMC algorithm). We run the BAPE algorithm on the Wang &amp; Li (2017) Rosenbrock function example and consider cases where instead of the <span class="math notranslate nohighlight">\({\sim}10\mu\)</span>s runtime of the analytic Rosenbrock function, it took anywhere from <span class="math notranslate nohighlight">\(10^{-3}\)</span>s to <span class="math notranslate nohighlight">\(10^{4}\)</span>s. This exercise allows to
+us crudely estimate how slow a forward model must be before using approximate methods such as <code class="docutils literal notranslate"><span class="pre">approxposterior</span></code> is warranted.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -392,28 +404,18 @@ warranted.</p>
 <span class="kn">import</span> <span class="nn">george</span>
 <span class="kn">import</span> <span class="nn">corner</span>
 <span class="kn">import</span> <span class="nn">emcee</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
-<span class="kn">import</span> <span class="nn">matplotlib</span> <span class="kn">as</span> <span class="nn">mpl</span>
-<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">matplotlib</span> <span class="k">as</span> <span class="nn">mpl</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 <span class="n">mpl</span><span class="o">.</span><span class="n">rcParams</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s1">&#39;font.size&#39;</span><span class="p">:</span> <span class="mi">18</span><span class="p">})</span>
 </pre></div>
 </div>
 </div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="stderr output_area docutils container">
-<div class="highlight"><pre>
-/Users/dflemin3/anaconda3/lib/python3.6/site-packages/h5py/__init__.py:34: FutureWarning: Conversion of the second argument of issubdtype from `float` to `np.floating` is deprecated. In future, it will be treated as `np.float64 == np.dtype(float).type`.
-  from ._conv import register_converters as _register_converters
-</pre></div></div>
-</div>
 <p><strong>Initialize and run the example.</strong></p>
 <hr class="docutils" />
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>In [2]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -431,8 +433,7 @@ warranted.</p>
 </div>
 </div>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>In [3]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -450,8 +451,7 @@ warranted.</p>
 </div>
 </div>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>In [4]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -467,51 +467,26 @@ warranted.</p>
 </pre></div>
 </div>
 </div>
-<p><strong>This time, turn on the timing option with timing=True in the run
-method.</strong></p>
+<p><strong>This time, turn on the timing option with timing=True in the run method.</strong></p>
 <hr class="docutils" />
-<p>Setting <code class="docutils literal notranslate"><span class="pre">timing=True</span></code> allows the code to profile how long various
-parts of the algorithm take to run. If <code class="docutils literal notranslate"><span class="pre">timing=True</span></code>, then the code
-keeps track of, for each iteration, how long it takes to find <span class="math notranslate nohighlight">\(m\)</span>
-new design points retrain the Gaussian Process, run the MCMC, fit the
-Gaussian Mixture Model approximation to the joint posterior
-distribution, and estimate the KL divergence between the current and
-previous joint posterior distributions.</p>
-<div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>In [5]:
+<p>Setting <code class="docutils literal notranslate"><span class="pre">timing=True</span></code> allows the code to profile how long various parts of the algorithm take to run. If <code class="docutils literal notranslate"><span class="pre">timing=True</span></code>, then the code keeps track of, for each iteration, how long it takes to find <span class="math notranslate nohighlight">\(m\)</span> new design points retrain the Gaussian Process, run the MCMC, fit the Gaussian Mixture Model approximation to the joint posterior distribution, and estimate the KL divergence between the current and previous joint posterior distributions.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
 <span></span><span class="c1"># Run!</span>
-<span class="n">ap</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">m</span><span class="o">=</span><span class="n">m</span><span class="p">,</span> <span class="n">nmax</span><span class="o">=</span><span class="n">nmax</span><span class="p">,</span> <span class="n">estBurnin</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">mcmcKwargs</span><span class="o">=</span><span class="n">mcmcKwargs</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
-       <span class="n">samplerKwargs</span><span class="o">=</span><span class="n">samplerKwargs</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">timing</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">ap</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">m</span><span class="o">=</span><span class="n">m</span><span class="p">,</span> <span class="n">nmax</span><span class="o">=</span><span class="n">nmax</span><span class="p">,</span> <span class="n">estBurnin</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">mcmcKwargs</span><span class="o">=</span><span class="n">mcmcKwargs</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+       <span class="n">samplerKwargs</span><span class="o">=</span><span class="n">samplerKwargs</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">timing</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="stderr output_area docutils container">
-<div class="highlight"><pre>
-/Users/dflemin3/anaconda3/lib/python3.6/site-packages/scipy/optimize/optimize.py:1927: RuntimeWarning: invalid value encountered in double_scalars
-  tmp2 = (x - v) * (fx - fw)
-</pre></div></div>
-</div>
 <p><strong>Estimate Time Scaling as a Function of Forward Model Time</strong></p>
 <hr class="docutils" />
-<p>Now, imagine that our forward model takes anywhere <span class="math notranslate nohighlight">\(10^{-5}\)</span>s to
-<span class="math notranslate nohighlight">\(10^{4}\)</span>s for one evaluation. In the “brute force” method, for
-each iteration for each walker, the MCMC algorithm runs the forward
-model, typically resulting in <span class="math notranslate nohighlight">\(&gt;10^5\)</span> forward model evaluations!
-Obviously for slow forward models, this readily becomes computationaly
-intractible. Here, we show how the “brute force” method scales compared
-to <code class="docutils literal notranslate"><span class="pre">approxposterior</span></code>’. In this section, we take care to accurately
-time all facets of the algorithm while factoring in different forward
-model evaluation times.</p>
+<p>Now, imagine that our forward model takes anywhere <span class="math notranslate nohighlight">\(10^{-5}\)</span>s to <span class="math notranslate nohighlight">\(10^{4}\)</span>s for one evaluation. In the “brute force” method, for each iteration for each walker, the MCMC algorithm runs the forward model, typically resulting in <span class="math notranslate nohighlight">\(&gt;10^5\)</span> forward model evaluations! Obviously for slow forward models, this readily becomes computationaly intractible. Here, we show how the “brute force” method scales compared to <code class="docutils literal notranslate"><span class="pre">approxposterior</span></code>’. In this section, we take care to accurately
+time all facets of the algorithm while factoring in different forward model evaluation times.</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>In [6]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -527,8 +502,7 @@ model evaluation times.</p>
 </div>
 </div>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>In [7]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -549,12 +523,9 @@ model evaluation times.</p>
 </div>
 <p><strong>Plot the scalings to see where both methods are faster!</strong></p>
 <hr class="docutils" />
-<p>Below, we plot the total time it takes for the full Bayesian parameter
-inference (y axis) as a function of forward model evaluation time (x
-axis).</p>
+<p>Below, we plot the total time it takes for the full Bayesian parameter inference (y axis) as a function of forward model evaluation time (x axis).</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>In [8]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -590,14 +561,13 @@ axis).</p>
 </div>
 </div>
 <div class="nboutput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>Out[8]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
 </pre></div>
 </div>
-<div class="output_area highlight-none notranslate"><div class="highlight"><pre>
-<span></span>&lt;matplotlib.legend.Legend at 0x116339da0&gt;
-</pre></div>
-</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+&lt;matplotlib.legend.Legend at 0x1a1c31e610&gt;
+</pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
@@ -606,39 +576,15 @@ axis).</p>
 <img alt="../_images/notebooks_ScalingAccuracy_12_1.png" src="../_images/notebooks_ScalingAccuracy_12_1.png" />
 </div>
 </div>
-<p>There are two clear regimes in this figure. For very fast forward
-models, <span class="math notranslate nohighlight">\(t&lt;10^{-2}\)</span>s per evaluation, it’s slower to train the
-Gaussian process then actually run the MCMC using the true forward
-model, so in this case it’s not worth using approximate methods. For
-slow forward models, <span class="math notranslate nohighlight">\(t&gt;10\)</span>s per model evaluation, most of the
-time is spent running the forward model to give training points to the
-Gaussian process, so the actual MCMC inference is relatively
-computationally cheap.</p>
-<p>The turnover when it’s faster to use <code class="docutils literal notranslate"><span class="pre">approxposterior</span></code> occurs once the
-forward model takes <span class="math notranslate nohighlight">\({\sim}1-10\)</span>s to run. Once the forward model
-takes a few minutes to run, however, the approximate method completes in
-of order hours while the brute force method can take up to a month – a
-massive speed-up!</p>
-<p>Strictly speaking, this scaling plot applies to the Rosenbrock function
-example from Wang &amp; Li (2017). Scaling plots like the one above depend
-on how many MCMC iterations you use, the MCMC algorithm, how many
-samples the GP is trained on, and probably the GP kernel. For example,
-longer MCMCs have a raised floor for the flat region of the GP
-approximation curve and dictate when the turnover occurs.</p>
-<p><strong>For slow forward models, the approximate methods are clearly faster.
-But how accurate are the results?</strong></p>
+<p>There are two clear regimes in this figure. For very fast forward models, <span class="math notranslate nohighlight">\(t&lt;10^{-2}\)</span>s per evaluation, it’s slower to train the Gaussian process then actually run the MCMC using the true forward model, so in this case it’s not worth using approximate methods. For slow forward models, <span class="math notranslate nohighlight">\(t&gt;10\)</span>s per model evaluation, most of the time is spent running the forward model to give training points to the Gaussian process, so the actual MCMC inference is relatively computationally cheap.</p>
+<p>The turnover when it’s faster to use <code class="docutils literal notranslate"><span class="pre">approxposterior</span></code> occurs once the forward model takes <span class="math notranslate nohighlight">\({\sim}1-10\)</span>s to run. Once the forward model takes a few minutes to run, however, the approximate method completes in of order hours while the brute force method can take up to a month – a massive speed-up!</p>
+<p>Strictly speaking, this scaling plot applies to the Rosenbrock function example from Wang &amp; Li (2017). Scaling plots like the one above depend on how many MCMC iterations you use, the MCMC algorithm, how many samples the GP is trained on, and probably the GP kernel. For example, longer MCMCs have a raised floor for the flat region of the GP approximation curve and dictate when the turnover occurs.</p>
+<p><strong>For slow forward models, the approximate methods are clearly faster. But how accurate are the results?</strong></p>
 <hr class="docutils" />
-<p>Above, we used the exact algorithm parameters Wang &amp; Li (2017) used for
-their Rosenbrock function example. In the True_Rosenbrock_Posterior
-example notebook, we ran an MCMC inference using the true Rosenbrock
-function likelihood and algorithm parameters from Wang &amp; Li (2017) to
-derive the “true” joint posterior distribution. Below, we visually and
-numerically compare the approximation to the joint posterior
-distribution derived above with true distribution to see how accurate
-the approximate method is.</p>
+<p>Above, we used the exact algorithm parameters Wang &amp; Li (2017) used for their Rosenbrock function example. In the True_Rosenbrock_Posterior example notebook, we ran an MCMC inference using the true Rosenbrock function likelihood and algorithm parameters from Wang &amp; Li (2017) to derive the “true” joint posterior distribution. Below, we visually and numerically compare the approximation to the joint posterior distribution derived above with true distribution to see how accurate the approximate
+method is.</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>In [9]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -650,8 +596,7 @@ the approximate method is.</p>
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>In [10]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -660,14 +605,14 @@ the approximate method is.</p>
 <span class="n">bins</span> <span class="o">=</span> <span class="mi">20</span>
 
 <span class="c1"># Plot GP approximation to the joint distribution</span>
-<span class="n">samples</span> <span class="o">=</span> <span class="n">ap</span><span class="o">.</span><span class="n">sampler</span><span class="o">.</span><span class="n">get_chain</span><span class="p">(</span><span class="n">discard</span><span class="o">=</span><span class="n">ap</span><span class="o">.</span><span class="n">iburns</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">flat</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">thin</span><span class="o">=</span><span class="n">ap</span><span class="o">.</span><span class="n">ithins</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+<span class="n">samples</span> <span class="o">=</span> <span class="n">ap</span><span class="o">.</span><span class="n">sampler</span><span class="o">.</span><span class="n">get_chain</span><span class="p">(</span><span class="n">discard</span><span class="o">=</span><span class="n">ap</span><span class="o">.</span><span class="n">iburns</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">flat</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">thin</span><span class="o">=</span><span class="n">ap</span><span class="o">.</span><span class="n">ithins</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
 <span class="n">corner</span><span class="o">.</span><span class="n">hist2d</span><span class="p">(</span><span class="n">samples</span><span class="p">[:,</span><span class="mi">0</span><span class="p">],</span> <span class="n">samples</span><span class="p">[:,</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span>
-              <span class="n">bins</span><span class="o">=</span><span class="n">bins</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;C3&quot;</span><span class="p">,</span> <span class="n">plot_density</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">plot_contours</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">plot_datapoints</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+              <span class="n">bins</span><span class="o">=</span><span class="n">bins</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;C3&quot;</span><span class="p">,</span> <span class="n">plot_density</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">plot_contours</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">plot_datapoints</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
              <span class="n">label</span><span class="o">=</span><span class="s2">&quot;GP Approximation&quot;</span><span class="p">)</span>
 
 <span class="c1"># Plot the true joint distribution</span>
 <span class="n">corner</span><span class="o">.</span><span class="n">hist2d</span><span class="p">(</span><span class="n">trueFlatchain</span><span class="p">[</span><span class="n">trueIburn</span><span class="p">:,</span><span class="mi">0</span><span class="p">],</span> <span class="n">trueFlatchain</span><span class="p">[</span><span class="n">trueIburn</span><span class="p">:,</span><span class="mi">1</span><span class="p">],</span> <span class="n">bins</span><span class="o">=</span><span class="n">bins</span><span class="p">,</span>
-              <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="n">plot_density</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">plot_contours</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">plot_datapoints</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+              <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="n">plot_density</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">plot_contours</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">plot_datapoints</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
 <span class="c1"># Formating</span>
 <span class="n">ax</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="o">-</span><span class="mf">2.2</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.5</span><span class="p">,</span> <span class="s2">&quot;Truth&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">)</span>
@@ -686,11 +631,9 @@ the approximate method is.</p>
 <img alt="../_images/notebooks_ScalingAccuracy_16_0.png" src="../_images/notebooks_ScalingAccuracy_16_0.png" />
 </div>
 </div>
-<p>The true and approximate distributions look nearly identical! How do the
-0.16, 0.5, 0.84 quantiles compare for the 2 parameters, x0 and x1?</p>
+<p>The true and approximate distributions look nearly identical! How do the 0.16, 0.5, 0.84 quantiles compare for the 2 parameters, x0 and x1?</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>In [11]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -703,18 +646,17 @@ the approximate method is.</p>
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>In [12]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="k">print</span><span class="p">(</span><span class="s2">&quot;x0&quot;</span><span class="p">)</span>
-<span class="k">print</span><span class="p">(</span><span class="s2">&quot;True</span><span class="se">\t</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">trueX0</span><span class="p">)</span>
-<span class="k">print</span><span class="p">(</span><span class="s2">&quot;Approx</span><span class="se">\t</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">approxX0</span><span class="p">)</span>
-<span class="k">print</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
-<span class="k">print</span><span class="p">(</span><span class="s2">&quot;x1&quot;</span><span class="p">)</span>
-<span class="k">print</span><span class="p">(</span><span class="s2">&quot;True</span><span class="se">\t</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">trueX1</span><span class="p">)</span>
-<span class="k">print</span><span class="p">(</span><span class="s2">&quot;Approx</span><span class="se">\t</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">approxX1</span><span class="p">)</span>
+<span></span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;x0&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;True</span><span class="se">\t</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">trueX0</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Approx</span><span class="se">\t</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">approxX0</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;x1&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;True</span><span class="se">\t</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">trueX1</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Approx</span><span class="se">\t</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">approxX1</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -725,11 +667,11 @@ the approximate method is.</p>
 <div class="highlight"><pre>
 x0
 True     [-2.4136162  -2.32461971 -2.27654002]
-Approx   [-2.43107842 -2.32830656 -2.27902648]
+Approx   [-2.17418768 -2.11799219 -2.08216416]
 
 x1
 True     [-1.70102134 -1.40117241 -1.25195281]
-Approx   [-1.64094004 -1.35814525 -1.20686775]
+Approx   [-1.64048781 -1.3753925  -1.22776931]
 </pre></div></div>
 </div>
 <p>The answers are consistent - great!</p>
@@ -737,8 +679,7 @@ Approx   [-1.64094004 -1.35814525 -1.20686775]
 <hr class="docutils" />
 <p>Good for posters and stuff.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>In [14]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -751,12 +692,12 @@ Approx   [-1.64094004 -1.35814525 -1.20686775]
 
 <span class="c1"># Plot GP approximation to the joint distribution</span>
 <span class="n">corner</span><span class="o">.</span><span class="n">hist2d</span><span class="p">(</span><span class="n">samples</span><span class="p">[:,</span><span class="mi">0</span><span class="p">],</span> <span class="n">samples</span><span class="p">[:,</span><span class="mi">1</span><span class="p">],</span>
-              <span class="n">bins</span><span class="o">=</span><span class="n">bins</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;C3&quot;</span><span class="p">,</span> <span class="n">plot_density</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">plot_contours</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">plot_datapoints</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+              <span class="n">bins</span><span class="o">=</span><span class="n">bins</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;C3&quot;</span><span class="p">,</span> <span class="n">plot_density</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">plot_contours</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">plot_datapoints</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
              <span class="n">label</span><span class="o">=</span><span class="s2">&quot;GP Approximation&quot;</span><span class="p">)</span>
 
 <span class="c1"># Plot the true joint distribution</span>
 <span class="n">corner</span><span class="o">.</span><span class="n">hist2d</span><span class="p">(</span><span class="n">trueFlatchain</span><span class="p">[</span><span class="n">trueIburn</span><span class="p">:,</span><span class="mi">0</span><span class="p">],</span> <span class="n">trueFlatchain</span><span class="p">[</span><span class="n">trueIburn</span><span class="p">:,</span><span class="mi">1</span><span class="p">],</span> <span class="n">bins</span><span class="o">=</span><span class="n">bins</span><span class="p">,</span>
-              <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="n">plot_density</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">plot_contours</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">plot_datapoints</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+              <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="n">plot_density</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">plot_contours</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">plot_datapoints</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
 <span class="c1"># Formating</span>
 <span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="o">-</span><span class="mf">2.2</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.5</span><span class="p">,</span> <span class="s2">&quot;Truth&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">)</span>
@@ -804,13 +745,20 @@ Approx   [-1.64094004 -1.35814525 -1.20686775]
 <img alt="../_images/notebooks_ScalingAccuracy_22_0.png" src="../_images/notebooks_ScalingAccuracy_22_0.png" />
 </div>
 </div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span>
+</pre></div>
+</div>
+</div>
 </div>
 
 
            </div>
-           <div class="articleComments">
-            
-           </div>
+           
           </div>
           <footer>
   
@@ -819,7 +767,7 @@ Approx   [-1.64094004 -1.35814525 -1.20686775]
         <a href="../api.html" class="btn btn-neutral float-right" title="API" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="fittingALine.html" class="btn btn-neutral" title="Fitting a Line" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="fittingALine.html" class="btn btn-neutral float-left" title="Fitting a Line" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
@@ -828,11 +776,11 @@ Approx   [-1.64094004 -1.35814525 -1.20686775]
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2019, David P. Fleming.
+        &copy; Copyright 2019, David P. Fleming
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -845,38 +793,15 @@ Approx   [-1.64094004 -1.35814525 -1.20686775]
   
 
 
-  
-
-    <script type="text/javascript">
-        var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'../',
-            VERSION:'0.4',
-            COLLAPSE_INDEX:false,
-            FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true,
-            SOURCELINK_SUFFIX: '.txt'
-        };
-    </script>
-      <script type="text/javascript" src="../_static/jquery.js"></script>
-      <script type="text/javascript" src="../_static/underscore.js"></script>
-      <script type="text/javascript" src="../_static/doctools.js"></script>
-      <script type="text/javascript" src="../_static/language_data.js"></script>
-      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
-
-  
-
-  
-  
-    <script type="text/javascript" src="../_static/js/theme.js"></script>
-  
-
-  
-  
   <script type="text/javascript">
       jQuery(function () {
-          SphinxRtdTheme.StickyNav.enable();
+          SphinxRtdTheme.Navigation.enable(true);
       });
   </script>
+
+  
+  
+    
    
 
 </body>
