@@ -204,7 +204,7 @@ def JonesUtility(theta, y, gp, priorFn, zeta=0.01):
     gp : george GP object
     priorFn : function
         Function that computes lnPrior probability for a given theta.
-    zeta : float (optional)
+    zeta : float, optional
         Exploration parameter. Larger zeta leads to more exploration. Defaults
         to 0.01
 
@@ -275,22 +275,22 @@ def minimizeObjective(fn, y, gp, sampleFn, priorFn, nRestarts=5,
         Function to sample initial conditions from.
     priorFn : function
         Function that computes lnPrior probability for a given theta.
-    nMinObjRestarts : int (optional)
+    nMinObjRestarts : int, optional
         Number of times to restart minimizing -utility function to select
         next point to improve GP performance.  Defaults to 5.  Increase this
         number of the point selection is not working well.
-    method : str (optional)
+    method : str, optional
         scipy.optimize.minimize method.  Defaults to nelder-mead.
-    options : dict (optional)
+    options : dict, optional
         kwargs for the scipy.optimize.minimize function.  Defaults to None,
         but if method == "nelder-mead", options = {"adaptive" : True}
-    theta0 : float/iterable (optional)
+    theta0 : float/iterable, optional
         Initial guess for optimization. Defaults to None, which draws a sample
         from the prior function using sampleFn.
-    args : iterable (optional)
+    args : iterable, optional
         Arguments for user-specified function that this function will minimize.
         Defaults to None.
-    maxIters (int) (optional)
+    maxIters (int), optional
         Maximum number of iterations to try restarting optimization if the
         solution isn't finite and/nor allowed by the prior function. Defaults to
         100.

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 :py:mod:`gmmUtils.py` - Gaussian Mixture Model Utilities
------------------------------------
+--------------------------------------------------------
 
 Gaussian mixture model utility functions for fitting approximations to posterior
 probability distributions.

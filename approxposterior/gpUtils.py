@@ -124,17 +124,17 @@ def defaultGP(theta, y, order=None, white_noise=-12, fitAmp=False):
     y : array
         Data to condition GP on, e.g. the lnlike + lnprior at each design point,
         theta.
-    order : int (optional)
+    order : int, optional
         Order of PolynomialKernel to add to ExpSquaredKernel. Defaults to None,
         that is, no PolynomialKernel is added and the GP only uses the
         ExpSquaredKernel
-    white_noise : float (optional)
+    white_noise : float, optional
         From george docs: "A description of the logarithm of the white noise
         variance added to the diagonal of the covariance matrix". Defaults to
         ln(white_noise) = -12. Note: if order is not None, you might need to
         set the white_noise to a larger value for the computation to be
         numerically stable, but this, as always, depends on the application.
-    fitAmp : bool (optional)
+    fitAmp : bool, optional
         Whether or not to include an amplitude term. Defaults to False.
 
     Returns
@@ -193,19 +193,19 @@ def optimizeGP(gp, theta, y, seed=None, nGPRestarts=1, method="powell",
     theta : array
     y : array
         data to condition GP on
-    seed : int (optional)
+    seed : int, optional
         numpy RNG seed.  Defaults to None.
-    nGPRestarts : int (optional)
+    nGPRestarts : int, optional
         Number of times to restart the optimization.  Defaults to 1. Increase
         this number if the GP isn't optimized well.
-    method : str (optional)
+    method : str, optional
         scipy.optimize.minimize method.  Defaults to powell.
-    options : dict (optional)
+    options : dict, optional
         kwargs for the scipy.optimize.minimize function.  Defaults to None.
-    p0 : array (optional)
+    p0 : array, optional
         Initial guess for kernel hyperparameters.  If None, defaults to
         np.random.randn for each parameter
-    gpHyperPrior : str/callable (optional)
+    gpHyperPrior : str/callable, optional
         Prior function for GP hyperparameters. Defaults to the defaultHyperPrior fn.
         This function asserts that the mean must be negative and that each log
         hyperparameter is within the range [-20,20].

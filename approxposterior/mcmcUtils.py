@@ -26,7 +26,7 @@ def validateMCMCKwargs(ap, samplerKwargs, mcmcKwargs, verbose=False):
     mcmcKwargs : dict
         dictionary containing parameters intended for
         emcee.EnsembleSampler.run_mcmc/.sample object
-    verbose : bool (optional)
+    verbose : bool, optional
         verboisty level. Defaults to False (no output)
 
     Returns
@@ -110,9 +110,9 @@ def batchMeansMCSE(samples, bins=None, fn=None):
     ----------
     samples : array
         nsamples x ndim array of MCMC samples
-    bins : int (optional)
+    bins : int, optional
         Number of bins. Defaults to int(sqrt(len(samples)))
-    fn : function (optional)
+    fn : function, optional
         Function used to compute posterior summary statistic on each chunk.
         Defaults to None to compute the simple expected value, aka the mean.
 

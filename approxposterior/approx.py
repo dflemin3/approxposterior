@@ -53,13 +53,13 @@ class ApproxPosterior(object):
             Method to randomly sample points over region allowed by prior
         bounds : tuple/iterable
             Hard bounds for parameters
-        gp : george.GP (optional)
+        gp : george.GP, optional
             Gaussian Process that learns the likelihood conditioned on forward
             model input-output pairs (theta, y). It's recommended that users
             specify their own kernel, GP using george. If None is provided, then
             approxposterior initialized a GP with a single ExpSquaredKernel as
             these work well in practice.
-        algorithm : str (optional)
+        algorithm : str, optional
             Point selection algorithm that specifies which utility (also
             referred to as acquisition) function to use.  Defaults to bape.
             Options are bape (Bayesian Active Learning for Posterior Estimation,
@@ -192,19 +192,19 @@ class ApproxPosterior(object):
 
         Parameters
         ----------
-        seed : int (optional)
+        seed : int, optional
             numpy RNG seed.  Defaults to None.
-        nGPRestarts : int (optional)
+        nGPRestarts : int, optional
             Number of times to restart GP hyperparameter optimization.  Defaults
             to 1. Increase this number if the GP is not well-optimized.
-        method : str (optional)
+        method : str, optional
             scipy.optimize.minimize method.  Defaults to powell.
-        options : dict (optional)
+        options : dict, optional
             kwargs for the scipy.optimize.minimize function.  Defaults to None.
-        p0 : array (optional)
+        p0 : array, optional
             Initial guess for kernel hyperparameters.  If None, defaults to
             np.random.randn for each parameter
-        gpHyperPrior : str/callable (optional)
+        gpHyperPrior : str/callable, optional
             Prior function for GP hyperparameters. Defaults to the defaultHyperPrior fn.
             This function asserts that the mean must be negative and that each log
             hyperparameter is within the range [-20,20].
@@ -235,50 +235,50 @@ class ApproxPosterior(object):
 
         Parameters
         ----------
-        m : int (optional)
+        m : int, optional
             Number of new design points to find each iteration. These are the
             points that are selected by maximizing the utility function, e.g.
             bape or agp, and sequentially added to the GP training set.  Defaults
             to 10.
-        nmax : int (optional)
+        nmax : int, optional
             Maximum number of iterations.  Defaults to 2. Algorithm will terminate
             if either nmax iterations is met or the convergence criterion is met
             if convergenceCheck is True.
-        seed : int (optional)
+        seed : int, optional
             RNG seed.  Defaults to None.
-        timing : bool (optional)
+        timing : bool, optional
             Whether or not to time the code for profiling/speed tests.
             Defaults to False.
-        verbose : bool (optional)
+        verbose : bool, optional
             Output all the diagnostics? Defaults to True.
-        samplerKwargs : dict (optional)
+        samplerKwargs : dict, optional
             Parameters for emcee.EnsembleSampler object
             If None, defaults to the following:
-                nwalkers : int (optional)
+                nwalkers : int, optional
                     Number of emcee walkers.  Defaults to 10 * dim
-        mcmcKwargs : dict (optional)
+        mcmcKwargs : dict, optional
             Parameters for emcee.EnsembleSampler.sample/.run_mcmc methods. If
             None, defaults to the following required parameters:
-                iterations : int (optional)
+                iterations : int, optional
                     Number of MCMC steps.  Defaults to 10,000
-                initial_state : array/emcee.State (optional)
+                initial_state : array/emcee.State, optional
                     Initial guess for MCMC walkers.  Defaults to None and
                     creates guess from priors.
-        estBurnin : bool (optional)
+        estBurnin : bool, optional
             Estimate burn-in time using integrated autocorrelation time
             heuristic.  Defaults to True. In general, we recommend users
             inspect the chains (note that approxposterior always at least saves
             the last sampler object, or all chains if cache = True) and
             calculate the burnin after the fact to ensure convergence.
-        thinChains : bool (optional)
+        thinChains : bool, optional
             Whether or not to thin chains before GMM fitting.  Useful if running
             long chains.  Defaults to True.  If true, estimates a thin cadence
             via int(0.5*np.min(tau)) where tau is the intergrated autocorrelation
             time.
-        runName : str (optional)
+        runName : str, optional
             Filename for hdf5 file where mcmc chains are saved.  Defaults to
             apRun and will be saved as apRunii.h5 for ii in range(nmax).
-        cache : bool (optional)
+        cache : bool, optional
             Whether or not to cache MCMC chains, forward model input-output
             pairs, and GP kernel parameters.  Defaults to True since they're
             expensive to evaluate. In practice, users should cache forward model
@@ -287,45 +287,45 @@ class ApproxPosterior(object):
             Saves the forward model, results to runNameAPFModelCache.npz,
             the chains as runNameii.h5 for each, iteration ii, and the GP
             parameters in runNameAPGP.npz in the current working directory, etc.
-        gpMethod : str (optional)
+        gpMethod : str, optional
             scipy.optimize.minimize method used when optimized GP hyperparameters.
             Defaults to powell (it usually works)
-        gpOptions : dict (optional)
+        gpOptions : dict, optional
             kwargs for the scipy.optimize.minimize function used to optimize GP
             hyperparameters.  Defaults to None.
-        gpP0 : array (optional)
+        gpP0 : array, optional
             Initial guess for kernel hyperparameters.  If None, defaults to
             np.random.randn for each parameter.
-        optGPEveryN : int (optional)
+        optGPEveryN : int, optional
             How often to optimize the GP hyperparameters.  Defaults to
             re-optimizing everytime a new design point is found, e.g. every time
             a new (theta, y) pair is added to the training set.  Increase this
             parameter if approxposterior is running slowly.
-        nGPRestarts : int (optional)
+        nGPRestarts : int, optional
             Number of times to restart GP hyperparameter optimization.  Defaults
             to 1. Increase this number if the GP is not well-optimized.
-        nMinObjRestarts : int (optional)
+        nMinObjRestarts : int, optional
             Number of times to restart minimizing -utility function to select
             next point to improve GP performance.  Defaults to 5.  Increase this
             number of the point selection is not working well.
-        onlyLastMCMC : bool (optional)
+        onlyLastMCMC : bool, optional
             Whether or not to only run the MCMC last iteration. Defaults to False.
-        initGPOpt : bool (optional)
+        initGPOpt : bool, optional
             Whether or not to optimize GP hyperparameters before 0th iteration.
             Defaults to True (aka assume user didn't optimize GP hyperparameters)
-        gpHyperPrior : str/callable (optional)
+        gpHyperPrior : str/callable, optional
             Prior function for GP hyperparameters. Defaults to the defaultHyperPrior fn.
             This function asserts that the mean must be negative and that each log
             hyperparameter is within the range [-20,20].
-        eps : float (optional)
+        eps : float, optional
             Change in the mean of the approximate marginal posterior
             distributions, relative to the previous marginal posterior distribution's
             standard deviation (aka relative z score), for kmax iterations
             required for convergence. Defaults to 1.0.
-        kmax : int (optional)
+        kmax : int, optional
             Number of consecutive iterations for convergence check to pass before
             successfully ending algorithm. Defaults to 3.
-        convergenceCheck : bool (optional)
+        convergenceCheck : bool, optional
             Whether or not to terminate the execution if the change in the mean
             of the approximate marginal posterior distributions, relative to the
             previous marginal posterior distribution's standard deviation
@@ -333,17 +333,17 @@ class ApproxPosterior(object):
             iterations. Defaults to False. Note: if using this, make sure you're
             confortable with the burnin and thinning applied to the MCMC chains.
             See estBurnin and thinChains parameters.
-        minObjMethod : str (optional)
+        minObjMethod : str, optional
             scipy.optimize.minimize method used when optimizing
             utility functions for point selection.  Defaults to nelder-mead.
-        minObjOptions : dict (optional)
+        minObjOptions : dict, optional
             kwargs for the scipy.optimize.minimize function used when optimizing
             utility functions for point selection.  Defaults to None,
             but if method == "nelder-mead", options = {"adaptive" : True}
-        args : iterable (optional)
+        args : iterable, optional
             Arguments for user-specified loglikelihood function that calls the
             forward model. Defaults to None.
-        kwargs : dict (optional)
+        kwargs : dict, optional
             Keyword arguments for user-specified loglikelihood function that
             calls the forward model.
 
@@ -531,17 +531,17 @@ class ApproxPosterior(object):
 
         Parameters
         ----------
-        theta0 : float/iterable (optional)
+        theta0 : float/iterable, optional
             Initial guess for optimization. Defaults to None, which draws a sample
             from the prior function using sampleFn.
-        computeLnLike : bool (optional)
+        computeLnLike : bool, optional
             Whether or not to run the forward model and compute yT, the sum of
             the lnlikelihood and lnprior. Defaults to True. If True, also
             appends all new values to self.theta, self.y, in addition to
             returning the new values
-        seed : int (optional)
+        seed : int, optional
             RNG seed.  Defaults to None.
-        cache : bool (optional)
+        cache : bool, optional
             Whether or not to cache forward model input-output pairs.  Defaults
             to True since the forward model is expensive to evaluate. In
             practice, users should cache forward model inputs, outputs,
@@ -549,48 +549,48 @@ class ApproxPosterior(object):
             but saving theta and y here doesn't hurt.  Saves the results to
             apFModelCache.npz in the current working directory (name can change
             if user specifies runName).
-        optGPEveryN : int (optional)
+        optGPEveryN : int, optional
             How often to optimize the GP hyperparameters.  Defaults to
             re-optimizing everytime a new design point is found, e.g. every time
             a new (theta, y) pair is added to the training set.  Increase this
             parameter if approxposterior is running slowly. NB: GP hyperparameters
             are optimized *only* if computeLnLike == True
-        gpMethod : str (optional)
+        gpMethod : str, optional
             scipy.optimize.minimize method used when optimized GP hyperparameters.
             Defaults to None, which is powell, and it usually works.
-        gpOptions : dict (optional)
+        gpOptions : dict, optional
             kwargs for the scipy.optimize.minimize function used to optimize GP
             hyperparameters.  Defaults to None.
-        gpP0 : array (optional)
+        gpP0 : array, optional
             Initial guess for kernel hyperparameters.  If None, defaults to
             np.random.randn for each parameter.
-        nGPRestarts : int (optional)
+        nGPRestarts : int, optional
             Number of times to restart GP hyperparameter optimization.  Defaults
             to 1. Increase this number if the GP is not well-optimized.
-        nMinObjRestarts : int (optional)
+        nMinObjRestarts : int, optional
             Number of times to restart minimizing -utility function to select
             next point to improve GP performance.  Defaults to 5.  Increase this
             number of the point selection is not working well.
-        runName : str (optional)
+        runName : str, optional
             Filename for hdf5 file where mcmc chains are saved.  Defaults to
             apRun.
-        gpHyperPrior : str/callable (optional)
+        gpHyperPrior : str/callable, optional
             Prior function for GP hyperparameters. Defaults to the defaultHyperPrior fn.
             This function asserts that the mean must be negative and that each log
             hyperparameter is within the range [-20,20].
-        numNewPoints : int (optional)
+        numNewPoints : int, optional
             Number of new points to find. Defaults to 1.
-        minObjMethod : str (optional)
+        minObjMethod : str, optional
             scipy.optimize.minimize method used when optimizing
             utility functions for point selection.  Defaults to nelder-mead.
-        minObjOptions : dict (optional)
+        minObjOptions : dict, optional
             kwargs for the scipy.optimize.minimize function used when optimizing
             utility functions for point selection.  Defaults to None,
             but if method == "nelder-mead", options = {"adaptive" : True}
-        args : iterable (optional)
+        args : iterable, optional
             Arguments for user-specified loglikelihood function that calls the
             forward model. Defaults to None.
-        kwargs : dict (optional)
+        kwargs : dict, optional
             Keyword arguments for user-specified loglikelihood function that
             calls the forward model. Defaults to None.
 
@@ -598,7 +598,7 @@ class ApproxPosterior(object):
         -------
         thetaT : float or iterable
             New design point(s) selected by maximizing GP utility function.
-        yT : float or iterable (optional)
+        yT : float or iterable, optional
             Value(s) of loglikelihood + logprior at thetaT. Only returned if
             computeLnLike == True
         """
@@ -725,24 +725,24 @@ class ApproxPosterior(object):
 
         Parameters
         ----------
-        samplerKwargs : dict (optional)
+        samplerKwargs : dict, optional
             Parameters for emcee.EnsembleSampler object
             If None, defaults to the following:
-                nwalkers : int (optional)
+                nwalkers : int, optional
                     Number of emcee walkers.  Defaults to 10 * dim
-        mcmcKwargs : dict (optional)
+        mcmcKwargs : dict, optional
             Parameters for emcee.EnsembleSampler.sample/.run_mcmc methods. If
             None, defaults to the following required parameters:
-                iterations : int (optional)
+                iterations : int, optional
                     Number of MCMC steps.  Defaults to 10,000
-                initial_state : array/emcee.State (optional)
+                initial_state : array/emcee.State, optional
                     Initial guess for MCMC walkers.  Defaults to None and
                     creates guess from priors.
-        runName : str (optional)
+        runName : str, optional
             Filename prefix for all cached files, e.g. for hdf5 file where mcmc
             chains are saved.  Defaults to runNameii.h5. where ii is the
             current iteration number.
-        cache : bool (optional)
+        cache : bool, optional
             Whether or not to cache MCMC chains, forward model input-output
             pairs, and GP kernel parameters.  Defaults to True since they're
             expensive to evaluate. In practice, users should cache forward model
@@ -751,22 +751,22 @@ class ApproxPosterior(object):
             Saves the forward model, results to runNameAPFModelCache.npz,
             the chains as runNameii.h5 for each, iteration ii, and the GP
             parameters in runNameAPGP.npz in the current working directory, etc.
-        estBurnin : bool (optional)
+        estBurnin : bool, optional
             Estimate burn-in time using integrated autocorrelation time
             heuristic.  Defaults to True. In general, we recommend users
             inspect the chains and calculate the burnin after the fact to ensure
             convergence, but this function works pretty well.
-        thinChains : bool (optional)
+        thinChains : bool, optional
             Whether or not to thin chains before GMM fitting.  Useful if running
             long chains.  Defaults to True.  If true, estimates a thin cadence
             via int(0.5*np.min(tau)) where tau is the intergrated autocorrelation
             time.
-        verbose : bool (optional)
+        verbose : bool, optional
             Output all the diagnostics? Defaults to False.
-        args : iterable (optional)
+        args : iterable, optional
             Arguments for user-specified loglikelihood function that calls the
             forward model. Defaults to None.
-        kwargs : dict (optional)
+        kwargs : dict, optional
             Keyword arguments for user-specified loglikelihood function that
             calls the forward model.
 
@@ -860,11 +860,11 @@ class ApproxPosterior(object):
         ----------
         theta0 : iterable
             Initial guess. Defaults to a sample from the prior function.
-        method : str (optional)
+        method : str, optional
             scipy.optimize.minimize method.  Defaults to powell.
-        options : dict (optional)
+        options : dict, optional
             kwargs for the scipy.optimize.minimize function.  Defaults to None.
-        nRestarts : int (optional)
+        nRestarts : int, optional
             Number of times to restart the optimization. Defaults to 15.
 
         Returns
@@ -954,66 +954,66 @@ class ApproxPosterior(object):
             set.
         theta0 : iterable
             Initial guess. Defaults to a sample from the prior function.
-        tol : float (optional)
+        tol : float, optional
             Convergence tolerance. This function will terminate if the function
             value at the estimated extremum changes by less than tol over
             kmax consecutive iterations. Defaults to 1.0e-3.
-        kmax : int (optional)
+        kmax : int, optional
             Number of iterations required for the difference in estimated
             extremum functions values < tol required for convergence. Defaults
             to 3.
-        seed : int (optional)
+        seed : int, optional
             RNG seed.  Defaults to None.
-        verbose : bool (optional)
+        verbose : bool, optional
             Output all the diagnostics? Defaults to True.
-        runName : str (optional)
+        runName : str, optional
             Filename to prepend to cache files where model input-output pairs
             and the current GP hyperparameter values are saved. Defaults to
             apRun.
-        cache : bool (optional)
+        cache : bool, optional
             Whether or not to cache forward model input-output pairs, and GP
             kernel parameters.  Defaults to True since they're
             expensive to evaluate. In practice, users should cache forward model
             inputs, outputs, ancillary parameters, etc in each likelihood
             function evaluation, but saving theta and y here doesn't hurt.
-        gpMethod : str (optional)
+        gpMethod : str, optional
             scipy.optimize.minimize method used when optimized GP hyperparameters.
             Defaults to powell (it usually works)
-        gpOptions : dict (optional)
+        gpOptions : dict, optional
             kwargs for the scipy.optimize.minimize function used to optimize GP
             hyperparameters.  Defaults to None.
-        gpP0 : array (optional)
+        gpP0 : array, optional
             Initial guess for kernel hyperparameters.  If None, defaults to
             np.random.randn for each parameter.
-        optGPEveryN : int (optional)
+        optGPEveryN : int, optional
             How often to optimize the GP hyperparameters.  Defaults to
             re-optimizing everytime a new design point is found, e.g. every time
             a new (theta, y) pair is added to the training set.
-        nGPRestarts : int (optional)
+        nGPRestarts : int, optional
             Number of times to restart GP hyperparameter optimization.  Defaults
             to 1. Increase this number if the GP is not well-optimized.
-        nMinObjRestarts : int (optional)
+        nMinObjRestarts : int, optional
             Number of times to restart minimizing -utility function to select
             next point to improve GP performance.  Defaults to 5.  Increase this
             number of the point selection is not working well.
-        initGPOpt : bool (optional)
+        initGPOpt : bool, optional
             Whether or not to optimize GP hyperparameters before 0th iteration.
             Defaults to True (aka assume user didn't optimize GP hyperparameters)
-        gpHyperPrior : str/callable (optional)
+        gpHyperPrior : str/callable, optional
             Prior function for GP hyperparameters. Defaults to the defaultHyperPrior fn.
             This function asserts that the mean must be negative and that each log
             hyperparameter is within the range [-20,20].
-        minObjMethod : str (optional)
+        minObjMethod : str, optional
             scipy.optimize.minimize method used when optimizing
             utility functions for point selection.  Defaults to nelder-mead.
-        minObjOptions : dict (optional)
+        minObjOptions : dict, optional
             kwargs for the scipy.optimize.minimize function used when optimizing
             utility functions for point selection.  Defaults to None,
             but if method == "nelder-mead", options = {"adaptive" : True}
-        args : iterable (optional)
+        args : iterable, optional
             Arguments for user-specified loglikelihood function that calls the
             forward model. Defaults to None.
-        kwargs : dict (optional)
+        kwargs : dict, optional
             Keyword arguments for user-specified loglikelihood function that
             calls the forward model.
 

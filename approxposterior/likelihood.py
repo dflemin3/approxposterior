@@ -71,9 +71,9 @@ def rosenbrockSample(n=1, dim=2):
 
     Parameters
     ----------
-    n : int (optional)
+    n : int, optional
         Number of samples. Defaults to 1.
-    dim : int (optional)
+    dim : int, optional
         Dimensionality. Defaults to 2.
 
     Returns
@@ -135,7 +135,7 @@ def testBOFnSample(n=1):
 
     Parameters
     ----------
-    n : int (optional)
+    n : int, optional
         Number of samples. Defaults to 1.
 
     Returns
@@ -205,7 +205,7 @@ def sphereSample(n=1):
 
     Parameters
     ----------
-    n : int (optional)
+    n : int, optional
         Number of samples. Defaults to 1.
 
     Returns
