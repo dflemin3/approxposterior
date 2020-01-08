@@ -8,7 +8,7 @@ approxposteior package init file.
 
 __version__ = "0.4"
 __author__ = "David Fleming (dflemin3@uw.edu)"
-__copyright__ = "Copyright 2019 David P. Fleming"
+__copyright__ = "Copyright 2020 David P. Fleming"
 
 from .approx import *
 from .utility import *
