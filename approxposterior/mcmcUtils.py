@@ -155,8 +155,6 @@ def batchMeansMCSE(samples, bins=None, fn=None):
         upper = (ii + 1) * b
         y[ii] = np.sum(fn(samples[lower:upper]), axis=0) / b
 
-    print(b, bins, len(samples))
-
     # Estimate batch means (MCSE) as empirical standard deviation, return MCSE
     mcse = b / (bins - 1) * np.sum((y - mu)**2, axis=0)
     return np.sqrt(mcse / len(samples))
