@@ -215,15 +215,16 @@ or computing KL divergences, and the GP utility functions, e.g. the bape utility
 <p>logsubexp(x1, x2) -&gt; log(exp(x1) - exp(x2))</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><dl class="simple">
-<dt><strong>x1</strong><span class="classifier">float</span></dt><dd></dd>
-<dt><strong>x2</strong><span class="classifier">float</span></dt><dd></dd>
-</dl>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x1</strong> (<em>float</em>) – </p></li>
+<li><p><strong>x2</strong> (<em>float</em>) – </p></li>
+</ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><dl class="simple">
-<dt>logsubexp(x1, x2)</dt><dd></dd>
-</dl>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>logsubexp(x1, x2)</p>
 </dd>
 </dl>
 </dd></dl>
@@ -238,21 +239,18 @@ minimizing this is the same as maximizing the actual utility function.</p>
 <p>See Wang &amp; Li (2017) for derivation/explaination.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><dl class="simple">
-<dt><strong>theta</strong><span class="classifier">array</span></dt><dd><p>parameters to evaluate</p>
-</dd>
-<dt><strong>y</strong><span class="classifier">array</span></dt><dd><p>y values to condition the gp prediction on.</p>
-</dd>
-<dt><strong>gp</strong><span class="classifier">george GP object</span></dt><dd></dd>
-<dt><strong>priorFn</strong><span class="classifier">function</span></dt><dd><p>Function that computes lnPrior probability for a given theta.</p>
-</dd>
-</dl>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>theta</strong> (<em>array</em>) – parameters to evaluate</p></li>
+<li><p><strong>y</strong> (<em>array</em>) – y values to condition the gp prediction on.</p></li>
+<li><p><strong>gp</strong> (<em>george GP object</em>) – </p></li>
+<li><p><strong>priorFn</strong> (<em>function</em>) – Function that computes lnPrior probability for a given theta.</p></li>
+</ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><dl class="simple">
-<dt><strong>util</strong><span class="classifier">float</span></dt><dd><p>utility of theta under the gp</p>
+<dd class="field-even"><p><strong>util</strong> – utility of theta under the gp</p>
 </dd>
-</dl>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>float</p>
 </dd>
 </dl>
 </dd></dl>
@@ -268,21 +266,18 @@ function as the log is monotonic so the minima are equivalent.</p>
 <p>See Kandasamy et al. (2015) for derivation/explaination.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><dl class="simple">
-<dt><strong>theta</strong><span class="classifier">array</span></dt><dd><p>parameters to evaluate</p>
-</dd>
-<dt><strong>y</strong><span class="classifier">array</span></dt><dd><p>y values to condition the gp prediction on.</p>
-</dd>
-<dt><strong>gp</strong><span class="classifier">george GP object</span></dt><dd></dd>
-<dt><strong>priorFn</strong><span class="classifier">function</span></dt><dd><p>Function that computes lnPrior probability for a given theta.</p>
-</dd>
-</dl>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>theta</strong> (<em>array</em>) – parameters to evaluate</p></li>
+<li><p><strong>y</strong> (<em>array</em>) – y values to condition the gp prediction on.</p></li>
+<li><p><strong>gp</strong> (<em>george GP object</em>) – </p></li>
+<li><p><strong>priorFn</strong> (<em>function</em>) – Function that computes lnPrior probability for a given theta.</p></li>
+</ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><dl class="simple">
-<dt><strong>util</strong><span class="classifier">float</span></dt><dd><p>utility of theta under the gp</p>
+<dd class="field-even"><p><strong>util</strong> – utility of theta under the gp</p>
 </dd>
-</dl>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>float</p>
 </dd>
 </dl>
 </dd></dl>
@@ -295,24 +290,20 @@ EI(x) = E(max(f(theta) - f(thetaBest),0)) where f(thetaBest) is the best
 value of the function so far and thetaBest is the best design point</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><dl class="simple">
-<dt><strong>theta</strong><span class="classifier">array</span></dt><dd><p>parameters to evaluate</p>
-</dd>
-<dt><strong>y</strong><span class="classifier">array</span></dt><dd><p>y values to condition the gp prediction on.</p>
-</dd>
-<dt><strong>gp</strong><span class="classifier">george GP object</span></dt><dd></dd>
-<dt><strong>priorFn</strong><span class="classifier">function</span></dt><dd><p>Function that computes lnPrior probability for a given theta.</p>
-</dd>
-<dt><strong>zeta</strong><span class="classifier">float (optional)</span></dt><dd><p>Exploration parameter. Larger zeta leads to more exploration. Defaults
-to 0.01</p>
-</dd>
-</dl>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>theta</strong> (<em>array</em>) – parameters to evaluate</p></li>
+<li><p><strong>y</strong> (<em>array</em>) – y values to condition the gp prediction on.</p></li>
+<li><p><strong>gp</strong> (<em>george GP object</em>) – </p></li>
+<li><p><strong>priorFn</strong> (<em>function</em>) – Function that computes lnPrior probability for a given theta.</p></li>
+<li><p><strong>zeta</strong> (<em>float</em><em>, </em><em>optional</em>) – Exploration parameter. Larger zeta leads to more exploration. Defaults
+to 0.01</p></li>
+</ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><dl class="simple">
-<dt><strong>util</strong><span class="classifier">float</span></dt><dd><p>utility of theta under the gp</p>
+<dd class="field-even"><p><strong>util</strong> – utility of theta under the gp</p>
 </dd>
-</dl>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>float</p>
 </dd>
 </dl>
 </dd></dl>
@@ -329,45 +320,34 @@ likelihoods, e.g. NaNs or infs.  This is required as the GP can only train
 on finite values.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><dl class="simple">
-<dt><strong>fn</strong><span class="classifier">function</span></dt><dd><p>function to minimize that expects x, y, gp as arguments aka fn looks
-like fn_name(x, y, gp).  See <a href="#id1"><span class="problematic" id="id2">*</span></a>_utility functions above for examples.</p>
-</dd>
-<dt><strong>y</strong><span class="classifier">array</span></dt><dd><p>y values to condition the gp prediction on.</p>
-</dd>
-<dt><strong>gp</strong><span class="classifier">george GP object</span></dt><dd></dd>
-<dt><strong>sampleFn</strong><span class="classifier">function</span></dt><dd><p>Function to sample initial conditions from.</p>
-</dd>
-<dt><strong>priorFn</strong><span class="classifier">function</span></dt><dd><p>Function that computes lnPrior probability for a given theta.</p>
-</dd>
-<dt><strong>nMinObjRestarts</strong><span class="classifier">int (optional)</span></dt><dd><p>Number of times to restart minimizing -utility function to select
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fn</strong> (<em>function</em>) – function to minimize that expects x, y, gp as arguments aka fn looks
+like fn_name(x, y, gp).  See <a href="#id1"><span class="problematic" id="id2">*</span></a>_utility functions above for examples.</p></li>
+<li><p><strong>y</strong> (<em>array</em>) – y values to condition the gp prediction on.</p></li>
+<li><p><strong>gp</strong> (<em>george GP object</em>) – </p></li>
+<li><p><strong>sampleFn</strong> (<em>function</em>) – Function to sample initial conditions from.</p></li>
+<li><p><strong>priorFn</strong> (<em>function</em>) – Function that computes lnPrior probability for a given theta.</p></li>
+<li><p><strong>nMinObjRestarts</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of times to restart minimizing -utility function to select
 next point to improve GP performance.  Defaults to 5.  Increase this
-number of the point selection is not working well.</p>
-</dd>
-<dt><strong>method</strong><span class="classifier">str (optional)</span></dt><dd><p>scipy.optimize.minimize method.  Defaults to nelder-mead.</p>
-</dd>
-<dt><strong>options</strong><span class="classifier">dict (optional)</span></dt><dd><p>kwargs for the scipy.optimize.minimize function.  Defaults to None,
-but if method == “nelder-mead”, options = {“adaptive” : True}</p>
-</dd>
-<dt><strong>theta0</strong><span class="classifier">float/iterable (optional)</span></dt><dd><p>Initial guess for optimization. Defaults to None, which draws a sample
-from the prior function using sampleFn.</p>
-</dd>
-<dt><strong>args</strong><span class="classifier">iterable (optional)</span></dt><dd><p>Arguments for user-specified function that this function will minimize.
-Defaults to None.</p>
-</dd>
-<dt><strong>maxIters (int) (optional)</strong></dt><dd><p>Maximum number of iterations to try restarting optimization if the
+number of the point selection is not working well.</p></li>
+<li><p><strong>method</strong> (<em>str</em><em>, </em><em>optional</em>) – scipy.optimize.minimize method.  Defaults to nelder-mead.</p></li>
+<li><p><strong>options</strong> (<em>dict</em><em>, </em><em>optional</em>) – kwargs for the scipy.optimize.minimize function.  Defaults to None,
+but if method == “nelder-mead”, options = {“adaptive” : True}</p></li>
+<li><p><strong>theta0</strong> (<em>float/iterable</em><em>, </em><em>optional</em>) – Initial guess for optimization. Defaults to None, which draws a sample
+from the prior function using sampleFn.</p></li>
+<li><p><strong>args</strong> (<em>iterable</em><em>, </em><em>optional</em>) – Arguments for user-specified function that this function will minimize.
+Defaults to None.</p></li>
+<li><p><strong>(</strong><strong>int</strong><strong>)</strong><strong>, </strong><strong>optional</strong> (<em>maxIters</em>) – Maximum number of iterations to try restarting optimization if the
 solution isn’t finite and/nor allowed by the prior function. Defaults to
-100.</p>
-</dd>
-</dl>
+100.</p></li>
+</ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><dl class="simple">
-<dt><strong>thetaBest</strong><span class="classifier">(1 x n_dims)</span></dt><dd><p>point that minimizes fn</p>
-</dd>
-<dt><strong>fnBest</strong><span class="classifier">float</span></dt><dd><p>fn(thetaBest)</p>
-</dd>
-</dl>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>thetaBest</strong> (<em>(1 x n_dims)</em>) – point that minimizes fn</p></li>
+<li><p><strong>fnBest</strong> (<em>float</em>) – fn(thetaBest)</p></li>
+</ul>
+</p>
 </dd>
 </dl>
 </dd></dl>
@@ -389,20 +369,17 @@ Also, this method is shown to have the lowest error, on average
 (see Hershey and Olsen).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><dl class="simple">
-<dt><strong>x</strong><span class="classifier">array</span></dt><dd><p>Samples drawn from p</p>
-</dd>
-<dt><strong>p</strong><span class="classifier">function</span></dt><dd><p>Callable previous estimate of the density</p>
-</dd>
-<dt><strong>q</strong><span class="classifier">function</span></dt><dd><p>Callable current estimate of the density</p>
-</dd>
-</dl>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<em>array</em>) – Samples drawn from p</p></li>
+<li><p><strong>p</strong> (<em>function</em>) – Callable previous estimate of the density</p></li>
+<li><p><strong>q</strong> (<em>function</em>) – Callable current estimate of the density</p></li>
+</ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><dl class="simple">
-<dt><strong>kl</strong><span class="classifier">float</span></dt><dd><p>KL divergence</p>
+<dd class="field-even"><p><strong>kl</strong> – KL divergence</p>
 </dd>
-</dl>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>float</p>
 </dd>
 </dl>
 </dd></dl>

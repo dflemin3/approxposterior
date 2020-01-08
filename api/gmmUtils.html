@@ -217,28 +217,23 @@ by either minimizing the Bayesian Information Criterior (BIC) or via
 cross-validation.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><dl class="simple">
-<dt><strong>samples</strong><span class="classifier">numpy array</span></dt><dd><p>sampler.flatchain MCMC chain array of dimensions (nwalkers x nsteps, ndim)</p>
-</dd>
-<dt><strong>maxComp</strong><span class="classifier">int (optional)</span></dt><dd><p>Maximum number of mixture model components to fit for.  Defaults to 3.</p>
-</dd>
-<dt><strong>covType</strong><span class="classifier">str (optional)</span></dt><dd><p>GMM covariance type.  Defaults to “full”.  See the documentation here:
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>samples</strong> (<em>numpy array</em>) – sampler.flatchain MCMC chain array of dimensions (nwalkers x nsteps, ndim)</p></li>
+<li><p><strong>maxComp</strong> (<em>int</em><em> (</em><em>optional</em><em>)</em>) – Maximum number of mixture model components to fit for.  Defaults to 3.</p></li>
+<li><p><strong>covType</strong> (<em>str</em><em> (</em><em>optional</em><em>)</em>) – GMM covariance type.  Defaults to “full”.  See the documentation here:
 <a class="reference external" href="http://scikit-learn.org/stable/modules/generated/sklearn.mixture.GaussianMixture.html">http://scikit-learn.org/stable/modules/generated/sklearn.mixture.GaussianMixture.html</a>
-for more info</p>
-</dd>
-<dt><strong>useBic</strong><span class="classifier">bool (optional)</span></dt><dd><p>Minimize the BIC to pick the number of GMM components or use 5-fold
-cross validation?  Defaults to True (aka, use the BIC)</p>
-</dd>
-<dt><strong>gmmKwargs</strong><span class="classifier">dict (optional)</span></dt><dd><p>keyword arguments for sklearn.mixture.GaussianMixture. Defaults to
-None</p>
-</dd>
-</dl>
+for more info</p></li>
+<li><p><strong>useBic</strong> (<em>bool</em><em> (</em><em>optional</em><em>)</em>) – Minimize the BIC to pick the number of GMM components or use 5-fold
+cross validation?  Defaults to True (aka, use the BIC)</p></li>
+<li><p><strong>gmmKwargs</strong> (<em>dict</em><em> (</em><em>optional</em><em>)</em>) – keyword arguments for sklearn.mixture.GaussianMixture. Defaults to
+None</p></li>
+</ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><dl class="simple">
-<dt><strong>GMM</strong><span class="classifier">sklearn.mixture.GaussianMixture</span></dt><dd><p>fitted Gaussian mixture model</p>
+<dd class="field-even"><p><strong>GMM</strong> – fitted Gaussian mixture model</p>
 </dd>
-</dl>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>sklearn.mixture.GaussianMixture</p>
 </dd>
 </dl>
 </dd></dl>

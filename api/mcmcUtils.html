@@ -213,28 +213,23 @@
 <dd><p>Validates emcee.EnsembleSampler parameters/kwargs.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><dl class="simple">
-<dt><strong>ap</strong><span class="classifier">approxposterior.ApproxPosterior</span></dt><dd><p>Initialized ApproxPosterior object</p>
-</dd>
-<dt><strong>samplerKwargs</strong><span class="classifier">dict</span></dt><dd><p>dictionary containing parameters intended for emcee.EnsembleSampler
-object</p>
-</dd>
-<dt><strong>mcmcKwargs</strong><span class="classifier">dict</span></dt><dd><p>dictionary containing parameters intended for
-emcee.EnsembleSampler.run_mcmc/.sample object</p>
-</dd>
-<dt><strong>verbose</strong><span class="classifier">bool (optional)</span></dt><dd><p>verboisty level. Defaults to False (no output)</p>
-</dd>
-</dl>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ap</strong> (<em>approxposterior.ApproxPosterior</em>) – Initialized ApproxPosterior object</p></li>
+<li><p><strong>samplerKwargs</strong> (<em>dict</em>) – dictionary containing parameters intended for emcee.EnsembleSampler
+object</p></li>
+<li><p><strong>mcmcKwargs</strong> (<em>dict</em>) – dictionary containing parameters intended for
+emcee.EnsembleSampler.run_mcmc/.sample object</p></li>
+<li><p><strong>verbose</strong> (<em>bool</em><em>, </em><em>optional</em>) – verboisty level. Defaults to False (no output)</p></li>
+</ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><dl class="simple">
-<dt><strong>samplerKwargs</strong><span class="classifier">dict</span></dt><dd><p>Sanitized dictionary containing parameters intended for
-emcee.EnsembleSampler object</p>
-</dd>
-<dt><strong>mcmcKwargs</strong><span class="classifier">dict</span></dt><dd><p>Sanitized dictionary containing parameters intended for
-emcee.EnsembleSampler.run_mcmc/.sample object</p>
-</dd>
-</dl>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>samplerKwargs</strong> (<em>dict</em>) – Sanitized dictionary containing parameters intended for
+emcee.EnsembleSampler object</p></li>
+<li><p><strong>mcmcKwargs</strong> (<em>dict</em>) – Sanitized dictionary containing parameters intended for
+emcee.EnsembleSampler.run_mcmc/.sample object</p></li>
+</ul>
+</p>
 </dd>
 </dl>
 </dd></dl>
@@ -247,21 +242,18 @@ non-overlapping batch means methods. See Flegal, Haran, &amp; Jones (2008) for
 more info: <a class="reference external" href="https://arxiv.org/pdf/math/0703746.pdf">https://arxiv.org/pdf/math/0703746.pdf</a></p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><dl class="simple">
-<dt><strong>samples</strong><span class="classifier">array</span></dt><dd><p>nsamples x ndim array of MCMC samples</p>
-</dd>
-<dt><strong>bins</strong><span class="classifier">int (optional)</span></dt><dd><p>Number of bins. Defaults to int(sqrt(len(samples)))</p>
-</dd>
-<dt><strong>fn</strong><span class="classifier">function (optional)</span></dt><dd><p>Function used to compute posterior summary statistic on each chunk.
-Defaults to None to compute the simple expected value, aka the mean.</p>
-</dd>
-</dl>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>samples</strong> (<em>array</em>) – nsamples x ndim array of MCMC samples</p></li>
+<li><p><strong>bins</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of bins. Defaults to int(sqrt(len(samples)))</p></li>
+<li><p><strong>fn</strong> (<em>function</em><em>, </em><em>optional</em>) – Function used to compute posterior summary statistic on each chunk.
+Defaults to None to compute the simple expected value, aka the mean.</p></li>
+</ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><dl class="simple">
-<dt><strong>RMSE</strong><span class="classifier">float/array</span></dt><dd><p>RMSE for each dimension of the chain</p>
+<dd class="field-even"><p><strong>RMSE</strong> – RMSE for each dimension of the chain</p>
 </dd>
-</dl>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>float/array</p>
 </dd>
 </dl>
 </dd></dl>

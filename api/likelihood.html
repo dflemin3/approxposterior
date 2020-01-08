@@ -214,15 +214,13 @@ functions for cases like the Wang &amp; Li (2017) Rosenbrock function example.</
 <dd><p>Rosenbrock function as a loglikelihood following Wang &amp; Li (2017)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><dl class="simple">
-<dt><strong>theta</strong><span class="classifier">array</span></dt><dd></dd>
-</dl>
+<dd class="field-odd"><p><strong>theta</strong> (<em>array</em>) – </p>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><dl class="simple">
-<dt><strong>l</strong><span class="classifier">float</span></dt><dd><p>likelihood</p>
+<dd class="field-even"><p><strong>l</strong> – likelihood</p>
 </dd>
-</dl>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>float</p>
 </dd>
 </dl>
 </dd></dl>
@@ -235,15 +233,13 @@ where the prior pi(x) is a uniform distribution over [-5, 5] x [-5, 5] x …
 for however many dimensions (dim = x.shape[-1])</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><dl class="simple">
-<dt><strong>theta</strong><span class="classifier">array</span></dt><dd></dd>
-</dl>
+<dd class="field-odd"><p><strong>theta</strong> (<em>array</em>) – </p>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><dl class="simple">
-<dt><strong>l</strong><span class="classifier">float</span></dt><dd><p>log prior</p>
+<dd class="field-even"><p><strong>l</strong> – log prior</p>
 </dd>
-</dl>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>float</p>
 </dd>
 </dl>
 </dd></dl>
@@ -255,18 +251,16 @@ for however many dimensions (dim = x.shape[-1])</p>
 [-5, 5] x [-5, 5]</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><dl class="simple">
-<dt><strong>n</strong><span class="classifier">int (optional)</span></dt><dd><p>Number of samples. Defaults to 1.</p>
-</dd>
-<dt><strong>dim</strong><span class="classifier">int (optional)</span></dt><dd><p>Dimensionality. Defaults to 2.</p>
-</dd>
-</dl>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of samples. Defaults to 1.</p></li>
+<li><p><strong>dim</strong> (<em>int</em><em>, </em><em>optional</em>) – Dimensionality. Defaults to 2.</p></li>
+</ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><dl class="simple">
-<dt><strong>sample</strong><span class="classifier">floats</span></dt><dd><p>n x 2 array of floats samples from the prior</p>
+<dd class="field-even"><p><strong>sample</strong> – n x 2 array of floats samples from the prior</p>
 </dd>
-</dl>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>floats</p>
 </dd>
 </dl>
 </dd></dl>
@@ -277,15 +271,13 @@ for however many dimensions (dim = x.shape[-1])</p>
 <dd><p>Compute the log probability (log posterior) as likelihood * prior</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><dl class="simple">
-<dt><strong>theta</strong><span class="classifier">array</span></dt><dd></dd>
-</dl>
+<dd class="field-odd"><p><strong>theta</strong> (<em>array</em>) – </p>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><dl class="simple">
-<dt><strong>l</strong><span class="classifier">float</span></dt><dd><p>log probability</p>
+<dd class="field-even"><p><strong>l</strong> – log probability</p>
 </dd>
-</dl>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>float</p>
 </dd>
 </dl>
 </dd></dl>
@@ -304,16 +296,13 @@ for however many dimensions (dim = x.shape[-1])</p>
 [-2, 1]</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><dl class="simple">
-<dt><strong>n</strong><span class="classifier">int (optional)</span></dt><dd><p>Number of samples. Defaults to 1.</p>
-</dd>
-</dl>
+<dd class="field-odd"><p><strong>n</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of samples. Defaults to 1.</p>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><dl class="simple">
-<dt><strong>sample</strong><span class="classifier">floats</span></dt><dd><p>n x 1 array of floats samples from the prior</p>
+<dd class="field-even"><p><strong>sample</strong> – n x 1 array of floats samples from the prior</p>
 </dd>
-</dl>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>floats</p>
 </dd>
 </dl>
 </dd></dl>
@@ -325,15 +314,13 @@ for however many dimensions (dim = x.shape[-1])</p>
 prior is a simple uniform function over [-2, 1]</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><dl class="simple">
-<dt><strong>theta</strong><span class="classifier">float/array</span></dt><dd></dd>
-</dl>
+<dd class="field-odd"><p><strong>theta</strong> (<em>float/array</em>) – </p>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><dl class="simple">
-<dt><strong>l</strong><span class="classifier">float</span></dt><dd><p>log prior</p>
+<dd class="field-even"><p><strong>l</strong> – log prior</p>
 </dd>
-</dl>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>float</p>
 </dd>
 </dl>
 </dd></dl>
@@ -346,15 +333,13 @@ negative of the sphere function and it’s just a 0 mean, unit std Gaussian.
 Taken from: <a class="reference external" href="https://en.wikipedia.org/wiki/Test_functions_for_optimization">https://en.wikipedia.org/wiki/Test_functions_for_optimization</a></p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><dl class="simple">
-<dt><strong>theta</strong><span class="classifier">array</span></dt><dd></dd>
-</dl>
+<dd class="field-odd"><p><strong>theta</strong> (<em>array</em>) – </p>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><dl class="simple">
-<dt><strong>val</strong><span class="classifier">float</span></dt><dd><p>Function value at theta</p>
+<dd class="field-even"><p><strong>val</strong> – Function value at theta</p>
 </dd>
-</dl>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>float</p>
 </dd>
 </dl>
 </dd></dl>
@@ -366,16 +351,13 @@ Taken from: <a class="reference external" href="https://en.wikipedia.org/wiki/Te
 [-2, 2]</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><dl class="simple">
-<dt><strong>n</strong><span class="classifier">int (optional)</span></dt><dd><p>Number of samples. Defaults to 1.</p>
-</dd>
-</dl>
+<dd class="field-odd"><p><strong>n</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of samples. Defaults to 1.</p>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><dl class="simple">
-<dt><strong>sample</strong><span class="classifier">floats</span></dt><dd><p>n x 1 array of floats samples from the prior</p>
+<dd class="field-even"><p><strong>sample</strong> – n x 1 array of floats samples from the prior</p>
 </dd>
-</dl>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>floats</p>
 </dd>
 </dl>
 </dd></dl>
@@ -387,15 +369,13 @@ Taken from: <a class="reference external" href="https://en.wikipedia.org/wiki/Te
 This prior is a simple uniform function over [-2, 2] for each dimension.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><dl class="simple">
-<dt><strong>theta</strong><span class="classifier">float/array</span></dt><dd></dd>
-</dl>
+<dd class="field-odd"><p><strong>theta</strong> (<em>float/array</em>) – </p>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><dl class="simple">
-<dt><strong>l</strong><span class="classifier">float</span></dt><dd><p>log prior</p>
+<dd class="field-even"><p><strong>l</strong> – log prior</p>
 </dd>
-</dl>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>float</p>
 </dd>
 </dl>
 </dd></dl>

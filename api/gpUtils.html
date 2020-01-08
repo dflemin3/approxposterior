@@ -216,15 +216,13 @@ hyperparameters within a reasonable huge range, [-20, 20]. Note that george
 operates on the <em>log</em> hyperparameters, except for the mean function.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><dl class="simple">
-<dt><strong>p</strong><span class="classifier">array/iterable</span></dt><dd><p>Array of GP hyperparameters</p>
-</dd>
-</dl>
+<dd class="field-odd"><p><strong>p</strong> (<em>array/iterable</em>) – Array of GP hyperparameters</p>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><dl class="simple">
-<dt><strong>prior</strong><span class="classifier">float</span></dt><dd></dd>
-</dl>
+<dd class="field-even"><p><strong>prior</strong></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>float</p>
 </dd>
 </dl>
 </dd></dl>
@@ -237,70 +235,59 @@ This kernel  works well in many applications as it effectively enforces a
 prior on the smoothness of the function and is infinitely differentiable.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><dl class="simple">
-<dt><strong>theta</strong><span class="classifier">array</span></dt><dd><p>Design points</p>
-</dd>
-<dt><strong>y</strong><span class="classifier">array</span></dt><dd><p>Data to condition GP on, e.g. the lnlike + lnprior at each design point,
-theta.</p>
-</dd>
-<dt><strong>order</strong><span class="classifier">int (optional)</span></dt><dd><p>Order of PolynomialKernel to add to ExpSquaredKernel. Defaults to None,
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>theta</strong> (<em>array</em>) – Design points</p></li>
+<li><p><strong>y</strong> (<em>array</em>) – Data to condition GP on, e.g. the lnlike + lnprior at each design point,
+theta.</p></li>
+<li><p><strong>order</strong> (<em>int</em><em>, </em><em>optional</em>) – Order of PolynomialKernel to add to ExpSquaredKernel. Defaults to None,
 that is, no PolynomialKernel is added and the GP only uses the
-ExpSquaredKernel</p>
-</dd>
-<dt><strong>white_noise</strong><span class="classifier">float (optional)</span></dt><dd><p>From george docs: “A description of the logarithm of the white noise
+ExpSquaredKernel</p></li>
+<li><p><strong>white_noise</strong> (<em>float</em><em>, </em><em>optional</em>) – From george docs: “A description of the logarithm of the white noise
 variance added to the diagonal of the covariance matrix”. Defaults to
 ln(white_noise) = -12. Note: if order is not None, you might need to
 set the white_noise to a larger value for the computation to be
-numerically stable, but this, as always, depends on the application.</p>
-</dd>
-<dt><strong>fitAmp</strong><span class="classifier">bool (optional)</span></dt><dd><p>Whether or not to include an amplitude term. Defaults to False.</p>
-</dd>
-</dl>
+numerically stable, but this, as always, depends on the application.</p></li>
+<li><p><strong>fitAmp</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether or not to include an amplitude term. Defaults to False.</p></li>
+</ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><dl class="simple">
-<dt><strong>gp</strong><span class="classifier">george.GP</span></dt><dd><p>Gaussian process with initialized kernel and factorized covariance
+<dd class="field-even"><p><strong>gp</strong> – Gaussian process with initialized kernel and factorized covariance
 matrix.</p>
 </dd>
-</dl>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>george.GP</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="function">
 <dt id="approxposterior.gpUtils.optimizeGP">
-<code class="sig-prename descclassname">approxposterior.gpUtils.</code><code class="sig-name descname">optimizeGP</code><span class="sig-paren">(</span><em class="sig-param">gp</em>, <em class="sig-param">theta</em>, <em class="sig-param">y</em>, <em class="sig-param">seed=None</em>, <em class="sig-param">nGPRestarts=1</em>, <em class="sig-param">method='powell'</em>, <em class="sig-param">options=None</em>, <em class="sig-param">p0=None</em>, <em class="sig-param">gpHyperPrior=&lt;function defaultHyperPrior at 0x181f9b9680&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/gpUtils.html#optimizeGP"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.gpUtils.optimizeGP" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">approxposterior.gpUtils.</code><code class="sig-name descname">optimizeGP</code><span class="sig-paren">(</span><em class="sig-param">gp</em>, <em class="sig-param">theta</em>, <em class="sig-param">y</em>, <em class="sig-param">seed=None</em>, <em class="sig-param">nGPRestarts=1</em>, <em class="sig-param">method='powell'</em>, <em class="sig-param">options=None</em>, <em class="sig-param">p0=None</em>, <em class="sig-param">gpHyperPrior=&lt;function defaultHyperPrior&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/gpUtils.html#optimizeGP"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.gpUtils.optimizeGP" title="Permalink to this definition">¶</a></dt>
 <dd><p>Optimize hyperparameters of an arbitrary george Gaussian Process by
 maximizing the marginal loglikelihood.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><dl class="simple">
-<dt><strong>gp</strong><span class="classifier">george.GP</span></dt><dd></dd>
-<dt><strong>theta</strong><span class="classifier">array</span></dt><dd></dd>
-<dt><strong>y</strong><span class="classifier">array</span></dt><dd><p>data to condition GP on</p>
-</dd>
-<dt><strong>seed</strong><span class="classifier">int (optional)</span></dt><dd><p>numpy RNG seed.  Defaults to None.</p>
-</dd>
-<dt><strong>nGPRestarts</strong><span class="classifier">int (optional)</span></dt><dd><p>Number of times to restart the optimization.  Defaults to 1. Increase
-this number if the GP isn’t optimized well.</p>
-</dd>
-<dt><strong>method</strong><span class="classifier">str (optional)</span></dt><dd><p>scipy.optimize.minimize method.  Defaults to powell.</p>
-</dd>
-<dt><strong>options</strong><span class="classifier">dict (optional)</span></dt><dd><p>kwargs for the scipy.optimize.minimize function.  Defaults to None.</p>
-</dd>
-<dt><strong>p0</strong><span class="classifier">array (optional)</span></dt><dd><p>Initial guess for kernel hyperparameters.  If None, defaults to
-np.random.randn for each parameter</p>
-</dd>
-<dt><strong>gpHyperPrior</strong><span class="classifier">str/callable (optional)</span></dt><dd><p>Prior function for GP hyperparameters. Defaults to the defaultHyperPrior fn.
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>gp</strong> (<em>george.GP</em>) – </p></li>
+<li><p><strong>theta</strong> (<em>array</em>) – </p></li>
+<li><p><strong>y</strong> (<em>array</em>) – data to condition GP on</p></li>
+<li><p><strong>seed</strong> (<em>int</em><em>, </em><em>optional</em>) – numpy RNG seed.  Defaults to None.</p></li>
+<li><p><strong>nGPRestarts</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of times to restart the optimization.  Defaults to 1. Increase
+this number if the GP isn’t optimized well.</p></li>
+<li><p><strong>method</strong> (<em>str</em><em>, </em><em>optional</em>) – scipy.optimize.minimize method.  Defaults to powell.</p></li>
+<li><p><strong>options</strong> (<em>dict</em><em>, </em><em>optional</em>) – kwargs for the scipy.optimize.minimize function.  Defaults to None.</p></li>
+<li><p><strong>p0</strong> (<em>array</em><em>, </em><em>optional</em>) – Initial guess for kernel hyperparameters.  If None, defaults to
+np.random.randn for each parameter</p></li>
+<li><p><strong>gpHyperPrior</strong> (<em>str/callable</em><em>, </em><em>optional</em>) – Prior function for GP hyperparameters. Defaults to the defaultHyperPrior fn.
 This function asserts that the mean must be negative and that each log
-hyperparameter is within the range [-20,20].</p>
-</dd>
-</dl>
+hyperparameter is within the range [-20,20].</p></li>
+</ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><dl class="simple">
-<dt><strong>optimizedGP</strong><span class="classifier">george.GP</span></dt><dd></dd>
-</dl>
+<dd class="field-even"><p><strong>optimizedGP</strong></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>george.GP</p>
 </dd>
 </dl>
 </dd></dl>

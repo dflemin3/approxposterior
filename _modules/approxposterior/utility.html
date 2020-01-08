@@ -368,7 +368,7 @@
 <span class="sd">    gp : george GP object</span>
 <span class="sd">    priorFn : function</span>
 <span class="sd">        Function that computes lnPrior probability for a given theta.</span>
-<span class="sd">    zeta : float (optional)</span>
+<span class="sd">    zeta : float, optional</span>
 <span class="sd">        Exploration parameter. Larger zeta leads to more exploration. Defaults</span>
 <span class="sd">        to 0.01</span>
 
@@ -439,22 +439,22 @@
 <span class="sd">        Function to sample initial conditions from.</span>
 <span class="sd">    priorFn : function</span>
 <span class="sd">        Function that computes lnPrior probability for a given theta.</span>
-<span class="sd">    nMinObjRestarts : int (optional)</span>
+<span class="sd">    nMinObjRestarts : int, optional</span>
 <span class="sd">        Number of times to restart minimizing -utility function to select</span>
 <span class="sd">        next point to improve GP performance.  Defaults to 5.  Increase this</span>
 <span class="sd">        number of the point selection is not working well.</span>
-<span class="sd">    method : str (optional)</span>
+<span class="sd">    method : str, optional</span>
 <span class="sd">        scipy.optimize.minimize method.  Defaults to nelder-mead.</span>
-<span class="sd">    options : dict (optional)</span>
+<span class="sd">    options : dict, optional</span>
 <span class="sd">        kwargs for the scipy.optimize.minimize function.  Defaults to None,</span>
 <span class="sd">        but if method == &quot;nelder-mead&quot;, options = {&quot;adaptive&quot; : True}</span>
-<span class="sd">    theta0 : float/iterable (optional)</span>
+<span class="sd">    theta0 : float/iterable, optional</span>
 <span class="sd">        Initial guess for optimization. Defaults to None, which draws a sample</span>
 <span class="sd">        from the prior function using sampleFn.</span>
-<span class="sd">    args : iterable (optional)</span>
+<span class="sd">    args : iterable, optional</span>
 <span class="sd">        Arguments for user-specified function that this function will minimize.</span>
 <span class="sd">        Defaults to None.</span>
-<span class="sd">    maxIters (int) (optional)</span>
+<span class="sd">    maxIters (int), optional</span>
 <span class="sd">        Maximum number of iterations to try restarting optimization if the</span>
 <span class="sd">        solution isn&#39;t finite and/nor allowed by the prior function. Defaults to</span>
 <span class="sd">        100.</span>

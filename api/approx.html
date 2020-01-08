@@ -215,36 +215,9 @@ posterior distributions given the GP model.</p>
 <em class="property">class </em><code class="sig-prename descclassname">approxposterior.approx.</code><code class="sig-name descname">ApproxPosterior</code><span class="sig-paren">(</span><em class="sig-param">theta</em>, <em class="sig-param">y</em>, <em class="sig-param">lnprior</em>, <em class="sig-param">lnlike</em>, <em class="sig-param">priorSample</em>, <em class="sig-param">bounds</em>, <em class="sig-param">gp=None</em>, <em class="sig-param">algorithm='bape'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/approx.html#ApproxPosterior"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.approx.ApproxPosterior" title="Permalink to this definition">¶</a></dt>
 <dd><p>Class used to estimate approximate Bayesian posterior distributions or
 perform Bayesian optimization using a Gaussian process surrogate model</p>
-<p class="rubric">Methods</p>
-<table class="longtable docutils align-default">
-<colgroup>
-<col style="width: 10%" />
-<col style="width: 90%" />
-</colgroup>
-<tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#approxposterior.approx.ApproxPosterior.bayesOpt" title="approxposterior.approx.ApproxPosterior.bayesOpt"><code class="xref py py-obj docutils literal notranslate"><span class="pre">bayesOpt</span></code></a>(self, nmax[, theta0, tol, kmax, …])</p></td>
-<td><p>Perform Bayesian optimization given a GP surrogate model to estimate</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#approxposterior.approx.ApproxPosterior.findMAP" title="approxposterior.approx.ApproxPosterior.findMAP"><code class="xref py py-obj docutils literal notranslate"><span class="pre">findMAP</span></code></a>(self[, theta0, method, options, …])</p></td>
-<td><p>Find the maximum a posteriori (MAP) estimate of the function learned by the GP.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#approxposterior.approx.ApproxPosterior.findNextPoint" title="approxposterior.approx.ApproxPosterior.findNextPoint"><code class="xref py py-obj docutils literal notranslate"><span class="pre">findNextPoint</span></code></a>(self[, theta0, computeLnLike, …])</p></td>
-<td><p>Find numNewPoints new point(s), thetaT, by maximizing utility function.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#approxposterior.approx.ApproxPosterior.optGP" title="approxposterior.approx.ApproxPosterior.optGP"><code class="xref py py-obj docutils literal notranslate"><span class="pre">optGP</span></code></a>(self[, seed, method, options, p0, …])</p></td>
-<td><p>Optimize hyperparameters of approx object’s GP</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#approxposterior.approx.ApproxPosterior.run" title="approxposterior.approx.ApproxPosterior.run"><code class="xref py py-obj docutils literal notranslate"><span class="pre">run</span></code></a>(self[, m, nmax, seed, timing, verbose, …])</p></td>
-<td><p>Core method to estimate the approximate posterior distribution via Gaussian Process regression</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#approxposterior.approx.ApproxPosterior.runMCMC" title="approxposterior.approx.ApproxPosterior.runMCMC"><code class="xref py py-obj docutils literal notranslate"><span class="pre">runMCMC</span></code></a>(self[, samplerKwargs, mcmcKwargs, …])</p></td>
-<td><p>Given forward model input-output pairs, theta and y, and a trained GP, run an MCMC using the GP to evaluate the logprobability instead of the true, computationally-expensive forward model.</p></td>
-</tr>
-</tbody>
-</table>
 <dl class="method">
 <dt id="approxposterior.approx.ApproxPosterior.bayesOpt">
-<code class="sig-name descname">bayesOpt</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">nmax</em>, <em class="sig-param">theta0=None</em>, <em class="sig-param">tol=0.001</em>, <em class="sig-param">kmax=3</em>, <em class="sig-param">seed=None</em>, <em class="sig-param">verbose=True</em>, <em class="sig-param">runName='apRun'</em>, <em class="sig-param">cache=True</em>, <em class="sig-param">gpMethod='powell'</em>, <em class="sig-param">gpOptions=None</em>, <em class="sig-param">gpP0=None</em>, <em class="sig-param">optGPEveryN=1</em>, <em class="sig-param">nGPRestarts=1</em>, <em class="sig-param">nMinObjRestarts=5</em>, <em class="sig-param">initGPOpt=True</em>, <em class="sig-param">minObjMethod='nelder-mead'</em>, <em class="sig-param">gpHyperPrior=&lt;function defaultHyperPrior at 0x181f9b9680&gt;</em>, <em class="sig-param">minObjOptions=None</em>, <em class="sig-param">findMAP=True</em>, <em class="sig-param">args=None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/approx.html#ApproxPosterior.bayesOpt"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.approx.ApproxPosterior.bayesOpt" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">bayesOpt</code><span class="sig-paren">(</span><em class="sig-param">nmax</em>, <em class="sig-param">theta0=None</em>, <em class="sig-param">tol=0.001</em>, <em class="sig-param">kmax=3</em>, <em class="sig-param">seed=None</em>, <em class="sig-param">verbose=True</em>, <em class="sig-param">runName='apRun'</em>, <em class="sig-param">cache=True</em>, <em class="sig-param">gpMethod='powell'</em>, <em class="sig-param">gpOptions=None</em>, <em class="sig-param">gpP0=None</em>, <em class="sig-param">optGPEveryN=1</em>, <em class="sig-param">nGPRestarts=1</em>, <em class="sig-param">nMinObjRestarts=5</em>, <em class="sig-param">initGPOpt=True</em>, <em class="sig-param">minObjMethod='nelder-mead'</em>, <em class="sig-param">gpHyperPrior=&lt;function defaultHyperPrior&gt;</em>, <em class="sig-param">minObjOptions=None</em>, <em class="sig-param">findMAP=True</em>, <em class="sig-param">args=None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/approx.html#ApproxPosterior.bayesOpt"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.approx.ApproxPosterior.bayesOpt" title="Permalink to this definition">¶</a></dt>
 <dd><p>Perform Bayesian optimization given a GP surrogate model to estimate</p>
 <p>thetaBest = argmax(fn(theta))</p>
 <p>given a GP trained on (theta, y). In this case, fn is the function
@@ -266,93 +239,73 @@ ensure the GP properly learns the underlying function.</p>
 when fitAmp = True, that is the GP kernel has an amplitude term</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><dl class="simple">
-<dt><strong>nmax</strong><span class="classifier">int</span></dt><dd><p>Maximum number of new design points to find. These are the
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>nmax</strong> (<em>int</em>) – Maximum number of new design points to find. These are the
 points that are selected by maximizing the utility function, e.g.
 the expected improvement, and sequentially added to the GP training
-set.</p>
-</dd>
-<dt><strong>theta0</strong><span class="classifier">iterable</span></dt><dd><p>Initial guess. Defaults to a sample from the prior function.</p>
-</dd>
-<dt><strong>tol</strong><span class="classifier">float (optional)</span></dt><dd><p>Convergence tolerance. This function will terminate if the function
+set.</p></li>
+<li><p><strong>theta0</strong> (<em>iterable</em>) – Initial guess. Defaults to a sample from the prior function.</p></li>
+<li><p><strong>tol</strong> (<em>float</em><em>, </em><em>optional</em>) – Convergence tolerance. This function will terminate if the function
 value at the estimated extremum changes by less than tol over
-kmax consecutive iterations. Defaults to 1.0e-3.</p>
-</dd>
-<dt><strong>kmax</strong><span class="classifier">int (optional)</span></dt><dd><p>Number of iterations required for the difference in estimated
+kmax consecutive iterations. Defaults to 1.0e-3.</p></li>
+<li><p><strong>kmax</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of iterations required for the difference in estimated
 extremum functions values &lt; tol required for convergence. Defaults
-to 3.</p>
-</dd>
-<dt><strong>seed</strong><span class="classifier">int (optional)</span></dt><dd><p>RNG seed.  Defaults to None.</p>
-</dd>
-<dt><strong>verbose</strong><span class="classifier">bool (optional)</span></dt><dd><p>Output all the diagnostics? Defaults to True.</p>
-</dd>
-<dt><strong>runName</strong><span class="classifier">str (optional)</span></dt><dd><p>Filename to prepend to cache files where model input-output pairs
+to 3.</p></li>
+<li><p><strong>seed</strong> (<em>int</em><em>, </em><em>optional</em>) – RNG seed.  Defaults to None.</p></li>
+<li><p><strong>verbose</strong> (<em>bool</em><em>, </em><em>optional</em>) – Output all the diagnostics? Defaults to True.</p></li>
+<li><p><strong>runName</strong> (<em>str</em><em>, </em><em>optional</em>) – Filename to prepend to cache files where model input-output pairs
 and the current GP hyperparameter values are saved. Defaults to
-apRun.</p>
-</dd>
-<dt><strong>cache</strong><span class="classifier">bool (optional)</span></dt><dd><p>Whether or not to cache forward model input-output pairs, and GP
+apRun.</p></li>
+<li><p><strong>cache</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether or not to cache forward model input-output pairs, and GP
 kernel parameters.  Defaults to True since they’re
 expensive to evaluate. In practice, users should cache forward model
 inputs, outputs, ancillary parameters, etc in each likelihood
-function evaluation, but saving theta and y here doesn’t hurt.</p>
-</dd>
-<dt><strong>gpMethod</strong><span class="classifier">str (optional)</span></dt><dd><p>scipy.optimize.minimize method used when optimized GP hyperparameters.
-Defaults to powell (it usually works)</p>
-</dd>
-<dt><strong>gpOptions</strong><span class="classifier">dict (optional)</span></dt><dd><p>kwargs for the scipy.optimize.minimize function used to optimize GP
-hyperparameters.  Defaults to None.</p>
-</dd>
-<dt><strong>gpP0</strong><span class="classifier">array (optional)</span></dt><dd><p>Initial guess for kernel hyperparameters.  If None, defaults to
-np.random.randn for each parameter.</p>
-</dd>
-<dt><strong>optGPEveryN</strong><span class="classifier">int (optional)</span></dt><dd><p>How often to optimize the GP hyperparameters.  Defaults to
+function evaluation, but saving theta and y here doesn’t hurt.</p></li>
+<li><p><strong>gpMethod</strong> (<em>str</em><em>, </em><em>optional</em>) – scipy.optimize.minimize method used when optimized GP hyperparameters.
+Defaults to powell (it usually works)</p></li>
+<li><p><strong>gpOptions</strong> (<em>dict</em><em>, </em><em>optional</em>) – kwargs for the scipy.optimize.minimize function used to optimize GP
+hyperparameters.  Defaults to None.</p></li>
+<li><p><strong>gpP0</strong> (<em>array</em><em>, </em><em>optional</em>) – Initial guess for kernel hyperparameters.  If None, defaults to
+np.random.randn for each parameter.</p></li>
+<li><p><strong>optGPEveryN</strong> (<em>int</em><em>, </em><em>optional</em>) – How often to optimize the GP hyperparameters.  Defaults to
 re-optimizing everytime a new design point is found, e.g. every time
-a new (theta, y) pair is added to the training set.</p>
-</dd>
-<dt><strong>nGPRestarts</strong><span class="classifier">int (optional)</span></dt><dd><p>Number of times to restart GP hyperparameter optimization.  Defaults
-to 1. Increase this number if the GP is not well-optimized.</p>
-</dd>
-<dt><strong>nMinObjRestarts</strong><span class="classifier">int (optional)</span></dt><dd><p>Number of times to restart minimizing -utility function to select
+a new (theta, y) pair is added to the training set.</p></li>
+<li><p><strong>nGPRestarts</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of times to restart GP hyperparameter optimization.  Defaults
+to 1. Increase this number if the GP is not well-optimized.</p></li>
+<li><p><strong>nMinObjRestarts</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of times to restart minimizing -utility function to select
 next point to improve GP performance.  Defaults to 5.  Increase this
-number of the point selection is not working well.</p>
-</dd>
-<dt><strong>initGPOpt</strong><span class="classifier">bool (optional)</span></dt><dd><p>Whether or not to optimize GP hyperparameters before 0th iteration.
-Defaults to True (aka assume user didn’t optimize GP hyperparameters)</p>
-</dd>
-<dt><strong>gpHyperPrior</strong><span class="classifier">str/callable (optional)</span></dt><dd><p>Prior function for GP hyperparameters. Defaults to the defaultHyperPrior fn.
+number of the point selection is not working well.</p></li>
+<li><p><strong>initGPOpt</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether or not to optimize GP hyperparameters before 0th iteration.
+Defaults to True (aka assume user didn’t optimize GP hyperparameters)</p></li>
+<li><p><strong>gpHyperPrior</strong> (<em>str/callable</em><em>, </em><em>optional</em>) – Prior function for GP hyperparameters. Defaults to the defaultHyperPrior fn.
 This function asserts that the mean must be negative and that each log
-hyperparameter is within the range [-20,20].</p>
-</dd>
-<dt><strong>minObjMethod</strong><span class="classifier">str (optional)</span></dt><dd><p>scipy.optimize.minimize method used when optimizing
-utility functions for point selection.  Defaults to nelder-mead.</p>
-</dd>
-<dt><strong>minObjOptions</strong><span class="classifier">dict (optional)</span></dt><dd><p>kwargs for the scipy.optimize.minimize function used when optimizing
+hyperparameter is within the range [-20,20].</p></li>
+<li><p><strong>minObjMethod</strong> (<em>str</em><em>, </em><em>optional</em>) – scipy.optimize.minimize method used when optimizing
+utility functions for point selection.  Defaults to nelder-mead.</p></li>
+<li><p><strong>minObjOptions</strong> (<em>dict</em><em>, </em><em>optional</em>) – kwargs for the scipy.optimize.minimize function used when optimizing
 utility functions for point selection.  Defaults to None,
-but if method == “nelder-mead”, options = {“adaptive” : True}</p>
-</dd>
-<dt><strong>args</strong><span class="classifier">iterable (optional)</span></dt><dd><p>Arguments for user-specified loglikelihood function that calls the
-forward model. Defaults to None.</p>
-</dd>
-<dt><strong>kwargs</strong><span class="classifier">dict (optional)</span></dt><dd><p>Keyword arguments for user-specified loglikelihood function that
-calls the forward model.</p>
-</dd>
-</dl>
+but if method == “nelder-mead”, options = {“adaptive” : True}</p></li>
+<li><p><strong>args</strong> (<em>iterable</em><em>, </em><em>optional</em>) – Arguments for user-specified loglikelihood function that calls the
+forward model. Defaults to None.</p></li>
+<li><p><strong>kwargs</strong> (<em>dict</em><em>, </em><em>optional</em>) – Keyword arguments for user-specified loglikelihood function that
+calls the forward model.</p></li>
+</ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><dl class="simple">
-<dt><strong>soln</strong><span class="classifier">dict</span></dt><dd><p>Dictionary that contains the following keys: “thetaBest” : Best fit
+<dd class="field-even"><p><strong>soln</strong> – Dictionary that contains the following keys: “thetaBest” : Best fit
 solution, “valBest” : function value at best fit solution, thetas :
 solution vector, vals : function values along solution, “nev” :
 number of forward model evaluations, aka number of iterations</p>
 </dd>
-</dl>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>dict</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="method">
 <dt id="approxposterior.approx.ApproxPosterior.findMAP">
-<code class="sig-name descname">findMAP</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">theta0=None</em>, <em class="sig-param">method='nelder-mead'</em>, <em class="sig-param">options=None</em>, <em class="sig-param">nRestarts=15</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/approx.html#ApproxPosterior.findMAP"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.approx.ApproxPosterior.findMAP" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">findMAP</code><span class="sig-paren">(</span><em class="sig-param">theta0=None</em>, <em class="sig-param">method='nelder-mead'</em>, <em class="sig-param">options=None</em>, <em class="sig-param">nRestarts=15</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/approx.html#ApproxPosterior.findMAP"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.approx.ApproxPosterior.findMAP" title="Permalink to this definition">¶</a></dt>
 <dd><p>Find the maximum a posteriori (MAP) estimate of the function learned
 by the GP. To find the MAP, this function minimizes -mean predicted by
 the GP, aka finds what the GP believes is the maximum of whatever
@@ -361,31 +314,26 @@ function is definded by self._lnlike + self._lnprior.</p>
 the GP kernel fits for an amplitude term.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><dl class="simple">
-<dt><strong>theta0</strong><span class="classifier">iterable</span></dt><dd><p>Initial guess. Defaults to a sample from the prior function.</p>
-</dd>
-<dt><strong>method</strong><span class="classifier">str (optional)</span></dt><dd><p>scipy.optimize.minimize method.  Defaults to powell.</p>
-</dd>
-<dt><strong>options</strong><span class="classifier">dict (optional)</span></dt><dd><p>kwargs for the scipy.optimize.minimize function.  Defaults to None.</p>
-</dd>
-<dt><strong>nRestarts</strong><span class="classifier">int (optional)</span></dt><dd><p>Number of times to restart the optimization. Defaults to 15.</p>
-</dd>
-</dl>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>theta0</strong> (<em>iterable</em>) – Initial guess. Defaults to a sample from the prior function.</p></li>
+<li><p><strong>method</strong> (<em>str</em><em>, </em><em>optional</em>) – scipy.optimize.minimize method.  Defaults to powell.</p></li>
+<li><p><strong>options</strong> (<em>dict</em><em>, </em><em>optional</em>) – kwargs for the scipy.optimize.minimize function.  Defaults to None.</p></li>
+<li><p><strong>nRestarts</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of times to restart the optimization. Defaults to 15.</p></li>
+</ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><dl class="simple">
-<dt><strong>MAP</strong><span class="classifier">iterable</span></dt><dd><p>maximum a posteriori estimate</p>
-</dd>
-<dt><strong>MAPVal</strong><span class="classifier">float</span></dt><dd><p>Mean of GP predictive function at MAP solution</p>
-</dd>
-</dl>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>MAP</strong> (<em>iterable</em>) – maximum a posteriori estimate</p></li>
+<li><p><strong>MAPVal</strong> (<em>float</em>) – Mean of GP predictive function at MAP solution</p></li>
+</ul>
+</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="method">
 <dt id="approxposterior.approx.ApproxPosterior.findNextPoint">
-<code class="sig-name descname">findNextPoint</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">theta0=None</em>, <em class="sig-param">computeLnLike=True</em>, <em class="sig-param">seed=None</em>, <em class="sig-param">cache=True</em>, <em class="sig-param">gpOptions=None</em>, <em class="sig-param">gpP0=None</em>, <em class="sig-param">args=None</em>, <em class="sig-param">nGPRestarts=1</em>, <em class="sig-param">nMinObjRestarts=5</em>, <em class="sig-param">gpMethod='powell'</em>, <em class="sig-param">minObjMethod='nelder-mead'</em>, <em class="sig-param">minObjOptions=None</em>, <em class="sig-param">runName='apRun'</em>, <em class="sig-param">numNewPoints=1</em>, <em class="sig-param">optGPEveryN=1</em>, <em class="sig-param">gpHyperPrior=&lt;function defaultHyperPrior at 0x181f9b9680&gt;</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/approx.html#ApproxPosterior.findNextPoint"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.approx.ApproxPosterior.findNextPoint" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">findNextPoint</code><span class="sig-paren">(</span><em class="sig-param">theta0=None</em>, <em class="sig-param">computeLnLike=True</em>, <em class="sig-param">seed=None</em>, <em class="sig-param">cache=True</em>, <em class="sig-param">gpOptions=None</em>, <em class="sig-param">gpP0=None</em>, <em class="sig-param">args=None</em>, <em class="sig-param">nGPRestarts=1</em>, <em class="sig-param">nMinObjRestarts=5</em>, <em class="sig-param">gpMethod='powell'</em>, <em class="sig-param">minObjMethod='nelder-mead'</em>, <em class="sig-param">minObjOptions=None</em>, <em class="sig-param">runName='apRun'</em>, <em class="sig-param">numNewPoints=1</em>, <em class="sig-param">optGPEveryN=1</em>, <em class="sig-param">gpHyperPrior=&lt;function defaultHyperPrior&gt;</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/approx.html#ApproxPosterior.findNextPoint"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.approx.ApproxPosterior.findNextPoint" title="Permalink to this definition">¶</a></dt>
 <dd><p>Find numNewPoints new point(s), thetaT, by maximizing utility function.
 Note that we call a minimizer because minimizing negative of utility
 function is the same as maximizing it.</p>
@@ -410,320 +358,263 @@ hyperparameters are then optionally re-optimized at the specified
 cadence.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><dl class="simple">
-<dt><strong>theta0</strong><span class="classifier">float/iterable (optional)</span></dt><dd><p>Initial guess for optimization. Defaults to None, which draws a sample
-from the prior function using sampleFn.</p>
-</dd>
-<dt><strong>computeLnLike</strong><span class="classifier">bool (optional)</span></dt><dd><p>Whether or not to run the forward model and compute yT, the sum of
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>theta0</strong> (<em>float/iterable</em><em>, </em><em>optional</em>) – Initial guess for optimization. Defaults to None, which draws a sample
+from the prior function using sampleFn.</p></li>
+<li><p><strong>computeLnLike</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether or not to run the forward model and compute yT, the sum of
 the lnlikelihood and lnprior. Defaults to True. If True, also
 appends all new values to self.theta, self.y, in addition to
-returning the new values</p>
-</dd>
-<dt><strong>seed</strong><span class="classifier">int (optional)</span></dt><dd><p>RNG seed.  Defaults to None.</p>
-</dd>
-<dt><strong>cache</strong><span class="classifier">bool (optional)</span></dt><dd><p>Whether or not to cache forward model input-output pairs.  Defaults
+returning the new values</p></li>
+<li><p><strong>seed</strong> (<em>int</em><em>, </em><em>optional</em>) – RNG seed.  Defaults to None.</p></li>
+<li><p><strong>cache</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether or not to cache forward model input-output pairs.  Defaults
 to True since the forward model is expensive to evaluate. In
 practice, users should cache forward model inputs, outputs,
 ancillary parameters, etc in each likelihood function evaluation,
 but saving theta and y here doesn’t hurt.  Saves the results to
 apFModelCache.npz in the current working directory (name can change
-if user specifies runName).</p>
-</dd>
-<dt><strong>optGPEveryN</strong><span class="classifier">int (optional)</span></dt><dd><p>How often to optimize the GP hyperparameters.  Defaults to
+if user specifies runName).</p></li>
+<li><p><strong>optGPEveryN</strong> (<em>int</em><em>, </em><em>optional</em>) – How often to optimize the GP hyperparameters.  Defaults to
 re-optimizing everytime a new design point is found, e.g. every time
 a new (theta, y) pair is added to the training set.  Increase this
 parameter if approxposterior is running slowly. NB: GP hyperparameters
-are optimized <em>only</em> if computeLnLike == True</p>
-</dd>
-<dt><strong>gpMethod</strong><span class="classifier">str (optional)</span></dt><dd><p>scipy.optimize.minimize method used when optimized GP hyperparameters.
-Defaults to None, which is powell, and it usually works.</p>
-</dd>
-<dt><strong>gpOptions</strong><span class="classifier">dict (optional)</span></dt><dd><p>kwargs for the scipy.optimize.minimize function used to optimize GP
-hyperparameters.  Defaults to None.</p>
-</dd>
-<dt><strong>gpP0</strong><span class="classifier">array (optional)</span></dt><dd><p>Initial guess for kernel hyperparameters.  If None, defaults to
-np.random.randn for each parameter.</p>
-</dd>
-<dt><strong>nGPRestarts</strong><span class="classifier">int (optional)</span></dt><dd><p>Number of times to restart GP hyperparameter optimization.  Defaults
-to 1. Increase this number if the GP is not well-optimized.</p>
-</dd>
-<dt><strong>nMinObjRestarts</strong><span class="classifier">int (optional)</span></dt><dd><p>Number of times to restart minimizing -utility function to select
+are optimized <em>only</em> if computeLnLike == True</p></li>
+<li><p><strong>gpMethod</strong> (<em>str</em><em>, </em><em>optional</em>) – scipy.optimize.minimize method used when optimized GP hyperparameters.
+Defaults to None, which is powell, and it usually works.</p></li>
+<li><p><strong>gpOptions</strong> (<em>dict</em><em>, </em><em>optional</em>) – kwargs for the scipy.optimize.minimize function used to optimize GP
+hyperparameters.  Defaults to None.</p></li>
+<li><p><strong>gpP0</strong> (<em>array</em><em>, </em><em>optional</em>) – Initial guess for kernel hyperparameters.  If None, defaults to
+np.random.randn for each parameter.</p></li>
+<li><p><strong>nGPRestarts</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of times to restart GP hyperparameter optimization.  Defaults
+to 1. Increase this number if the GP is not well-optimized.</p></li>
+<li><p><strong>nMinObjRestarts</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of times to restart minimizing -utility function to select
 next point to improve GP performance.  Defaults to 5.  Increase this
-number of the point selection is not working well.</p>
-</dd>
-<dt><strong>runName</strong><span class="classifier">str (optional)</span></dt><dd><p>Filename for hdf5 file where mcmc chains are saved.  Defaults to
-apRun.</p>
-</dd>
-<dt><strong>gpHyperPrior</strong><span class="classifier">str/callable (optional)</span></dt><dd><p>Prior function for GP hyperparameters. Defaults to the defaultHyperPrior fn.
+number of the point selection is not working well.</p></li>
+<li><p><strong>runName</strong> (<em>str</em><em>, </em><em>optional</em>) – Filename for hdf5 file where mcmc chains are saved.  Defaults to
+apRun.</p></li>
+<li><p><strong>gpHyperPrior</strong> (<em>str/callable</em><em>, </em><em>optional</em>) – Prior function for GP hyperparameters. Defaults to the defaultHyperPrior fn.
 This function asserts that the mean must be negative and that each log
-hyperparameter is within the range [-20,20].</p>
-</dd>
-<dt><strong>numNewPoints</strong><span class="classifier">int (optional)</span></dt><dd><p>Number of new points to find. Defaults to 1.</p>
-</dd>
-<dt><strong>minObjMethod</strong><span class="classifier">str (optional)</span></dt><dd><p>scipy.optimize.minimize method used when optimizing
-utility functions for point selection.  Defaults to nelder-mead.</p>
-</dd>
-<dt><strong>minObjOptions</strong><span class="classifier">dict (optional)</span></dt><dd><p>kwargs for the scipy.optimize.minimize function used when optimizing
+hyperparameter is within the range [-20,20].</p></li>
+<li><p><strong>numNewPoints</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of new points to find. Defaults to 1.</p></li>
+<li><p><strong>minObjMethod</strong> (<em>str</em><em>, </em><em>optional</em>) – scipy.optimize.minimize method used when optimizing
+utility functions for point selection.  Defaults to nelder-mead.</p></li>
+<li><p><strong>minObjOptions</strong> (<em>dict</em><em>, </em><em>optional</em>) – kwargs for the scipy.optimize.minimize function used when optimizing
 utility functions for point selection.  Defaults to None,
-but if method == “nelder-mead”, options = {“adaptive” : True}</p>
-</dd>
-<dt><strong>args</strong><span class="classifier">iterable (optional)</span></dt><dd><p>Arguments for user-specified loglikelihood function that calls the
-forward model. Defaults to None.</p>
-</dd>
-<dt><strong>kwargs</strong><span class="classifier">dict (optional)</span></dt><dd><p>Keyword arguments for user-specified loglikelihood function that
-calls the forward model. Defaults to None.</p>
-</dd>
-</dl>
+but if method == “nelder-mead”, options = {“adaptive” : True}</p></li>
+<li><p><strong>args</strong> (<em>iterable</em><em>, </em><em>optional</em>) – Arguments for user-specified loglikelihood function that calls the
+forward model. Defaults to None.</p></li>
+<li><p><strong>kwargs</strong> (<em>dict</em><em>, </em><em>optional</em>) – Keyword arguments for user-specified loglikelihood function that
+calls the forward model. Defaults to None.</p></li>
+</ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><dl class="simple">
-<dt><strong>thetaT</strong><span class="classifier">float or iterable</span></dt><dd><p>New design point(s) selected by maximizing GP utility function.</p>
-</dd>
-<dt><strong>yT</strong><span class="classifier">float or iterable (optional)</span></dt><dd><p>Value(s) of loglikelihood + logprior at thetaT. Only returned if
-computeLnLike == True</p>
-</dd>
-</dl>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>thetaT</strong> (<em>float or iterable</em>) – New design point(s) selected by maximizing GP utility function.</p></li>
+<li><p><strong>yT</strong> (<em>float or iterable, optional</em>) – Value(s) of loglikelihood + logprior at thetaT. Only returned if
+computeLnLike == True</p></li>
+</ul>
+</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="method">
 <dt id="approxposterior.approx.ApproxPosterior.optGP">
-<code class="sig-name descname">optGP</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">seed=None</em>, <em class="sig-param">method='powell'</em>, <em class="sig-param">options=None</em>, <em class="sig-param">p0=None</em>, <em class="sig-param">nGPRestarts=1</em>, <em class="sig-param">gpHyperPrior=&lt;function defaultHyperPrior at 0x181f9b9680&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/approx.html#ApproxPosterior.optGP"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.approx.ApproxPosterior.optGP" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">optGP</code><span class="sig-paren">(</span><em class="sig-param">seed=None</em>, <em class="sig-param">method='powell'</em>, <em class="sig-param">options=None</em>, <em class="sig-param">p0=None</em>, <em class="sig-param">nGPRestarts=1</em>, <em class="sig-param">gpHyperPrior=&lt;function defaultHyperPrior&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/approx.html#ApproxPosterior.optGP"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.approx.ApproxPosterior.optGP" title="Permalink to this definition">¶</a></dt>
 <dd><p>Optimize hyperparameters of approx object’s GP</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><dl class="simple">
-<dt><strong>seed</strong><span class="classifier">int (optional)</span></dt><dd><p>numpy RNG seed.  Defaults to None.</p>
-</dd>
-<dt><strong>nGPRestarts</strong><span class="classifier">int (optional)</span></dt><dd><p>Number of times to restart GP hyperparameter optimization.  Defaults
-to 1. Increase this number if the GP is not well-optimized.</p>
-</dd>
-<dt><strong>method</strong><span class="classifier">str (optional)</span></dt><dd><p>scipy.optimize.minimize method.  Defaults to powell.</p>
-</dd>
-<dt><strong>options</strong><span class="classifier">dict (optional)</span></dt><dd><p>kwargs for the scipy.optimize.minimize function.  Defaults to None.</p>
-</dd>
-<dt><strong>p0</strong><span class="classifier">array (optional)</span></dt><dd><p>Initial guess for kernel hyperparameters.  If None, defaults to
-np.random.randn for each parameter</p>
-</dd>
-<dt><strong>gpHyperPrior</strong><span class="classifier">str/callable (optional)</span></dt><dd><p>Prior function for GP hyperparameters. Defaults to the defaultHyperPrior fn.
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>seed</strong> (<em>int</em><em>, </em><em>optional</em>) – numpy RNG seed.  Defaults to None.</p></li>
+<li><p><strong>nGPRestarts</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of times to restart GP hyperparameter optimization.  Defaults
+to 1. Increase this number if the GP is not well-optimized.</p></li>
+<li><p><strong>method</strong> (<em>str</em><em>, </em><em>optional</em>) – scipy.optimize.minimize method.  Defaults to powell.</p></li>
+<li><p><strong>options</strong> (<em>dict</em><em>, </em><em>optional</em>) – kwargs for the scipy.optimize.minimize function.  Defaults to None.</p></li>
+<li><p><strong>p0</strong> (<em>array</em><em>, </em><em>optional</em>) – Initial guess for kernel hyperparameters.  If None, defaults to
+np.random.randn for each parameter</p></li>
+<li><p><strong>gpHyperPrior</strong> (<em>str/callable</em><em>, </em><em>optional</em>) – Prior function for GP hyperparameters. Defaults to the defaultHyperPrior fn.
 This function asserts that the mean must be negative and that each log
-hyperparameter is within the range [-20,20].</p>
-</dd>
-</dl>
+hyperparameter is within the range [-20,20].</p></li>
+</ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><dl class="simple">
-<dt><strong>optimizedGP</strong><span class="classifier">george.GP</span></dt><dd></dd>
-</dl>
+<dd class="field-even"><p><strong>optimizedGP</strong></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>george.GP</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="method">
 <dt id="approxposterior.approx.ApproxPosterior.run">
-<code class="sig-name descname">run</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">m=10</em>, <em class="sig-param">nmax=2</em>, <em class="sig-param">seed=None</em>, <em class="sig-param">timing=False</em>, <em class="sig-param">verbose=True</em>, <em class="sig-param">mcmcKwargs=None</em>, <em class="sig-param">samplerKwargs=None</em>, <em class="sig-param">estBurnin=False</em>, <em class="sig-param">thinChains=False</em>, <em class="sig-param">runName='apRun'</em>, <em class="sig-param">cache=True</em>, <em class="sig-param">gpMethod='powell'</em>, <em class="sig-param">gpOptions=None</em>, <em class="sig-param">gpP0=None</em>, <em class="sig-param">optGPEveryN=1</em>, <em class="sig-param">nGPRestarts=1</em>, <em class="sig-param">nMinObjRestarts=5</em>, <em class="sig-param">onlyLastMCMC=False</em>, <em class="sig-param">initGPOpt=True</em>, <em class="sig-param">kmax=3</em>, <em class="sig-param">gpHyperPrior=&lt;function defaultHyperPrior at 0x181f9b9680&gt;</em>, <em class="sig-param">eps=1.0</em>, <em class="sig-param">convergenceCheck=False</em>, <em class="sig-param">minObjMethod='nelder-mead'</em>, <em class="sig-param">minObjOptions=None</em>, <em class="sig-param">args=None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/approx.html#ApproxPosterior.run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.approx.ApproxPosterior.run" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">run</code><span class="sig-paren">(</span><em class="sig-param">m=10</em>, <em class="sig-param">nmax=2</em>, <em class="sig-param">seed=None</em>, <em class="sig-param">timing=False</em>, <em class="sig-param">verbose=True</em>, <em class="sig-param">mcmcKwargs=None</em>, <em class="sig-param">samplerKwargs=None</em>, <em class="sig-param">estBurnin=False</em>, <em class="sig-param">thinChains=False</em>, <em class="sig-param">runName='apRun'</em>, <em class="sig-param">cache=True</em>, <em class="sig-param">gpMethod='powell'</em>, <em class="sig-param">gpOptions=None</em>, <em class="sig-param">gpP0=None</em>, <em class="sig-param">optGPEveryN=1</em>, <em class="sig-param">nGPRestarts=1</em>, <em class="sig-param">nMinObjRestarts=5</em>, <em class="sig-param">onlyLastMCMC=False</em>, <em class="sig-param">initGPOpt=True</em>, <em class="sig-param">kmax=3</em>, <em class="sig-param">gpHyperPrior=&lt;function defaultHyperPrior&gt;</em>, <em class="sig-param">eps=1.0</em>, <em class="sig-param">convergenceCheck=False</em>, <em class="sig-param">minObjMethod='nelder-mead'</em>, <em class="sig-param">minObjOptions=None</em>, <em class="sig-param">args=None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/approx.html#ApproxPosterior.run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.approx.ApproxPosterior.run" title="Permalink to this definition">¶</a></dt>
 <dd><p>Core method to estimate the approximate posterior distribution via
 Gaussian Process regression</p>
-<dl class="field-list">
+<dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><dl>
-<dt><strong>m</strong><span class="classifier">int (optional)</span></dt><dd><p>Number of new design points to find each iteration. These are the
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>m</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of new design points to find each iteration. These are the
 points that are selected by maximizing the utility function, e.g.
 bape or agp, and sequentially added to the GP training set.  Defaults
-to 10.</p>
-</dd>
-<dt><strong>nmax</strong><span class="classifier">int (optional)</span></dt><dd><p>Maximum number of iterations.  Defaults to 2. Algorithm will terminate
+to 10.</p></li>
+<li><p><strong>nmax</strong> (<em>int</em><em>, </em><em>optional</em>) – Maximum number of iterations.  Defaults to 2. Algorithm will terminate
 if either nmax iterations is met or the convergence criterion is met
-if convergenceCheck is True.</p>
-</dd>
-<dt><strong>seed</strong><span class="classifier">int (optional)</span></dt><dd><p>RNG seed.  Defaults to None.</p>
-</dd>
-<dt><strong>timing</strong><span class="classifier">bool (optional)</span></dt><dd><p>Whether or not to time the code for profiling/speed tests.
-Defaults to False.</p>
-</dd>
-<dt><strong>verbose</strong><span class="classifier">bool (optional)</span></dt><dd><p>Output all the diagnostics? Defaults to True.</p>
-</dd>
-<dt><strong>samplerKwargs</strong><span class="classifier">dict (optional)</span></dt><dd><p>Parameters for emcee.EnsembleSampler object
+if convergenceCheck is True.</p></li>
+<li><p><strong>seed</strong> (<em>int</em><em>, </em><em>optional</em>) – RNG seed.  Defaults to None.</p></li>
+<li><p><strong>timing</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether or not to time the code for profiling/speed tests.
+Defaults to False.</p></li>
+<li><p><strong>verbose</strong> (<em>bool</em><em>, </em><em>optional</em>) – Output all the diagnostics? Defaults to True.</p></li>
+<li><p><strong>samplerKwargs</strong> (<em>dict</em><em>, </em><em>optional</em>) – <p>Parameters for emcee.EnsembleSampler object
 If None, defaults to the following:</p>
 <blockquote>
 <div><dl class="simple">
-<dt>nwalkers<span class="classifier">int (optional)</span></dt><dd><p>Number of emcee walkers.  Defaults to 10 * dim</p>
+<dt>nwalkers<span class="classifier">int, optional</span></dt><dd><p>Number of emcee walkers.  Defaults to 10 * dim</p>
 </dd>
 </dl>
 </div></blockquote>
-</dd>
-<dt><strong>mcmcKwargs</strong><span class="classifier">dict (optional)</span></dt><dd><p>Parameters for emcee.EnsembleSampler.sample/.run_mcmc methods. If
+</p></li>
+<li><p><strong>mcmcKwargs</strong> (<em>dict</em><em>, </em><em>optional</em>) – <p>Parameters for emcee.EnsembleSampler.sample/.run_mcmc methods. If
 None, defaults to the following required parameters:</p>
 <blockquote>
 <div><dl class="simple">
-<dt>iterations<span class="classifier">int (optional)</span></dt><dd><p>Number of MCMC steps.  Defaults to 10,000</p>
+<dt>iterations<span class="classifier">int, optional</span></dt><dd><p>Number of MCMC steps.  Defaults to 10,000</p>
 </dd>
-<dt>initial_state<span class="classifier">array/emcee.State (optional)</span></dt><dd><p>Initial guess for MCMC walkers.  Defaults to None and
+<dt>initial_state<span class="classifier">array/emcee.State, optional</span></dt><dd><p>Initial guess for MCMC walkers.  Defaults to None and
 creates guess from priors.</p>
 </dd>
 </dl>
 </div></blockquote>
-</dd>
-<dt><strong>estBurnin</strong><span class="classifier">bool (optional)</span></dt><dd><p>Estimate burn-in time using integrated autocorrelation time
+</p></li>
+<li><p><strong>estBurnin</strong> (<em>bool</em><em>, </em><em>optional</em>) – Estimate burn-in time using integrated autocorrelation time
 heuristic.  Defaults to True. In general, we recommend users
 inspect the chains (note that approxposterior always at least saves
 the last sampler object, or all chains if cache = True) and
-calculate the burnin after the fact to ensure convergence.</p>
-</dd>
-<dt><strong>thinChains</strong><span class="classifier">bool (optional)</span></dt><dd><p>Whether or not to thin chains before GMM fitting.  Useful if running
+calculate the burnin after the fact to ensure convergence.</p></li>
+<li><p><strong>thinChains</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether or not to thin chains before GMM fitting.  Useful if running
 long chains.  Defaults to True.  If true, estimates a thin cadence
 via int(0.5*np.min(tau)) where tau is the intergrated autocorrelation
-time.</p>
-</dd>
-<dt><strong>runName</strong><span class="classifier">str (optional)</span></dt><dd><p>Filename for hdf5 file where mcmc chains are saved.  Defaults to
-apRun and will be saved as apRunii.h5 for ii in range(nmax).</p>
-</dd>
-<dt><strong>cache</strong><span class="classifier">bool (optional)</span></dt><dd><p>Whether or not to cache MCMC chains, forward model input-output
+time.</p></li>
+<li><p><strong>runName</strong> (<em>str</em><em>, </em><em>optional</em>) – Filename for hdf5 file where mcmc chains are saved.  Defaults to
+apRun and will be saved as apRunii.h5 for ii in range(nmax).</p></li>
+<li><p><strong>cache</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether or not to cache MCMC chains, forward model input-output
 pairs, and GP kernel parameters.  Defaults to True since they’re
 expensive to evaluate. In practice, users should cache forward model
 inputs, outputs, ancillary parameters, etc in each likelihood
 function evaluation, but saving theta and y here doesn’t hurt.
 Saves the forward model, results to runNameAPFModelCache.npz,
 the chains as runNameii.h5 for each, iteration ii, and the GP
-parameters in runNameAPGP.npz in the current working directory, etc.</p>
-</dd>
-<dt><strong>gpMethod</strong><span class="classifier">str (optional)</span></dt><dd><p>scipy.optimize.minimize method used when optimized GP hyperparameters.
-Defaults to powell (it usually works)</p>
-</dd>
-<dt><strong>gpOptions</strong><span class="classifier">dict (optional)</span></dt><dd><p>kwargs for the scipy.optimize.minimize function used to optimize GP
-hyperparameters.  Defaults to None.</p>
-</dd>
-<dt><strong>gpP0</strong><span class="classifier">array (optional)</span></dt><dd><p>Initial guess for kernel hyperparameters.  If None, defaults to
-np.random.randn for each parameter.</p>
-</dd>
-<dt><strong>optGPEveryN</strong><span class="classifier">int (optional)</span></dt><dd><p>How often to optimize the GP hyperparameters.  Defaults to
+parameters in runNameAPGP.npz in the current working directory, etc.</p></li>
+<li><p><strong>gpMethod</strong> (<em>str</em><em>, </em><em>optional</em>) – scipy.optimize.minimize method used when optimized GP hyperparameters.
+Defaults to powell (it usually works)</p></li>
+<li><p><strong>gpOptions</strong> (<em>dict</em><em>, </em><em>optional</em>) – kwargs for the scipy.optimize.minimize function used to optimize GP
+hyperparameters.  Defaults to None.</p></li>
+<li><p><strong>gpP0</strong> (<em>array</em><em>, </em><em>optional</em>) – Initial guess for kernel hyperparameters.  If None, defaults to
+np.random.randn for each parameter.</p></li>
+<li><p><strong>optGPEveryN</strong> (<em>int</em><em>, </em><em>optional</em>) – How often to optimize the GP hyperparameters.  Defaults to
 re-optimizing everytime a new design point is found, e.g. every time
 a new (theta, y) pair is added to the training set.  Increase this
-parameter if approxposterior is running slowly.</p>
-</dd>
-<dt><strong>nGPRestarts</strong><span class="classifier">int (optional)</span></dt><dd><p>Number of times to restart GP hyperparameter optimization.  Defaults
-to 1. Increase this number if the GP is not well-optimized.</p>
-</dd>
-<dt><strong>nMinObjRestarts</strong><span class="classifier">int (optional)</span></dt><dd><p>Number of times to restart minimizing -utility function to select
+parameter if approxposterior is running slowly.</p></li>
+<li><p><strong>nGPRestarts</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of times to restart GP hyperparameter optimization.  Defaults
+to 1. Increase this number if the GP is not well-optimized.</p></li>
+<li><p><strong>nMinObjRestarts</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of times to restart minimizing -utility function to select
 next point to improve GP performance.  Defaults to 5.  Increase this
-number of the point selection is not working well.</p>
-</dd>
-<dt><strong>onlyLastMCMC</strong><span class="classifier">bool (optional)</span></dt><dd><p>Whether or not to only run the MCMC last iteration. Defaults to False.</p>
-</dd>
-<dt><strong>initGPOpt</strong><span class="classifier">bool (optional)</span></dt><dd><p>Whether or not to optimize GP hyperparameters before 0th iteration.
-Defaults to True (aka assume user didn’t optimize GP hyperparameters)</p>
-</dd>
-<dt><strong>gpHyperPrior</strong><span class="classifier">str/callable (optional)</span></dt><dd><p>Prior function for GP hyperparameters. Defaults to the defaultHyperPrior fn.
+number of the point selection is not working well.</p></li>
+<li><p><strong>onlyLastMCMC</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether or not to only run the MCMC last iteration. Defaults to False.</p></li>
+<li><p><strong>initGPOpt</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether or not to optimize GP hyperparameters before 0th iteration.
+Defaults to True (aka assume user didn’t optimize GP hyperparameters)</p></li>
+<li><p><strong>gpHyperPrior</strong> (<em>str/callable</em><em>, </em><em>optional</em>) – Prior function for GP hyperparameters. Defaults to the defaultHyperPrior fn.
 This function asserts that the mean must be negative and that each log
-hyperparameter is within the range [-20,20].</p>
-</dd>
-<dt><strong>eps</strong><span class="classifier">float (optional)</span></dt><dd><p>Change in the mean of the approximate marginal posterior
+hyperparameter is within the range [-20,20].</p></li>
+<li><p><strong>eps</strong> (<em>float</em><em>, </em><em>optional</em>) – Change in the mean of the approximate marginal posterior
 distributions, relative to the previous marginal posterior distribution’s
 standard deviation (aka relative z score), for kmax iterations
-required for convergence. Defaults to 1.0.</p>
-</dd>
-<dt><strong>kmax</strong><span class="classifier">int (optional)</span></dt><dd><p>Number of consecutive iterations for convergence check to pass before
-successfully ending algorithm. Defaults to 3.</p>
-</dd>
-<dt><strong>convergenceCheck</strong><span class="classifier">bool (optional)</span></dt><dd><p>Whether or not to terminate the execution if the change in the mean
+required for convergence. Defaults to 1.0.</p></li>
+<li><p><strong>kmax</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of consecutive iterations for convergence check to pass before
+successfully ending algorithm. Defaults to 3.</p></li>
+<li><p><strong>convergenceCheck</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether or not to terminate the execution if the change in the mean
 of the approximate marginal posterior distributions, relative to the
 previous marginal posterior distribution’s standard deviation
 (aka relative z score) varies by less than eps for kmax consecutive
 iterations. Defaults to False. Note: if using this, make sure you’re
 confortable with the burnin and thinning applied to the MCMC chains.
-See estBurnin and thinChains parameters.</p>
-</dd>
-<dt><strong>minObjMethod</strong><span class="classifier">str (optional)</span></dt><dd><p>scipy.optimize.minimize method used when optimizing
-utility functions for point selection.  Defaults to nelder-mead.</p>
-</dd>
-<dt><strong>minObjOptions</strong><span class="classifier">dict (optional)</span></dt><dd><p>kwargs for the scipy.optimize.minimize function used when optimizing
+See estBurnin and thinChains parameters.</p></li>
+<li><p><strong>minObjMethod</strong> (<em>str</em><em>, </em><em>optional</em>) – scipy.optimize.minimize method used when optimizing
+utility functions for point selection.  Defaults to nelder-mead.</p></li>
+<li><p><strong>minObjOptions</strong> (<em>dict</em><em>, </em><em>optional</em>) – kwargs for the scipy.optimize.minimize function used when optimizing
 utility functions for point selection.  Defaults to None,
-but if method == “nelder-mead”, options = {“adaptive” : True}</p>
-</dd>
-<dt><strong>args</strong><span class="classifier">iterable (optional)</span></dt><dd><p>Arguments for user-specified loglikelihood function that calls the
-forward model. Defaults to None.</p>
-</dd>
-<dt><strong>kwargs</strong><span class="classifier">dict (optional)</span></dt><dd><p>Keyword arguments for user-specified loglikelihood function that
-calls the forward model.</p>
-</dd>
-</dl>
+but if method == “nelder-mead”, options = {“adaptive” : True}</p></li>
+<li><p><strong>args</strong> (<em>iterable</em><em>, </em><em>optional</em>) – Arguments for user-specified loglikelihood function that calls the
+forward model. Defaults to None.</p></li>
+<li><p><strong>kwargs</strong> (<em>dict</em><em>, </em><em>optional</em>) – Keyword arguments for user-specified loglikelihood function that
+calls the forward model.</p></li>
+</ul>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="method">
 <dt id="approxposterior.approx.ApproxPosterior.runMCMC">
-<code class="sig-name descname">runMCMC</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">samplerKwargs=None</em>, <em class="sig-param">mcmcKwargs=None</em>, <em class="sig-param">runName='apRun'</em>, <em class="sig-param">cache=True</em>, <em class="sig-param">estBurnin=True</em>, <em class="sig-param">thinChains=True</em>, <em class="sig-param">verbose=False</em>, <em class="sig-param">args=None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/approx.html#ApproxPosterior.runMCMC"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.approx.ApproxPosterior.runMCMC" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">runMCMC</code><span class="sig-paren">(</span><em class="sig-param">samplerKwargs=None</em>, <em class="sig-param">mcmcKwargs=None</em>, <em class="sig-param">runName='apRun'</em>, <em class="sig-param">cache=True</em>, <em class="sig-param">estBurnin=True</em>, <em class="sig-param">thinChains=True</em>, <em class="sig-param">verbose=False</em>, <em class="sig-param">args=None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/approx.html#ApproxPosterior.runMCMC"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.approx.ApproxPosterior.runMCMC" title="Permalink to this definition">¶</a></dt>
 <dd><p>Given forward model input-output pairs, theta and y, and a trained GP,
 run an MCMC using the GP to evaluate the logprobability instead of the
 true, computationally-expensive forward model.</p>
-<dl class="field-list">
+<dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><dl>
-<dt><strong>samplerKwargs</strong><span class="classifier">dict (optional)</span></dt><dd><p>Parameters for emcee.EnsembleSampler object
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>samplerKwargs</strong> (<em>dict</em><em>, </em><em>optional</em>) – <p>Parameters for emcee.EnsembleSampler object
 If None, defaults to the following:</p>
 <blockquote>
 <div><dl class="simple">
-<dt>nwalkers<span class="classifier">int (optional)</span></dt><dd><p>Number of emcee walkers.  Defaults to 10 * dim</p>
+<dt>nwalkers<span class="classifier">int, optional</span></dt><dd><p>Number of emcee walkers.  Defaults to 10 * dim</p>
 </dd>
 </dl>
 </div></blockquote>
-</dd>
-<dt><strong>mcmcKwargs</strong><span class="classifier">dict (optional)</span></dt><dd><p>Parameters for emcee.EnsembleSampler.sample/.run_mcmc methods. If
+</p></li>
+<li><p><strong>mcmcKwargs</strong> (<em>dict</em><em>, </em><em>optional</em>) – <p>Parameters for emcee.EnsembleSampler.sample/.run_mcmc methods. If
 None, defaults to the following required parameters:</p>
 <blockquote>
 <div><dl class="simple">
-<dt>iterations<span class="classifier">int (optional)</span></dt><dd><p>Number of MCMC steps.  Defaults to 10,000</p>
+<dt>iterations<span class="classifier">int, optional</span></dt><dd><p>Number of MCMC steps.  Defaults to 10,000</p>
 </dd>
-<dt>initial_state<span class="classifier">array/emcee.State (optional)</span></dt><dd><p>Initial guess for MCMC walkers.  Defaults to None and
+<dt>initial_state<span class="classifier">array/emcee.State, optional</span></dt><dd><p>Initial guess for MCMC walkers.  Defaults to None and
 creates guess from priors.</p>
 </dd>
 </dl>
 </div></blockquote>
-</dd>
-<dt><strong>runName</strong><span class="classifier">str (optional)</span></dt><dd><p>Filename prefix for all cached files, e.g. for hdf5 file where mcmc
+</p></li>
+<li><p><strong>runName</strong> (<em>str</em><em>, </em><em>optional</em>) – Filename prefix for all cached files, e.g. for hdf5 file where mcmc
 chains are saved.  Defaults to runNameii.h5. where ii is the
-current iteration number.</p>
-</dd>
-<dt><strong>cache</strong><span class="classifier">bool (optional)</span></dt><dd><p>Whether or not to cache MCMC chains, forward model input-output
+current iteration number.</p></li>
+<li><p><strong>cache</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether or not to cache MCMC chains, forward model input-output
 pairs, and GP kernel parameters.  Defaults to True since they’re
 expensive to evaluate. In practice, users should cache forward model
 inputs, outputs, ancillary parameters, etc in each likelihood
 function evaluation, but saving theta and y here doesn’t hurt.
 Saves the forward model, results to runNameAPFModelCache.npz,
 the chains as runNameii.h5 for each, iteration ii, and the GP
-parameters in runNameAPGP.npz in the current working directory, etc.</p>
-</dd>
-<dt><strong>estBurnin</strong><span class="classifier">bool (optional)</span></dt><dd><p>Estimate burn-in time using integrated autocorrelation time
+parameters in runNameAPGP.npz in the current working directory, etc.</p></li>
+<li><p><strong>estBurnin</strong> (<em>bool</em><em>, </em><em>optional</em>) – Estimate burn-in time using integrated autocorrelation time
 heuristic.  Defaults to True. In general, we recommend users
 inspect the chains and calculate the burnin after the fact to ensure
-convergence, but this function works pretty well.</p>
-</dd>
-<dt><strong>thinChains</strong><span class="classifier">bool (optional)</span></dt><dd><p>Whether or not to thin chains before GMM fitting.  Useful if running
+convergence, but this function works pretty well.</p></li>
+<li><p><strong>thinChains</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether or not to thin chains before GMM fitting.  Useful if running
 long chains.  Defaults to True.  If true, estimates a thin cadence
 via int(0.5*np.min(tau)) where tau is the intergrated autocorrelation
-time.</p>
-</dd>
-<dt><strong>verbose</strong><span class="classifier">bool (optional)</span></dt><dd><p>Output all the diagnostics? Defaults to False.</p>
-</dd>
-<dt><strong>args</strong><span class="classifier">iterable (optional)</span></dt><dd><p>Arguments for user-specified loglikelihood function that calls the
-forward model. Defaults to None.</p>
-</dd>
-<dt><strong>kwargs</strong><span class="classifier">dict (optional)</span></dt><dd><p>Keyword arguments for user-specified loglikelihood function that
-calls the forward model.</p>
-</dd>
-</dl>
+time.</p></li>
+<li><p><strong>verbose</strong> (<em>bool</em><em>, </em><em>optional</em>) – Output all the diagnostics? Defaults to False.</p></li>
+<li><p><strong>args</strong> (<em>iterable</em><em>, </em><em>optional</em>) – Arguments for user-specified loglikelihood function that calls the
+forward model. Defaults to None.</p></li>
+<li><p><strong>kwargs</strong> (<em>dict</em><em>, </em><em>optional</em>) – Keyword arguments for user-specified loglikelihood function that
+calls the forward model.</p></li>
+</ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><dl class="simple">
-<dt><strong>sampler</strong><span class="classifier">emcee.EnsembleSampler</span></dt><dd><p>emcee sampler object</p>
-</dd>
-<dt><strong>iburn</strong><span class="classifier">int</span></dt><dd><p>burn-in index estimate.  If estBurnin == False, returns 0.</p>
-</dd>
-<dt><strong>ithin</strong><span class="classifier">int</span></dt><dd><p>thin cadence estimate.  If thinChains == False, returns 1.</p>
-</dd>
-</dl>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>sampler</strong> (<em>emcee.EnsembleSampler</em>) – emcee sampler object</p></li>
+<li><p><strong>iburn</strong> (<em>int</em>) – burn-in index estimate.  If estBurnin == False, returns 0.</p></li>
+<li><p><strong>ithin</strong> (<em>int</em>) – thin cadence estimate.  If thinChains == False, returns 1.</p></li>
+</ul>
+</p>
 </dd>
 </dl>
 </dd></dl>

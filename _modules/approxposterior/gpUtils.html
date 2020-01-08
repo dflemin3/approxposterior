@@ -288,17 +288,17 @@
 <span class="sd">    y : array</span>
 <span class="sd">        Data to condition GP on, e.g. the lnlike + lnprior at each design point,</span>
 <span class="sd">        theta.</span>
-<span class="sd">    order : int (optional)</span>
+<span class="sd">    order : int, optional</span>
 <span class="sd">        Order of PolynomialKernel to add to ExpSquaredKernel. Defaults to None,</span>
 <span class="sd">        that is, no PolynomialKernel is added and the GP only uses the</span>
 <span class="sd">        ExpSquaredKernel</span>
-<span class="sd">    white_noise : float (optional)</span>
+<span class="sd">    white_noise : float, optional</span>
 <span class="sd">        From george docs: &quot;A description of the logarithm of the white noise</span>
 <span class="sd">        variance added to the diagonal of the covariance matrix&quot;. Defaults to</span>
 <span class="sd">        ln(white_noise) = -12. Note: if order is not None, you might need to</span>
 <span class="sd">        set the white_noise to a larger value for the computation to be</span>
 <span class="sd">        numerically stable, but this, as always, depends on the application.</span>
-<span class="sd">    fitAmp : bool (optional)</span>
+<span class="sd">    fitAmp : bool, optional</span>
 <span class="sd">        Whether or not to include an amplitude term. Defaults to False.</span>
 
 <span class="sd">    Returns</span>
@@ -357,19 +357,19 @@
 <span class="sd">    theta : array</span>
 <span class="sd">    y : array</span>
 <span class="sd">        data to condition GP on</span>
-<span class="sd">    seed : int (optional)</span>
+<span class="sd">    seed : int, optional</span>
 <span class="sd">        numpy RNG seed.  Defaults to None.</span>
-<span class="sd">    nGPRestarts : int (optional)</span>
+<span class="sd">    nGPRestarts : int, optional</span>
 <span class="sd">        Number of times to restart the optimization.  Defaults to 1. Increase</span>
 <span class="sd">        this number if the GP isn&#39;t optimized well.</span>
-<span class="sd">    method : str (optional)</span>
+<span class="sd">    method : str, optional</span>
 <span class="sd">        scipy.optimize.minimize method.  Defaults to powell.</span>
-<span class="sd">    options : dict (optional)</span>
+<span class="sd">    options : dict, optional</span>
 <span class="sd">        kwargs for the scipy.optimize.minimize function.  Defaults to None.</span>
-<span class="sd">    p0 : array (optional)</span>
+<span class="sd">    p0 : array, optional</span>
 <span class="sd">        Initial guess for kernel hyperparameters.  If None, defaults to</span>
 <span class="sd">        np.random.randn for each parameter</span>
-<span class="sd">    gpHyperPrior : str/callable (optional)</span>
+<span class="sd">    gpHyperPrior : str/callable, optional</span>
 <span class="sd">        Prior function for GP hyperparameters. Defaults to the defaultHyperPrior fn.</span>
 <span class="sd">        This function asserts that the mean must be negative and that each log</span>
 <span class="sd">        hyperparameter is within the range [-20,20].</span>

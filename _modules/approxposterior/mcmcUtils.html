@@ -190,7 +190,7 @@
 <span class="sd">    mcmcKwargs : dict</span>
 <span class="sd">        dictionary containing parameters intended for</span>
 <span class="sd">        emcee.EnsembleSampler.run_mcmc/.sample object</span>
-<span class="sd">    verbose : bool (optional)</span>
+<span class="sd">    verbose : bool, optional</span>
 <span class="sd">        verboisty level. Defaults to False (no output)</span>
 
 <span class="sd">    Returns</span>
@@ -274,9 +274,9 @@
 <span class="sd">    ----------</span>
 <span class="sd">    samples : array</span>
 <span class="sd">        nsamples x ndim array of MCMC samples</span>
-<span class="sd">    bins : int (optional)</span>
+<span class="sd">    bins : int, optional</span>
 <span class="sd">        Number of bins. Defaults to int(sqrt(len(samples)))</span>
-<span class="sd">    fn : function (optional)</span>
+<span class="sd">    fn : function, optional</span>
 <span class="sd">        Function used to compute posterior summary statistic on each chunk.</span>
 <span class="sd">        Defaults to None to compute the simple expected value, aka the mean.</span>
 
