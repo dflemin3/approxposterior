@@ -28,7 +28,7 @@ Overview
 ========
 
 `approxposterior` is a Python package for efficient approximate Bayesian
-inference and optimization of computationally-expensive models. `approxposterior`
+inference and Bayesian optimization of computationally-expensive models. `approxposterior`
 trains a Gaussian process (GP) surrogate for the computationally-expensive model
 and employs an active learning approach to iteratively improve the GPs predictive
 performance while minimizing the number of calls to the expensive model required
@@ -37,13 +37,10 @@ to generate the GP's training set.
 `approxposterior` implements both the [Bayesian Active Learning for Posterior Estimation (BAPE, Kandasamy et al. (2017))](https://www.sciencedirect.com/science/article/abs/pii/S0004370216301394) and [Adaptive Gaussian process approximation for Bayesian inference with expensive likelihood functions (AGP, Wang & Li (2018))](https://www.semanticscholar.org/paper/Adaptive-Gaussian-Process-Approximation-for-with-Wang-Li/a11e3a4144898920835ccff7ef0ed0b159b94bc6) algorithms for estimating posterior probability distributions for use with inference problems with computationally-expensive models. In such situations,
 the goal is to infer posterior probability distributions for model parameters, given some data, with the additional constraint of minimizing the number of forward model evaluations given the model's assumed large computational cost.  `approxposterior` trains a Gaussian Process (GP) surrogate model for the likelihood evaluation by modeling the covariances in logprobability (logprior + loglikelihood) space. `approxposterior` then uses this GP within an MCMC sampler for each likelihood evaluation to perform the inference. `approxposterior` iteratively improves the GP's predictive performance by leveraging the inherent uncertainty in the GP's predictions to identify high-likelihood regions in parameter space where the GP is uncertain.  `approxposterior` then evaluates the forward model at these points to expand the training set in relevant regions of parameter space, re-training the GP to maximize its predictive ability while minimizing the size of the training set.  Check out [the BAPE paper](https://www.sciencedirect.com/science/article/abs/pii/S0004370216301394) by Kandasamy et al. (2017) and [the AGP paper](https://www.semanticscholar.org/paper/Adaptive-Gaussian-Process-Approximation-for-with-Wang-Li/a11e3a4144898920835ccff7ef0ed0b159b94bc6) by Wang & Li (2018) for in-depth descriptions of the respective algorithms.
 
-In practice, we find that `approxposterior` can estimate posterior probability distributions that are accurate
-approximations to the true, underlying distributions with only of order 100s-1000s model evaluations to train the GP, compared to 1,000,000, often more, required by MCMC methods, depending on the inference problem. The estimated marginal posterior distributions have medians that are all typically within a few percent of the true values, with similar uncertainties to the true distributions.  We have validated `approxposterior` for 2-5 dimensional problems, while Kandasamy et al. (2017) found in an 9-dimensional case that the BAPE algorithm significantly outperformed MCMC methods in terms of both accuracy and speed. See their paper for details and check out the examples for more information and example use cases.
-
 Documentation
 =============
 
-Check out the documentation at [https://dflemin3.github.io/approxposterior/](https://dflemin3.github.io/approxposterior/) for a more in-depth explanation about the code, detailed API notes, numerous examples.
+Check out the documentation at [https://dflemin3.github.io/approxposterior/](https://dflemin3.github.io/approxposterior/) for a more in-depth explanation about the code, detailed API notes, numerous examples with figures.
 
 Installation
 ============
@@ -88,17 +85,16 @@ import numpy as np
 m0 = 50                           # Initial size of training set
 m = 20                            # Number of new points to find each iteration
 nmax = 2                          # Maximum number of iterations
-bounds = ((-5,5), (-5,5))         # Prior bounds
-algorithm = "bape"                # Use the Kandasamy et al. (2015) formalism
+bounds = [(-5,5), (-5,5)]         # Prior bounds
+algorithm = "bape"                # Use the Kandasamy et al. (2017) formalism
 seed = 57                         # RNG seed
-
 np.random.seed(seed)
 
 # emcee MCMC parameters
 samplerKwargs = {"nwalkers" : 20}        # emcee.EnsembleSampler parameters
 mcmcKwargs = {"iterations" : int(2.0e4)} # emcee.EnsembleSampler.run_mcmc parameters
 
-# Sample initial conditions from prior
+# Sample design points from prior
 theta = lh.rosenbrockSample(m0)
 
 # Evaluate forward model log likelihood + lnprior for each theta
@@ -106,10 +102,10 @@ y = np.zeros(len(theta))
 for ii in range(len(theta)):
     y[ii] = lh.rosenbrockLnlike(theta[ii]) + lh.rosenbrockLnprior(theta[ii])
 
-# Create the the default GP which uses an ExpSquaredKernel
-gp = gpUtils.defaultGP(theta, y)
+# Default GP with an ExpSquaredKernel
+gp = gpUtils.defaultGP(theta, y, white_noise=-12)
 
-# Initialize object using the Wang & Li (2017) Rosenbrock function example
+# Initialize object using the Wang & Li (2018) Rosenbrock function example
 ap = approx.ApproxPosterior(theta=theta,
                             y=y,
                             gp=gp,
@@ -120,8 +116,9 @@ ap = approx.ApproxPosterior(theta=theta,
                             algorithm=algorithm)
 
 # Run!
-ap.run(m=m, nmax=nmax, estBurnin=True, nGPRestarts=5, mcmcKwargs=mcmcKwargs,
-       cache=False, samplerKwargs=samplerKwargs, verbose=True, onlyLastMCMC=True)
+ap.run(m=m, nmax=nmax, estBurnin=True, nGPRestarts=3, mcmcKwargs=mcmcKwargs,
+       cache=False, samplerKwargs=samplerKwargs, verbose=True, thinChains=False,
+       onlyLastMCMC=True)
 
 # Check out the final posterior distribution!
 import corner
@@ -133,7 +130,7 @@ samples = ap.sampler.get_chain(discard=ap.iburns[-1], flat=True, thin=ap.ithins[
 fig = corner.corner(samples, quantiles=[0.16, 0.5, 0.84], show_titles=True,
                     scale_hist=True, plot_contours=True)
 
-# Plot where forward model was evaluated
+# Plot where forward model was evaluated - uncomment to plot!
 fig.axes[2].scatter(ap.theta[m0:,0], ap.theta[m0:,1], s=10, color="red", zorder=20)
 
 # Save figure
@@ -142,11 +139,11 @@ fig.savefig("finalPosterior.png", bbox_inches="tight")
 
 The final distribution will look something like this:
 
-![final_posterior](doc/_figures/final_posterior.png)
+![finalPosterior](doc/_figures/finalPosterior.png)
 
 The red points were selected by `approxposterior` by maximizing the BAPE utility function.
 At each red point, `approxposterior` ran the forward model to evaluate the true likelihood
-and added this input-likelihood pair to the GP's training set, re-training the GP each time
+and added this input-likelihood pair to the GP's training set. We retrain the GP each time
 to improve its predictive ability. Note how the points are selected in regions of
 high posterior density, precisely where we would want to maximize the GP's predictive ability! By using the
 BAPE point selection scheme, `approxposterior` does not waste computational resources by

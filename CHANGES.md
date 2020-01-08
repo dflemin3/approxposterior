@@ -1,5 +1,22 @@
+0.4
+===
+
+* Bayesian Optimization via the ap.bayesOpt method, Jones et al. (1998) Expected Utility function
+
+* New optional convergence check for ap.run method based on the inferred posterior distributions 
+
+* Numerous additional tests, refining exists tests to be more robust
+
+* Many documentation improvements, updates to existing examples, new examples
+
+* Restructured examples directory to be more intuitive
+
+* Host of bug fixes so approxposterior can better infer dimensionality, catch and handle errors, etc
+
+* Added more badges to the main README, including a more obvious link to the docs
+
 0.3
-====
+===
 
 * Added option to have default kernel be sum of ExpSquaredKernel and LinearKernel for Bayesian linear regression
 
@@ -24,7 +41,7 @@
 * Added many new tests for GP optimization, finding next point, etc
 
 * Added ability to toggle whether or not to fit for the GP kernel amplitude
-  (sometimes can be very numerically unstable when the amp is included for high 
+  (sometimes can be very numerically unstable when the amp is included for high
   dimensional cases, even with regularization)
 
 * Many documentation improvements, removal of deprecated code

@@ -2,10 +2,25 @@
 # -*- coding: utf-8 -*-
 """
 
-Example script for Bayesian optimization of a synthetic function
+Example script for Bayesian optimization of a simple 1D function
 
 @author: David P. Fleming [University of Washington, Seattle], 2019
 @email: dflemin3 (at) uw (dot) edu
+
+Script output:
+
+Truth:
+True maximum: -0.35938378827726025
+True function value at maximum: 0.5003596270970391
+
+BayesOpt solution using GP surrogate model:
+BayesOpt theta at maximum: -0.3669552120074001
+BayesOpt function value at  MAP: 0.5000748992277798
+BayesOpt forward model evaluations: 9
+
+GP MAP solution:
+Theta at approximate MAP: -0.3595239194690403
+GP predictive conditional function value at approximate MAP: 0.5003486365408749
 
 """
 
@@ -21,8 +36,8 @@ matplotlib.rcParams.update({"font.size": 15})
 m0 = 3                           # Size of initial training set
 bounds = [[-1, 2]]               # Prior bounds
 algorithm = "jones"              # Expected Utility from Jones et al. (1998)
-numNewPoints = 5                 # Number of new design points to find
-seed = 57                        # RNG seed
+numNewPoints = 10                # Number of new design points to find
+seed = 91                        # RNG seed
 np.random.seed(seed)
 
 # First, directly minimize the function to see about how many evaluations it takes
@@ -51,21 +66,29 @@ ap = approx.ApproxPosterior(theta=theta,
                             algorithm=algorithm)
 
 # Run the Bayesian optimization!
-soln = ap.bayesOpt(nmax=numNewPoints, tol=1.0e-5, seed=seed, verbose=False,
+soln = ap.bayesOpt(nmax=numNewPoints, tol=1.0e-3, kmax=3, seed=seed, verbose=False,
                    cache=False, gpMethod="powell", optGPEveryN=1, nGPRestarts=2,
                    nMinObjRestarts=5, initGPOpt=True, minObjMethod="nelder-mead",
-                   gpHyperPrior=gpUtils.defaultHyperPrior)
+                   gpHyperPrior=gpUtils.defaultHyperPrior, findMAP=True)
 
 # Compare truth to approximate Bayesian optimization solution
-print("True maximum:", trueSoln["x"])
-print("True function value at maximum:", trueSoln["fun"])
-print("Approximate BayesOpt maximum:", soln["thetaBest"])
-print("True function value at maximum:", soln["valBest"])
+print("Truth:")
+print("True maximum:", float(trueSoln["x"]))
+print("True function value at maximum:", -trueSoln["fun"])
+print()
+print("BayesOpt solution using GP surrogate model:")
+print("BayesOpt theta at maximum:", soln["thetaBest"])
+print("BayesOpt function value at  MAP:", soln["valBest"])
+print("BayesOpt forward model evaluations:", soln["nev"])
+print()
+print("GP MAP solution:")
+print("Theta at approximate MAP:", soln["thetaMAPBest"])
+print("GP predictive conditional function value at approximate MAP:", soln["valMAPBest"])
 
 # Plot objective function
 fig, ax = plt.subplots(figsize=(6,5))
-x = np.linspace(-1, 2, 100)
 
+x = np.linspace(-1, 2, 100)
 ax.plot(x, lh.testBOFn(x), lw=2.5, color="k")
 
 # Format
@@ -84,34 +107,22 @@ fig.savefig("objFn.png", bbox_inches="tight", dpi=200)
 # Plot the solution path and function value convergence
 fig, axes = plt.subplots(ncols=2, figsize=(12,6))
 
+# Extract number of iterations ran by bayesopt routine
 iters = [ii for ii in range(soln["nev"])]
 
 # Left: solution
-axes[0].plot(iters, soln["thetas"], "o-", color="C0", lw=3)
 axes[0].axhline(trueSoln["x"], ls="--", color="k", lw=2)
-axes[0].text(0.02, 0.92, r"$\theta_{\mathrm{max}}$", color="k",
-             fontsize=18, transform=axes[0].transAxes)
-
-# Annotate with true, approximate solution
-stTrue = r"$\theta_{\mathrm{max}}=$ %.3e" % trueSoln["x"]
-stAp = r"$\hat{\theta}_{\mathrm{max}}=$ %.3e" % soln["thetaBest"]
-axes[0].text(0.5, 0.6, stTrue, color="k", fontsize=12, transform=axes[0].transAxes)
-axes[0].text(0.5, 0.55, stAp, color="k", fontsize=12, transform=axes[0].transAxes)
+axes[0].plot(iters, soln["thetas"], "o-", color="C0", lw=2.5, label="BayesOpt")
+axes[0].plot(iters, soln["thetasMAP"], "o-", color="C1", lw=2.5, label="GP MAP")
 
 # Format
 axes[0].set_ylabel(r"$\theta$")
+axes[0].legend(loc="best", framealpha=0, fontsize=14)
 
 # Right: solution value (- true soln since we minimized -fn)
-axes[1].plot(iters, soln["vals"], "o-", color="C0", lw=3)
 axes[1].axhline(-trueSoln["fun"], ls="--", color="k", lw=2)
-axes[1].text(0.6, 0.12, "Global Maximum", color="k", transform=axes[1].transAxes,
-             fontsize=13)
-
-# Annotate with function value at true, approximate solution
-stTrue = r"$f(\theta_{\mathrm{max}}) =$ %.3e" % (-trueSoln["fun"])
-stAp = r"$\hat{f}(\hat{\theta}_{\mathrm{max}})$: %.3e" % soln["valBest"]
-axes[1].text(0.4, 0.6, stTrue, color="k", fontsize=12, transform=axes[1].transAxes)
-axes[1].text(0.4, 0.55, stAp, color="k", fontsize=12, transform=axes[1].transAxes)
+axes[1].plot(iters, soln["vals"], "o-", color="C0", lw=2.5)
+axes[1].plot(iters, soln["valsMAP"], "o-", color="C1", lw=2.5)
 
 # Format
 axes[1].set_ylabel(r"$f(\theta)$")

@@ -49,18 +49,11 @@ def testGMMFit():
     errMsg = "ERROR: fitGMM did not infer 2 components! n_components = %d" % gmm.n_components
     assert(2 == gmm.n_components), errMsg
 
-    # Behavior is different for diff versions of python - so account for that!
-    if sys.version_info[1] <= 5:
-        stretchInd = 0
-        shiftInd = 1
-    else:
-        stretchInd = 1
-        shiftInd = 0
-
     # Ensure that the true and inferred Gaussian means are the same
+    # Note: order of means is arbitrary, so check that it matches one of them
     errMsg = "ERROR: fitGMM inferred incorrect means!"
-    assert(np.allclose(muStetchG, gmm.means_[stretchInd]))
-    assert(np.allclose(muShiftG, gmm.means_[shiftInd]))
+    assert(np.allclose(muStetchG, gmm.means_[0]) or np.allclose(muStetchG, gmm.means_[1]))
+    assert(np.allclose(muShiftG, gmm.means_[0]) or np.allclose(muShiftG, gmm.means_[1]))
 # end function
 
 if __name__ == "__main__":
