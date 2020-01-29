@@ -611,7 +611,7 @@ class ApproxPosterior(object):
         assert (isinstance(optGPEveryN, int) and (optGPEveryN >= 1))
 
         if verbose:
-            if numNewPoints > optGPEveryN:
+            if numNewPoints < optGPEveryN:
                 errMsg = "WARNING: numNewPoints > optGPEveryN."
                 errMsg += "GP hyperparameters will not be re-optimized. Set "
                 errMsg += "numNewPoints < optGPEveryN to fix this, if important (it probably is)."
