@@ -501,11 +501,12 @@ class ApproxPosterior(object):
 
 
     def findNextPoint(self, theta0=None, computeLnLike=True, seed=None,
-                      cache=True, gpOptions=None, gpP0=None, args=None,
+                      cache=True, gpOptions=None, gpP0=None, verbose=True,
                       nGPRestarts=1, nMinObjRestarts=5, gpMethod="powell",
                       minObjMethod="nelder-mead", minObjOptions=None,
                       runName="apRun", numNewPoints=1, optGPEveryN=1,
-                      gpHyperPrior=gpUtils.defaultHyperPrior, **kwargs):
+                      gpHyperPrior=gpUtils.defaultHyperPrior, args=None,
+                      **kwargs):
         """
         Find numNewPoints new point(s), thetaT, by maximizing utility function.
         Note that we call a minimizer because minimizing negative of utility
@@ -587,6 +588,8 @@ class ApproxPosterior(object):
             kwargs for the scipy.optimize.minimize function used when optimizing
             utility functions for point selection.  Defaults to None,
             but if method == "nelder-mead", options = {"adaptive" : True}
+        verbose : bool, optional
+            Output all the diagnostics? Defaults to True.
         args : iterable, optional
             Arguments for user-specified loglikelihood function that calls the
             forward model. Defaults to None.
@@ -606,6 +609,13 @@ class ApproxPosterior(object):
         # Validate inputs
         assert (isinstance(numNewPoints, int) and (numNewPoints >= 1))
         assert (isinstance(optGPEveryN, int) and (optGPEveryN >= 1))
+
+        if verbose:
+            if numNewPoints > optGPEveryN:
+                errMsg = "WARNING: numNewPoints > optGPEveryN."
+                errMsg += "GP hyperparameters will not be re-optimized. Set "
+                errMsg += "numNewPoints < optGPEveryN to fix this, if important (it probably is)."
+                print(errMsg)
 
         if args is None:
             args = ()
@@ -916,7 +926,7 @@ class ApproxPosterior(object):
                  verbose=True, runName="apRun", cache=True, gpMethod="powell",
                  gpOptions=None, gpP0=None, optGPEveryN=1, nGPRestarts=1,
                  nMinObjRestarts=5, initGPOpt=True, minObjMethod="nelder-mead",
-                 gpHyperPrior=gpUtils.defaultHyperPrior,  minObjOptions=None,
+                 gpHyperPrior=gpUtils.defaultHyperPrior, minObjOptions=None,
                  findMAP=True, args=None, **kwargs):
         """
         Perform Bayesian optimization given a GP surrogate model to estimate
