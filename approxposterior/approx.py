@@ -612,7 +612,7 @@ class ApproxPosterior(object):
 
         if verbose:
             if numNewPoints < optGPEveryN:
-                errMsg = "WARNING: numNewPoints > optGPEveryN."
+                errMsg = "WARNING: numNewPoints < optGPEveryN."
                 errMsg += "GP hyperparameters will not be re-optimized. Set "
                 errMsg += "numNewPoints < optGPEveryN to fix this, if important (it probably is)."
                 print(errMsg)
