@@ -258,6 +258,39 @@ Defaults to None to compute the simple expected value, aka the mean.</p></li>
 </dl>
 </dd></dl>
 
+<dl class="function">
+<dt id="approxposterior.mcmcUtils.estimateBurnin">
+<code class="sig-prename descclassname">approxposterior.mcmcUtils.</code><code class="sig-name descname">estimateBurnin</code><span class="sig-paren">(</span><em class="sig-param">sampler</em>, <em class="sig-param">estBurnin=True</em>, <em class="sig-param">thinChains=True</em>, <em class="sig-param">verbose=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/mcmcUtils.html#estimateBurnin"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.mcmcUtils.estimateBurnin" title="Permalink to this definition">¶</a></dt>
+<dd><p>Estimate the integrated autocorrelation length on the MCMC chain associated
+with an emcee sampler object. With the integrated autocorrelation length,
+we can then estimate the burn-in length for the MCMC chain. This procedure
+follows the example outlined here:
+<a class="reference external" href="https://emcee.readthedocs.io/en/stable/tutorials/autocorr/">https://emcee.readthedocs.io/en/stable/tutorials/autocorr/</a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sampler</strong> (<em>emcee.EnsembleSampler</em>) – emcee MCMC sampler object/backend handler, given a complete chain</p></li>
+<li><p><strong>estBurnin</strong> (<em>bool</em><em>, </em><em>optional</em>) – Estimate burn-in time using integrated autocorrelation time
+heuristic.  Defaults to True. In general, we recommend users
+inspect the chains and calculate the burnin after the fact to ensure
+convergence, but this function works pretty well.</p></li>
+<li><p><strong>thinChains</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether or not to thin chains.  Useful if running long chains.
+Defaults to True.  If true, estimates a thin cadence
+via int(0.5*np.min(tau)) where tau is the intergrated autocorrelation
+time.</p></li>
+<li><p><strong>verbose</strong> (<em>bool</em><em>, </em><em>optional</em>) – Output all the diagnostics? Defaults to False.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>iburn</strong> (<em>int</em>) – burn-in index estimate.  If estBurnin == False, returns 0.</p></li>
+<li><p><strong>ithin</strong> (<em>int</em>) – thin cadence estimate.  If thinChains == False, returns 1.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
 </div>
 </div>
 
