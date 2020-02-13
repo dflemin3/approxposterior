@@ -7,7 +7,7 @@ MCMC utility functions for validating emcee MCMC runs within approxposterior.
 """
 
 # Tell module what it's allowed to import
-__all__ = ["validateMCMCKwargs", "batchMeansMCSE"]
+__all__ = ["validateMCMCKwargs", "batchMeansMCSE", "estimateBurnin"]
 
 import numpy as np
 
