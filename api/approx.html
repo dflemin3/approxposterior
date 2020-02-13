@@ -333,7 +333,7 @@ the GP kernel fits for an amplitude term.</p>
 
 <dl class="method">
 <dt id="approxposterior.approx.ApproxPosterior.findNextPoint">
-<code class="sig-name descname">findNextPoint</code><span class="sig-paren">(</span><em class="sig-param">theta0=None</em>, <em class="sig-param">computeLnLike=True</em>, <em class="sig-param">seed=None</em>, <em class="sig-param">cache=True</em>, <em class="sig-param">gpOptions=None</em>, <em class="sig-param">gpP0=None</em>, <em class="sig-param">args=None</em>, <em class="sig-param">nGPRestarts=1</em>, <em class="sig-param">nMinObjRestarts=5</em>, <em class="sig-param">gpMethod='powell'</em>, <em class="sig-param">minObjMethod='nelder-mead'</em>, <em class="sig-param">minObjOptions=None</em>, <em class="sig-param">runName='apRun'</em>, <em class="sig-param">numNewPoints=1</em>, <em class="sig-param">optGPEveryN=1</em>, <em class="sig-param">gpHyperPrior=&lt;function defaultHyperPrior&gt;</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/approx.html#ApproxPosterior.findNextPoint"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.approx.ApproxPosterior.findNextPoint" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">findNextPoint</code><span class="sig-paren">(</span><em class="sig-param">theta0=None</em>, <em class="sig-param">computeLnLike=True</em>, <em class="sig-param">seed=None</em>, <em class="sig-param">cache=True</em>, <em class="sig-param">gpOptions=None</em>, <em class="sig-param">gpP0=None</em>, <em class="sig-param">verbose=True</em>, <em class="sig-param">nGPRestarts=1</em>, <em class="sig-param">nMinObjRestarts=5</em>, <em class="sig-param">gpMethod='powell'</em>, <em class="sig-param">minObjMethod='nelder-mead'</em>, <em class="sig-param">minObjOptions=None</em>, <em class="sig-param">runName='apRun'</em>, <em class="sig-param">numNewPoints=1</em>, <em class="sig-param">optGPEveryN=1</em>, <em class="sig-param">gpHyperPrior=&lt;function defaultHyperPrior&gt;</em>, <em class="sig-param">args=None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/approx.html#ApproxPosterior.findNextPoint"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.approx.ApproxPosterior.findNextPoint" title="Permalink to this definition">¶</a></dt>
 <dd><p>Find numNewPoints new point(s), thetaT, by maximizing utility function.
 Note that we call a minimizer because minimizing negative of utility
 function is the same as maximizing it.</p>
@@ -400,6 +400,7 @@ utility functions for point selection.  Defaults to nelder-mead.</p></li>
 <li><p><strong>minObjOptions</strong> (<em>dict</em><em>, </em><em>optional</em>) – kwargs for the scipy.optimize.minimize function used when optimizing
 utility functions for point selection.  Defaults to None,
 but if method == “nelder-mead”, options = {“adaptive” : True}</p></li>
+<li><p><strong>verbose</strong> (<em>bool</em><em>, </em><em>optional</em>) – Output all the diagnostics? Defaults to True.</p></li>
 <li><p><strong>args</strong> (<em>iterable</em><em>, </em><em>optional</em>) – Arguments for user-specified loglikelihood function that calls the
 forward model. Defaults to None.</p></li>
 <li><p><strong>kwargs</strong> (<em>dict</em><em>, </em><em>optional</em>) – Keyword arguments for user-specified loglikelihood function that
@@ -597,8 +598,8 @@ parameters in runNameAPGP.npz in the current working directory, etc.</p></li>
 heuristic.  Defaults to True. In general, we recommend users
 inspect the chains and calculate the burnin after the fact to ensure
 convergence, but this function works pretty well.</p></li>
-<li><p><strong>thinChains</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether or not to thin chains before GMM fitting.  Useful if running
-long chains.  Defaults to True.  If true, estimates a thin cadence
+<li><p><strong>thinChains</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether or not to thin chains.  Useful if running long chains.
+Defaults to True.  If true, estimates a thin cadence
 via int(0.5*np.min(tau)) where tau is the intergrated autocorrelation
 time.</p></li>
 <li><p><strong>verbose</strong> (<em>bool</em><em>, </em><em>optional</em>) – Output all the diagnostics? Defaults to False.</p></li>

@@ -323,6 +323,72 @@
     <span class="n">mcse</span> <span class="o">=</span> <span class="n">b</span> <span class="o">/</span> <span class="p">(</span><span class="n">bins</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="n">y</span> <span class="o">-</span> <span class="n">mu</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">mcse</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">samples</span><span class="p">))</span></div>
 <span class="c1"># end function</span>
+
+
+<span class="k">def</span> <span class="nf">estimateBurnin</span><span class="p">(</span><span class="n">sampler</span><span class="p">,</span> <span class="n">estBurnin</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">thinChains</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Estimate the integrated autocorrelation length on the MCMC chain associated</span>
+<span class="sd">    with an emcee sampler object. With the integrated autocorrelation length,</span>
+<span class="sd">    we can then estimate the burn-in length for the MCMC chain. This procedure</span>
+<span class="sd">    follows the example outlined here:</span>
+<span class="sd">    https://emcee.readthedocs.io/en/stable/tutorials/autocorr/</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    sampler : emcee.EnsembleSampler</span>
+<span class="sd">        emcee MCMC sampler object/backend handler, given a complete chain</span>
+<span class="sd">    estBurnin : bool, optional</span>
+<span class="sd">        Estimate burn-in time using integrated autocorrelation time</span>
+<span class="sd">        heuristic.  Defaults to True. In general, we recommend users</span>
+<span class="sd">        inspect the chains and calculate the burnin after the fact to ensure</span>
+<span class="sd">        convergence, but this function works pretty well.</span>
+<span class="sd">    thinChains : bool, optional</span>
+<span class="sd">        Whether or not to thin chains.  Useful if running long chains.</span>
+<span class="sd">        Defaults to True.  If true, estimates a thin cadence</span>
+<span class="sd">        via int(0.5*np.min(tau)) where tau is the intergrated autocorrelation</span>
+<span class="sd">        time.</span>
+<span class="sd">    verbose : bool, optional</span>
+<span class="sd">        Output all the diagnostics? Defaults to False.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    iburn : int</span>
+<span class="sd">        burn-in index estimate.  If estBurnin == False, returns 0.</span>
+<span class="sd">    ithin : int</span>
+<span class="sd">        thin cadence estimate.  If thinChains == False, returns 1.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Set tol = 0 so it always returns an answer</span>
+    <span class="n">tau</span> <span class="o">=</span> <span class="n">sampler</span><span class="o">.</span><span class="n">get_autocorr_time</span><span class="p">(</span><span class="n">tol</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="c1"># Catch NaNs</span>
+    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="o">~</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">tau</span><span class="p">)):</span>
+        <span class="c1"># Try removing NaNs</span>
+        <span class="n">tau</span> <span class="o">=</span> <span class="n">tau</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">tau</span><span class="p">))]</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">tau</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Failed to compute integrated autocorrelation length, tau.&quot;</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Setting tau = 1&quot;</span><span class="p">)</span>
+            <span class="n">tau</span> <span class="o">=</span> <span class="mi">1</span>
+
+    <span class="c1"># Estimate burn-in?</span>
+    <span class="k">if</span> <span class="n">estBurnin</span><span class="p">:</span>
+        <span class="n">iburn</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="mf">2.0</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">tau</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">iburn</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="c1"># Thin chains?</span>
+    <span class="k">if</span> <span class="n">thinChains</span><span class="p">:</span>
+        <span class="n">ithin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">((</span><span class="nb">int</span><span class="p">(</span><span class="mf">0.5</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">tau</span><span class="p">)),</span> <span class="mi">1</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">ithin</span> <span class="o">=</span> <span class="mi">1</span>
+
+    <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;burn-in estimate: </span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">iburn</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;thin estimate: </span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">ithin</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">iburn</span><span class="p">,</span> <span class="n">ithin</span>
+<span class="c1"># end function</span>
 </pre></div>
 
            </div>
