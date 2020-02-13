@@ -767,8 +767,8 @@ class ApproxPosterior(object):
             inspect the chains and calculate the burnin after the fact to ensure
             convergence, but this function works pretty well.
         thinChains : bool, optional
-            Whether or not to thin chains before GMM fitting.  Useful if running
-            long chains.  Defaults to True.  If true, estimates a thin cadence
+            Whether or not to thin chains.  Useful if running long chains.
+            Defaults to True.  If true, estimates a thin cadence
             via int(0.5*np.min(tau)) where tau is the intergrated autocorrelation
             time.
         verbose : bool, optional
@@ -821,35 +821,10 @@ class ApproxPosterior(object):
 
         # If estimating burn in or thin scale, compute integrated
         # autocorrelation length of the chains
-        if estBurnin or thinChains:
-            # tol = 0 so it always returns an answer
-            tau = self.sampler.get_autocorr_time(tol=0)
-
-            # Catch NaNs
-            if np.any(~np.isfinite(tau)):
-                # Try removing NaNs
-                tau = tau[np.isfinite(np.array(tau))]
-                if len(tau) < 1:
-                    if verbose:
-                        print("Failed to compute integrated autocorrelation length, tau.")
-                        print("Setting tau = 1")
-                    tau = 1
-
-        # Estimate burn-in?
-        if estBurnin:
-            iburn = int(2.0*np.max(tau))
-        else:
-            iburn = 0
-
-        # Thin chains?
-        if thinChains:
-            ithin = np.max((int(0.5*np.min(tau)), 1))
-        else:
-            ithin = 1
-
-        if verbose:
-            print("burn-in estimate: %d" % iburn)
-            print("thin estimate: %d" % ithin)
+        iburn, ithin = mcmcUtils.estimateBurnin(self.sampler,
+                                                estBurnin=estBurnin,
+                                                thinChains=thinChains,
+                                                verbose=verbose)
 
         return self.sampler, iburn, ithin
     # end function
