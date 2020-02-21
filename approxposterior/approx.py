@@ -368,6 +368,12 @@ class ApproxPosterior(object):
             self.trainingTime = list()
             self.mcmcTime = list()
 
+        # Create containers if checking for convergence
+        if convergenceCheck:
+            self.marginalMeans = list()
+            self.marginalStds = list()
+            self.marginalZScores = list()
+
         # Initial optimization of gaussian process?
         if initGPOpt:
             self.optGP(seed=seed, method=gpMethod, options=gpOptions, p0=gpP0,
@@ -472,6 +478,10 @@ class ApproxPosterior(object):
                 meanNN = np.mean(samples, axis=0)
                 stdNN = np.std(samples, axis=0)
 
+                # Save current marginal means, standard deviations
+                self.marginalMeans.append(meanNN)
+                self.marginalStds.append(stdNN)
+
                 # Cannot converge after just one iteration
                 if nn == 0:
                     meanPrev = meanNN
@@ -479,8 +489,12 @@ class ApproxPosterior(object):
                 else:
                     # Compute z score for each parameter mean relative to
                     # previous approximate marginal posterior distribution quantities
-                    zScore = np.fabs((meanNN - meanPrev)/stdPrev)
-                    if np.all(zScore < eps):
+                    zScores = np.fabs((meanNN - meanPrev)/stdPrev)
+
+                    # Save current zScore
+                    self.marginalZScores.append(zScores)
+
+                    if np.all(zScores < eps):
                         kk += 1
                     else:
                         kk = 0
@@ -489,13 +503,24 @@ class ApproxPosterior(object):
                     meanPrev = meanNN
                     stdPrev = stdNN
 
+                # Cache current convergence diagnostics?
+                if cache:
+                    np.savez(str(runName) + "ConvergenceCache.npz",
+                             means=self.marginalMeans,
+                             stds=self.marginalStds,
+                             zscores=self.marginalZScores,
+                             eps=eps,
+                             kmax=kmax,
+                             finalIteration=kk)
+
+
                 # If close for kmax consecutive iterations, converged!
                 if kk >= kmax:
                     if verbose:
                         print("Approximate marginal posterior distributions converged.")
                         print("Delta zScore threshold, eps: %e" % eps)
                         print("kk, kmax: %d, %d" % (kk, kmax))
-                        print("Final abs(zScore):", zScore)
+                        print("Final abs(zScore):", zScores)
                         break
     # end function
 
