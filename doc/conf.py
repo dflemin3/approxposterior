@@ -56,7 +56,16 @@ extensions = [
     'nbsphinx'
 ]
 
-nbsphinx_prompt_width = 0
+nbsphinx_prolog = """
+.. raw:: html
+
+    <style>
+        .nbinput .prompt,
+        .nboutput .prompt {
+        display: none;
+        }
+    </style>
+"""
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']

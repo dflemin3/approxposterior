@@ -30,51 +30,53 @@ class ApproxPosterior(object):
     """
     Class used to estimate approximate Bayesian posterior distributions or
     perform Bayesian optimization using a Gaussian process surrogate model
+
+    Initial parameters:
+
+    Parameters
+    ----------
+    theta : array-like
+        Input features (n_samples x n_features).  Defaults to None.
+    y : array-like
+        Input result of forward model (n_samples,). Defaults to None.
+    lnprior : function
+        Defines the log prior over the input features.
+    lnlike : function
+        Defines the log likelihood function.  In this function, it is assumed
+        that the forward model is evaluated on the input theta and the output
+        is used to evaluate the log likelihood.
+    priorSample : function
+        Method to randomly sample points over region allowed by prior
+    bounds : tuple/iterable
+        Hard bounds for parameters
+    gp : george.GP, optional
+        Gaussian Process that learns the likelihood conditioned on forward
+        model input-output pairs (theta, y). It's recommended that users
+        specify their own kernel, GP using george. If None is provided, then
+        approxposterior initialized a GP with a single ExpSquaredKernel as
+        these work well in practice.
+    algorithm : str, optional
+        Point selection algorithm that specifies which utility (also
+        referred to as acquisition) function to use.  Defaults to bape.
+        Options are bape (Bayesian Active Learning for Posterior Estimation,
+        Kandasamy et al. (2015)), agp (Adapted Gaussian Process Approximation,
+        Wang & Li (2017)), alternate (between AGP and BAPE), and jones
+        (Jones et al. (1998) expected improvement).
+        Case doesn't matter. If alternate, runs agp on even numbers and bape
+        on odd.
+
+        For approximate Bayesian posterior estimation, bape or alternate
+        are typically the best optimizations. For Bayesian optimization,
+        jones (expected improvement) usually performs best.
+
+    Returns
+    -------
     """
 
     def __init__(self, theta, y, lnprior, lnlike, priorSample, bounds, gp=None,
                  algorithm="bape"):
         """
         Initializer.
-
-        Parameters
-        ----------
-        theta : array-like
-            Input features (n_samples x n_features).  Defaults to None.
-        y : array-like
-            Input result of forward model (n_samples,). Defaults to None.
-        lnprior : function
-            Defines the log prior over the input features.
-        lnlike : function
-            Defines the log likelihood function.  In this function, it is assumed
-            that the forward model is evaluated on the input theta and the output
-            is used to evaluate the log likelihood.
-        priorSample : function
-            Method to randomly sample points over region allowed by prior
-        bounds : tuple/iterable
-            Hard bounds for parameters
-        gp : george.GP, optional
-            Gaussian Process that learns the likelihood conditioned on forward
-            model input-output pairs (theta, y). It's recommended that users
-            specify their own kernel, GP using george. If None is provided, then
-            approxposterior initialized a GP with a single ExpSquaredKernel as
-            these work well in practice.
-        algorithm : str, optional
-            Point selection algorithm that specifies which utility (also
-            referred to as acquisition) function to use.  Defaults to bape.
-            Options are bape (Bayesian Active Learning for Posterior Estimation,
-            Kandasamy et al. (2015)), agp (Adapted Gaussian Process Approximation,
-            Wang & Li (2017)), alternate (between AGP and BAPE), and jones
-            (Jones et al. (1998) expected improvement).
-            Case doesn't matter. If alternate, runs agp on even numbers and bape
-            on odd.
-
-            For approximate Bayesian posterior estimation, bape or alternate
-            are typically the best optimizations. For Bayesian optimization,
-            jones (expected improvement) usually performs best.
-
-        Returns
-        -------
         """
 
         # Need to supply the training set
@@ -368,12 +370,6 @@ class ApproxPosterior(object):
             self.trainingTime = list()
             self.mcmcTime = list()
 
-        # Create containers if checking for convergence
-        if convergenceCheck:
-            self.marginalMeans = list()
-            self.marginalStds = list()
-            self.marginalZScores = list()
-
         # Initial optimization of gaussian process?
         if initGPOpt:
             self.optGP(seed=seed, method=gpMethod, options=gpOptions, p0=gpP0,
@@ -478,10 +474,6 @@ class ApproxPosterior(object):
                 meanNN = np.mean(samples, axis=0)
                 stdNN = np.std(samples, axis=0)
 
-                # Save current marginal means, standard deviations
-                self.marginalMeans.append(meanNN)
-                self.marginalStds.append(stdNN)
-
                 # Cannot converge after just one iteration
                 if nn == 0:
                     meanPrev = meanNN
@@ -489,12 +481,8 @@ class ApproxPosterior(object):
                 else:
                     # Compute z score for each parameter mean relative to
                     # previous approximate marginal posterior distribution quantities
-                    zScores = np.fabs((meanNN - meanPrev)/stdPrev)
-
-                    # Save current zScore
-                    self.marginalZScores.append(zScores)
-
-                    if np.all(zScores < eps):
+                    zScore = np.fabs((meanNN - meanPrev)/stdPrev)
+                    if np.all(zScore < eps):
                         kk += 1
                     else:
                         kk = 0
@@ -503,24 +491,13 @@ class ApproxPosterior(object):
                     meanPrev = meanNN
                     stdPrev = stdNN
 
-                # Cache current convergence diagnostics?
-                if cache:
-                    np.savez(str(runName) + "ConvergenceCache.npz",
-                             means=self.marginalMeans,
-                             stds=self.marginalStds,
-                             zscores=self.marginalZScores,
-                             eps=eps,
-                             kmax=kmax,
-                             finalIteration=kk)
-
-
                 # If close for kmax consecutive iterations, converged!
                 if kk >= kmax:
                     if verbose:
                         print("Approximate marginal posterior distributions converged.")
                         print("Delta zScore threshold, eps: %e" % eps)
                         print("kk, kmax: %d, %d" % (kk, kmax))
-                        print("Final abs(zScore):", zScores)
+                        print("Final abs(zScore):", zScore)
                         break
     # end function
 
