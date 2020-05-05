@@ -21,12 +21,12 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
-        <script type="text/javascript" src="../_static/jquery.js"></script>
-        <script type="text/javascript" src="../_static/underscore.js"></script>
-        <script type="text/javascript" src="../_static/doctools.js"></script>
-        <script type="text/javascript" src="../_static/language_data.js"></script>
-        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/language_data.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
         <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
     
     <script type="text/javascript" src="../_static/js/theme.js"></script>
@@ -215,6 +215,38 @@ posterior distributions given the GP model.</p>
 <em class="property">class </em><code class="sig-prename descclassname">approxposterior.approx.</code><code class="sig-name descname">ApproxPosterior</code><span class="sig-paren">(</span><em class="sig-param">theta</em>, <em class="sig-param">y</em>, <em class="sig-param">lnprior</em>, <em class="sig-param">lnlike</em>, <em class="sig-param">priorSample</em>, <em class="sig-param">bounds</em>, <em class="sig-param">gp=None</em>, <em class="sig-param">algorithm='bape'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/approx.html#ApproxPosterior"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.approx.ApproxPosterior" title="Permalink to this definition">¶</a></dt>
 <dd><p>Class used to estimate approximate Bayesian posterior distributions or
 perform Bayesian optimization using a Gaussian process surrogate model</p>
+<p>Initial parameters:</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>theta</strong> (<em>array-like</em>) – Input features (n_samples x n_features).  Defaults to None.</p></li>
+<li><p><strong>y</strong> (<em>array-like</em>) – Input result of forward model (n_samples,). Defaults to None.</p></li>
+<li><p><strong>lnprior</strong> (<em>function</em>) – Defines the log prior over the input features.</p></li>
+<li><p><strong>lnlike</strong> (<em>function</em>) – Defines the log likelihood function.  In this function, it is assumed
+that the forward model is evaluated on the input theta and the output
+is used to evaluate the log likelihood.</p></li>
+<li><p><strong>priorSample</strong> (<em>function</em>) – Method to randomly sample points over region allowed by prior</p></li>
+<li><p><strong>bounds</strong> (<em>tuple/iterable</em>) – Hard bounds for parameters</p></li>
+<li><p><strong>gp</strong> (<em>george.GP</em><em>, </em><em>optional</em>) – Gaussian Process that learns the likelihood conditioned on forward
+model input-output pairs (theta, y). It’s recommended that users
+specify their own kernel, GP using george. If None is provided, then
+approxposterior initialized a GP with a single ExpSquaredKernel as
+these work well in practice.</p></li>
+<li><p><strong>algorithm</strong> (<em>str</em><em>, </em><em>optional</em>) – <p>Point selection algorithm that specifies which utility (also
+referred to as acquisition) function to use.  Defaults to bape.
+Options are bape (Bayesian Active Learning for Posterior Estimation,
+Kandasamy et al. (2015)), agp (Adapted Gaussian Process Approximation,
+Wang &amp; Li (2017)), alternate (between AGP and BAPE), and jones
+(Jones et al. (1998) expected improvement).
+Case doesn’t matter. If alternate, runs agp on even numbers and bape
+on odd.</p>
+<p>For approximate Bayesian posterior estimation, bape or alternate
+are typically the best optimizations. For Bayesian optimization,
+jones (expected improvement) usually performs best.</p>
+</p></li>
+</ul>
+</dd>
+</dl>
 <dl class="method">
 <dt id="approxposterior.approx.ApproxPosterior.bayesOpt">
 <code class="sig-name descname">bayesOpt</code><span class="sig-paren">(</span><em class="sig-param">nmax</em>, <em class="sig-param">theta0=None</em>, <em class="sig-param">tol=0.001</em>, <em class="sig-param">kmax=3</em>, <em class="sig-param">seed=None</em>, <em class="sig-param">verbose=True</em>, <em class="sig-param">runName='apRun'</em>, <em class="sig-param">cache=True</em>, <em class="sig-param">gpMethod='powell'</em>, <em class="sig-param">gpOptions=None</em>, <em class="sig-param">gpP0=None</em>, <em class="sig-param">optGPEveryN=1</em>, <em class="sig-param">nGPRestarts=1</em>, <em class="sig-param">nMinObjRestarts=5</em>, <em class="sig-param">initGPOpt=True</em>, <em class="sig-param">minObjMethod='nelder-mead'</em>, <em class="sig-param">gpHyperPrior=&lt;function defaultHyperPrior&gt;</em>, <em class="sig-param">minObjOptions=None</em>, <em class="sig-param">findMAP=True</em>, <em class="sig-param">args=None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/approxposterior/approx.html#ApproxPosterior.bayesOpt"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#approxposterior.approx.ApproxPosterior.bayesOpt" title="Permalink to this definition">¶</a></dt>

@@ -21,12 +21,12 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
-        <script type="text/javascript" src="../../_static/jquery.js"></script>
-        <script type="text/javascript" src="../../_static/underscore.js"></script>
-        <script type="text/javascript" src="../../_static/doctools.js"></script>
-        <script type="text/javascript" src="../../_static/language_data.js"></script>
-        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/language_data.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
         <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
     
     <script type="text/javascript" src="../../_static/js/theme.js"></script>
@@ -194,51 +194,53 @@
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Class used to estimate approximate Bayesian posterior distributions or</span>
 <span class="sd">    perform Bayesian optimization using a Gaussian process surrogate model</span>
+
+<span class="sd">    Initial parameters:</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    theta : array-like</span>
+<span class="sd">        Input features (n_samples x n_features).  Defaults to None.</span>
+<span class="sd">    y : array-like</span>
+<span class="sd">        Input result of forward model (n_samples,). Defaults to None.</span>
+<span class="sd">    lnprior : function</span>
+<span class="sd">        Defines the log prior over the input features.</span>
+<span class="sd">    lnlike : function</span>
+<span class="sd">        Defines the log likelihood function.  In this function, it is assumed</span>
+<span class="sd">        that the forward model is evaluated on the input theta and the output</span>
+<span class="sd">        is used to evaluate the log likelihood.</span>
+<span class="sd">    priorSample : function</span>
+<span class="sd">        Method to randomly sample points over region allowed by prior</span>
+<span class="sd">    bounds : tuple/iterable</span>
+<span class="sd">        Hard bounds for parameters</span>
+<span class="sd">    gp : george.GP, optional</span>
+<span class="sd">        Gaussian Process that learns the likelihood conditioned on forward</span>
+<span class="sd">        model input-output pairs (theta, y). It&#39;s recommended that users</span>
+<span class="sd">        specify their own kernel, GP using george. If None is provided, then</span>
+<span class="sd">        approxposterior initialized a GP with a single ExpSquaredKernel as</span>
+<span class="sd">        these work well in practice.</span>
+<span class="sd">    algorithm : str, optional</span>
+<span class="sd">        Point selection algorithm that specifies which utility (also</span>
+<span class="sd">        referred to as acquisition) function to use.  Defaults to bape.</span>
+<span class="sd">        Options are bape (Bayesian Active Learning for Posterior Estimation,</span>
+<span class="sd">        Kandasamy et al. (2015)), agp (Adapted Gaussian Process Approximation,</span>
+<span class="sd">        Wang &amp; Li (2017)), alternate (between AGP and BAPE), and jones</span>
+<span class="sd">        (Jones et al. (1998) expected improvement).</span>
+<span class="sd">        Case doesn&#39;t matter. If alternate, runs agp on even numbers and bape</span>
+<span class="sd">        on odd.</span>
+
+<span class="sd">        For approximate Bayesian posterior estimation, bape or alternate</span>
+<span class="sd">        are typically the best optimizations. For Bayesian optimization,</span>
+<span class="sd">        jones (expected improvement) usually performs best.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">theta</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">lnprior</span><span class="p">,</span> <span class="n">lnlike</span><span class="p">,</span> <span class="n">priorSample</span><span class="p">,</span> <span class="n">bounds</span><span class="p">,</span> <span class="n">gp</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                  <span class="n">algorithm</span><span class="o">=</span><span class="s2">&quot;bape&quot;</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Initializer.</span>
-
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        theta : array-like</span>
-<span class="sd">            Input features (n_samples x n_features).  Defaults to None.</span>
-<span class="sd">        y : array-like</span>
-<span class="sd">            Input result of forward model (n_samples,). Defaults to None.</span>
-<span class="sd">        lnprior : function</span>
-<span class="sd">            Defines the log prior over the input features.</span>
-<span class="sd">        lnlike : function</span>
-<span class="sd">            Defines the log likelihood function.  In this function, it is assumed</span>
-<span class="sd">            that the forward model is evaluated on the input theta and the output</span>
-<span class="sd">            is used to evaluate the log likelihood.</span>
-<span class="sd">        priorSample : function</span>
-<span class="sd">            Method to randomly sample points over region allowed by prior</span>
-<span class="sd">        bounds : tuple/iterable</span>
-<span class="sd">            Hard bounds for parameters</span>
-<span class="sd">        gp : george.GP, optional</span>
-<span class="sd">            Gaussian Process that learns the likelihood conditioned on forward</span>
-<span class="sd">            model input-output pairs (theta, y). It&#39;s recommended that users</span>
-<span class="sd">            specify their own kernel, GP using george. If None is provided, then</span>
-<span class="sd">            approxposterior initialized a GP with a single ExpSquaredKernel as</span>
-<span class="sd">            these work well in practice.</span>
-<span class="sd">        algorithm : str, optional</span>
-<span class="sd">            Point selection algorithm that specifies which utility (also</span>
-<span class="sd">            referred to as acquisition) function to use.  Defaults to bape.</span>
-<span class="sd">            Options are bape (Bayesian Active Learning for Posterior Estimation,</span>
-<span class="sd">            Kandasamy et al. (2015)), agp (Adapted Gaussian Process Approximation,</span>
-<span class="sd">            Wang &amp; Li (2017)), alternate (between AGP and BAPE), and jones</span>
-<span class="sd">            (Jones et al. (1998) expected improvement).</span>
-<span class="sd">            Case doesn&#39;t matter. If alternate, runs agp on even numbers and bape</span>
-<span class="sd">            on odd.</span>
-
-<span class="sd">            For approximate Bayesian posterior estimation, bape or alternate</span>
-<span class="sd">            are typically the best optimizations. For Bayesian optimization,</span>
-<span class="sd">            jones (expected improvement) usually performs best.</span>
-
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="c1"># Need to supply the training set</span>
