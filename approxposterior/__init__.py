@@ -16,3 +16,4 @@ from .likelihood import *
 from .gpUtils import *
 from .mcmcUtils import *
 from .gmmUtils import *
+from .priors import *
