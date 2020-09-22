@@ -43,13 +43,13 @@ def validateMCMCKwargs(ap, samplerKwargs, mcmcKwargs, verbose=False):
     if samplerKwargs is None:
         samplerKwargs = dict()
 
-        samplerKwargs["ndim"] = ap.theta.shape[-1]
+        samplerKwargs["ndim"] = ap.ndim
         samplerKwargs["nwalkers"] = 20 * samplerKwargs["dim"]
         samplerKwargs["log_prob_fn"] = ap._gpll
     else:
         # If user set ndim, ignore it and align it with theta's dimensionality
         samplerKwargs.pop("ndim", None)
-        samplerKwargs["ndim"] = ap.theta.shape[-1]
+        samplerKwargs["ndim"] = ap.ndim
 
         # Initialize other parameters if they're not provided
         try:

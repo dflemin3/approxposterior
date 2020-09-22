@@ -92,6 +92,7 @@ class ApproxPosterior(object):
             ndim = 1
         else:
             ndim = theta.shape[-1]
+        self.ndim = ndim
 
         # Make sure y, theta are valid floats
         if np.any(~np.isfinite(self.theta)) or np.any(~np.isfinite(self.y)):
