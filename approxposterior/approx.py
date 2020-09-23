@@ -361,6 +361,7 @@ class ApproxPosterior(object):
         if cache:
             np.savez(str(runName) + "APFModelCache.npz",
                      theta=self.theta, y=self.y)
+            self.gpPar = list()
 
         # Set RNG seed?
         if seed is not None:
@@ -424,11 +425,10 @@ class ApproxPosterior(object):
             if timing:
                 self.trainingTime.append(time.time() - start)
 
-            # If cache, save current GP hyperparameters
             if cache:
                 np.savez(str(runName) + "APGP.npz",
-                         gpParamNames=self.gp.get_parameter_names(),
-                         gpParamValues=self.gp.get_parameter_vector())
+                    gpParamNames=self.gp.get_parameter_names(),
+                    gpParamValues=self.gpPar)
 
             # 3) GP updated: run MCMC sampler to obtain new posterior conditioned
             # on {theta_n, log(L_t*prior)}. Use emcee to obtain posterior dist.
@@ -703,6 +703,11 @@ class ApproxPosterior(object):
                     # Always need to compute the covariance matrix when we find
                     # a new theta
                     currentHype = self.gp.get_parameter_vector()
+                    if verbose:
+                        print('hyperparameters', currentHype)
+                    if cache:
+                        self.gpPar.append(currentHype)
+
                     self.gp = george.GP(kernel=self.gp.kernel, fit_mean=True,
                                         mean=self.gp.mean,
                                         white_noise=self.gp.white_noise,
