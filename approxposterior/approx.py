@@ -24,6 +24,7 @@ import emcee
 import george
 import os
 import warnings
+import tqdm
 
 
 class ApproxPosterior(object):
@@ -649,7 +650,7 @@ class ApproxPosterior(object):
             newY = list()
 
         # Find numNewPoints new design points
-        for ii in range(numNewPoints):
+        for ii in tqdm.tqdm(range(numNewPoints)):
 
             # If alternating utility functions, switch here!
             if self.algorithm == "alternate":
