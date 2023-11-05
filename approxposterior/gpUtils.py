@@ -104,7 +104,7 @@ def _grad_nll(p, gp, y, priorFn=None):
     # Apply priors on GP hyperparameters
     if priorFn is not None:
         if not np.isfinite(priorFn(p)):
-            return np.inf
+            return np.full_like(p, np.inf)
 
     # Negative gradient of log likelihood
     return -gp.grad_log_likelihood(y, quiet=True)
